@@ -3,6 +3,6 @@
 members = [
         "swipl-info",
         "swipl-sys",
-        "swipl-rs",
+        "swipl",
         "cargo-swipl"
 ]
