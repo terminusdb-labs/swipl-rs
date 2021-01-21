@@ -12,8 +12,7 @@ pub fn get_swipl_info() -> SwiplInfo {
     // by retrieving SWIPL from env, this should work within swipl
     // build environments, as these set this environment variable
     // appropriately.
-    let swipl_path = option_env!("SWIPL")
-        .unwrap_or("swipl");
+    let swipl_path = option_env!("SWIPL").unwrap_or("swipl");
 
     let output = Command::new(swipl_path)
         .arg("-g")
@@ -24,7 +23,10 @@ pub fn get_swipl_info() -> SwiplInfo {
         .unwrap();
 
     if !output.status.success() {
-        panic!("Error retrieving build environment using swipl: {:?}", output);
+        panic!(
+            "Error retrieving build environment using swipl: {:?}",
+            output
+        );
     }
 
     let stdout = String::from_utf8_lossy(&output.stdout);
@@ -38,6 +40,6 @@ pub fn get_swipl_info() -> SwiplInfo {
         swi_home,
         pack_so_dir,
         cflags,
-        ldflags
+        ldflags,
     }
 }
