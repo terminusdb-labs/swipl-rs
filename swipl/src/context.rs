@@ -20,6 +20,23 @@ impl<'a, T: ContextType> Context<'a, T> {
             panic!("cannot acquire term refs from inactive context");
         }
     }
+
+    pub fn engine_ptr(&self) -> PL_engine_t {
+        self.engine
+    }
+
+    /// Creates a new 'unknown' context with the same lifetime as this context.
+    ///
+    /// This is primarily useful for storing in terms, where we wish to keep track of a context without term itself being generic. The unknown context shares a lifetime with this context, but will do nothing on destruction (as 'self' already does all necessary cleanup).
+    pub fn as_unknown(&self) -> Context<Unknown> {
+        Context {
+            parent: None,
+            context: Unknown { _x: false },
+            engine: self.engine,
+            activated: AtomicBool::new(true),
+        }
+    }
+
     pub fn new_term_ref(&self) -> Term {
         self.assert_activated();
         unsafe {
@@ -57,6 +74,10 @@ impl<'a, T: ContextType> Context<'a, T> {
         };
 
         unsafe { Atom::new(atom) }
+    }
+
+    pub fn atom_from_atomable(&self, atomable: &Atomable<'a>) -> Atom {
+        self.new_atom(atomable.as_ref())
     }
 
     pub unsafe fn wrap_term_ref(&self, term: term_t) -> Term {
@@ -156,6 +177,12 @@ pub unsafe fn unmanaged_engine_context() -> Context<'static, UnmanagedContext> {
         activated: AtomicBool::new(true),
     }
 }
+
+pub struct Unknown {
+    // only here to prevent automatic construction
+    _x: bool,
+}
+impl ContextType for Unknown {}
 
 enum FrameState {
     Active,

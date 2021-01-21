@@ -1,3 +1,4 @@
+use super::context::*;
 use swipl_sys::*;
 
 pub struct Term<'a> {
@@ -14,13 +15,20 @@ impl<'a> Term<'a> {
         self.term
     }
 
-    pub fn unify<U: Unifiable>(&self, unifiable: U) -> bool {
+    pub fn assert_unification_possible<T: ContextType>(&self, context: &Context<T>) {
         if !self.context.is_engine_active() {
             panic!("term is not part of an active engine");
         }
 
-        // unsafe justification: we ensured that the correct engine is active above
-        unifiable.unify(self)
+        if self.context.origin_engine_ptr() != context.engine_ptr() {
+            panic!("term unification called with a context whose engine does not match this term");
+        }
+    }
+
+    pub fn unify<U: Unifiable>(&self, unifiable: U) -> bool {
+        // unsafe justification: we know there is a valid context, otherwise this term would not exist. We just don't care exactly what it is.
+        let context = unsafe { unmanaged_engine_context() };
+        unifiable.unify(&context, self)
     }
 }
 
@@ -29,26 +37,55 @@ pub trait TermOrigin {
     fn is_engine_active(&self) -> bool;
 }
 
-pub trait Unifiable {
-    fn unify(self, term: &Term) -> bool;
+/// Trait for term unification.
+///
+/// This is marked unsafe because in order to do term unification, we
+/// must be sure that
+/// - the term is created on the engine which is currently active
+/// - the given context is a context for this engine
+///
+/// Not checking those preconditions results in undefined
+/// behavior. Therefore, care must be taken to ensure that `unify` is
+/// actually safe.
+///
+/// The macro `unifiable` provides a way to safely implement this trait.
+pub unsafe trait Unifiable {
+    fn unify<T: ContextType>(self, context: &Context<T>, term: &Term) -> bool;
 }
 
-impl<'a> Unifiable for &Term<'a> {
-    fn unify(self, other: &Term) -> bool {
-        if self.context.origin_engine_ptr() != other.context.origin_engine_ptr() {
+#[macro_export]
+macro_rules! unifiable {
+    (($self_:ident : $t:ty, $context_: ident, $term_: ident) => $b: block) => {
+        // unsafe justification: this macro inserts an assert in front
+        // of the unification body, to ensure that we are given a term
+        // that matches the given context, and that the currently
+        // activated engine is one for which this term was created.
+        unsafe impl<'a> Unifiable for $t {
+            fn unify<T:ContextType>($self_, $context_: &Context<T>, $term_: &Term) -> bool {
+                $term_.assert_unification_possible($context_);
+
+                $b
+            }
+        }
+    }
+}
+
+unifiable! {
+    (self:&Term<'a>, _context, term) => {
+        if self.context.origin_engine_ptr() != term.context.origin_engine_ptr() {
             panic!("terms being unified are not part of the same engine");
         }
 
         // unsafe justification: the fact that we have terms here means we are dealing with some kind of active context, and therefore an initialized swipl. The checks above have made sure that both terms are part of the same engine too, and that this engine is the current engine.
-        let result = unsafe { PL_unify(self.term, other.term) };
+        let result = unsafe { PL_unify(self.term, term.term) };
 
         // TODO we should actually properly test for an exception here.
         result != 0
     }
 }
 
-impl Unifiable for bool {
-    fn unify(self, term: &Term) -> bool {
+unifiable! {
+    (self:bool, _context, term) => {
         let num = match self {
             true => 0,
             false => 1,
@@ -59,8 +96,8 @@ impl Unifiable for bool {
     }
 }
 
-impl Unifiable for u64 {
-    fn unify(self, term: &Term) -> bool {
+unifiable! {
+    (self:u64, _context, term) => {
         let result = unsafe { PL_unify_uint64(term.term, self) };
 
         result != 0
