@@ -16,6 +16,10 @@ impl Atom {
         Atom { atom }
     }
 
+    pub fn atom_ptr(&self) -> atom_t {
+        self.atom
+    }
+
     pub fn name<'a, T: ContextType>(&'a self, _context: &Context<'a, T>) -> &'a str {
         // TODO we're just assuming that what we get out of prolog is utf-8. but it's not. On windows, ad ifferent encoding is used and it is unclear to me if they convert to utf8 just for this call. Need to check.
 
@@ -68,14 +72,66 @@ impl<'a> Atomable<'a> {
     pub fn new<T: Into<Cow<'a, str>>>(s: T) -> Self {
         Self { name: s.into() }
     }
-
-    pub fn as_atom<T: ContextType>(&self, context: &Context<T>) -> Atom {
-        context.atom_from_atomable(self)
-    }
 }
 
 pub fn atomable<'a, T: Into<Cow<'a, str>>>(s: T) -> Atomable<'a> {
     Atomable::new(s)
+}
+
+pub trait IntoAtom {
+    fn into_atom<'a, T: ContextType>(self, context: &Context<'a, T>) -> Atom;
+}
+
+impl IntoAtom for Atom {
+    fn into_atom<'a, T: ContextType>(self, _context: &Context<'a, T>) -> Atom {
+        self
+    }
+}
+
+impl IntoAtom for &Atom {
+    fn into_atom<'a, T: ContextType>(self, _context: &Context<'a, T>) -> Atom {
+        self.clone()
+    }
+}
+
+impl<'a> IntoAtom for &Atomable<'a> {
+    fn into_atom<'b, T: ContextType>(self, context: &Context<'b, T>) -> Atom {
+        context.new_atom(self.as_ref())
+    }
+}
+
+impl<'a> IntoAtom for Atomable<'a> {
+    fn into_atom<'b, T: ContextType>(self, context: &Context<'b, T>) -> Atom {
+        (&self).into_atom(context)
+    }
+}
+
+impl<'a> IntoAtom for &'a str {
+    fn into_atom<'b, T: ContextType>(self, context: &Context<'b, T>) -> Atom {
+        context.new_atom(self)
+    }
+}
+
+pub trait AsAtom {
+    fn as_atom<'a, T: ContextType>(&self, context: &Context<'a, T>) -> Atom;
+}
+
+impl AsAtom for Atom {
+    fn as_atom<'a, T: ContextType>(&self, _context: &Context<'a, T>) -> Atom {
+        self.clone()
+    }
+}
+
+impl<'a> AsAtom for Atomable<'a> {
+    fn as_atom<'b, T: ContextType>(&self, context: &Context<'b, T>) -> Atom {
+        self.into_atom(context)
+    }
+}
+
+impl AsAtom for str {
+    fn as_atom<'a, T: ContextType>(&self, context: &Context<'a, T>) -> Atom {
+        self.into_atom(context)
+    }
 }
 
 unifiable! {

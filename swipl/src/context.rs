@@ -1,5 +1,7 @@
 use super::atom::*;
+use super::consts::*;
 use super::engine::*;
+use super::functor::*;
 use super::term::*;
 
 use std::convert::TryInto;
@@ -75,8 +77,15 @@ impl<'a, T: ContextType> Context<'a, T> {
         unsafe { Atom::new(atom) }
     }
 
-    pub fn atom_from_atomable(&self, atomable: &Atomable<'a>) -> Atom {
-        self.new_atom(atomable.as_ref())
+    pub fn new_functor<A: IntoAtom>(&self, name: A, arity: u16) -> Functor {
+        if arity as usize > MAX_ARITY {
+            panic!("functor arity is >1024: {}", arity);
+        }
+        let atom = name.into_atom(self);
+
+        let functor = unsafe { PL_new_functor(atom.atom_ptr(), arity.try_into().unwrap()) };
+
+        unsafe { Functor::new(functor) }
     }
 
     pub unsafe fn wrap_term_ref(&self, term: term_t) -> Term {

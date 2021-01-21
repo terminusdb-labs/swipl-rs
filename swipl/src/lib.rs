@@ -1,6 +1,8 @@
 pub mod atom;
+pub mod consts;
 pub mod context;
 pub mod engine;
+pub mod functor;
 pub mod term;
 
 #[cfg(test)]
