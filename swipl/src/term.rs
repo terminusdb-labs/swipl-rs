@@ -1,7 +1,8 @@
+use super::atom::*;
 use super::context::*;
-use swipl_sys::*;
 use std::convert::TryInto;
 use std::os::raw::c_char;
+use swipl_sys::*;
 
 pub struct Term<'a> {
     term: term_t,
@@ -17,7 +18,7 @@ impl<'a> Term<'a> {
         self.term
     }
 
-    pub fn assert_unification_possible<T: ContextType>(&self, context: &Context<T>) {
+    pub fn assert_term_handling_possible<T: ContextType>(&self, context: &Context<T>) {
         if !self.context.is_engine_active() {
             panic!("term is not part of an active engine");
         }
@@ -31,6 +32,56 @@ impl<'a> Term<'a> {
         // unsafe justification: we know there is a valid context, otherwise this term would not exist. We just don't care exactly what it is.
         let context = self.context.context();
         unifiable.unify(&context, self)
+    }
+
+    pub fn get<G: TermGetable>(&self) -> Option<G> {
+        // unsafe justification: we know there is a valid context, otherwise this term would not exist. We just don't care exactly what it is.
+        let context = self.context.context();
+        G::get(&context, self)
+    }
+
+    pub fn get_str<R, F>(&self, func: F) -> R
+    where
+        F: Fn(Option<&str>) -> R,
+    {
+        let context = self.context.context();
+        self.assert_term_handling_possible(&context);
+        let mut ptr = std::ptr::null_mut();
+        let mut len = 0;
+        let result = unsafe {
+            PL_get_nchars(
+                self.term,
+                &mut len,
+                &mut ptr,
+                (CVT_STRING | REP_UTF8).try_into().unwrap(),
+            )
+        };
+        let arg = if result == 0 {
+            None
+        } else {
+            let swipl_string_ref =
+                unsafe { std::slice::from_raw_parts(ptr as *const u8, len as usize) };
+
+            let swipl_string = std::str::from_utf8(swipl_string_ref).unwrap();
+
+            Some(swipl_string)
+        };
+
+        func(arg)
+    }
+
+    pub fn get_atom<R, F>(&self, func: F) -> R
+    where
+        F: Fn(Option<&Atom>) -> R,
+    {
+        get_atom(self, func)
+    }
+
+    pub fn get_atomable<R, F>(&self, func: F) -> R
+    where
+        F: Fn(Option<&Atomable>) -> R,
+    {
+        get_atomable(self, func)
     }
 }
 
@@ -56,6 +107,10 @@ pub unsafe trait Unifiable {
     fn unify<T: ContextType>(self, context: &Context<T>, term: &Term) -> bool;
 }
 
+pub unsafe trait TermGetable: Sized {
+    fn get<T: ContextType>(context: &Context<T>, term: &Term) -> Option<Self>;
+}
+
 #[macro_export]
 macro_rules! unifiable {
     (($self_:ident : $t:ty, $context_: ident, $term_: ident) => $b: block) => {
@@ -65,12 +120,29 @@ macro_rules! unifiable {
         // activated engine is one for which this term was created.
         unsafe impl<'a> Unifiable for $t {
             fn unify<T:ContextType>($self_, $context_: &Context<T>, $term_: &Term) -> bool {
-                $term_.assert_unification_possible($context_);
+                $term_.assert_term_handling_possible($context_);
 
                 $b
             }
         }
     }
+}
+
+#[macro_export]
+macro_rules! term_getable {
+    (($t:ty, $context_: ident, $term_: ident) => $b: block) => {
+        // unsafe justification: this macro inserts an assert in front
+        // of the term get body, to ensure that we are given a term
+        // that matches the given context, and that the currently
+        // activated engine is one for which this term was created.
+        unsafe impl<'a> TermGetable for $t {
+            fn get<T: ContextType>($context_: &Context<T>, $term_: &Term) -> Option<Self> {
+                $term_.assert_term_handling_possible($context_);
+
+                $b
+            }
+        }
+    };
 }
 
 unifiable! {
@@ -90,12 +162,25 @@ unifiable! {
 unifiable! {
     (self:bool, _context, term) => {
         let num = match self {
-            true => 0,
-            false => 1,
+            true => 1,
+            false => 0,
         };
         let result = unsafe { PL_unify_bool(term.term, num) };
 
         result != 0
+    }
+}
+
+term_getable! {
+    (bool, context, term) => {
+        let mut out = 0;
+        let result = unsafe { PL_get_bool(term.term, &mut out) };
+        if result == 0 {
+            None
+        }
+        else {
+            Some(out != 0)
+        }
     }
 }
 
@@ -107,6 +192,19 @@ unifiable! {
     }
 }
 
+term_getable! {
+    (u64, context, term) => {
+        let mut out = 0;
+        let result = unsafe { PL_cvt_i_uint64(term.term, &mut out) };
+        if result == 0 {
+            None
+        }
+        else {
+            Some(out)
+        }
+    }
+}
+
 unifiable! {
     (self:i64, _context, term) => {
         let result = unsafe { PL_unify_int64(term.term, self) };
@@ -115,11 +213,37 @@ unifiable! {
     }
 }
 
+term_getable! {
+    (i64, context, term) => {
+        let mut out = 0;
+        let result = unsafe { PL_cvt_i_int64(term.term, &mut out) };
+        if result == 0 {
+            None
+        }
+        else {
+            Some(out)
+        }
+    }
+}
+
 unifiable! {
     (self:f64, _context, term) => {
         let result = unsafe { PL_unify_float(term.term, self) };
 
         result != 0
+    }
+}
+
+term_getable! {
+    (f64, context, term) => {
+        let mut out = 0.0;
+        let result = unsafe { PL_get_float(term.term, &mut out) };
+        if result == 0 {
+            None
+        }
+        else {
+            Some(out)
+        }
     }
 }
 
@@ -134,6 +258,12 @@ unifiable! {
         };
 
         return result != 0;
+    }
+}
+
+term_getable! {
+    (String, context, term) => {
+        term.get_str(|s|s.map(|s|s.to_owned()))
     }
 }
 
@@ -193,5 +323,78 @@ mod tests {
         assert!(term.unify(42_u64));
         context2.rewind_frame();
         assert!(term.unify(43_u64));
+    }
+
+    #[test]
+    fn unify_and_get_bools() {
+        initialize_swipl_noengine();
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term1 = context.new_term_ref();
+        assert!(term1.get::<bool>().is_none());
+        term1.unify(true);
+        assert_eq!(Some(true), term1.get::<bool>());
+        let term2 = context.new_term_ref();
+        term2.unify(false);
+        assert_eq!(Some(false), term2.get::<bool>());
+    }
+
+    #[test]
+    fn unify_and_get_u64s() {
+        initialize_swipl_noengine();
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term1 = context.new_term_ref();
+        assert!(term1.get::<u64>().is_none());
+        term1.unify(42_u64);
+        assert_eq!(Some(42), term1.get::<u64>());
+        let term2 = context.new_term_ref();
+        term2.unify(0xffffffff_u64);
+        assert_eq!(Some(0xffffffff), term2.get::<u64>());
+        let term3 = context.new_term_ref();
+        term3.unify(0xffffffffffffffff_u64);
+        assert_eq!(Some(0xffffffffffffffff), term3.get::<u64>());
+    }
+
+    #[test]
+    fn unify_and_get_string_refs() {
+        initialize_swipl_noengine();
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term1 = context.new_term_ref();
+        term1.get_str(|s| assert!(s.is_none()));
+        term1.unify("hello there");
+        term1.get_str(|s| assert_eq!("hello there", s.unwrap()));
+    }
+
+    #[test]
+    fn unify_and_get_strings() {
+        initialize_swipl_noengine();
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term1 = context.new_term_ref();
+        assert!(term1.get::<String>().is_none());
+        term1.unify("hello there");
+        assert_eq!("hello there", term1.get::<String>().unwrap());
+    }
+
+    #[test]
+    fn unify_and_get_different_types_fails() {
+        initialize_swipl_noengine();
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term1 = context.new_term_ref();
+        term1.unify(42_u64);
+        assert_eq!(None, term1.get::<bool>());
     }
 }

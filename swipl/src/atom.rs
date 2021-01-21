@@ -1,7 +1,6 @@
 use super::context::*;
 use super::term::*;
-use crate::unifiable;
-use std::borrow::Cow;
+use crate::{term_getable, unifiable};
 use std::convert::TryInto;
 use std::os::raw::c_char;
 use swipl_sys::*;
@@ -64,17 +63,72 @@ unifiable! {
     }
 }
 
-pub struct Atomable<'a> {
-    name: Cow<'a, str>,
+pub fn get_atom<'a, F, R>(term: &Term<'a>, func: F) -> R
+where
+    F: Fn(Option<&Atom>) -> R,
+{
+    let mut atom = 0;
+    let result = unsafe { PL_get_atom(term.term_ptr(), &mut atom) };
+
+    let arg = if result == 0 {
+        None
+    } else {
+        let atom = unsafe { Atom::new(atom) };
+
+        Some(atom)
+    };
+
+    let result = func(arg.as_ref());
+    // prevent destructor from running since we never increased the refcount
+    std::mem::forget(arg);
+
+    result
 }
 
-impl<'a> Atomable<'a> {
-    pub fn new<T: Into<Cow<'a, str>>>(s: T) -> Self {
-        Self { name: s.into() }
+term_getable! {
+    (Atom, context, term) => {
+        get_atom(term, |a| a.map(|a|a.clone()))
     }
 }
 
-pub fn atomable<'a, T: Into<Cow<'a, str>>>(s: T) -> Atomable<'a> {
+pub enum Atomable<'a> {
+    Str(&'a str),
+    String(String),
+}
+
+impl<'a> From<&'a str> for Atomable<'a> {
+    fn from(s: &str) -> Atomable {
+        Atomable::Str(s)
+    }
+}
+
+impl<'a> From<String> for Atomable<'a> {
+    fn from(s: String) -> Atomable<'static> {
+        Atomable::String(s)
+    }
+}
+
+impl<'a> Atomable<'a> {
+    pub fn new<T: Into<Atomable<'a>>>(s: T) -> Self {
+        s.into()
+    }
+
+    pub fn name(&self) -> &str {
+        match self {
+            Self::Str(s) => s,
+            Self::String(s) => &s,
+        }
+    }
+
+    pub fn owned(&self) -> Atomable<'static> {
+        match self {
+            Self::Str(s) => Atomable::String(s.to_string()),
+            Self::String(s) => Atomable::String(s.clone()),
+        }
+    }
+}
+
+pub fn atomable<'a, T: Into<Atomable<'a>>>(s: T) -> Atomable<'a> {
     Atomable::new(s)
 }
 
@@ -140,8 +194,8 @@ unifiable! {
             PL_unify_chars(
                 term.term_ptr(),
                 (PL_ATOM | REP_UTF8).try_into().unwrap(),
-                self.name.len().try_into().unwrap(),
-                self.name.as_bytes().as_ptr() as *const c_char,
+                self.name().len().try_into().unwrap(),
+                self.name().as_bytes().as_ptr() as *const c_char,
             )
         };
 
@@ -155,9 +209,49 @@ unifiable! {
     }
 }
 
+pub fn get_atomable<'a, F, R>(term: &Term<'a>, func: F) -> R
+where
+    F: Fn(Option<&Atomable>) -> R,
+{
+    let mut ptr = std::ptr::null_mut();
+    let mut len = 0;
+    let result = unsafe {
+        PL_get_nchars(
+            term.term_ptr(),
+            &mut len,
+            &mut ptr,
+            (CVT_ATOM | REP_UTF8).try_into().unwrap(),
+        )
+    };
+
+    let arg = if result == 0 {
+        None
+    } else {
+        let swipl_string_ref =
+            unsafe { std::slice::from_raw_parts(ptr as *const u8, len as usize) };
+
+        let swipl_string = std::str::from_utf8(swipl_string_ref).unwrap();
+        let atomable = Atomable::new(swipl_string);
+
+        Some(atomable)
+    };
+
+    let result = func(arg.as_ref());
+    // prevent destructor from running since we never increased the refcount
+    std::mem::forget(arg);
+
+    result
+}
+
+term_getable! {
+    (Atomable<'static>, context, term) => {
+        get_atomable(term, |a|a.map(|a|a.owned()))
+    }
+}
+
 impl<'a> AsRef<str> for Atomable<'a> {
     fn as_ref(&self) -> &str {
-        self.name.as_ref()
+        self.name()
     }
 }
 
@@ -270,5 +364,61 @@ mod tests {
         assert!(term.unify(&a1));
         assert!(term.unify(&a1));
         assert!(!term.unify(&a2));
+    }
+
+    #[test]
+    fn retrieve_atom_temporarily() {
+        initialize_swipl_noengine();
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let a1 = "foo".as_atom(&context);
+        let term = context.new_term_ref();
+        term.unify(&a1);
+        term.get_atom(|a2| assert_eq!(&a1, a2.unwrap()));
+    }
+
+    #[test]
+    fn retrieve_atom() {
+        initialize_swipl_noengine();
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let a1 = "foo".as_atom(&context);
+        let term = context.new_term_ref();
+        term.unify(&a1);
+        let a2: Atom = term.get().unwrap();
+
+        assert_eq!(a1, a2);
+    }
+
+    #[test]
+    fn retrieve_atomable_temporarily() {
+        initialize_swipl_noengine();
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let a1 = "foo".as_atom(&context);
+        let term = context.new_term_ref();
+        term.unify(&a1);
+        term.get_atomable(|a2| assert_eq!("foo", a2.unwrap().name()));
+    }
+
+    #[test]
+    fn retrieve_atomable() {
+        initialize_swipl_noengine();
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let a1 = "foo".as_atom(&context);
+        let term = context.new_term_ref();
+        term.unify(&a1);
+        let a2: Atomable = term.get().unwrap();
+
+        assert_eq!("foo", a2.name());
     }
 }
