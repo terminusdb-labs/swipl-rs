@@ -1,0 +1,12 @@
+[package]
+name = "swipl-sys"
+version = "0.1.0"
+authors = ["Matthijs van Otterdijk <matthijs@terminusdb.com>"]
+edition = "2018"
+links = "swipl"
+license = "Apache-2.0/MIT"
+
+[dependencies]
+[build-dependencies]
+bindgen = "0.56.0"
+swipl-info = {path = "../swipl-info"}

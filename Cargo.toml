@@ -1,0 +1,8 @@
+[workspace]
+
+members = [
+        "swipl-info",
+        "swipl-sys",
+        "swipl-rs",
+        "cargo-swipl"
+]
