@@ -51,9 +51,9 @@ impl<'a, T: ContextType> Context<'a, T> {
         // PL_new_atom_mbchars will recalculate the size of the string
         // using strlen. In that case we need to give it a
         // nul-terminated string.
-        let s_usize = std::mem::size_of::<usize>();
-        let atom = if name.len() == s_usize - 1 {
-            let mut buf: [u8; 8] = [0; 8];
+        const S_USIZE: usize = std::mem::size_of::<usize>();
+        let atom = if name.len() == S_USIZE - 1 {
+            let mut buf: [u8; S_USIZE] = [0; S_USIZE];
             buf[..name.len()].clone_from_slice(name.as_bytes());
 
             unsafe {
