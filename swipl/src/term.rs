@@ -27,7 +27,7 @@ impl<'a> Term<'a> {
 
     pub fn unify<U: Unifiable>(&self, unifiable: U) -> bool {
         // unsafe justification: we know there is a valid context, otherwise this term would not exist. We just don't care exactly what it is.
-        let context = unsafe { unmanaged_engine_context() };
+        let context = self.context.context();
         unifiable.unify(&context, self)
     }
 }
@@ -35,6 +35,7 @@ impl<'a> Term<'a> {
 pub trait TermOrigin {
     fn origin_engine_ptr(&self) -> PL_engine_t;
     fn is_engine_active(&self) -> bool;
+    fn context(&self) -> Context<Unknown>;
 }
 
 /// Trait for term unification.

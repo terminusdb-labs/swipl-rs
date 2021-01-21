@@ -20,7 +20,6 @@ impl<'a, T: ContextType> Context<'a, T> {
             panic!("cannot acquire term refs from inactive context");
         }
     }
-
     pub fn engine_ptr(&self) -> PL_engine_t {
         self.engine
     }
@@ -127,6 +126,10 @@ impl<'a, T: ContextType> TermOrigin for Context<'a, T> {
     fn origin_engine_ptr(&self) -> PL_engine_t {
         self.engine
     }
+
+    fn context(&self) -> Context<Unknown> {
+        self.as_unknown()
+    }
 }
 
 impl<'a, T: ContextType> Drop for Context<'a, T> {
@@ -159,7 +162,10 @@ impl<'a> Into<Context<'a, ActivatedEngine<'a>>> for EngineActivation<'a> {
 
 impl<'a> ContextType for ActivatedEngine<'a> {}
 
-pub struct UnmanagedContext;
+pub struct UnmanagedContext {
+    // only here to prevent automatic construction
+    _x: bool,
+}
 impl ContextType for UnmanagedContext {}
 
 // This is unsafe to call if we are not in a swipl environment, or if some other context is active. Furthermore, the lifetime will most definitely be wrong. This should be used by code that doesn't promiscuously spread this context. all further accesses should be through borrows.
@@ -172,7 +178,7 @@ pub unsafe fn unmanaged_engine_context() -> Context<'static, UnmanagedContext> {
 
     Context {
         parent: None,
-        context: UnmanagedContext,
+        context: UnmanagedContext { _x: false },
         engine: current,
         activated: AtomicBool::new(true),
     }
