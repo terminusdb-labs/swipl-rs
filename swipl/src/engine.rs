@@ -1,5 +1,5 @@
-use swipl_sys::*;
 use lazy_static::*;
+use swipl_sys::*;
 
 use std::sync::{atomic, Arc, RwLock};
 
@@ -26,7 +26,11 @@ pub fn initialize_swipl() {
     }
 
     // TOOD we just pick "rust-swipl" as a fake program name here. This seems to work fine. But what we should really do is pass along the actual argv[0].
-    let mut args: [*mut i8;3] = [ARG0.as_ptr() as *mut i8, ARG1.as_ptr() as *mut i8, std::ptr::null_mut()];
+    let mut args: [*mut i8; 3] = [
+        ARG0.as_ptr() as *mut i8,
+        ARG1.as_ptr() as *mut i8,
+        std::ptr::null_mut(),
+    ];
     // unsafe justification: this initializes the swipl library and is idempotent
     // That said, there is actually a chance that some non-rust code is concurrently initializing prolog, which may lead to errors. There is unfortunately nothing that can be done about this.
     unsafe { PL_initialise(2, args.as_mut_ptr()) };
@@ -41,12 +45,12 @@ pub fn initialize_swipl_noengine() {
 #[derive(Debug)]
 pub struct Engine {
     engine_ptr: PL_engine_t,
-    active: atomic::AtomicBool
+    active: atomic::AtomicBool,
 }
 
 #[derive(Debug)]
 pub struct EngineActivation<'a> {
-    engine: &'a Engine
+    engine: &'a Engine,
 }
 
 impl<'a> EngineActivation<'a> {
@@ -75,7 +79,7 @@ impl Engine {
 
         Engine {
             engine_ptr,
-            active: atomic::AtomicBool::new(false)
+            active: atomic::AtomicBool::new(false),
         }
     }
 
@@ -86,8 +90,7 @@ impl Engine {
 
         if current.is_null() {
             false
-        }
-        else {
+        } else {
             true
         }
     }
@@ -101,19 +104,21 @@ impl Engine {
             panic!("tried to activate engine on a thread that already has an active engine");
         }
 
-        if self.active.compare_and_swap(false, true, atomic::Ordering::Acquire) {
+        if self
+            .active
+            .compare_and_swap(false, true, atomic::Ordering::Acquire)
+        {
             panic!("engine already activated");
         }
-
 
         // unsafe justification: swipl should have been initialized.
         let result = unsafe { PL_set_engine(self.engine_ptr, std::ptr::null_mut()) };
 
         match result as u32 {
-            PL_ENGINE_SET => EngineActivation {engine: self},
+            PL_ENGINE_SET => EngineActivation { engine: self },
             PL_ENGINE_INUSE => panic!("engine already activated"),
             PL_ENGINE_INVAL => panic!("engine handle not recognized by swipl"),
-            _ => panic!("unknown result from PL_set_engine")
+            _ => panic!("unknown result from PL_set_engine"),
         }
     }
 }
@@ -129,7 +134,9 @@ impl<'a> Drop for EngineActivation<'a> {
     fn drop(&mut self) {
         // unsafe justification: we have an engine context, so swipl was initialized. it should always be fine to set the current thread engine to nothing.
         self.engine.active.store(false, atomic::Ordering::Release);
-        unsafe { PL_set_engine(std::ptr::null_mut(), std::ptr::null_mut()); }
+        unsafe {
+            PL_set_engine(std::ptr::null_mut(), std::ptr::null_mut());
+        }
     }
 }
 
@@ -137,10 +144,11 @@ impl Drop for Engine {
     fn drop(&mut self) {
         assert!(!self.active.load(atomic::Ordering::Relaxed));
         // unsafe justification: we got this ptr with PL_create_engine so this should be good
-        unsafe { PL_destroy_engine(self.engine_ptr); }
+        unsafe {
+            PL_destroy_engine(self.engine_ptr);
+        }
     }
 }
-
 
 #[cfg(test)]
 mod tests {

@@ -1,6 +1,7 @@
+pub mod atom;
+pub mod context;
 pub mod engine;
 pub mod term;
-pub mod context;
 
 #[cfg(test)]
 mod tests {

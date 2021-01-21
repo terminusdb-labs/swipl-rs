@@ -2,22 +2,19 @@ use swipl_sys::*;
 
 pub struct Term<'a> {
     term: term_t,
-    context: &'a dyn TermOrigin
+    context: &'a dyn TermOrigin,
 }
 
 impl<'a> Term<'a> {
     pub unsafe fn new(term: term_t, context: &'a dyn TermOrigin) -> Self {
-        Term {
-            term,
-            context
-        }
+        Term { term, context }
     }
 
     pub fn term_ptr(&self) -> term_t {
         self.term
     }
 
-    pub fn unify<U:Unifiable>(&self, unifiable: U) -> bool {
+    pub fn unify<U: Unifiable>(&self, unifiable: U) -> bool {
         if !self.context.is_engine_active() {
             panic!("term is not part of an active engine");
         }
@@ -54,14 +51,13 @@ impl Unifiable for bool {
     fn unify(self, term: &Term) -> bool {
         let num = match self {
             true => 0,
-            false => 1
+            false => 1,
         };
         let result = unsafe { PL_unify_bool(term.term, num) };
 
         result != 0
     }
 }
-
 
 impl Unifiable for u64 {
     fn unify(self, term: &Term) -> bool {
@@ -73,8 +69,8 @@ impl Unifiable for u64 {
 
 #[cfg(test)]
 mod tests {
-    use crate::engine::*;
     use crate::context::*;
+    use crate::engine::*;
     #[test]
     fn unify_some_terms_with_success() {
         initialize_swipl_noengine();
