@@ -1,5 +1,7 @@
 use super::context::*;
 use swipl_sys::*;
+use std::convert::TryInto;
+use std::os::raw::c_char;
 
 pub struct Term<'a> {
     term: term_t,
@@ -102,6 +104,36 @@ unifiable! {
         let result = unsafe { PL_unify_uint64(term.term, self) };
 
         result != 0
+    }
+}
+
+unifiable! {
+    (self:i64, _context, term) => {
+        let result = unsafe { PL_unify_int64(term.term, self) };
+
+        result != 0
+    }
+}
+
+unifiable! {
+    (self:f64, _context, term) => {
+        let result = unsafe { PL_unify_float(term.term, self) };
+
+        result != 0
+    }
+}
+
+unifiable! {
+    (self:&str, _context, term) => {
+        let result = unsafe { PL_unify_chars(
+            term.term_ptr(),
+            (PL_STRING | REP_UTF8).try_into().unwrap(),
+            self.len().try_into().unwrap(),
+            self.as_bytes().as_ptr() as *const c_char,
+        )
+        };
+
+        return result != 0;
     }
 }
 
