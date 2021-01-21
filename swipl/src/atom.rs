@@ -50,7 +50,7 @@ impl Drop for Atom {
 }
 
 unifiable! {
-    (self:&Atom, _context, term) => {
+    (self:&Atom, term) => {
         let result = unsafe { PL_unify_atom(term.term_ptr(), self.atom) };
 
         return result != 0;
@@ -58,12 +58,13 @@ unifiable! {
 }
 
 unifiable! {
-    (self:Atom, context, term) => {
-        (&self).unify(context, term)
+    (self:Atom, term) => {
+        (&self).unify(term)
     }
 }
 
-pub fn get_atom<'a, F, R>(term: &Term<'a>, func: F) -> R
+#[allow(unused_unsafe)]
+pub unsafe fn get_atom<'a, F, R>(term: &Term<'a>, func: F) -> R
 where
     F: Fn(Option<&Atom>) -> R,
 {
@@ -86,8 +87,8 @@ where
 }
 
 term_getable! {
-    (Atom, context, term) => {
-        get_atom(term, |a| a.map(|a|a.clone()))
+    (Atom, term) => {
+        term.get_atom(|a| a.map(|a|a.clone()))
     }
 }
 
@@ -189,7 +190,7 @@ impl AsAtom for str {
 }
 
 unifiable! {
-    (self:&Atomable<'a>, context, term) => {
+    (self:&Atomable<'a>, term) => {
         let result = unsafe {
             PL_unify_chars(
                 term.term_ptr(),
@@ -204,12 +205,13 @@ unifiable! {
 }
 
 unifiable! {
-    (self:Atomable<'a>, context, term) => {
-        (&self).unify(context, term)
+    (self:Atomable<'a>, term) => {
+        (&self).unify(term)
     }
 }
 
-pub fn get_atomable<'a, F, R>(term: &Term<'a>, func: F) -> R
+#[allow(unused_unsafe)]
+pub unsafe fn get_atomable<'a, F, R>(term: &Term<'a>, func: F) -> R
 where
     F: Fn(Option<&Atomable>) -> R,
 {
@@ -244,8 +246,8 @@ where
 }
 
 term_getable! {
-    (Atomable<'static>, context, term) => {
-        get_atomable(term, |a|a.map(|a|a.owned()))
+    (Atomable<'static>, term) => {
+        term.get_atomable(|a|a.map(|a|a.owned()))
     }
 }
 

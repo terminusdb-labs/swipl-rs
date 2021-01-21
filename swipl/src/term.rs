@@ -18,34 +18,25 @@ impl<'a> Term<'a> {
         self.term
     }
 
-    pub fn assert_term_handling_possible<T: ContextType>(&self, context: &Context<T>) {
+    pub fn assert_term_handling_possible(&self) {
         if !self.context.is_engine_active() {
-            panic!("term is not part of an active engine");
-        }
-
-        if self.context.origin_engine_ptr() != context.engine_ptr() {
-            panic!("term unification called with a context whose engine does not match this term");
+            panic!("term is not part of the active engine");
         }
     }
 
     pub fn unify<U: Unifiable>(&self, unifiable: U) -> bool {
-        // unsafe justification: we know there is a valid context, otherwise this term would not exist. We just don't care exactly what it is.
-        let context = self.context.context();
-        unifiable.unify(&context, self)
+        unifiable.unify(self)
     }
 
     pub fn get<G: TermGetable>(&self) -> Option<G> {
-        // unsafe justification: we know there is a valid context, otherwise this term would not exist. We just don't care exactly what it is.
-        let context = self.context.context();
-        G::get(&context, self)
+        G::get(self)
     }
 
     pub fn get_str<R, F>(&self, func: F) -> R
     where
         F: Fn(Option<&str>) -> R,
     {
-        let context = self.context.context();
-        self.assert_term_handling_possible(&context);
+        self.assert_term_handling_possible();
         let mut ptr = std::ptr::null_mut();
         let mut len = 0;
         let result = unsafe {
@@ -74,14 +65,16 @@ impl<'a> Term<'a> {
     where
         F: Fn(Option<&Atom>) -> R,
     {
-        get_atom(self, func)
+        self.assert_term_handling_possible();
+        unsafe { get_atom(self, func) }
     }
 
     pub fn get_atomable<R, F>(&self, func: F) -> R
     where
         F: Fn(Option<&Atomable>) -> R,
     {
-        get_atomable(self, func)
+        self.assert_term_handling_possible();
+        unsafe { get_atomable(self, func) }
     }
 }
 
@@ -104,23 +97,23 @@ pub trait TermOrigin {
 ///
 /// The macro `unifiable` provides a way to safely implement this trait.
 pub unsafe trait Unifiable {
-    fn unify<T: ContextType>(self, context: &Context<T>, term: &Term) -> bool;
+    fn unify(self, term: &Term) -> bool;
 }
 
 pub unsafe trait TermGetable: Sized {
-    fn get<T: ContextType>(context: &Context<T>, term: &Term) -> Option<Self>;
+    fn get(term: &Term) -> Option<Self>;
 }
 
 #[macro_export]
 macro_rules! unifiable {
-    (($self_:ident : $t:ty, $context_: ident, $term_: ident) => $b: block) => {
+    (($self_:ident : $t:ty, $term_: ident) => $b: block) => {
         // unsafe justification: this macro inserts an assert in front
         // of the unification body, to ensure that we are given a term
         // that matches the given context, and that the currently
         // activated engine is one for which this term was created.
         unsafe impl<'a> Unifiable for $t {
-            fn unify<T:ContextType>($self_, $context_: &Context<T>, $term_: &Term) -> bool {
-                $term_.assert_term_handling_possible($context_);
+            fn unify($self_, $term_: &Term) -> bool {
+                $term_.assert_term_handling_possible();
 
                 $b
             }
@@ -130,14 +123,14 @@ macro_rules! unifiable {
 
 #[macro_export]
 macro_rules! term_getable {
-    (($t:ty, $context_: ident, $term_: ident) => $b: block) => {
+    (($t:ty, $term_: ident) => $b: block) => {
         // unsafe justification: this macro inserts an assert in front
         // of the term get body, to ensure that we are given a term
         // that matches the given context, and that the currently
         // activated engine is one for which this term was created.
         unsafe impl<'a> TermGetable for $t {
-            fn get<T: ContextType>($context_: &Context<T>, $term_: &Term) -> Option<Self> {
-                $term_.assert_term_handling_possible($context_);
+            fn get($term_: &Term) -> Option<Self> {
+                $term_.assert_term_handling_possible();
 
                 $b
             }
@@ -146,12 +139,12 @@ macro_rules! term_getable {
 }
 
 unifiable! {
-    (self:&Term<'a>, _context, term) => {
+    (self:&Term<'a>, term) => {
         if self.context.origin_engine_ptr() != term.context.origin_engine_ptr() {
             panic!("terms being unified are not part of the same engine");
         }
 
-        // unsafe justification: the fact that we have terms here means we are dealing with some kind of active context, and therefore an initialized swipl. The checks above have made sure that both terms are part of the same engine too, and that this engine is the current engine.
+        // unsafe justification: the fact that we have terms here means we are dealing with some kind of active context, and therefore an initialized swipl. The check above has made sure that both terms are part of the same engine too, and the unifiable! macro takes care of checking that we're on the correct engine.
         let result = unsafe { PL_unify(self.term, term.term) };
 
         // TODO we should actually properly test for an exception here.
@@ -160,7 +153,7 @@ unifiable! {
 }
 
 unifiable! {
-    (self:bool, _context, term) => {
+    (self:bool, term) => {
         let num = match self {
             true => 1,
             false => 0,
@@ -172,7 +165,7 @@ unifiable! {
 }
 
 term_getable! {
-    (bool, context, term) => {
+    (bool, term) => {
         let mut out = 0;
         let result = unsafe { PL_get_bool(term.term, &mut out) };
         if result == 0 {
@@ -185,7 +178,7 @@ term_getable! {
 }
 
 unifiable! {
-    (self:u64, _context, term) => {
+    (self:u64, term) => {
         let result = unsafe { PL_unify_uint64(term.term, self) };
 
         result != 0
@@ -193,7 +186,7 @@ unifiable! {
 }
 
 term_getable! {
-    (u64, context, term) => {
+    (u64, term) => {
         let mut out = 0;
         let result = unsafe { PL_cvt_i_uint64(term.term, &mut out) };
         if result == 0 {
@@ -206,7 +199,7 @@ term_getable! {
 }
 
 unifiable! {
-    (self:i64, _context, term) => {
+    (self:i64, term) => {
         let result = unsafe { PL_unify_int64(term.term, self) };
 
         result != 0
@@ -214,7 +207,7 @@ unifiable! {
 }
 
 term_getable! {
-    (i64, context, term) => {
+    (i64, term) => {
         let mut out = 0;
         let result = unsafe { PL_cvt_i_int64(term.term, &mut out) };
         if result == 0 {
@@ -227,7 +220,7 @@ term_getable! {
 }
 
 unifiable! {
-    (self:f64, _context, term) => {
+    (self:f64, term) => {
         let result = unsafe { PL_unify_float(term.term, self) };
 
         result != 0
@@ -235,7 +228,7 @@ unifiable! {
 }
 
 term_getable! {
-    (f64, context, term) => {
+    (f64, term) => {
         let mut out = 0.0;
         let result = unsafe { PL_get_float(term.term, &mut out) };
         if result == 0 {
@@ -248,7 +241,7 @@ term_getable! {
 }
 
 unifiable! {
-    (self:&str, _context, term) => {
+    (self:&str, term) => {
         let result = unsafe { PL_unify_chars(
             term.term_ptr(),
             (PL_STRING | REP_UTF8).try_into().unwrap(),
@@ -262,7 +255,7 @@ unifiable! {
 }
 
 term_getable! {
-    (String, context, term) => {
+    (String, term) => {
         term.get_str(|s|s.map(|s|s.to_owned()))
     }
 }

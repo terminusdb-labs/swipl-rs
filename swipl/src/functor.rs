@@ -1,4 +1,3 @@
-use super::context::*;
 use super::term::*;
 use crate::unifiable;
 use swipl_sys::*;
@@ -15,7 +14,7 @@ impl Functor {
 }
 
 unifiable! {
-    (self: &Functor, _context, term) => {
+    (self: &Functor, term) => {
         let result = unsafe {PL_unify_compound(term.term_ptr(), self.functor)};
 
         result != 0
@@ -23,14 +22,14 @@ unifiable! {
 }
 
 unifiable! {
-    (self: Functor, context, term) => {
-        (&self).unify(context, term)
+    (self: Functor, term) => {
+        (&self).unify(term)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::context::*;
     use crate::engine::*;
 
     #[test]
