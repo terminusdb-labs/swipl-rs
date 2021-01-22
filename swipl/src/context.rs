@@ -5,7 +5,6 @@ use super::functor::*;
 use super::term::*;
 
 use std::convert::TryInto;
-use std::os::raw::c_char;
 use std::sync::atomic::{AtomicBool, Ordering};
 use swipl_sys::*;
 
@@ -48,34 +47,8 @@ impl<'a, T: ContextType> Context<'a, T> {
 
     pub fn new_atom(&self, name: &str) -> Atom {
         self.assert_activated();
-        // there's a worrying bit of information in the documentation.
-        // It says that in some cases for small strings,
-        // PL_new_atom_mbchars will recalculate the size of the string
-        // using strlen. In that case we need to give it a
-        // nul-terminated string.
-        const S_USIZE: usize = std::mem::size_of::<usize>();
-        let atom = if name.len() == S_USIZE - 1 {
-            let mut buf: [u8; S_USIZE] = [0; S_USIZE];
-            buf[..name.len()].clone_from_slice(name.as_bytes());
 
-            unsafe {
-                PL_new_atom_mbchars(
-                    REP_UTF8.try_into().unwrap(),
-                    name.len().try_into().unwrap(),
-                    buf.as_ptr() as *const c_char,
-                )
-            }
-        } else {
-            unsafe {
-                PL_new_atom_mbchars(
-                    REP_UTF8.try_into().unwrap(),
-                    name.len().try_into().unwrap(),
-                    name.as_ptr() as *const c_char,
-                )
-            }
-        };
-
-        unsafe { Atom::new(atom) }
+        unsafe { Atom::new(name) }
     }
 
     pub fn new_functor<A: IntoAtom>(&self, name: A, arity: u16) -> Functor {
@@ -248,6 +221,24 @@ impl<'a> Context<'a, Frame> {
         unsafe { PL_rewind_foreign_frame(self.context.fid) };
     }
 }
+
+pub unsafe trait ActiveEnginePromise {}
+
+unsafe impl<'a> ActiveEnginePromise for EngineActivation<'a> {}
+unsafe impl<'a, C: ContextType> ActiveEnginePromise for Context<'a, C> {}
+unsafe impl<'a> ActiveEnginePromise for &'a dyn TermOrigin {}
+
+pub struct UnsafeActiveEnginePromise {
+    _x: bool,
+}
+
+impl UnsafeActiveEnginePromise {
+    pub unsafe fn new() -> Self {
+        Self { _x: false }
+    }
+}
+
+unsafe impl ActiveEnginePromise for UnsafeActiveEnginePromise {}
 
 #[cfg(test)]
 mod tests {

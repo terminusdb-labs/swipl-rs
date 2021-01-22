@@ -27,11 +27,11 @@ impl Functor {
         Functor::wrap(functor)
     }
 
-    pub fn with_name<'a, T: ContextType, F, R>(&self, _context: &Context<'a, T>, func: F) -> R
+    pub fn with_name<P: ActiveEnginePromise, F, R>(&self, _: &P, func: F) -> R
     where
         F: Fn(&Atom) -> R,
     {
-        let atom = unsafe { Atom::new(PL_functor_name(self.functor)) };
+        let atom = unsafe { Atom::wrap(PL_functor_name(self.functor)) };
 
         let result = func(&atom);
 
@@ -40,22 +40,22 @@ impl Functor {
         result
     }
 
-    pub fn name<'a, T: ContextType>(&self, context: &Context<'a, T>) -> Atom {
-        self.with_name(context, |n| n.clone())
+    pub fn name<P: ActiveEnginePromise>(&self, promise: &P) -> Atom {
+        self.with_name(promise, |n| n.clone())
     }
 
-    pub fn name_string<'a, T: ContextType>(&self, context: &Context<'a, T>) -> String {
-        self.with_name(context, |n| n.name(context).to_string())
+    pub fn name_string<P: ActiveEnginePromise>(&self, promise: &P) -> String {
+        self.with_name(promise, |n| n.name(promise).to_string())
     }
 
-    pub fn with_name_string<'a, T: ContextType, F, R>(&self, context: &Context<'a, T>, func: F) -> R
+    pub fn with_name_string<P: ActiveEnginePromise, F, R>(&self, promise: &P, func: F) -> R
     where
         F: Fn(&str) -> R,
     {
-        self.with_name(context, |n| func(n.name(context)))
+        self.with_name(promise, |n| func(n.name(promise)))
     }
 
-    pub fn arity<'a, T: ContextType>(&self, _context: &Context<'a, T>) -> u16 {
+    pub fn arity<P: ActiveEnginePromise>(&self, _: &P) -> u16 {
         let arity = unsafe { PL_functor_arity(self.functor) };
 
         arity.try_into().unwrap()

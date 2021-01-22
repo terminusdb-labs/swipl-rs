@@ -11,15 +11,42 @@ pub struct Atom {
 }
 
 impl Atom {
-    pub unsafe fn new(atom: atom_t) -> Atom {
+    pub unsafe fn wrap(atom: atom_t) -> Atom {
         Atom { atom }
+    }
+
+    pub unsafe fn new(name: &str) -> Atom {
+        // there's a worrying bit of information in the documentation.
+        // It says that in some cases for small strings,
+        // PL_new_atom_mbchars will recalculate the size of the string
+        // using strlen. In that case we need to give it a
+        // nul-terminated string.
+        const S_USIZE: usize = std::mem::size_of::<usize>();
+        let atom = if name.len() == S_USIZE - 1 {
+            let mut buf: [u8; S_USIZE] = [0; S_USIZE];
+            buf[..name.len()].clone_from_slice(name.as_bytes());
+
+            PL_new_atom_mbchars(
+                REP_UTF8.try_into().unwrap(),
+                name.len().try_into().unwrap(),
+                buf.as_ptr() as *const c_char,
+            )
+        } else {
+            PL_new_atom_mbchars(
+                REP_UTF8.try_into().unwrap(),
+                name.len().try_into().unwrap(),
+                name.as_ptr() as *const c_char,
+            )
+        };
+
+        Atom::wrap(atom)
     }
 
     pub fn atom_ptr(&self) -> atom_t {
         self.atom
     }
 
-    pub fn name<'a, T: ContextType>(&'a self, _context: &Context<'a, T>) -> &'a str {
+    pub fn name<P: ActiveEnginePromise>(&self, _: &P) -> &str {
         // TODO we're just assuming that what we get out of prolog is
         // utf-8. but it's not. On windows, a different encoding is
         // used and it is unclear to me if they convert to utf8 just
@@ -96,7 +123,7 @@ where
     let arg = if result == 0 {
         None
     } else {
-        let atom = unsafe { Atom::new(atom) };
+        let atom = unsafe { Atom::wrap(atom) };
 
         Some(atom)
     };
@@ -156,66 +183,68 @@ pub fn atomable<'a, T: Into<Atomable<'a>>>(s: T) -> Atomable<'a> {
 }
 
 pub trait IntoAtom {
-    fn into_atom<'a, T: ContextType>(self, context: &Context<'a, T>) -> Atom;
+    fn into_atom<P: ActiveEnginePromise>(self, promise: &P) -> Atom;
 
     unsafe fn into_atom_unsafe(self) -> Atom
     where
         Self: Sized,
     {
-        let context = unmanaged_engine_context();
-        self.into_atom(&context)
+        let promise = UnsafeActiveEnginePromise::new();
+        self.into_atom(&promise)
     }
 }
 
 impl IntoAtom for Atom {
-    fn into_atom<'a, T: ContextType>(self, _context: &Context<'a, T>) -> Atom {
+    fn into_atom<P: ActiveEnginePromise>(self, _: &P) -> Atom {
         self
     }
 }
 
 impl IntoAtom for &Atom {
-    fn into_atom<'a, T: ContextType>(self, _context: &Context<'a, T>) -> Atom {
+    fn into_atom<P: ActiveEnginePromise>(self, _: &P) -> Atom {
         self.clone()
     }
 }
 
 impl<'a> IntoAtom for &Atomable<'a> {
-    fn into_atom<'b, T: ContextType>(self, context: &Context<'b, T>) -> Atom {
-        context.new_atom(self.as_ref())
+    fn into_atom<P: ActiveEnginePromise>(self, _: &P) -> Atom {
+        // unsafe justification: with an active engine, it is safe to create atoms
+        unsafe { Atom::new(self.as_ref()) }
     }
 }
 
 impl<'a> IntoAtom for Atomable<'a> {
-    fn into_atom<'b, T: ContextType>(self, context: &Context<'b, T>) -> Atom {
-        (&self).into_atom(context)
+    fn into_atom<P: ActiveEnginePromise>(self, promise: &P) -> Atom {
+        (&self).into_atom(promise)
     }
 }
 
 impl<'a> IntoAtom for &'a str {
-    fn into_atom<'b, T: ContextType>(self, context: &Context<'b, T>) -> Atom {
-        context.new_atom(self)
+    fn into_atom<P: ActiveEnginePromise>(self, _: &P) -> Atom {
+        // unsafe justification: with an active engine, it is safe to create atoms
+        unsafe { Atom::new(self) }
     }
 }
 
 pub trait AsAtom {
-    fn as_atom<'a, T: ContextType>(&self, context: &Context<'a, T>) -> Atom;
+    fn as_atom<P: ActiveEnginePromise>(&self, promise: &P) -> Atom;
 }
 
 impl AsAtom for Atom {
-    fn as_atom<'a, T: ContextType>(&self, _context: &Context<'a, T>) -> Atom {
+    fn as_atom<P: ActiveEnginePromise>(&self, _: &P) -> Atom {
         self.clone()
     }
 }
 
 impl<'a> AsAtom for Atomable<'a> {
-    fn as_atom<'b, T: ContextType>(&self, context: &Context<'b, T>) -> Atom {
-        self.into_atom(context)
+    fn as_atom<P: ActiveEnginePromise>(&self, promise: &P) -> Atom {
+        self.into_atom(promise)
     }
 }
 
 impl AsAtom for str {
-    fn as_atom<'a, T: ContextType>(&self, context: &Context<'a, T>) -> Atom {
-        self.into_atom(context)
+    fn as_atom<P: ActiveEnginePromise>(&self, promise: &P) -> Atom {
+        self.into_atom(promise)
     }
 }
 
