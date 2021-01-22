@@ -20,7 +20,29 @@ impl Atom {
     }
 
     pub fn name<'a, T: ContextType>(&'a self, _context: &Context<'a, T>) -> &'a str {
-        // TODO we're just assuming that what we get out of prolog is utf-8. but it's not. On windows, ad ifferent encoding is used and it is unclear to me if they convert to utf8 just for this call. Need to check.
+        // TODO we're just assuming that what we get out of prolog is
+        // utf-8. but it's not. On windows, a different encoding is
+        // used and it is unclear to me if they convert to utf8 just
+        // for this call. But they probably don't. Need to check.
+
+        // TODO also the garbage collection is pretty
+        // unclear. Documentation says that PL_atom_chars returns a
+        // string not changed by prolog, valid until the atom is
+        // garbage collected. assuming the nchars version is the same,
+        // and assuming that documentation is right, it should be fine
+        // to refer to this string for the entire lifetime of this
+        // atom ref. However, whether this is actually the case
+        // remains to be seen. Since different operating systems have
+        // a different internal structure for atoms, it would follow
+        // that on some platforms, this may in fact not be a pointer
+        // into the atom string directly, but a copy onto the ring
+        // buffer.
+
+        // As a potential portable solution, we may have to unify with
+        // a term first, and then extract the string from the term
+        // directly. There are far better string extraction functions
+        // for that case, which allow explicit specification of the
+        // string format as utf-8.
 
         let mut size = 0;
         let ptr = unsafe { PL_atom_nchars(self.atom, &mut size) };
