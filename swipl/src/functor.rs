@@ -48,6 +48,13 @@ impl Functor {
         self.with_name(context, |n| n.name(context).to_string())
     }
 
+    pub fn with_name_string<'a, T: ContextType, F, R>(&self, context: &Context<'a, T>, func: F) -> R
+    where
+        F: Fn(&str) -> R,
+    {
+        self.with_name(context, |n| func(n.name(context)))
+    }
+
     pub fn arity<'a, T: ContextType>(&self, _context: &Context<'a, T>) -> u16 {
         let arity = unsafe { PL_functor_arity(self.functor) };
 
@@ -113,7 +120,6 @@ impl<'a> Functorable<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::context::*;
     use crate::engine::*;
 
     #[test]
@@ -128,6 +134,7 @@ mod tests {
         assert_eq!("moocows", f.name_string(&context));
         assert_eq!("moocows", f.name(&context).name(&context));
         f.with_name(&context, |name| assert_eq!("moocows", name.name(&context)));
+        f.with_name_string(&context, |name| assert_eq!("moocows", name));
 
         assert_eq!(3, f.arity(&context));
     }
