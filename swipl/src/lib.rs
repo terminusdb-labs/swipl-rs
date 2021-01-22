@@ -1,9 +1,12 @@
-pub mod atom;
 pub mod consts;
+
+pub mod atom;
+pub mod functor;
+pub mod module;
+pub mod term;
+
 pub mod context;
 pub mod engine;
-pub mod functor;
-pub mod term;
 
 #[cfg(test)]
 mod tests {

@@ -2,6 +2,7 @@ use super::atom::*;
 use super::consts::*;
 use super::engine::*;
 use super::functor::*;
+use super::module::*;
 use super::term::*;
 
 use std::convert::TryInto;
@@ -61,6 +62,12 @@ impl<'a, T: ContextType> Context<'a, T> {
         let functor = unsafe { PL_new_functor(atom.atom_ptr(), arity.try_into().unwrap()) };
 
         unsafe { Functor::wrap(functor) }
+    }
+
+    pub fn new_module<A: IntoAtom>(&self, name: A) -> Module {
+        self.assert_activated();
+
+        unsafe { Module::new(name) }
     }
 
     pub unsafe fn wrap_term_ref(&self, term: term_t) -> Term {
