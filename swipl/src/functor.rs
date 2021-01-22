@@ -83,4 +83,28 @@ mod tests {
 
         let _f = context.new_functor("moocows", 1025);
     }
+
+    #[test]
+    fn functor_arg_unify_and_get_succeeds() {
+        initialize_swipl_noengine();
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let f = context.new_functor("moocows", 2);
+        let term = context.new_term_ref();
+        assert_eq!(None, term.get_arg::<u64>(1));
+        assert!(term.unify(f));
+        assert_eq!(None, term.get_arg::<u64>(1));
+        assert!(term.unify_arg(1, 42_u64));
+        assert_eq!(Some(42_u64), term.get_arg(1));
+        assert!(term.unify_arg(1, 42_u64));
+        assert!(!term.unify_arg(1, 43_u64));
+
+        assert!(term.unify_arg(2, 24_u64));
+        assert_eq!(Some(24_u64), term.get_arg(2));
+
+        assert!(!term.unify_arg(3, 24_u64));
+        assert_eq!(None, term.get_arg::<u64>(3));
+    }
 }

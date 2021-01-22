@@ -28,8 +28,50 @@ impl<'a> Term<'a> {
         unifiable.unify(self)
     }
 
+    pub fn unify_arg<U: Unifiable>(&self, index: usize, unifiable: U) -> bool {
+        if index == 0 {
+            panic!("unify_arg was given index 0, but index starts at 1");
+        }
+
+        self.assert_term_handling_possible();
+
+        let arg_ref = unsafe { PL_new_term_ref() };
+
+        let result = unsafe { PL_get_arg(index.try_into().unwrap(), self.term, arg_ref) };
+        let arg = unsafe { Term::new(arg_ref, self.context) };
+        let mut result2 = false;
+        if result != 0 {
+            result2 = arg.unify(unifiable);
+        }
+
+        unsafe { PL_reset_term_refs(arg_ref) };
+
+        result2
+    }
+
     pub fn get<G: TermGetable>(&self) -> Option<G> {
         G::get(self)
+    }
+
+    pub fn get_arg<G: TermGetable>(&self, index: usize) -> Option<G> {
+        if index == 0 {
+            panic!("unify_arg was given index 0, but index starts at 1");
+        }
+
+        self.assert_term_handling_possible();
+
+        let arg_ref = unsafe { PL_new_term_ref() };
+
+        let result = unsafe { PL_get_arg(index.try_into().unwrap(), self.term, arg_ref) };
+        let arg = unsafe { Term::new(arg_ref, self.context) };
+        let mut result2 = None;
+        if result != 0 {
+            result2 = arg.get();
+        }
+
+        unsafe { PL_reset_term_refs(arg_ref) };
+
+        result2
     }
 
     pub fn get_str<R, F>(&self, func: F) -> R
