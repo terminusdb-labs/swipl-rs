@@ -135,6 +135,14 @@ pub fn atomable<'a, T: Into<Atomable<'a>>>(s: T) -> Atomable<'a> {
 
 pub trait IntoAtom {
     fn into_atom<'a, T: ContextType>(self, context: &Context<'a, T>) -> Atom;
+
+    unsafe fn into_atom_unsafe(self) -> Atom
+    where
+        Self: Sized,
+    {
+        let context = unmanaged_engine_context();
+        self.into_atom(&context)
+    }
 }
 
 impl IntoAtom for Atom {

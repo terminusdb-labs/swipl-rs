@@ -1,15 +1,57 @@
+use super::atom::*;
+use super::consts::*;
+use super::context::*;
 use super::term::*;
-use crate::unifiable;
+use crate::{term_getable, unifiable};
+use std::convert::TryInto;
 use swipl_sys::*;
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct Functor {
     functor: functor_t,
 }
 
 impl Functor {
-    pub unsafe fn new(functor: functor_t) -> Self {
+    pub unsafe fn wrap(functor: functor_t) -> Self {
         Self { functor }
+    }
+
+    pub unsafe fn new<A: IntoAtom>(name: A, arity: u16) -> Functor {
+        if arity as usize > MAX_ARITY {
+            panic!("functor arity is >1024: {}", arity);
+        }
+        let atom = name.into_atom_unsafe();
+
+        let functor = PL_new_functor(atom.atom_ptr(), arity.try_into().unwrap());
+
+        Functor::wrap(functor)
+    }
+
+    pub fn with_name<'a, T: ContextType, F, R>(&self, _context: &Context<'a, T>, func: F) -> R
+    where
+        F: Fn(&Atom) -> R,
+    {
+        let atom = unsafe { Atom::new(PL_functor_name(self.functor)) };
+
+        let result = func(&atom);
+
+        std::mem::forget(atom);
+
+        result
+    }
+
+    pub fn name<'a, T: ContextType>(&self, context: &Context<'a, T>) -> Atom {
+        self.with_name(context, |n| n.clone())
+    }
+
+    pub fn name_string<'a, T: ContextType>(&self, context: &Context<'a, T>) -> String {
+        self.with_name(context, |n| n.name(context).to_string())
+    }
+
+    pub fn arity<'a, T: ContextType>(&self, _context: &Context<'a, T>) -> u16 {
+        let arity = unsafe { PL_functor_arity(self.functor) };
+
+        arity.try_into().unwrap()
     }
 }
 
@@ -27,10 +69,68 @@ unifiable! {
     }
 }
 
+term_getable! {
+    (Functor, term) => {
+        let mut functor = 0;
+        let result = unsafe { PL_get_functor(term.term_ptr(), &mut functor) };
+
+        if result == 0 {
+            None
+        }
+        else {
+            Some(unsafe { Functor::wrap(functor) })
+        }
+
+    }
+}
+
+pub struct Functorable<'a> {
+    name: Atomable<'a>,
+    arity: u16,
+}
+
+impl<'a> Functorable<'a> {
+    pub fn new<A: Into<Atomable<'a>>>(name: A, arity: u16) -> Self {
+        if arity as usize > MAX_ARITY {
+            panic!("tried to create a functorable with arity >1024: {}", arity);
+        }
+
+        Self {
+            name: name.into(),
+            arity,
+        }
+    }
+
+    pub unsafe fn as_functor_unsafe<'b>(&self) -> Functor {
+        Functor::new(&self.name, self.arity)
+    }
+
+    pub fn as_functor<'b, T: ContextType>(&self, context: &Context<'b, T>) -> Functor {
+        context.new_functor(&self.name, self.arity)
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::context::*;
     use crate::engine::*;
+
+    #[test]
+    fn create_and_query_functor() {
+        initialize_swipl_noengine();
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let f = context.new_functor("moocows", 3);
+
+        assert_eq!("moocows", f.name_string(&context));
+        assert_eq!("moocows", f.name(&context).name(&context));
+        f.with_name(&context, |name| assert_eq!("moocows", name.name(&context)));
+
+        assert_eq!(3, f.arity(&context));
+    }
 
     #[test]
     fn unify_same_functor_twice_succeeds() {
@@ -46,6 +146,18 @@ mod tests {
     }
 
     #[test]
+    fn unity_retrieve_same_functor() {
+        initialize_swipl_noengine();
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let f = context.new_functor("moocows", 3);
+        let term = context.new_term_ref();
+        assert!(term.unify(&f));
+    }
+
+    #[test]
     fn unify_different_functor_arity_fails() {
         initialize_swipl_noengine();
         let engine = Engine::new();
@@ -53,10 +165,10 @@ mod tests {
         let context: Context<_> = activation.into();
 
         let f1 = context.new_functor("moocows", 3);
-        let f2 = context.new_functor("moocows", 4);
         let term = context.new_term_ref();
-        assert!(term.unify(&f1));
-        assert!(!term.unify(&f2));
+        term.unify(&f1);
+        let f2: Functor = term.get().unwrap();
+        assert_eq!(f1, f2);
     }
 
     #[test]

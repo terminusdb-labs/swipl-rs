@@ -47,6 +47,7 @@ impl<'a, T: ContextType> Context<'a, T> {
     }
 
     pub fn new_atom(&self, name: &str) -> Atom {
+        self.assert_activated();
         // there's a worrying bit of information in the documentation.
         // It says that in some cases for small strings,
         // PL_new_atom_mbchars will recalculate the size of the string
@@ -78,6 +79,7 @@ impl<'a, T: ContextType> Context<'a, T> {
     }
 
     pub fn new_functor<A: IntoAtom>(&self, name: A, arity: u16) -> Functor {
+        self.assert_activated();
         if arity as usize > MAX_ARITY {
             panic!("functor arity is >1024: {}", arity);
         }
@@ -85,7 +87,7 @@ impl<'a, T: ContextType> Context<'a, T> {
 
         let functor = unsafe { PL_new_functor(atom.atom_ptr(), arity.try_into().unwrap()) };
 
-        unsafe { Functor::new(functor) }
+        unsafe { Functor::wrap(functor) }
     }
 
     pub unsafe fn wrap_term_ref(&self, term: term_t) -> Term {
