@@ -318,6 +318,32 @@ pub enum QueryResult {
     Exception,
 }
 
+impl QueryResult {
+    pub fn is_success(&self) -> bool {
+        match self {
+            Self::Success => true,
+            Self::SuccessLast => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_last(&self) -> bool {
+        match self {
+            Self::SuccessLast => true,
+            Self::Failure => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_failure(&self) -> bool {
+        self == &Self::Failure
+    }
+
+    pub fn is_exception(&self) -> bool {
+        self == &Self::Exception
+    }
+}
+
 impl<'a> Context<'a, Query> {
     pub fn next_solution(&self) -> QueryResult {
         let result = unsafe { PL_next_solution(self.context.qid) };
