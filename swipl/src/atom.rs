@@ -99,16 +99,10 @@ impl Drop for Atom {
 }
 
 unifiable! {
-    (self:&Atom, term) => {
+    (self:Atom, term) => {
         let result = unsafe { PL_unify_atom(term.term_ptr(), self.atom) };
 
         return result != 0;
-    }
-}
-
-unifiable! {
-    (self:Atom, term) => {
-        (&self).unify(term)
     }
 }
 
@@ -249,7 +243,7 @@ impl AsAtom for str {
 }
 
 unifiable! {
-    (self:&Atomable<'a>, term) => {
+    (self:Atomable<'a>, term) => {
         let result = unsafe {
             PL_unify_chars(
                 term.term_ptr(),
@@ -260,12 +254,6 @@ unifiable! {
         };
 
         return result != 0;
-    }
-}
-
-unifiable! {
-    (self:Atomable<'a>, term) => {
-        (&self).unify(term)
     }
 }
 

@@ -1,4 +1,5 @@
 use super::atom::*;
+use super::context::*;
 use std::convert::TryInto;
 use std::os::raw::c_char;
 use swipl_sys::*;
@@ -137,7 +138,13 @@ pub trait TermOrigin {
 ///
 /// The macro `unifiable` provides a way to safely implement this trait.
 pub unsafe trait Unifiable {
-    fn unify(self, term: &Term) -> bool;
+    fn unify(&self, term: &Term) -> bool;
+}
+
+unsafe impl<T: Unifiable> Unifiable for &T {
+    fn unify(&self, term: &Term) -> bool {
+        (*self).unify(term)
+    }
 }
 
 pub unsafe trait TermGetable: Sized {
@@ -152,7 +159,7 @@ macro_rules! unifiable {
         // that matches the given context, and that the currently
         // activated engine is one for which this term was created.
         unsafe impl<'a> Unifiable for $t {
-            fn unify($self_, $term_: &Term) -> bool {
+            fn unify(&$self_, $term_: &Term) -> bool {
                 $term_.assert_term_handling_possible();
 
                 $b
@@ -179,7 +186,7 @@ macro_rules! term_getable {
 }
 
 unifiable! {
-    (self:&Term<'a>, term) => {
+    (self:Term<'a>, term) => {
         if self.context.origin_engine_ptr() != term.context.origin_engine_ptr() {
             panic!("terms being unified are not part of the same engine");
         }
@@ -219,7 +226,7 @@ term_getable! {
 
 unifiable! {
     (self:u64, term) => {
-        let result = unsafe { PL_unify_uint64(term.term, self) };
+        let result = unsafe { PL_unify_uint64(term.term, *self) };
 
         result != 0
     }
@@ -240,7 +247,7 @@ term_getable! {
 
 unifiable! {
     (self:i64, term) => {
-        let result = unsafe { PL_unify_int64(term.term, self) };
+        let result = unsafe { PL_unify_int64(term.term, *self) };
 
         result != 0
     }
@@ -261,7 +268,7 @@ term_getable! {
 
 unifiable! {
     (self:f64, term) => {
-        let result = unsafe { PL_unify_float(term.term, self) };
+        let result = unsafe { PL_unify_float(term.term, *self) };
 
         result != 0
     }
@@ -316,6 +323,102 @@ term_getable! {
         match result != 0 {
             true => Some(Nil),
             false => None
+        }
+    }
+}
+
+unsafe impl<'a, T> Unifiable for &'a [T]
+where
+    &'a T: 'static + Unifiable,
+{
+    fn unify(&self, term: &Term) -> bool {
+        term.assert_term_handling_possible();
+        // let's create a fake context so we can make a frame
+        // unsafe justification: This context will only exist inside this implementation. We know we are in some valid context for term handling, so that's great.
+        let context = unsafe { unmanaged_engine_context() };
+
+        let frame = context.open_frame();
+        let list = frame.new_term_ref();
+        list.unify(term);
+        let mut success = true;
+
+        for t in self.iter() {
+            // create a new frame to ensure we don't just keep putting head and tail refs on the stack.
+            let frame2 = frame.open_frame();
+            let head = frame2.new_term_ref();
+            let tail = frame2.new_term_ref();
+            success =
+                unsafe { PL_unify_list(list.term_ptr(), head.term_ptr(), tail.term_ptr()) != 0 };
+
+            if !success {
+                break;
+            }
+
+            success = head.unify(t);
+
+            // reset term - should really be a method on term
+            unsafe { PL_put_variable(list.term_ptr()) };
+
+            list.unify(tail);
+        }
+
+        if success {
+            success = unsafe { PL_unify_nil(list.term_ptr()) != 0 };
+        }
+
+        if !success {
+            frame.discard_frame();
+        }
+
+        success
+    }
+}
+
+unsafe impl<T: TermGetable> TermGetable for Vec<T> {
+    fn get(term: &Term) -> Option<Self> {
+        term.assert_term_handling_possible();
+
+        let mut result: Vec<T> = Vec::new();
+
+        // let's create a fake context so we can make a frame
+        // unsafe justification: This context will only exist inside this implementation. We know we are in some valid context for term handling, so that's great.
+        let context = unsafe { unmanaged_engine_context() };
+
+        let frame = context.open_frame();
+        let list = frame.new_term_ref();
+        list.unify(term);
+        let mut success = true;
+        loop {
+            if unsafe { PL_get_nil(list.term_ptr()) != 0 } {
+                break;
+            }
+
+            let frame2 = frame.open_frame();
+            let head = frame2.new_term_ref();
+            let tail = frame2.new_term_ref();
+            success =
+                unsafe { PL_get_list(list.term_ptr(), head.term_ptr(), tail.term_ptr()) != 0 };
+
+            if !success {
+                break;
+            }
+
+            let elt = head.get();
+            if elt.is_none() {
+                success = false;
+                break;
+            }
+
+            result.push(elt.unwrap());
+
+            // reset term - should really be a method on term
+            unsafe { PL_put_variable(list.term_ptr()) };
+            list.unify(tail);
+        }
+
+        match success {
+            true => Some(result),
+            false => None,
         }
     }
 }
@@ -449,5 +552,21 @@ mod tests {
         let term1 = context.new_term_ref();
         term1.unify(42_u64);
         assert_eq!(None, term1.get::<bool>());
+    }
+
+    #[test]
+    fn unify_list() {
+        initialize_swipl_noengine();
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term = context.new_term_ref();
+        assert!(term.unify([42_u64, 12, 3, 0, 5].as_ref()));
+
+        assert_eq!(
+            [42_u64, 12, 3, 0, 5].as_ref(),
+            term.get::<Vec<u64>>().unwrap()
+        );
     }
 }

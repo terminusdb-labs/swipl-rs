@@ -67,16 +67,10 @@ impl Functor {
 }
 
 unifiable! {
-    (self: &Functor, term) => {
+    (self: Functor, term) => {
         let result = unsafe {PL_unify_compound(term.term_ptr(), self.functor)};
 
         result != 0
-    }
-}
-
-unifiable! {
-    (self: Functor, term) => {
-        (&self).unify(term)
     }
 }
 

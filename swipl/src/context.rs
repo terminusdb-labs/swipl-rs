@@ -202,6 +202,7 @@ pub struct Query {
 unsafe impl ContextType for Query {}
 
 pub unsafe trait QueryableContextType: ContextType {}
+unsafe impl QueryableContextType for UnmanagedContext {}
 unsafe impl<'a> QueryableContextType for ActivatedEngine<'a> {}
 unsafe impl QueryableContextType for Frame {}
 
