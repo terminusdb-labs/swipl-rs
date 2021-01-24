@@ -23,6 +23,4 @@ fn main() {
     bindings
         .write_to_file(out_path.join("bindings.rs"))
         .unwrap();
-
-    // todo embed swipl version as an info var in the build
 }
