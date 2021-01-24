@@ -8,12 +8,20 @@ This repository is a workspace for a handful of crates:
 - cargo-swipl: a cargo utility for working with swipl crates. In particular, this allows running of unit tests in crates that depend on swipl-sys.
 - swipl: high-level safe bindings to SWI-Prolog.
 
-This is all still in a pretty early state. Implemented so far is prolog engine creation and destruction, term ref creation on those engines, and unification for a limited amount of times. 
+This is all still in a pretty early state. Implemented so far is prolog engine creation and destruction, term ref creation on those engines, unification and retrieval for a number of terms, and querying prolog from rust. 
+
+Implemented so far:
+- engine creation and destruction
+- context management
+- term ref creation, bound to context lifetimes
+- get and unify for a number of rust and prolog types
+- prolog calling
+- complex term creation from string (through a prolog call)
+- easy frontend to `call/1` for easy term calling
 
 To be implemented (roughly in order of delivery):
 - get, put, and unify for all common relevant rust and prolog types
 - compound term production
-- querying prolog
 - exception handling
 - macros for easy foreign predicate writing
 - macros for easy blob definitions
