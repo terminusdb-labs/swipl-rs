@@ -1,5 +1,4 @@
 use super::atom::*;
-use super::context::*;
 use std::convert::TryInto;
 use std::os::raw::c_char;
 use swipl_sys::*;
@@ -123,7 +122,6 @@ impl<'a> Term<'a> {
 pub trait TermOrigin {
     fn origin_engine_ptr(&self) -> PL_engine_t;
     fn is_engine_active(&self) -> bool;
-    fn context(&self) -> Context<Unknown>;
 }
 
 /// Trait for term unification.

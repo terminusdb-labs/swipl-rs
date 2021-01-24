@@ -20,54 +20,11 @@ pub struct Context<'a, T: ContextType> {
 impl<'a, T: ContextType> Context<'a, T> {
     fn assert_activated(&self) {
         if !self.activated.load(Ordering::Relaxed) {
-            panic!("cannot acquire term refs from inactive context");
+            panic!("tried to use inactive context");
         }
     }
     pub fn engine_ptr(&self) -> PL_engine_t {
         self.engine
-    }
-
-    /// Creates a new 'unknown' context with the same lifetime as this context.
-    ///
-    /// This is primarily useful for storing in terms, where we wish to keep track of a context without term itself being generic. The unknown context shares a lifetime with this context, but will do nothing on destruction (as 'self' already does all necessary cleanup).
-    pub fn as_unknown(&self) -> Context<Unknown> {
-        Context {
-            parent: None,
-            context: Unknown { _x: false },
-            engine: self.engine,
-            activated: AtomicBool::new(true),
-        }
-    }
-
-    pub fn new_term_ref(&self) -> Term {
-        self.assert_activated();
-        unsafe {
-            let term = PL_new_term_ref();
-            Term::new(term, self)
-        }
-    }
-
-    pub unsafe fn wrap_term_ref(&self, term: term_t) -> Term {
-        self.assert_activated();
-        Term::new(term, self)
-    }
-
-    pub fn open_frame(&self) -> Context<Frame> {
-        self.assert_activated();
-        let fid = unsafe { PL_open_foreign_frame() };
-
-        let frame = Frame {
-            fid,
-            state: FrameState::Active,
-        };
-
-        self.activated.store(false, Ordering::Relaxed);
-        Context {
-            parent: Some(self),
-            context: frame,
-            engine: self.engine,
-            activated: AtomicBool::new(true),
-        }
     }
 }
 
@@ -94,10 +51,6 @@ impl<'a, T: ContextType> TermOrigin for Context<'a, T> {
     fn origin_engine_ptr(&self) -> PL_engine_t {
         self.engine
     }
-
-    fn context(&self) -> Context<Unknown> {
-        self.as_unknown()
-    }
 }
 
 impl<'a, T: ContextType> Drop for Context<'a, T> {
@@ -108,7 +61,7 @@ impl<'a, T: ContextType> Drop for Context<'a, T> {
     }
 }
 
-pub trait ContextType {}
+pub unsafe trait ContextType {}
 
 pub struct ActivatedEngine<'a> {
     _activation: EngineActivation<'a>,
@@ -128,13 +81,13 @@ impl<'a> Into<Context<'a, ActivatedEngine<'a>>> for EngineActivation<'a> {
     }
 }
 
-impl<'a> ContextType for ActivatedEngine<'a> {}
+unsafe impl<'a> ContextType for ActivatedEngine<'a> {}
 
 pub struct UnmanagedContext {
     // only here to prevent automatic construction
     _x: bool,
 }
-impl ContextType for UnmanagedContext {}
+unsafe impl ContextType for UnmanagedContext {}
 
 // This is unsafe to call if we are not in a swipl environment, or if some other context is active. Furthermore, the lifetime will most definitely be wrong. This should be used by code that doesn't promiscuously spread this context. all further accesses should be through borrows.
 pub unsafe fn unmanaged_engine_context() -> Context<'static, UnmanagedContext> {
@@ -152,12 +105,6 @@ pub unsafe fn unmanaged_engine_context() -> Context<'static, UnmanagedContext> {
     }
 }
 
-pub struct Unknown {
-    // only here to prevent automatic construction
-    _x: bool,
-}
-impl ContextType for Unknown {}
-
 enum FrameState {
     Active,
     Discarded,
@@ -168,7 +115,7 @@ pub struct Frame {
     state: FrameState,
 }
 
-impl ContextType for Frame {}
+unsafe impl ContextType for Frame {}
 
 impl Drop for Frame {
     fn drop(&mut self) {
@@ -252,13 +199,44 @@ pub struct Query {
     closed: bool,
 }
 
-impl ContextType for Query {}
+unsafe impl ContextType for Query {}
 
 pub unsafe trait QueryableContextType: ContextType {}
 unsafe impl<'a> QueryableContextType for ActivatedEngine<'a> {}
 unsafe impl QueryableContextType for Frame {}
 
 impl<'a, T: QueryableContextType> Context<'a, T> {
+    pub fn new_term_ref(&self) -> Term {
+        self.assert_activated();
+        unsafe {
+            let term = PL_new_term_ref();
+            Term::new(term, self)
+        }
+    }
+
+    pub unsafe fn wrap_term_ref(&self, term: term_t) -> Term {
+        self.assert_activated();
+        Term::new(term, self)
+    }
+
+    pub fn open_frame(&self) -> Context<Frame> {
+        self.assert_activated();
+        let fid = unsafe { PL_open_foreign_frame() };
+
+        let frame = Frame {
+            fid,
+            state: FrameState::Active,
+        };
+
+        self.activated.store(false, Ordering::Relaxed);
+        Context {
+            parent: Some(self),
+            context: frame,
+            engine: self.engine,
+            activated: AtomicBool::new(true),
+        }
+    }
+
     pub fn open_query(
         &self,
         context: Option<&Module>,
