@@ -7,7 +7,7 @@ Unless SWI-Prolog's dynamic library is automatically discoverable by your operat
 In order to make things run, you'll have to add the shared library's directory to the library load path. On linux, this can be done by setting the environment `LD_LIBRARY_PATH`. For example,
 
 ```
-LD_LIBRARY_PATH=/home/matthijs/.swivm/lib/x86_64-linux/ cargo test
+LD_LIBRARY_PATH=/home/matthijs/.swivm/lib/x86_64-linux/:$LD_LIBRARY_PATH cargo test
 ```
 
 This is pretty cumbersome. To help out, consider installing [cargo-swipl](https://github.com/matko/swipl-rs/tree/master/cargo-swipl). With cargo-swipl, the above turns into this:
