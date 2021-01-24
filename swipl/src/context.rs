@@ -153,6 +153,33 @@ impl<'a> Context<'a, Frame> {
     }
 }
 
+pub unsafe trait FrameableContextType: ContextType {}
+unsafe impl FrameableContextType for UnmanagedContext {}
+unsafe impl<'a> FrameableContextType for ActivatedEngine<'a> {}
+unsafe impl FrameableContextType for Frame {}
+unsafe impl FrameableContextType for Query {}
+
+
+impl<'a, C:FrameableContextType> Context<'a,C> {
+    pub fn open_frame(&self) -> Context<Frame> {
+        self.assert_activated();
+        let fid = unsafe { PL_open_foreign_frame() };
+
+        let frame = Frame {
+            fid,
+            state: FrameState::Active,
+        };
+
+        self.activated.store(false, Ordering::Relaxed);
+        Context {
+            parent: Some(self),
+            context: frame,
+            engine: self.engine,
+            activated: AtomicBool::new(true),
+        }
+    }
+}
+
 pub unsafe trait ActiveEnginePromise: Sized {
     fn new_atom(&self, name: &str) -> Atom {
         unsafe { Atom::new(name) }
@@ -176,6 +203,7 @@ pub unsafe trait ActiveEnginePromise: Sized {
     fn new_predicate(&self, functor: &Functor, module: &Module) -> Predicate {
         unsafe { Predicate::new(functor, module) }
     }
+
 }
 
 unsafe impl<'a> ActiveEnginePromise for EngineActivation<'a> {}
@@ -218,24 +246,6 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
     pub unsafe fn wrap_term_ref(&self, term: term_t) -> Term {
         self.assert_activated();
         Term::new(term, self)
-    }
-
-    pub fn open_frame(&self) -> Context<Frame> {
-        self.assert_activated();
-        let fid = unsafe { PL_open_foreign_frame() };
-
-        let frame = Frame {
-            fid,
-            state: FrameState::Active,
-        };
-
-        self.activated.store(false, Ordering::Relaxed);
-        Context {
-            parent: Some(self),
-            context: frame,
-            engine: self.engine,
-            activated: AtomicBool::new(true),
-        }
     }
 
     pub fn open_query(
@@ -346,6 +356,7 @@ impl QueryResult {
 
 impl<'a> Context<'a, Query> {
     pub fn next_solution(&self) -> QueryResult {
+        self.assert_activated();
         let result = unsafe { PL_next_solution(self.context.qid) };
         // TODO handle exceptions properly
         match result {
@@ -358,12 +369,14 @@ impl<'a> Context<'a, Query> {
     }
 
     pub fn cut(mut self) {
+        self.assert_activated();
         // TODO handle exceptions
         unsafe { PL_cut_query(self.context.qid) };
         self.context.closed = true;
     }
 
     pub fn discard(mut self) {
+        self.assert_activated();
         // TODO handle exceptions
 
         unsafe { PL_close_query(self.context.qid) };
@@ -582,5 +595,20 @@ mod tests {
         term_x.get_atomable(|a| assert_eq!("c", a.unwrap().name()));
 
         assert_eq!(QueryResult::Failure, query.next_solution());
+    }
+
+    #[test]
+    fn open_query_with_0_arg_predicate() {
+        initialize_swipl_noengine();
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let functor = context.new_functor("true", 0);
+        let module = context.new_module("user");
+        let predicate = context.new_predicate(&functor, &module);
+
+        let query = context.open_query(None, &predicate, &[]);
+        assert_eq!(QueryResult::SuccessLast, query.next_solution());
     }
 }
