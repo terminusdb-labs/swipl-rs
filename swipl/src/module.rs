@@ -18,6 +18,10 @@ impl Module {
         Self::wrap(PL_new_module(atom.atom_ptr()))
     }
 
+    pub fn module_ptr(&self) -> module_t {
+        self.module
+    }
+
     pub fn with_name<P: ActiveEnginePromise, F, R>(&self, _: &P, func: F) -> R
     where
         F: Fn(&Atom) -> R,

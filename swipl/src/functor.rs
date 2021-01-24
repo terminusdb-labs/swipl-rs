@@ -27,6 +27,10 @@ impl Functor {
         Functor::wrap(functor)
     }
 
+    pub fn functor_ptr(&self) -> functor_t {
+        self.functor
+    }
+
     pub fn with_name<P: ActiveEnginePromise, F, R>(&self, _: &P, func: F) -> R
     where
         F: Fn(&Atom) -> R,
