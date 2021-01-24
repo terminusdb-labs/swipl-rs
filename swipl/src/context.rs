@@ -3,6 +3,7 @@ use super::consts::*;
 use super::engine::*;
 use super::functor::*;
 use super::module::*;
+use super::predicate::*;
 use super::term::*;
 
 use std::convert::TryInto;
@@ -205,7 +206,7 @@ impl<'a> Context<'a, Frame> {
     }
 }
 
-pub unsafe trait ActiveEnginePromise : Sized {
+pub unsafe trait ActiveEnginePromise: Sized {
     fn new_atom(&self, name: &str) -> Atom {
         unsafe { Atom::new(name) }
     }
@@ -224,6 +225,10 @@ pub unsafe trait ActiveEnginePromise : Sized {
     fn new_module<A: IntoAtom>(&self, name: A) -> Module {
         unsafe { Module::new(name) }
     }
+
+    fn new_predicate(&self, functor: &Functor, module: &Module) -> Predicate {
+        unsafe { Predicate::new(functor, module) }
+    }
 }
 
 unsafe impl<'a> ActiveEnginePromise for EngineActivation<'a> {}
@@ -241,6 +246,102 @@ impl UnsafeActiveEnginePromise {
 }
 
 unsafe impl ActiveEnginePromise for UnsafeActiveEnginePromise {}
+
+pub struct Query {
+    qid: qid_t,
+    closed: bool,
+}
+
+impl ContextType for Query {}
+
+pub unsafe trait QueryableContextType: ContextType {}
+unsafe impl<'a> QueryableContextType for ActivatedEngine<'a> {}
+unsafe impl QueryableContextType for Frame {}
+
+impl<'a, T: QueryableContextType> Context<'a, T> {
+    pub fn open_query(
+        &self,
+        context: Option<&Module>,
+        predicate: &Predicate,
+        args: &[&Term],
+    ) -> Context<Query> {
+        self.assert_activated();
+        let context = context
+            .map(|c| c.module_ptr())
+            .unwrap_or(std::ptr::null_mut());
+        let flags = PL_Q_NORMAL | PL_Q_EXT_STATUS;
+        let terms = unsafe { PL_new_term_refs(args.len().try_into().unwrap()) };
+        for i in 0..args.len() {
+            let term = unsafe { self.wrap_term_ref(terms + i) };
+            assert!(term.unify(args[i]));
+        }
+
+        let qid = unsafe {
+            PL_open_query(
+                context,
+                flags.try_into().unwrap(),
+                predicate.predicate_ptr(),
+                terms,
+            )
+        };
+
+        let query = Query { qid, closed: false };
+
+        self.activated.store(false, Ordering::Relaxed);
+        Context {
+            parent: Some(self),
+            context: query,
+            engine: self.engine,
+            activated: AtomicBool::new(true),
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum QueryResult {
+    Success,
+    SuccessLast,
+    Failure,
+    Exception,
+}
+
+impl<'a> Context<'a, Query> {
+    pub fn next_solution(&self) -> QueryResult {
+        let result = unsafe { PL_next_solution(self.context.qid) };
+        // TODO handle exceptions properly
+        match result {
+            -1 => QueryResult::Exception,
+            0 => QueryResult::Failure,
+            1 => QueryResult::Success,
+            2 => QueryResult::SuccessLast,
+            _ => panic!("unknown query result type {}", result),
+        }
+    }
+
+    pub fn cut(mut self) {
+        // TODO handle exceptions
+        unsafe { PL_cut_query(self.context.qid) };
+        self.context.closed = true;
+    }
+
+    pub fn discard(mut self) {
+        // TODO handle exceptions
+
+        unsafe { PL_close_query(self.context.qid) };
+        self.context.closed = true;
+    }
+}
+
+impl Drop for Query {
+    fn drop(&mut self) {
+        // honestly, since closing a query may result in exceptions,
+        // this is too late. We'll just assume the user intended to
+        // discard, to encourage proper closing.
+        if !self.closed {
+            unsafe { PL_close_query(self.qid) };
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -279,5 +380,129 @@ mod tests {
         let _context2 = context1.open_frame();
 
         let _term = context1.new_term_ref();
+    }
+
+    #[test]
+    fn query_det() {
+        initialize_swipl_noengine();
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let functor_is = context.new_functor("is", 2);
+        let functor_plus = context.new_functor("+", 2);
+        let module = context.new_module("user");
+        let predicate = context.new_predicate(&functor_is, &module);
+
+        let term1 = context.new_term_ref();
+        let term2 = context.new_term_ref();
+
+        assert!(term2.unify(&functor_plus));
+        assert!(term2.unify_arg(1, 40_u64));
+        assert!(term2.unify_arg(2, 2_u64));
+
+        let query = context.open_query(None, &predicate, &[&term1, &term2]);
+        let next = query.next_solution();
+
+        assert_eq!(QueryResult::SuccessLast, next);
+        assert_eq!(42_u64, term1.get().unwrap());
+
+        let next = query.next_solution();
+        assert_eq!(QueryResult::Failure, next);
+    }
+
+    #[test]
+    fn query_auto_discard() {
+        initialize_swipl_noengine();
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let functor_is = context.new_functor("is", 2);
+        let functor_plus = context.new_functor("+", 2);
+        let module = context.new_module("user");
+        let predicate = context.new_predicate(&functor_is, &module);
+
+        let term1 = context.new_term_ref();
+        let term2 = context.new_term_ref();
+
+        assert!(term2.unify(&functor_plus));
+        assert!(term2.unify_arg(1, 40_u64));
+        assert!(term2.unify_arg(2, 2_u64));
+
+        {
+            let query = context.open_query(None, &predicate, &[&term1, &term2]);
+            let next = query.next_solution();
+
+            assert_eq!(QueryResult::SuccessLast, next);
+            assert_eq!(42_u64, term1.get().unwrap());
+        }
+
+        // after leaving the block, we have discarded
+        assert!(term1.get::<u64>().is_none());
+    }
+
+    #[test]
+    fn query_manual_discard() {
+        initialize_swipl_noengine();
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let functor_is = context.new_functor("is", 2);
+        let functor_plus = context.new_functor("+", 2);
+        let module = context.new_module("user");
+        let predicate = context.new_predicate(&functor_is, &module);
+
+        let term1 = context.new_term_ref();
+        let term2 = context.new_term_ref();
+
+        assert!(term2.unify(&functor_plus));
+        assert!(term2.unify_arg(1, 40_u64));
+        assert!(term2.unify_arg(2, 2_u64));
+
+        {
+            let query = context.open_query(None, &predicate, &[&term1, &term2]);
+            let next = query.next_solution();
+
+            assert_eq!(QueryResult::SuccessLast, next);
+            assert_eq!(42_u64, term1.get().unwrap());
+            query.discard();
+        }
+
+        // after leaving the block, we have discarded
+        assert!(term1.get::<u64>().is_none());
+    }
+
+    #[test]
+    fn query_cut() {
+        initialize_swipl_noengine();
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let functor_is = context.new_functor("is", 2);
+        let functor_plus = context.new_functor("+", 2);
+        let module = context.new_module("user");
+        let predicate = context.new_predicate(&functor_is, &module);
+
+        let term1 = context.new_term_ref();
+        let term2 = context.new_term_ref();
+
+        assert!(term2.unify(&functor_plus));
+        assert!(term2.unify_arg(1, 40_u64));
+        assert!(term2.unify_arg(2, 2_u64));
+
+        {
+            let query = context.open_query(None, &predicate, &[&term1, &term2]);
+            let next = query.next_solution();
+
+            assert_eq!(QueryResult::SuccessLast, next);
+            assert_eq!(42_u64, term1.get().unwrap());
+            query.cut();
+        }
+
+        // a cut query leaves data intact
+        assert_eq!(42_u64, term1.get().unwrap());
     }
 }
