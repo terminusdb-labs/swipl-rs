@@ -46,30 +46,6 @@ impl<'a, T: ContextType> Context<'a, T> {
         }
     }
 
-    pub fn new_atom(&self, name: &str) -> Atom {
-        self.assert_activated();
-
-        unsafe { Atom::new(name) }
-    }
-
-    pub fn new_functor<A: IntoAtom>(&self, name: A, arity: u16) -> Functor {
-        self.assert_activated();
-        if arity as usize > MAX_ARITY {
-            panic!("functor arity is >1024: {}", arity);
-        }
-        let atom = name.into_atom(self);
-
-        let functor = unsafe { PL_new_functor(atom.atom_ptr(), arity.try_into().unwrap()) };
-
-        unsafe { Functor::wrap(functor) }
-    }
-
-    pub fn new_module<A: IntoAtom>(&self, name: A) -> Module {
-        self.assert_activated();
-
-        unsafe { Module::new(name) }
-    }
-
     pub unsafe fn wrap_term_ref(&self, term: term_t) -> Term {
         self.assert_activated();
         Term::new(term, self)
@@ -229,7 +205,26 @@ impl<'a> Context<'a, Frame> {
     }
 }
 
-pub unsafe trait ActiveEnginePromise {}
+pub unsafe trait ActiveEnginePromise : Sized {
+    fn new_atom(&self, name: &str) -> Atom {
+        unsafe { Atom::new(name) }
+    }
+
+    fn new_functor<A: IntoAtom>(&self, name: A, arity: u16) -> Functor {
+        if arity as usize > MAX_ARITY {
+            panic!("functor arity is >1024: {}", arity);
+        }
+        let atom = name.into_atom(self);
+
+        let functor = unsafe { PL_new_functor(atom.atom_ptr(), arity.try_into().unwrap()) };
+
+        unsafe { Functor::wrap(functor) }
+    }
+
+    fn new_module<A: IntoAtom>(&self, name: A) -> Module {
+        unsafe { Module::new(name) }
+    }
+}
 
 unsafe impl<'a> ActiveEnginePromise for EngineActivation<'a> {}
 unsafe impl<'a, C: ContextType> ActiveEnginePromise for Context<'a, C> {}
