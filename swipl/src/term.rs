@@ -2,11 +2,20 @@ use super::atom::*;
 use super::context::*;
 use std::convert::TryInto;
 use std::os::raw::c_char;
+use std::fmt::Debug;
 use swipl_sys::*;
+
+use std::fmt;
 
 pub struct Term<'a> {
     term: term_t,
     context: &'a dyn TermOrigin,
+}
+
+impl<'a> Debug for Term<'a> {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        write!(fmt, "Term({:?})", self.term)
+    }
 }
 
 impl<'a> Term<'a> {

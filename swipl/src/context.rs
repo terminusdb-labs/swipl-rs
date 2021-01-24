@@ -229,7 +229,7 @@ pub struct Query {
 
 unsafe impl ContextType for Query {}
 
-pub unsafe trait QueryableContextType: ContextType {}
+pub unsafe trait QueryableContextType: FrameableContextType {}
 unsafe impl QueryableContextType for UnmanagedContext {}
 unsafe impl<'a> QueryableContextType for ActivatedEngine<'a> {}
 unsafe impl QueryableContextType for Frame {}
@@ -258,7 +258,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         let context = context
             .map(|c| c.module_ptr())
             .unwrap_or(std::ptr::null_mut());
-        let flags = PL_Q_NORMAL | PL_Q_EXT_STATUS;
+        let flags = PL_Q_NODEBUG | PL_Q_CATCH_EXCEPTION | PL_Q_EXT_STATUS;
         let terms = unsafe { PL_new_term_refs(args.len().try_into().unwrap()) };
         for i in 0..args.len() {
             let term = unsafe { self.wrap_term_ref(terms + i) };
@@ -287,20 +287,21 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
 
     pub fn term_from_string(&self, s: &str) -> Option<Term> {
         let term = self.new_term_ref();
+        let frame = self.open_frame();
 
         // TODO: must cache this
-        let functor_read_term_from_atom = self.new_functor("read_term_from_atom", 3);
-        let module = self.new_module("user");
-        let predicate = self.new_predicate(&functor_read_term_from_atom, &module);
+        let functor_read_term_from_atom = frame.new_functor("read_term_from_atom", 3);
+        let module = frame.new_module("user");
+        let predicate = frame.new_predicate(&functor_read_term_from_atom, &module);
 
         // TODO we could do with less terms since open_query is going to recreate them
-        let arg1 = self.new_term_ref();
-        let arg3 = self.new_term_ref();
+        let arg1 = frame.new_term_ref();
+        let arg3 = frame.new_term_ref();
 
         assert!(arg1.unify(s));
         assert!(arg3.unify(Nil));
 
-        let query = self.open_query(None, &predicate, &[&arg1, &term, &arg3]);
+        let query = frame.open_query(None, &predicate, &[&arg1, &term, &arg3]);
         let result = match query.next_solution() {
             QueryResult::SuccessLast => Some(term),
             _ => None,
@@ -610,5 +611,19 @@ mod tests {
 
         let query = context.open_query(None, &predicate, &[]);
         assert_eq!(QueryResult::SuccessLast, query.next_solution());
+    }
+
+    #[test]
+    fn erroring_query() {
+        initialize_swipl_noengine();
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term = context.term_from_string("throw(error(foo, _))").unwrap();
+        let query = context.open_call(&term);
+
+        assert_eq!(QueryResult::Exception, query.next_solution());
+        println!("do I ever get here?");
     }
 }
