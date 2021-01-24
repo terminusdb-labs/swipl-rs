@@ -302,6 +302,26 @@ term_getable! {
     }
 }
 
+pub struct Nil;
+unifiable! {
+    (self:Nil, term) => {
+        let result = unsafe { PL_unify_nil(term.term_ptr()) };
+
+        return result != 0;
+    }
+}
+
+term_getable! {
+    (Nil, term) => {
+        let result = unsafe { PL_get_nil(term.term_ptr()) };
+
+        match result != 0 {
+            true => Some(Nil),
+            false => None
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::context::*;

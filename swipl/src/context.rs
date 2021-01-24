@@ -295,6 +295,40 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
             activated: AtomicBool::new(true),
         }
     }
+
+    pub fn term_from_string(&self, s: &str) -> Option<Term> {
+        let term = self.new_term_ref();
+
+        // TODO: must cache this
+        let functor_read_term_from_atom = self.new_functor("read_term_from_atom", 3);
+        let module = self.new_module("user");
+        let predicate = self.new_predicate(&functor_read_term_from_atom, &module);
+
+        // TODO we could do with less terms since open_query is going to recreate them
+        let arg1 = self.new_term_ref();
+        let arg3 = self.new_term_ref();
+
+        assert!(arg1.unify(s));
+        assert!(arg3.unify(Nil));
+
+        let query = self.open_query(None, &predicate, &[&arg1, &term, &arg3]);
+        let result = match query.next_solution() {
+            QueryResult::SuccessLast => Some(term),
+            _ => None,
+        };
+        query.cut();
+
+        result
+    }
+
+    pub fn open_call(&self, t: &Term) -> Context<Query> {
+        // TODO: must cache this
+        let functor_call = self.new_functor("call", 1);
+        let module = self.new_module("user");
+        let predicate = self.new_predicate(&functor_call, &module);
+
+        self.open_query(None, &predicate, &[&t])
+    }
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -504,5 +538,44 @@ mod tests {
 
         // a cut query leaves data intact
         assert_eq!(42_u64, term1.get().unwrap());
+    }
+
+    #[test]
+    fn term_from_string_works() {
+        initialize_swipl_noengine();
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term = context.term_from_string("foo(bar(baz,quux))").unwrap();
+        let functor_foo = context.new_functor("foo", 1);
+        let functor_bar = context.new_functor("bar", 2);
+
+        assert_eq!(functor_foo, term.get().unwrap());
+        assert_eq!(functor_bar, term.get_arg(1).unwrap());
+    }
+
+    #[test]
+    fn open_call_nondet() {
+        initialize_swipl_noengine();
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term = context.term_from_string("member(X, [a,b,c])").unwrap();
+        let term_x = context.new_term_ref();
+        assert!(term.unify_arg(1, &term_x));
+
+        let query = context.open_call(&term);
+        assert_eq!(QueryResult::Success, query.next_solution());
+        term_x.get_atomable(|a| assert_eq!("a", a.unwrap().name()));
+
+        assert_eq!(QueryResult::Success, query.next_solution());
+        term_x.get_atomable(|a| assert_eq!("b", a.unwrap().name()));
+
+        assert_eq!(QueryResult::SuccessLast, query.next_solution());
+        term_x.get_atomable(|a| assert_eq!("c", a.unwrap().name()));
+
+        assert_eq!(QueryResult::Failure, query.next_solution());
     }
 }
