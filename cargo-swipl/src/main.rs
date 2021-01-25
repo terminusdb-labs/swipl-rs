@@ -3,7 +3,7 @@ use std::env;
 use std::process::Command;
 use swipl_info::*;
 
-fn subcmd_test(subcommand: &ArgMatches) {
+fn subcmd(subcommand: &ArgMatches, cmd: &str) {
     let info = get_swipl_info();
 
     let library_location = format!("{}/{}", info.swi_home, info.pack_so_dir);
@@ -14,7 +14,7 @@ fn subcmd_test(subcommand: &ArgMatches) {
     let ld_library_path = format!("{}:{}", ld_library_path, library_location);
     command.env("LD_LIBRARY_PATH", ld_library_path);
 
-    command.arg("test");
+    command.arg(cmd);
     if let Some(m) = subcommand.values_of("cmd") {
         let args: Vec<_> = m.collect();
         command.args(args);
@@ -30,6 +30,13 @@ fn main() {
             SubCommand::with_name("swipl")
                 .setting(AppSettings::SubcommandRequiredElseHelp)
                 .subcommand(
+                    SubCommand::with_name("run")
+                        .setting(AppSettings::TrailingVarArg)
+                        .setting(AppSettings::AllowLeadingHyphen)
+                        .about("run binary with swi-prolog added to the load path")
+                        .arg(Arg::from_usage("<cmd>... 'commands to run'").required(false)),
+                )
+                .subcommand(
                     SubCommand::with_name("test")
                         .setting(AppSettings::TrailingVarArg)
                         .setting(AppSettings::AllowLeadingHyphen)
@@ -44,7 +51,9 @@ fn main() {
         .expect("expected swipl subcommand to be used");
 
     if let Some(matches) = matches.subcommand_matches("test") {
-        subcmd_test(matches);
+        subcmd(matches, "test");
+    } else if let Some(matches) = matches.subcommand_matches("run") {
+        subcmd(matches, "run");
     } else {
         panic!("unknown subcommand");
     }
