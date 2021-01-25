@@ -8,14 +8,3 @@ pub mod term;
 
 pub mod context;
 pub mod engine;
-
-#[cfg(test)]
-mod tests {
-    use crate::engine::*;
-    #[test]
-    fn it_works() {
-        Engine::new();
-
-        assert_eq!(2 + 2, 4);
-    }
-}
