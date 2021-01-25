@@ -32,6 +32,7 @@ fn main() {
                 .subcommand(
                     SubCommand::with_name("test")
                         .setting(AppSettings::TrailingVarArg)
+                        .setting(AppSettings::AllowLeadingHyphen)
                         .about("run tests with swi-prolog added to the load path")
                         .arg(Arg::from_usage("<cmd>... 'commands to run'").required(false)),
                 ),
