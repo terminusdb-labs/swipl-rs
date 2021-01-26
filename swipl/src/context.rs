@@ -666,5 +666,7 @@ mod tests {
 
         let atomable: Atomable = exception_term.get().unwrap();
         assert_eq!("foo", atomable.name());
+
+        assert!(term.get::<u64>().is_none());
     }
 }
