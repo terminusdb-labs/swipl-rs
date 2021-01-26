@@ -1,12 +1,13 @@
 use super::atom::*;
 use super::context::*;
 use std::convert::TryInto;
-use std::os::raw::c_char;
 use std::fmt::Debug;
+use std::os::raw::c_char;
 use swipl_sys::*;
 
 use std::fmt;
 
+#[derive(Clone)]
 pub struct Term<'a> {
     term: term_t,
     context: &'a dyn TermOrigin,

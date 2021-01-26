@@ -159,8 +159,12 @@ unsafe impl<'a> FrameableContextType for ActivatedEngine<'a> {}
 unsafe impl FrameableContextType for Frame {}
 unsafe impl FrameableContextType for Query {}
 
+impl<'a, C: FrameableContextType> Context<'a, C> {
+    pub unsafe fn wrap_term_ref(&self, term: term_t) -> Term {
+        self.assert_activated();
+        Term::new(term, self)
+    }
 
-impl<'a, C:FrameableContextType> Context<'a,C> {
     pub fn open_frame(&self) -> Context<Frame> {
         self.assert_activated();
         let fid = unsafe { PL_open_foreign_frame() };
@@ -203,7 +207,6 @@ pub unsafe trait ActiveEnginePromise: Sized {
     fn new_predicate(&self, functor: &Functor, module: &Module) -> Predicate {
         unsafe { Predicate::new(functor, module) }
     }
-
 }
 
 unsafe impl<'a> ActiveEnginePromise for EngineActivation<'a> {}
@@ -241,11 +244,6 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
             let term = PL_new_term_ref();
             Term::new(term, self)
         }
-    }
-
-    pub unsafe fn wrap_term_ref(&self, term: term_t) -> Term {
-        self.assert_activated();
-        Term::new(term, self)
     }
 
     pub fn open_query(
@@ -321,15 +319,14 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
-pub enum QueryResult {
+pub enum QueryResult<'a> {
     Success,
     SuccessLast,
     Failure,
-    Exception,
+    Exception(Term<'a>),
 }
 
-impl QueryResult {
+impl<'a> QueryResult<'a> {
     pub fn is_success(&self) -> bool {
         match self {
             Self::Success => true,
@@ -346,12 +343,39 @@ impl QueryResult {
         }
     }
 
+    pub fn is_nonlast_success(&self) -> bool {
+        match self {
+            Self::Success => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_last_success(&self) -> bool {
+        match self {
+            Self::SuccessLast => true,
+            _ => false,
+        }
+    }
+
     pub fn is_failure(&self) -> bool {
-        self == &Self::Failure
+        match self {
+            Self::Failure => true,
+            _ => false,
+        }
     }
 
     pub fn is_exception(&self) -> bool {
-        self == &Self::Exception
+        match self {
+            Self::Exception(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn exception(&self) -> Option<Term> {
+        match self {
+            Self::Exception(term) => Some(term.clone()),
+            _ => None,
+        }
     }
 }
 
@@ -361,7 +385,11 @@ impl<'a> Context<'a, Query> {
         let result = unsafe { PL_next_solution(self.context.qid) };
         // TODO handle exceptions properly
         match result {
-            -1 => QueryResult::Exception,
+            -1 => {
+                let exception = unsafe { PL_exception(self.context.qid) };
+                let exception_term = unsafe { self.wrap_term_ref(exception) };
+                QueryResult::Exception(exception_term)
+            }
             0 => QueryResult::Failure,
             1 => QueryResult::Success,
             2 => QueryResult::SuccessLast,
@@ -457,11 +485,11 @@ mod tests {
         let query = context.open_query(None, &predicate, &[&term1, &term2]);
         let next = query.next_solution();
 
-        assert_eq!(QueryResult::SuccessLast, next);
+        assert!(next.is_success() && next.is_last());
         assert_eq!(42_u64, term1.get().unwrap());
 
         let next = query.next_solution();
-        assert_eq!(QueryResult::Failure, next);
+        assert!(next.is_failure());
     }
 
     #[test]
@@ -487,7 +515,7 @@ mod tests {
             let query = context.open_query(None, &predicate, &[&term1, &term2]);
             let next = query.next_solution();
 
-            assert_eq!(QueryResult::SuccessLast, next);
+            assert!(next.is_last_success());
             assert_eq!(42_u64, term1.get().unwrap());
         }
 
@@ -518,7 +546,7 @@ mod tests {
             let query = context.open_query(None, &predicate, &[&term1, &term2]);
             let next = query.next_solution();
 
-            assert_eq!(QueryResult::SuccessLast, next);
+            assert!(next.is_last_success());
             assert_eq!(42_u64, term1.get().unwrap());
             query.discard();
         }
@@ -550,7 +578,7 @@ mod tests {
             let query = context.open_query(None, &predicate, &[&term1, &term2]);
             let next = query.next_solution();
 
-            assert_eq!(QueryResult::SuccessLast, next);
+            assert!(next.is_last_success());
             assert_eq!(42_u64, term1.get().unwrap());
             query.cut();
         }
@@ -586,16 +614,16 @@ mod tests {
         assert!(term.unify_arg(1, &term_x));
 
         let query = context.open_call(&term);
-        assert_eq!(QueryResult::Success, query.next_solution());
+        assert!(query.next_solution().is_nonlast_success());
         term_x.get_atomable(|a| assert_eq!("a", a.unwrap().name()));
 
-        assert_eq!(QueryResult::Success, query.next_solution());
+        assert!(query.next_solution().is_nonlast_success());
         term_x.get_atomable(|a| assert_eq!("b", a.unwrap().name()));
 
-        assert_eq!(QueryResult::SuccessLast, query.next_solution());
+        assert!(query.next_solution().is_last_success());
         term_x.get_atomable(|a| assert_eq!("c", a.unwrap().name()));
 
-        assert_eq!(QueryResult::Failure, query.next_solution());
+        assert!(query.next_solution().is_failure());
     }
 
     #[test]
@@ -610,20 +638,33 @@ mod tests {
         let predicate = context.new_predicate(&functor, &module);
 
         let query = context.open_query(None, &predicate, &[]);
-        assert_eq!(QueryResult::SuccessLast, query.next_solution());
+        assert!(query.next_solution().is_last_success());
     }
 
     #[test]
-    fn erroring_query() {
+    fn freeze_exception_is_delayed_until_next_query() {
         initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
-        let term = context.term_from_string("throw(error(foo, _))").unwrap();
+        let term = context.term_from_string("freeze(X, throw(foo))").unwrap();
+        let term_x = context.new_term_ref();
+        term.unify_arg(1, &term_x);
         let query = context.open_call(&term);
+        assert!(query.next_solution().is_last_success());
+        query.cut();
 
-        assert_eq!(QueryResult::Exception, query.next_solution());
-        println!("do I ever get here?");
+        assert!(term_x.unify(42_u64));
+
+        let term = context.new_term_ref();
+        term.unify(true);
+        let query = context.open_call(&term);
+        let next = query.next_solution();
+        assert!(next.is_exception());
+        let exception_term = next.exception().unwrap();
+
+        let atomable: Atomable = exception_term.get().unwrap();
+        assert_eq!("foo", atomable.name());
     }
 }
