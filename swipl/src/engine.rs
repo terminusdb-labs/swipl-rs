@@ -1,4 +1,7 @@
 use lazy_static::*;
+use std::convert::TryInto;
+use std::ffi::CString;
+use std::os::raw::{c_int, c_void};
 use swipl_sys::*;
 
 use std::sync::{atomic, Arc, RwLock};
@@ -19,7 +22,7 @@ pub fn initialize_swipl() {
     }
 
     // lock the rest of this initialization function to prevent concurrent initializers. Ideally this should happen in swipl itself, but unfortunately, it doesn't.
-    let initialized = INITIALIZATION_STATE.write().unwrap();
+    let mut initialized = INITIALIZATION_STATE.write().unwrap();
     // There's actually a slight chance that initialization happened just now by some other thread. So check again.
     if *initialized {
         return;
@@ -34,6 +37,53 @@ pub fn initialize_swipl() {
     // unsafe justification: this initializes the swipl library and is idempotent
     // That said, there is actually a chance that some non-rust code is concurrently initializing prolog, which may lead to errors. There is unfortunately nothing that can be done about this.
     unsafe { PL_initialise(2, args.as_mut_ptr()) };
+    *initialized = true;
+}
+
+pub unsafe fn register_foreign_in_module(
+    module: &str,
+    name: &str,
+    arity: u16,
+    deterministic: bool,
+    meta: Option<&str>,
+    function_ptr: unsafe extern "C" fn(terms: term_t, arity: c_int, control: *mut c_void) -> usize,
+) -> bool {
+    if meta.is_some() && meta.unwrap().len() != arity as usize {
+        panic!("supplied a meta argument that is not of equal length to the arity");
+    }
+
+    // We get a handle to the read guard of initialization state.
+    // This ensures that we're either in the pre-initialization state
+    // or the post-initialization state, but not currently
+    // initializing.
+    // if unitialized, no further checks are needed.
+    // but if initialized, we need to ensure we're actually on an engine currently.
+    let initialized = INITIALIZATION_STATE.read().unwrap();
+    if *initialized && current_engine_ptr().is_null() {
+        panic!("Tried to register a foreign predicate in a context where swipl is initialized, but no engine is active.");
+    }
+
+    let c_module = CString::new(module).unwrap();
+    let c_name = CString::new(name).unwrap();
+    let c_meta = meta.map(|m| CString::new(m).unwrap());
+    let mut flags = PL_FA_VARARGS;
+    if !deterministic {
+        flags |= PL_FA_NONDETERMINISTIC;
+    }
+
+    // an unfortunate need for transmute to make the fli eat the pointer
+    let converted_function_ptr = std::mem::transmute(function_ptr);
+
+    PL_register_foreign_in_module(
+        c_module.as_ptr(),
+        c_name.as_ptr(),
+        arity as c_int,
+        Some(converted_function_ptr),
+        flags.try_into().unwrap(),
+        c_meta
+            .map(|m| m.as_ptr())
+            .unwrap_or_else(|| std::ptr::null()),
+    ) == 1
 }
 
 pub fn initialize_swipl_noengine() {

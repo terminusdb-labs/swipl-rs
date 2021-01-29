@@ -10,6 +10,8 @@ use std::convert::TryInto;
 use std::sync::atomic::{AtomicBool, Ordering};
 use swipl_sys::*;
 
+use swipl_macros::prolog;
+
 pub struct Context<'a, T: ContextType> {
     parent: Option<&'a dyn ContextParent>,
     context: T,
@@ -237,6 +239,10 @@ unsafe impl QueryableContextType for UnmanagedContext {}
 unsafe impl<'a> QueryableContextType for ActivatedEngine<'a> {}
 unsafe impl QueryableContextType for Frame {}
 
+prolog! {
+    fn read_term_from_atom(atom_term, result, options);
+}
+
 impl<'a, T: QueryableContextType> Context<'a, T> {
     pub fn new_term_ref(&self) -> Term {
         self.assert_activated();
@@ -256,7 +262,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         let context = context
             .map(|c| c.module_ptr())
             .unwrap_or(std::ptr::null_mut());
-        let flags = PL_Q_NODEBUG | PL_Q_CATCH_EXCEPTION | PL_Q_EXT_STATUS;
+        let flags = PL_Q_NORMAL | PL_Q_PASS_EXCEPTION | PL_Q_EXT_STATUS;
         let terms = unsafe { PL_new_term_refs(args.len().try_into().unwrap()) };
         for i in 0..args.len() {
             let term = unsafe { self.wrap_term_ref(terms + i) };
@@ -287,19 +293,14 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         let term = self.new_term_ref();
         let frame = self.open_frame();
 
-        // TODO: must cache this
-        let functor_read_term_from_atom = frame.new_functor("read_term_from_atom", 3);
-        let module = frame.new_module("user");
-        let predicate = frame.new_predicate(&functor_read_term_from_atom, &module);
-
-        // TODO we could do with less terms since open_query is going to recreate them
         let arg1 = frame.new_term_ref();
         let arg3 = frame.new_term_ref();
 
         assert!(arg1.unify(s));
         assert!(arg3.unify(Nil));
 
-        let query = frame.open_query(None, &predicate, &[&arg1, &term, &arg3]);
+        let query = read_term_from_atom(&frame, &arg1, &term, &arg3);
+
         let result = match query.next_solution() {
             QueryResult::SuccessLast => Some(term),
             _ => None,
@@ -386,7 +387,8 @@ impl<'a> Context<'a, Query> {
         // TODO handle exceptions properly
         match result {
             -1 => {
-                let exception = unsafe { PL_exception(self.context.qid) };
+                //let exception = unsafe { PL_exception(self.context.qid) };
+                let exception = unsafe { PL_exception(0) };
                 let exception_term = unsafe { self.wrap_term_ref(exception) };
                 QueryResult::Exception(exception_term)
             }
@@ -668,5 +670,64 @@ mod tests {
         assert_eq!("foo", atomable.name());
 
         assert!(term.get::<u64>().is_none());
+    }
+
+    use std::os::raw::{c_int, c_void};
+    extern "C" fn lets_try_a_foreign_predicate(
+        term: term_t,
+        arity: c_int,
+        control: *mut c_void,
+    ) -> usize {
+        println!("hello world! {:?} {:?} {:?}", term, arity, control);
+
+        1
+    }
+
+    #[test]
+    fn register_foreign_predicate() {
+        initialize_swipl_noengine();
+        let engine = Engine::new();
+        let activation = engine.activate();
+
+        assert!(unsafe {
+            register_foreign_in_module(
+                "user",
+                "hello_world",
+                0,
+                true,
+                None,
+                lets_try_a_foreign_predicate,
+            )
+        });
+
+        let context: Context<_> = activation.into();
+
+        let functor = context.new_functor("hello_world", 0);
+        let module = context.new_module("user");
+        let predicate = context.new_predicate(&functor, &module);
+
+        let query = context.open_query(None, &predicate, &[]);
+        assert!(query.next_solution().is_success());
+        query.cut();
+    }
+
+    prolog! {
+        #[name("is")]
+        fn prolog_arithmetic(term, e);
+    }
+
+    #[test]
+    fn call_prolog_from_generated_rust_query_opener() {
+        initialize_swipl_noengine();
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term = context.new_term_ref();
+        let expr = context.term_from_string("2+2").unwrap();
+
+        let q = prolog_arithmetic(&context, &term, &expr);
+        assert!(q.next_solution().is_success());
+        assert_eq!(4, term.get::<u64>().unwrap());
     }
 }
