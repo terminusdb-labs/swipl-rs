@@ -20,7 +20,7 @@ pub struct Context<'a, T: ContextType> {
 }
 
 impl<'a, T: ContextType> Context<'a, T> {
-    fn assert_activated(&self) {
+    pub fn assert_activated(&self) {
         if !self.activated.load(Ordering::Relaxed) {
             panic!("tried to use inactive context");
         }

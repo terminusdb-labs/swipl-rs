@@ -51,7 +51,10 @@ impl PrologPredicate {
     fn into_definition(self) -> proc_macro2::TokenStream {
         // look up the swipl crate. if it doesn't exist, assume we are actually the swipl crate itself and we can use the special 'crate' namespace.
         let crt = match crate_name("swipl") {
-            Ok(name) => quote! {#name},
+            Ok(name) => {
+                let name_ident = Ident::new(&name, Span::call_site());
+                quote! {#name_ident}
+            }
             Err(_) => quote! {crate},
         };
         let pred_static_ident = Ident::new(
@@ -74,16 +77,21 @@ impl PrologPredicate {
             static #pred_static_ident: std::sync::atomic::AtomicPtr<std::ffi::c_void> = std::sync::atomic::AtomicPtr::new(std::ptr::null_mut());
 
             #doc
-            fn #rust_name<'a, T:#crt::context::QueryableContextType>(swipl_context: &'a Context<'a, T>, #(#params: &#crt::term::Term<'a>),*) -> Context<'a, Query> {
+            fn #rust_name<'a, T:#crt::context::QueryableContextType>(swipl_context: &'a #crt::context::Context<'a, T>, #(#params: &#crt::term::Term<'a>),*) -> #crt::context::Context<'a, #crt::context::Query> {
                 swipl_context.assert_activated();
                 let swipl_pred = #pred_static_ident.load(std::sync::atomic::Ordering::Relaxed);
                 let swipl_predicate;
                 if swipl_pred.is_null() {
                     // create that predicate
-                    swipl_predicate = swipl_context.new_predicate(
-                        &swipl_context.new_functor(#predicate_name,
-                                                   #params_len.try_into().expect("expected param len to fit inside a u16")),
-                        &swipl_context.new_module(#predicate_module));
+                    swipl_predicate = #crt::context::ActiveEnginePromise::new_predicate(
+                        swipl_context,
+                        &#crt::context::ActiveEnginePromise::new_functor(
+                            swipl_context,
+                            #predicate_name,
+                            std::convert::TryInto::try_into(#params_len).expect("expected param len to fit inside a u16")),
+                        &#crt::context::ActiveEnginePromise::new_module(
+                            swipl_context,
+                            #predicate_module));
                     // and store it in the static
                     #pred_static_ident.store(swipl_predicate.predicate_ptr(), std::sync::atomic::Ordering::Relaxed);
                 }
