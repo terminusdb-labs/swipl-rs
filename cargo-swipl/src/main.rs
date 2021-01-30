@@ -27,28 +27,32 @@ fn main() {
     let app = App::new("cargo-swipl")
         .setting(AppSettings::SubcommandRequiredElseHelp)
         .subcommand(
-            SubCommand::with_name("swipl")
-                .setting(AppSettings::SubcommandRequiredElseHelp)
-                .subcommand(
-                    SubCommand::with_name("run")
-                        .setting(AppSettings::TrailingVarArg)
-                        .setting(AppSettings::AllowLeadingHyphen)
-                        .about("run binary with swi-prolog added to the load path")
-                        .arg(Arg::from_usage("<cmd>... 'commands to run'").required(false)),
-                )
-                .subcommand(
-                    SubCommand::with_name("test")
-                        .setting(AppSettings::TrailingVarArg)
-                        .setting(AppSettings::AllowLeadingHyphen)
-                        .about("run tests with swi-prolog added to the load path")
-                        .arg(Arg::from_usage("<cmd>... 'commands to run'").required(false)),
-                ),
+            SubCommand::with_name("run")
+                .setting(AppSettings::TrailingVarArg)
+                .setting(AppSettings::AllowLeadingHyphen)
+                .about("run binary with swi-prolog added to the load path")
+                .arg(Arg::from_usage("<cmd>... 'commands to run'").required(false)),
+        )
+        .subcommand(
+            SubCommand::with_name("test")
+                .setting(AppSettings::TrailingVarArg)
+                .setting(AppSettings::AllowLeadingHyphen)
+                .about("run tests with swi-prolog added to the load path")
+                .arg(Arg::from_usage("<cmd>... 'commands to run'").required(false)),
         );
 
-    let matches = app.get_matches();
-    let matches = matches
-        .subcommand_matches("swipl")
-        .expect("expected swipl subcommand to be used");
+    // Drop extra `swipl` argument provided by `cargo`.
+    let mut found_swipl = false;
+    let args = env::args().filter(|x| {
+        if found_swipl {
+            true
+        } else {
+            found_swipl = x == "swipl";
+            x != "swipl"
+        }
+    });
+
+    let matches = app.get_matches_from(args);
 
     if let Some(matches) = matches.subcommand_matches("test") {
         subcmd(matches, "test");
