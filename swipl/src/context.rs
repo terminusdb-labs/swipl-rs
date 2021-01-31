@@ -343,6 +343,23 @@ pub enum SemidetError {
     Exception,
 }
 
+impl From<SemidetError> for DetError {
+    fn from(e: SemidetError) -> DetError {
+        match e {
+            SemidetError::UnexpectedChoicepoint => DetError::UnexpectedChoicepoint,
+            SemidetError::Exception => DetError::Exception,
+        }
+    }
+}
+
+pub fn semidet_to_det_result(result: SemidetResult) -> DetResult {
+    match result {
+        Ok(true) => Ok(()),
+        Ok(false) => Err(DetError::UnexpectedFailure),
+        Err(e) => Err(e.into()),
+    }
+}
+
 pub type SemidetResult = Result<bool, SemidetError>;
 
 pub enum QueryResult<'a> {
@@ -700,9 +717,7 @@ mod tests {
 
     predicates! {
         det fn unify_with_42(_context, term) {
-            term.unify(42_u64).unwrap();
-
-            Ok(())
+            term.unify_det(42_u64)
         }
     }
 

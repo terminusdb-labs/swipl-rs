@@ -38,6 +38,10 @@ impl<'a> Term<'a> {
         unifiable.unify(self)
     }
 
+    pub fn unify_det<U: Unifiable>(&self, unifiable: U) -> DetResult {
+        semidet_to_det_result(self.unify(unifiable))
+    }
+
     pub fn unify_arg<U: Unifiable>(&self, index: usize, unifiable: U) -> SemidetResult {
         if index == 0 {
             panic!("unify_arg was given index 0, but index starts at 1");
