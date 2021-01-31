@@ -41,7 +41,7 @@ pub fn initialize_swipl() {
 }
 
 pub unsafe fn register_foreign_in_module(
-    module: &str,
+    module: Option<&str>,
     name: &str,
     arity: u16,
     deterministic: bool,
@@ -63,7 +63,7 @@ pub unsafe fn register_foreign_in_module(
         panic!("Tried to register a foreign predicate in a context where swipl is initialized, but no engine is active.");
     }
 
-    let c_module = CString::new(module).unwrap();
+    let c_module = module.map(|module| CString::new(module).unwrap());
     let c_name = CString::new(name).unwrap();
     let c_meta = meta.map(|m| CString::new(m).unwrap());
     let mut flags = PL_FA_VARARGS;
@@ -73,9 +73,13 @@ pub unsafe fn register_foreign_in_module(
 
     // an unfortunate need for transmute to make the fli eat the pointer
     let converted_function_ptr = std::mem::transmute(function_ptr);
+    let c_module_ptr = c_module
+        .as_ref()
+        .map(|m| m.as_ptr())
+        .unwrap_or(std::ptr::null_mut());
 
     PL_register_foreign_in_module(
-        c_module.as_ptr(),
+        c_module_ptr,
         c_name.as_ptr(),
         arity as c_int,
         Some(converted_function_ptr),

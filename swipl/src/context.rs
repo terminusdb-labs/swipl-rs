@@ -320,6 +320,13 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
     }
 }
 
+pub enum DetQueryError {
+    UnexpectedFailure,
+    Exception,
+}
+
+pub type DetQueryResult = Result<(), DetQueryError>;
+
 pub enum QueryResult<'a> {
     Success,
     SuccessLast,
@@ -429,6 +436,7 @@ impl Drop for Query {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::predicates;
     #[test]
     fn get_term_ref_on_fresh_engine() {
         initialize_swipl_noengine();
@@ -672,15 +680,12 @@ mod tests {
         assert!(term.get::<u64>().is_none());
     }
 
-    use std::os::raw::{c_int, c_void};
-    extern "C" fn lets_try_a_foreign_predicate(
-        term: term_t,
-        arity: c_int,
-        control: *mut c_void,
-    ) -> usize {
-        println!("hello world! {:?} {:?} {:?}", term, arity, control);
+    predicates! {
+        det fn unify_with_42(_context, term) {
+            term.unify(42_u64);
 
-        1
+            Ok(())
+        }
     }
 
     #[test]
@@ -689,26 +694,18 @@ mod tests {
         let engine = Engine::new();
         let activation = engine.activate();
 
-        assert!(unsafe {
-            register_foreign_in_module(
-                "user",
-                "hello_world",
-                0,
-                true,
-                None,
-                lets_try_a_foreign_predicate,
-            )
-        });
+        assert!(register_unify_with_42());
 
         let context: Context<_> = activation.into();
+        let term = context.new_term_ref();
 
-        let functor = context.new_functor("hello_world", 0);
+        let functor = context.new_functor("unify_with_42", 1);
         let module = context.new_module("user");
         let predicate = context.new_predicate(&functor, &module);
 
-        let query = context.open_query(None, &predicate, &[]);
+        let query = context.open_query(None, &predicate, &[&term]);
         assert!(query.next_solution().is_success());
-        query.cut();
+        assert_eq!(42, term.get::<u64>().unwrap());
     }
 
     prolog! {

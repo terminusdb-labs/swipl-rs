@@ -11,4 +11,4 @@ pub mod term;
 pub mod context;
 pub mod engine;
 
-pub use swipl_macros::prolog;
+pub use swipl_macros::{predicates, prolog};
