@@ -11,3 +11,4 @@ license = "Apache-2.0/MIT"
 swipl-sys = {path = "../swipl-sys"}
 swipl-macros = {path = "../swipl-macros"}
 lazy_static = "1.4.0"
+thiserror = "1.0"

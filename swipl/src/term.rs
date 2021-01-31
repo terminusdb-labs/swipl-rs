@@ -34,11 +34,11 @@ impl<'a> Term<'a> {
         }
     }
 
-    pub fn unify<U: Unifiable>(&self, unifiable: U) -> bool {
+    pub fn unify<U: Unifiable>(&self, unifiable: U) -> SemidetResult {
         unifiable.unify(self)
     }
 
-    pub fn unify_arg<U: Unifiable>(&self, index: usize, unifiable: U) -> bool {
+    pub fn unify_arg<U: Unifiable>(&self, index: usize, unifiable: U) -> SemidetResult {
         if index == 0 {
             panic!("unify_arg was given index 0, but index starts at 1");
         }
@@ -51,12 +51,12 @@ impl<'a> Term<'a> {
         let arg = unsafe { Term::new(arg_ref, self.context) };
         let mut result2 = false;
         if result != 0 {
-            result2 = arg.unify(unifiable);
+            result2 = arg.unify(unifiable)?;
         }
 
         unsafe { PL_reset_term_refs(arg_ref) };
 
-        result2
+        Ok(result2)
     }
 
     pub fn get<G: TermGetable>(&self) -> Option<G> {
@@ -148,11 +148,11 @@ pub trait TermOrigin {
 ///
 /// The macro `unifiable` provides a way to safely implement this trait.
 pub unsafe trait Unifiable {
-    fn unify(&self, term: &Term) -> bool;
+    fn unify(&self, term: &Term) -> SemidetResult;
 }
 
 unsafe impl<T: Unifiable> Unifiable for &T {
-    fn unify(&self, term: &Term) -> bool {
+    fn unify(&self, term: &Term) -> SemidetResult {
         (*self).unify(term)
     }
 }
@@ -169,7 +169,7 @@ macro_rules! unifiable {
         // that matches the given context, and that the currently
         // activated engine is one for which this term was created.
         unsafe impl<'a> Unifiable for $t {
-            fn unify(&$self_, $term_: &Term) -> bool {
+            fn unify(&$self_, $term_: &Term) -> SemidetResult {
                 $term_.assert_term_handling_possible();
 
                 $b
@@ -205,7 +205,7 @@ unifiable! {
         let result = unsafe { PL_unify(self.term, term.term) };
 
         // TODO we should actually properly test for an exception here.
-        result != 0
+        Ok(result != 0)
     }
 }
 
@@ -217,7 +217,7 @@ unifiable! {
         };
         let result = unsafe { PL_unify_bool(term.term, num) };
 
-        result != 0
+        Ok(result != 0)
     }
 }
 
@@ -238,7 +238,7 @@ unifiable! {
     (self:u64, term) => {
         let result = unsafe { PL_unify_uint64(term.term, *self) };
 
-        result != 0
+        Ok(result != 0)
     }
 }
 
@@ -259,7 +259,7 @@ unifiable! {
     (self:i64, term) => {
         let result = unsafe { PL_unify_int64(term.term, *self) };
 
-        result != 0
+        Ok(result != 0)
     }
 }
 
@@ -280,7 +280,7 @@ unifiable! {
     (self:f64, term) => {
         let result = unsafe { PL_unify_float(term.term, *self) };
 
-        result != 0
+        Ok(result != 0)
     }
 }
 
@@ -307,7 +307,7 @@ unifiable! {
         )
         };
 
-        return result != 0;
+        Ok(result != 0)
     }
 }
 
@@ -322,7 +322,7 @@ unifiable! {
     (self:Nil, term) => {
         let result = unsafe { PL_unify_nil(term.term_ptr()) };
 
-        return result != 0;
+        Ok(result != 0)
     }
 }
 
@@ -341,7 +341,7 @@ unsafe impl<'a, T> Unifiable for &'a [T]
 where
     &'a T: 'static + Unifiable,
 {
-    fn unify(&self, term: &Term) -> bool {
+    fn unify(&self, term: &Term) -> SemidetResult {
         term.assert_term_handling_possible();
         // let's create a fake context so we can make a frame
         // unsafe justification: This context will only exist inside this implementation. We know we are in some valid context for term handling, so that's great.
@@ -349,7 +349,7 @@ where
 
         let frame = context.open_frame();
         let list = frame.new_term_ref();
-        list.unify(term);
+        list.unify(term)?;
         let mut success = true;
 
         for t in self.iter() {
@@ -364,23 +364,21 @@ where
                 break;
             }
 
-            success = head.unify(t);
+            success = head.unify(t)?;
 
             // reset term - should really be a method on term
             unsafe { PL_put_variable(list.term_ptr()) };
 
-            list.unify(tail);
+            list.unify(tail)?;
+            frame2.close_frame();
         }
 
         if success {
             success = unsafe { PL_unify_nil(list.term_ptr()) != 0 };
+            frame.close_frame();
         }
 
-        if !success {
-            frame.discard_frame();
-        }
-
-        success
+        Ok(success)
     }
 }
 
@@ -396,7 +394,7 @@ unsafe impl<T: TermGetable> TermGetable for Vec<T> {
 
         let frame = context.open_frame();
         let list = frame.new_term_ref();
-        list.unify(term);
+        list.unify(term).unwrap();
         let mut success = true;
         loop {
             if unsafe { PL_get_nil(list.term_ptr()) != 0 } {
@@ -423,8 +421,11 @@ unsafe impl<T: TermGetable> TermGetable for Vec<T> {
 
             // reset term - should really be a method on term
             unsafe { PL_put_variable(list.term_ptr()) };
-            list.unify(tail);
+            list.unify(tail).unwrap();
+            frame2.close_frame();
         }
+
+        frame.close_frame();
 
         match success {
             true => Some(result),
@@ -446,9 +447,9 @@ mod tests {
 
         let term1 = context.new_term_ref();
         let term2 = context.new_term_ref();
-        assert!(term1.unify(42_u64));
-        assert!(term2.unify(42_u64));
-        assert!(term1.unify(&term2));
+        assert!(term1.unify(42_u64).unwrap());
+        assert!(term2.unify(42_u64).unwrap());
+        assert!(term1.unify(&term2).unwrap());
     }
 
     #[test]
@@ -460,9 +461,9 @@ mod tests {
 
         let term1 = context.new_term_ref();
         let term2 = context.new_term_ref();
-        assert!(term1.unify(42_u64));
-        assert!(term2.unify(43_u64));
-        assert!(!term1.unify(&term2));
+        assert!(term1.unify(42_u64).unwrap());
+        assert!(term2.unify(43_u64).unwrap());
+        assert!(!term1.unify(&term2).unwrap());
     }
 
     #[test]
@@ -473,8 +474,8 @@ mod tests {
         let context: Context<_> = activation.into();
 
         let term = context.new_term_ref();
-        assert!(term.unify(42_u64));
-        assert!(!term.unify(43_u64));
+        assert!(term.unify(42_u64).unwrap());
+        assert!(!term.unify(43_u64).unwrap());
     }
 
     #[test]
@@ -486,9 +487,9 @@ mod tests {
         let term = context.new_term_ref();
         let context2 = context.open_frame();
 
-        assert!(term.unify(42_u64));
+        assert!(term.unify(42_u64).unwrap());
         context2.rewind_frame();
-        assert!(term.unify(43_u64));
+        assert!(term.unify(43_u64).unwrap());
     }
 
     #[test]
@@ -500,10 +501,10 @@ mod tests {
 
         let term1 = context.new_term_ref();
         assert!(term1.get::<bool>().is_none());
-        term1.unify(true);
+        term1.unify(true).unwrap();
         assert_eq!(Some(true), term1.get::<bool>());
         let term2 = context.new_term_ref();
-        term2.unify(false);
+        term2.unify(false).unwrap();
         assert_eq!(Some(false), term2.get::<bool>());
     }
 
@@ -516,13 +517,13 @@ mod tests {
 
         let term1 = context.new_term_ref();
         assert!(term1.get::<u64>().is_none());
-        term1.unify(42_u64);
+        term1.unify(42_u64).unwrap();
         assert_eq!(Some(42), term1.get::<u64>());
         let term2 = context.new_term_ref();
-        term2.unify(0xffffffff_u64);
+        term2.unify(0xffffffff_u64).unwrap();
         assert_eq!(Some(0xffffffff), term2.get::<u64>());
         let term3 = context.new_term_ref();
-        term3.unify(0xffffffffffffffff_u64);
+        term3.unify(0xffffffffffffffff_u64).unwrap();
         assert_eq!(Some(0xffffffffffffffff), term3.get::<u64>());
     }
 
@@ -535,7 +536,7 @@ mod tests {
 
         let term1 = context.new_term_ref();
         term1.get_str(|s| assert!(s.is_none()));
-        term1.unify("hello there");
+        term1.unify("hello there").unwrap();
         term1.get_str(|s| assert_eq!("hello there", s.unwrap()));
     }
 
@@ -548,7 +549,7 @@ mod tests {
 
         let term1 = context.new_term_ref();
         assert!(term1.get::<String>().is_none());
-        term1.unify("hello there");
+        term1.unify("hello there").unwrap();
         assert_eq!("hello there", term1.get::<String>().unwrap());
     }
 
@@ -560,7 +561,7 @@ mod tests {
         let context: Context<_> = activation.into();
 
         let term1 = context.new_term_ref();
-        term1.unify(42_u64);
+        term1.unify(42_u64).unwrap();
         assert_eq!(None, term1.get::<bool>());
     }
 
@@ -572,7 +573,7 @@ mod tests {
         let context: Context<_> = activation.into();
 
         let term = context.new_term_ref();
-        assert!(term.unify([42_u64, 12, 3, 0, 5].as_ref()));
+        assert!(term.unify([42_u64, 12, 3, 0, 5].as_ref()).unwrap());
 
         assert_eq!(
             [42_u64, 12, 3, 0, 5].as_ref(),

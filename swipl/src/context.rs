@@ -12,6 +12,8 @@ use swipl_sys::*;
 
 use swipl_macros::prolog;
 
+use thiserror::Error;
+
 pub struct Context<'a, T: ContextType> {
     parent: Option<&'a dyn ContextParent>,
     context: T,
@@ -109,7 +111,7 @@ pub unsafe fn unmanaged_engine_context() -> Context<'static, UnmanagedContext> {
 
 enum FrameState {
     Active,
-    Discarded,
+    Closed,
 }
 
 pub struct Frame {
@@ -127,25 +129,25 @@ impl Drop for Frame {
             // this module.  This module only instantiates the frame as
             // part of the context mechanism. No 'free' Frames are ever
             // returned.  This mechanism ensures that the frame is only
-            // closed if there's no inner frame still remaining. It'll
-            // also ensure that the engine of the frame is active while
-            // dropping.
-            unsafe { PL_close_foreign_frame(self.fid) }
+            // discarded if there's no inner frame still
+            // remaining. It'll also ensure that the engine of the
+            // frame is active while dropping.
+            unsafe { PL_discard_foreign_frame(self.fid) }
             _ => {}
         }
     }
 }
 
 impl<'a> Context<'a, Frame> {
-    pub fn close_frame(self) {
-        // would happen automatically but might as well be explicit
-        std::mem::drop(self)
+    pub fn close_frame(mut self) {
+        self.context.state = FrameState::Closed;
+        // unsafe justification: reasons for safety are the same as in a normal drop. Also, since we just set framestate to discarded, the drop won't try to subsequently close this same frame.
+        unsafe { PL_close_foreign_frame(self.context.fid) };
     }
 
-    pub fn discard_frame(mut self) {
-        self.context.state = FrameState::Discarded;
-        // unsafe justification: reasons for safety are the same as in a normal drop. Also, sicne we just set framestate to discarded, the drop won't try to subsequently close this same frame.
-        unsafe { PL_discard_foreign_frame(self.context.fid) };
+    pub fn discard_frame(self) {
+        // would happen automatically but might as well be explicit
+        std::mem::drop(self)
     }
 
     pub fn rewind_frame(&self) {
@@ -266,7 +268,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         let terms = unsafe { PL_new_term_refs(args.len().try_into().unwrap()) };
         for i in 0..args.len() {
             let term = unsafe { self.wrap_term_ref(terms + i) };
-            assert!(term.unify(args[i]));
+            assert!(term.unify(args[i]).unwrap());
         }
 
         let qid = unsafe {
@@ -296,8 +298,8 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         let arg1 = frame.new_term_ref();
         let arg3 = frame.new_term_ref();
 
-        assert!(arg1.unify(s));
-        assert!(arg3.unify(Nil));
+        assert!(arg1.unify(s).unwrap());
+        assert!(arg3.unify(Nil).unwrap());
 
         let query = read_term_from_atom(&frame, &arg1, &term, &arg3);
 
@@ -306,6 +308,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
             _ => None,
         };
         query.cut();
+        frame.close_frame();
 
         result
     }
@@ -320,12 +323,27 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
     }
 }
 
-pub enum DetQueryError {
+#[derive(Debug, Error)]
+pub enum DetError {
+    #[error("unexpected failure")]
     UnexpectedFailure,
+    #[error("unexpected choice point")]
+    UnexpectedChoicepoint,
+    #[error("exception")]
     Exception,
 }
 
-pub type DetQueryResult = Result<(), DetQueryError>;
+pub type DetResult = Result<(), DetError>;
+
+#[derive(Debug, Error)]
+pub enum SemidetError {
+    #[error("unexpected choice point")]
+    UnexpectedChoicepoint,
+    #[error("exception")]
+    Exception,
+}
+
+pub type SemidetResult = Result<bool, SemidetError>;
 
 pub enum QueryResult<'a> {
     Success,
@@ -488,9 +506,9 @@ mod tests {
         let term1 = context.new_term_ref();
         let term2 = context.new_term_ref();
 
-        assert!(term2.unify(&functor_plus));
-        assert!(term2.unify_arg(1, 40_u64));
-        assert!(term2.unify_arg(2, 2_u64));
+        assert!(term2.unify(&functor_plus).unwrap());
+        assert!(term2.unify_arg(1, 40_u64).unwrap());
+        assert!(term2.unify_arg(2, 2_u64).unwrap());
 
         let query = context.open_query(None, &predicate, &[&term1, &term2]);
         let next = query.next_solution();
@@ -517,9 +535,9 @@ mod tests {
         let term1 = context.new_term_ref();
         let term2 = context.new_term_ref();
 
-        assert!(term2.unify(&functor_plus));
-        assert!(term2.unify_arg(1, 40_u64));
-        assert!(term2.unify_arg(2, 2_u64));
+        assert!(term2.unify(&functor_plus).unwrap());
+        assert!(term2.unify_arg(1, 40_u64).unwrap());
+        assert!(term2.unify_arg(2, 2_u64).unwrap());
 
         {
             let query = context.open_query(None, &predicate, &[&term1, &term2]);
@@ -548,9 +566,9 @@ mod tests {
         let term1 = context.new_term_ref();
         let term2 = context.new_term_ref();
 
-        assert!(term2.unify(&functor_plus));
-        assert!(term2.unify_arg(1, 40_u64));
-        assert!(term2.unify_arg(2, 2_u64));
+        assert!(term2.unify(&functor_plus).unwrap());
+        assert!(term2.unify_arg(1, 40_u64).unwrap());
+        assert!(term2.unify_arg(2, 2_u64).unwrap());
 
         {
             let query = context.open_query(None, &predicate, &[&term1, &term2]);
@@ -580,9 +598,9 @@ mod tests {
         let term1 = context.new_term_ref();
         let term2 = context.new_term_ref();
 
-        assert!(term2.unify(&functor_plus));
-        assert!(term2.unify_arg(1, 40_u64));
-        assert!(term2.unify_arg(2, 2_u64));
+        assert!(term2.unify(&functor_plus).unwrap());
+        assert!(term2.unify_arg(1, 40_u64).unwrap());
+        assert!(term2.unify_arg(2, 2_u64).unwrap());
 
         {
             let query = context.open_query(None, &predicate, &[&term1, &term2]);
@@ -621,7 +639,7 @@ mod tests {
 
         let term = context.term_from_string("member(X, [a,b,c])").unwrap();
         let term_x = context.new_term_ref();
-        assert!(term.unify_arg(1, &term_x));
+        assert!(term.unify_arg(1, &term_x).unwrap());
 
         let query = context.open_call(&term);
         assert!(query.next_solution().is_nonlast_success());
@@ -660,15 +678,15 @@ mod tests {
 
         let term = context.term_from_string("freeze(X, throw(foo))").unwrap();
         let term_x = context.new_term_ref();
-        term.unify_arg(1, &term_x);
+        term.unify_arg(1, &term_x).unwrap();
         let query = context.open_call(&term);
         assert!(query.next_solution().is_last_success());
         query.cut();
 
-        assert!(term_x.unify(42_u64));
+        assert!(term_x.unify(42_u64).unwrap());
 
         let term = context.new_term_ref();
-        term.unify(true);
+        term.unify(true).unwrap();
         let query = context.open_call(&term);
         let next = query.next_solution();
         assert!(next.is_exception());
@@ -682,7 +700,7 @@ mod tests {
 
     predicates! {
         det fn unify_with_42(_context, term) {
-            term.unify(42_u64);
+            term.unify(42_u64).unwrap();
 
             Ok(())
         }
