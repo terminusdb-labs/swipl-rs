@@ -428,7 +428,7 @@ term_putable! {
 
 unsafe impl<'a, T> Unifiable for &'a [T]
 where
-    &'a T: 'static + Unifiable,
+    &'a T: 'a + Unifiable,
 {
     fn unify(&self, term: &Term) -> SemidetResult {
         term.assert_term_handling_possible();
@@ -681,5 +681,38 @@ mod tests {
             [42_u64, 12, 3, 0, 5].as_ref(),
             term.get::<Vec<u64>>().unwrap()
         );
+    }
+
+    #[test]
+    fn unify_term_list() {
+        initialize_swipl_noengine();
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term = context.new_term_ref();
+        let elt1 = context.new_term_ref();
+        let elt2 = context.new_term_ref();
+        elt1.unify(42_u64).unwrap();
+        elt2.unify(43_u64).unwrap();
+        assert!(term.unify([elt1, elt2].as_ref()).unwrap());
+
+        assert_eq!([42_u64, 43].as_ref(), term.get::<Vec<u64>>().unwrap());
+    }
+
+    use crate::{term};
+
+    #[test]
+    fn create_nested_functor_term() {
+        initialize_swipl_noengine();
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let var_term = context.new_term_ref();
+        let _term = term! {context: foo(bar([a,b,42], baz(42, true, #&var_term), quux(Var), quux2(Var)), "hi", yay(OtherVar, #&var_term))};
+        var_term.unify(crate::atom::atomable("hallo")).unwrap();
+
+        // TODO actually query this term for validity
     }
 }

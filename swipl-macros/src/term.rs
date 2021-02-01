@@ -318,18 +318,14 @@ impl List {
         };
 
         // build up list
-        let result = (top,
+        (top,
          quote! {
              #elements_assign
 
              let arr = [#(&#term_idents),*];
              #into.unify(arr.as_ref()).unwrap();
          }
-        );
-
-        println!("{:#?}", result);
-
-        result
+        )
     }
 }
 
