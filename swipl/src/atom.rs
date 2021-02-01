@@ -1,6 +1,6 @@
 use super::context::*;
 use super::term::*;
-use crate::{term_getable, unifiable};
+use crate::{term_getable, term_putable, unifiable};
 use std::convert::TryInto;
 use std::os::raw::c_char;
 use swipl_sys::*;
@@ -132,6 +132,12 @@ where
 term_getable! {
     (Atom, term) => {
         term.get_atom(|a| a.map(|a|a.clone()))
+    }
+}
+
+term_putable! {
+    (self:Atom, term) => {
+        unsafe { PL_put_atom(term.term_ptr(), self.atom); }
     }
 }
 
@@ -295,6 +301,19 @@ where
 term_getable! {
     (Atomable<'static>, term) => {
         term.get_atomable(|a|a.map(|a|a.owned()))
+    }
+}
+
+term_putable! {
+    (self:Atomable<'a>, term) => {
+        unsafe {
+            PL_put_chars(
+                term.term_ptr(),
+                (PL_ATOM | REP_UTF8).try_into().unwrap(),
+                self.name().len().try_into().unwrap(),
+                self.name().as_bytes().as_ptr() as *const c_char,
+            );
+        }
     }
 }
 

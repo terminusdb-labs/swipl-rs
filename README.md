@@ -18,9 +18,10 @@ Implemented so far:
 - prolog calling
 - complex term creation from string (through a prolog call)
 - easy frontend to `call/1` for easy term calling
+- get, put, and unify for all common relevant rust and prolog types
+- macro for generating bindings to prolog predicates
 
 To be implemented (roughly in order of delivery):
-- get, put, and unify for all common relevant rust and prolog types
 - compound term production
 - exception handling
 - macros for easy foreign predicate writing

@@ -2,7 +2,7 @@ use super::atom::*;
 use super::consts::*;
 use super::context::*;
 use super::term::*;
-use crate::{term_getable, unifiable};
+use crate::{term_getable, term_putable, unifiable};
 use std::convert::TryInto;
 use swipl_sys::*;
 
@@ -86,6 +86,12 @@ term_getable! {
             Some(unsafe { Functor::wrap(functor) })
         }
 
+    }
+}
+
+term_putable! {
+    (self: Functor, term) => {
+        unsafe {PL_put_functor(term.term_ptr(), self.functor)};
     }
 }
 
