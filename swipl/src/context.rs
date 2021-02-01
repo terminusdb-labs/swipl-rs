@@ -242,7 +242,11 @@ unsafe impl<'a> QueryableContextType for ActivatedEngine<'a> {}
 unsafe impl QueryableContextType for Frame {}
 
 prolog! {
+    #[module("user")]
     fn read_term_from_atom(atom_term, result, options);
+    #[module("user")]
+    #[name("call")]
+    fn open_call(term);
 }
 
 impl<'a, T: QueryableContextType> Context<'a, T> {
@@ -313,13 +317,8 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         result
     }
 
-    pub fn open_call(&self, t: &Term) -> Context<Query> {
-        // TODO: must cache this
-        let functor_call = self.new_functor("call", 1);
-        let module = self.new_module("user");
-        let predicate = self.new_predicate(&functor_call, &module);
-
-        self.open_query(None, &predicate, &[&t])
+    pub fn open_call(&'a self, t: &Term<'a>) -> Context<'a, Query> {
+        open_call(self, t)
     }
 }
 
