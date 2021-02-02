@@ -46,7 +46,7 @@ pub unsafe fn register_foreign_in_module(
     arity: u16,
     deterministic: bool,
     meta: Option<&str>,
-    function_ptr: unsafe extern "C" fn(terms: term_t, arity: c_int, control: *mut c_void) -> usize,
+    function_ptr: unsafe extern "C" fn(terms: term_t, arity: c_int, control: *mut c_void) -> isize,
 ) -> bool {
     if meta.is_some() && meta.unwrap().len() != arity as usize {
         panic!("supplied a meta argument that is not of equal length to the arity");

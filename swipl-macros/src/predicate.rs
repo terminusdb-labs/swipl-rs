@@ -178,7 +178,7 @@ impl ForeignPredicateDefinitionImpl for DetForeignPredicateDefinition {
                     term: #crt::sys::term_t,
                     arity: std::os::raw::c_int,
                     _control: *mut std::os::raw::c_void
-                ) -> usize {
+                ) -> isize {
                     if #known_arity as usize != arity as usize {
                         // TODO actually throw an error
                         return 0;
@@ -200,8 +200,8 @@ impl ForeignPredicateDefinitionImpl for DetForeignPredicateDefinition {
 
                     match result {
                         Ok(_) => 1,
-                        // TODO actually error
-                        Err(_) => 0
+                        // TODO actually error correctly
+                        Err(_) => -1
                     }
                 }
             },

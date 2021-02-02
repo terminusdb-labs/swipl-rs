@@ -397,7 +397,7 @@ impl Tuple {
 
         let final_setup = quote! {
             let cur_ident = __swipl_frame.new_term_ref();
-            cur_ident.unify(#into).unwrap();
+            cur_ident.unify(&#into).unwrap();
 
             let comma_functor = __swipl_frame.new_functor(",", 2);
             cur_ident.unify(&comma_functor).unwrap();
@@ -411,7 +411,6 @@ impl Tuple {
             // - make current the second element
             let term_ident = &term_idents[i];
             terms_chain.push(quote! {
-                println!("moo");
                 cur_ident.unify(&comma_functor).unwrap();
                 cur_ident.unify_arg(1, &#term_ident).unwrap();
                 let next_ident = __swipl_frame.new_term_ref();
