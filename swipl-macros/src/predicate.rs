@@ -1,4 +1,5 @@
 use crate::util::*;
+use crate::kw;
 
 use proc_macro;
 use proc_macro2::{Span, TokenStream};
@@ -215,21 +216,131 @@ impl ForeignPredicateDefinitionImpl for DetForeignPredicateDefinition {
         name: Option<&LitStr>,
         module: Option<&LitStr>,
     ) -> TokenStream {
+        self.0.generate_registration(trampoline_name, visibility, name, module)
+    }
+
+    fn generate_frontend(&self) -> TokenStream {
+        todo!();
+    }
+}
+
+struct SemidetForeignPredicateDefinition(BasicForeignPredicateDefinition);
+impl Parse for SemidetForeignPredicateDefinition {
+    fn parse(input: ParseStream) -> Result<Self> {
+        input.parse::<kw::semidet>()?;
+        Ok(Self(BasicForeignPredicateDefinition::parse(input)?))
+    }
+}
+impl ForeignPredicateDefinitionImpl for SemidetForeignPredicateDefinition {
+    fn generate_definition(&self) -> (Ident, TokenStream) {
+        let crt = crate_token();
+        let definition_name = Ident::new(
+            &format!("__{}_definition", self.0.predicate_rust_name),
+            Span::call_site(),
+        );
+        let context_arg = &self.0.params[0];
+        let term_args = self.0.params.iter().skip(1);
+        let code = &self.0.body;
+        (
+            definition_name.clone(),
+            quote! {
+                fn #definition_name<'a, C: #crt::context::QueryableContextType>(#context_arg: &'a #crt::context::Context<'a, C>, #(#term_args : &#crt::term::Term<'a>),*) -> #crt::context::SemidetResult {
+                    #code
+                }
+            },
+        )
+    }
+
+    fn generate_trampoline(&self, definition_name: &Ident) -> (Ident, TokenStream) {
+        let crt = crate_token();
+        let trampoline_name = Ident::new(
+            &format!("__{}_trampoline", self.0.predicate_rust_name),
+            Span::call_site(),
+        );
+        let known_arity = self.0.params.len() - 1;
+        let term_args = (0..known_arity).map(|i| quote! {&terms[#i]});
+        (
+            trampoline_name.clone(),
+            quote! {
+                unsafe extern "C" fn #trampoline_name(
+                    term: #crt::sys::term_t,
+                    arity: std::os::raw::c_int,
+                    _control: *mut std::os::raw::c_void
+                ) -> isize {
+                    if #known_arity as usize != arity as usize {
+                        // TODO actually throw an error
+                        return 0;
+                    }
+
+                    let context = #crt::context::unmanaged_engine_context();
+                    let mut terms: [std::mem::MaybeUninit<#crt::term::Term>;#known_arity] =
+                        std::mem::MaybeUninit::uninit().assume_init();
+
+                    for i in 0..#known_arity {
+                        let term_ref = context.wrap_term_ref(term+i);
+                        terms[i] = std::mem::MaybeUninit::new(term_ref);
+                    }
+
+                    let terms: [#crt::term::Term;#known_arity] = std::mem::transmute(terms);
+
+                    let result = #definition_name(&context,
+                                                  #(#term_args),*);
+
+                    match result {
+                        Ok(true) => 1,
+                        Ok(false) => 0,
+                        // TODO actually error correctly
+                        Err(_) => -1
+                    }
+                }
+            },
+        )
+    }
+
+    fn generate_registration(
+        &self,
+        trampoline_name: &Ident,
+        visibility: &Visibility,
+        name: Option<&LitStr>,
+        module: Option<&LitStr>,
+    ) -> TokenStream {
+        self.0.generate_registration(trampoline_name, visibility, name, module)
+    }
+
+    fn generate_frontend(&self) -> TokenStream {
+        todo!();
+    }
+}
+
+struct BasicForeignPredicateDefinition {
+    predicate_rust_name: Ident,
+    params: Vec<Ident>,
+    body: Block,
+}
+
+impl BasicForeignPredicateDefinition {
+    fn generate_registration(
+        &self,
+        trampoline_name: &Ident,
+        visibility: &Visibility,
+        name: Option<&LitStr>,
+        module: Option<&LitStr>,
+    ) -> TokenStream {
         let crt = crate_token();
         let registration_name = Ident::new(
-            &format!("register_{}", self.0.predicate_rust_name),
+            &format!("register_{}", self.predicate_rust_name),
             Span::call_site(),
         );
         let module_lit = match module {
             None => quote! {None},
             Some(m) => quote! {Some(#m)},
         };
-        let rust_name = format!("{}", self.0.predicate_rust_name);
+        let rust_name = format!("{}", self.predicate_rust_name);
         let name_lit = match name {
             None => quote! {#rust_name},
             Some(n) => quote! {#n},
         };
-        let arity = self.0.params.len() - 1;
+        let arity = self.params.len() - 1;
 
         quote! {
             #visibility fn #registration_name() -> bool {
@@ -247,47 +358,6 @@ impl ForeignPredicateDefinitionImpl for DetForeignPredicateDefinition {
             }
         }
     }
-
-    fn generate_frontend(&self) -> TokenStream {
-        todo!();
-    }
-}
-
-struct SemidetForeignPredicateDefinition(BasicForeignPredicateDefinition);
-impl Parse for SemidetForeignPredicateDefinition {
-    fn parse(input: ParseStream) -> Result<Self> {
-        input.parse::<kw::semidet>()?;
-        Ok(Self(BasicForeignPredicateDefinition::parse(input)?))
-    }
-}
-impl ForeignPredicateDefinitionImpl for SemidetForeignPredicateDefinition {
-    fn generate_definition(&self) -> (Ident, TokenStream) {
-        todo!();
-    }
-
-    fn generate_trampoline(&self, _definition_name: &Ident) -> (Ident, TokenStream) {
-        todo!();
-    }
-
-    fn generate_registration(
-        &self,
-        _trampoline_name: &Ident,
-        _visibility: &Visibility,
-        _name: Option<&LitStr>,
-        _module: Option<&LitStr>,
-    ) -> TokenStream {
-        todo!();
-    }
-
-    fn generate_frontend(&self) -> TokenStream {
-        todo!();
-    }
-}
-
-struct BasicForeignPredicateDefinition {
-    predicate_rust_name: Ident,
-    params: Vec<Ident>,
-    body: Block,
 }
 
 impl Parse for BasicForeignPredicateDefinition {
@@ -338,11 +408,4 @@ impl ForeignPredicateDefinitionBlock {
             .map(|definition| definition.generate());
         quote! {#(#code)*}
     }
-}
-
-mod kw {
-    use syn::custom_keyword;
-    custom_keyword!(det);
-    custom_keyword!(semidet);
-    custom_keyword!(nondet);
 }
