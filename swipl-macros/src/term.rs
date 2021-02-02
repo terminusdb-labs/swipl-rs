@@ -23,17 +23,17 @@ pub fn term_macro(stream: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
     let term_ident = term_ident_from_id(0);
     let mut vars = HashMap::new();
-    let (_, code) = definition.term.generate(&context, 0, 1, &mut vars);
+    let (_, code) = definition.term.generate( 0, 1, &mut vars);
 
     let gen = quote!{
         {
-            let #term_ident = #context.new_term_ref();
+           let #term_ident = #context.new_term_ref();
 
-            let frame = #context.open_frame();
+            let __swipl_frame = #context.open_frame();
 
             #code
 
-            frame.close_frame();
+            __swipl_frame.close_frame();
 
             #term_ident
         }
@@ -59,20 +59,24 @@ impl Parse for OuterTerm {
 enum Term {
     Functor(Functor),
     List(List),
+    Tuple(Tuple),
     Leaf(Leaf),
 }
 
 impl Term {
-    fn generate(&self, context: &Ident, into_id: usize, top: usize, var_map: &mut HashMap<String, usize>) -> (usize, TokenStream) {
+    fn generate(&self, into_id: usize, top: usize, var_map: &mut HashMap<String, usize>) -> (usize, TokenStream) {
         match self {
             Self::Functor(f) => {
-                f.generate(context, into_id, top, var_map)
+                f.generate(into_id, top, var_map)
             },
             Self::List(l) => {
-                l.generate(context, into_id, top, var_map)
+                l.generate(into_id, top, var_map)
             },
+            Self::Tuple(c) => {
+                c.generate(into_id, top, var_map)
+            }
             Self::Leaf(l) => {
-                l.generate(context, into_id, top, var_map)
+                l.generate(into_id, top, var_map)
             }
         }
     }
@@ -87,6 +91,10 @@ impl Parse for Term {
         else if input.peek(Bracket) {
             let l = input.parse::<List>()?;
             Ok(Self::List(l))
+        }
+        else if input.peek(Paren) {
+            let c = input.parse::<Tuple>()?;
+            Ok(Self::Tuple(c))
         }
         else {
             let l = input.parse::<Leaf>()?;
@@ -106,7 +114,7 @@ enum Leaf {
 }
 
 impl Leaf {
-    fn generate(&self, _context: &Ident, into_id: usize, top: usize, vars: &mut HashMap<String, usize>) -> (usize, TokenStream) {
+    fn generate(&self, into_id: usize, top: usize, vars: &mut HashMap<String, usize>) -> (usize, TokenStream) {
         let into = term_ident_from_id(into_id);
         let crt = crate_token();
         (top, // no term allocations happen here, so return same
@@ -197,7 +205,7 @@ struct Functor {
 }
 
 impl Functor {
-    fn generate(&self, context: &Ident, into_id: usize, mut top: usize, vars: &mut HashMap<String, usize>) -> (usize, TokenStream) {
+    fn generate(&self, into_id: usize, mut top: usize, vars: &mut HashMap<String, usize>) -> (usize, TokenStream) {
         let crt = crate_token();
         let into = term_ident_from_id(into_id);
         let arity = self.params.len();
@@ -205,7 +213,7 @@ impl Functor {
 
         let functor_put = quote! {
             {
-                let functor = #context.new_functor(#head_str, std::convert::TryInto::try_into(#arity).unwrap());
+                let functor = __swipl_frame.new_functor(#head_str, std::convert::TryInto::try_into(#arity).unwrap());
                 #into.unify(&functor).unwrap();
             }
         };
@@ -221,13 +229,13 @@ impl Functor {
                 top += arity+1;
                 let terms_init = term_idents.iter().enumerate()
                     .map(|(ix, ident)| quote! {
-                        let #ident = unsafe {#crt::term::Term::new(#term_id_ident + #ix, &#context)};
+                        let #ident = unsafe {#crt::term::Term::new(#term_id_ident + #ix, &__swipl_frame)};
                         #into.unify_arg(#ix+1, &#ident).unwrap();
                     });
 
                 let mut terms_fill = Vec::with_capacity(arity);
                 for (i,p) in self.params.iter().enumerate() {
-                    let (new_top, gen) = p.generate(context, term_id+i, top, vars);
+                    let (new_top, gen) = p.generate(term_id+i, top, vars);
                     top = new_top;
                     terms_fill.push(gen);
                 }
@@ -274,7 +282,7 @@ struct List {
 }
 
 impl List {
-    fn generate(&self, context: &Ident, into_id: usize, mut top: usize, vars: &mut HashMap<String, usize>) -> (usize, TokenStream) {
+    fn generate(&self, into_id: usize, mut top: usize, vars: &mut HashMap<String, usize>) -> (usize, TokenStream) {
         let crt = crate_token();
         let into = term_ident_from_id(into_id);
         let len = self.elements.len();
@@ -293,7 +301,7 @@ impl List {
                 // initialize terms
                 let terms_init = term_idents.iter().enumerate()
                     .map(|(ix, ident)| quote! {
-                        let #ident = unsafe {#crt::term::Term::new(#term_id_ident + #ix, &#context)};
+                        let #ident = unsafe {#crt::term::Term::new(#term_id_ident + #ix, &__swipl_frame)};
                     });
 
                 // one extra for the term_id_ident ref
@@ -302,7 +310,7 @@ impl List {
                 // generate code for term construction
                 let mut terms_fill = Vec::with_capacity(len);
                 for (i,e) in self.elements.iter().enumerate() {
-                    let (new_top, gen) = e.generate(context, term_id+i, top, vars);
+                    let (new_top, gen) = e.generate(term_id+i, top, vars);
                     top = new_top;
                     terms_fill.push(gen);
                 }
@@ -338,5 +346,109 @@ impl Parse for List {
         let elements: Vec<_> = elements_punct.into_iter().collect();
 
         Ok(Self { elements })
+    }
+}
+
+struct Tuple {
+    terms: Vec<Term>
+}
+
+impl Tuple {
+    fn generate(&self, into_id: usize, mut top: usize, vars: &mut HashMap<String, usize>) -> (usize, TokenStream) {
+        let len = self.terms.len();
+
+        if len == 1 {
+            // this is not actually a tuple. Just chain into generating the term
+            return self.terms[0].generate(into_id, top, vars);
+        }
+
+        let crt = crate_token();
+        let into = term_ident_from_id(into_id);
+
+        // create term names for all the elements
+        let term_id_ident = Ident::new(&format!("__swipl_ident_refs_{}", top), Span::call_site());
+        let term_id = top+1;
+        let term_idents: Vec<_> = (0..len).map(|i| term_id+i)
+            .map(term_ident_from_id)
+            .collect();
+
+        // initialize terms
+        let terms_init = term_idents.iter().enumerate()
+            .map(|(ix, ident)| quote! {
+                let #ident = unsafe {#crt::term::Term::new(#term_id_ident + #ix, &__swipl_frame)};
+            });
+
+        top += len + 1;
+
+        // generate code for term construction
+        let mut terms_fill = Vec::with_capacity(len);
+        for (i,e) in self.terms.iter().enumerate() {
+            let (new_top, gen) = e.generate(term_id+i, top, vars);
+            top = new_top;
+            terms_fill.push(gen);
+        }
+
+        let terms_assign = quote!{
+            let #term_id_ident = unsafe { #crt::sys::PL_new_term_refs(std::convert::TryInto::try_into(#len).unwrap()) };
+            #(#terms_init)*
+
+            #(#terms_fill)*
+        };
+
+        let final_setup = quote! {
+            let cur_ident = __swipl_frame.new_term_ref();
+            cur_ident.unify(#into).unwrap();
+
+            let comma_functor = __swipl_frame.new_functor(",", 2);
+            cur_ident.unify(&comma_functor).unwrap();
+        };
+
+        let mut terms_chain = Vec::with_capacity(len);
+        for i in 0..(len-1) {
+            // for each element except the last one, we need to
+            // - unify comma functor with current
+            // - unify element with first
+            // - make current the second element
+            let term_ident = &term_idents[i];
+            terms_chain.push(quote! {
+                println!("moo");
+                cur_ident.unify(&comma_functor).unwrap();
+                cur_ident.unify_arg(1, &#term_ident).unwrap();
+                let next_ident = __swipl_frame.new_term_ref();
+                cur_ident.unify_arg(2, &next_ident).unwrap();
+                cur_ident.put(&next_ident);
+            });
+        }
+
+        // for the last element, we only need to put it in the second position
+        let last_elt = &term_idents[len-1];
+        terms_chain.push(quote! {
+            cur_ident.unify(&#last_elt).unwrap();
+        });
+
+        // build up tuple
+        (top,
+         quote! {
+             #terms_assign
+
+             #final_setup
+             #(#terms_chain)*
+         }
+        )
+    }
+}
+
+impl Parse for Tuple {
+    fn parse(input: &ParseBuffer) -> Result<Self> {
+        let terms_stream;
+        parenthesized!(terms_stream in input);
+        let terms_punct: Punctuated<Term, Token![,]> =
+            terms_stream.parse_terminated(Term::parse)?;
+        let terms: Vec<_> = terms_punct.into_iter().collect();
+        if terms.len() == 0 {
+            terms_stream.error("parenthesized list of expressions should contain at least one element");
+        }
+
+        Ok(Self { terms })
     }
 }
