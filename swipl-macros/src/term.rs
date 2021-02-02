@@ -6,6 +6,7 @@ use syn::parse::{Parse, ParseBuffer, Result};
 use syn::token::{Paren, Bracket};
 use syn::punctuated::Punctuated;
 use std::collections::HashMap;
+use syn::ext::IdentExt;
 
 use crate::util::*;
 
@@ -144,7 +145,12 @@ impl Leaf {
              },
              Self::Variable(v) => {
                  let var_name = format!("{}", v);
-                 if let Some(var_id) = vars.get(&var_name) {
+                 if var_name == "_" {
+                     // fully anonymous, should always yield a new var
+                     // so we don't actually have to do anything, as that is what it already is.
+                     quote!{}
+                 }
+                 else if let Some(var_id) = vars.get(&var_name) {
                      let var_ident = term_ident_from_id(*var_id);
                      quote!{#into.unify(&#var_ident).unwrap();}
                  }
@@ -171,10 +177,14 @@ impl Parse for Leaf {
             let expr = input.parse::<Expr>()?;
             Ok(Self::TemplateExpr(expr))
         }
+        else if input.peek(Token![_]) {
+            Ok(Self::Variable(input.call(Ident::parse_any)?))
+        }
         else if input.peek(Ident) {
             let ident = input.parse::<Ident>()?;
             let name = format!("{}", ident);
-            if name.chars().next().unwrap().is_uppercase() {
+            let first_char = name.chars().next().unwrap();
+            if first_char == '_' || first_char.is_uppercase() {
                 Ok(Self::Variable(ident))
             }
             else {

@@ -710,7 +710,7 @@ mod tests {
         let context: Context<_> = activation.into();
 
         let var_term = context.new_term_ref();
-        let _term = term! {context: foo(bar([a,b,42], baz(42, (1,((3)),true), #&var_term), quux(Var), quux2(Var)), "hi", yay(OtherVar, #&var_term))};
+        let _term = term! {context: foo(bar([a,b,42], baz(42, (1,((3)),true), #&var_term), quux(Var), quux2(Var)), "hi", yay(OtherVar, #&var_term), _, _, _a, _a)};
         var_term.unify(crate::atom::atomable("hallo")).unwrap();
 
         // TODO actually query this term for validity
