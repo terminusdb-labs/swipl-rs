@@ -14,6 +14,15 @@ use swipl_macros::prolog;
 
 use thiserror::Error;
 
+pub struct ExceptionTerm<'a>(Term<'a>);
+
+impl<'a> std::ops::Deref for ExceptionTerm<'a> {
+    type Target = Term<'a>;
+    fn deref(&self) -> &Term<'a> {
+        &self.0
+    }
+}
+
 pub struct Context<'a, T: ContextType> {
     parent: Option<&'a dyn ContextParent>,
     context: T,
@@ -27,8 +36,38 @@ impl<'a, T: ContextType> Context<'a, T> {
             panic!("tried to use inactive context");
         }
     }
+
     pub fn engine_ptr(&self) -> PL_engine_t {
         self.engine
+    }
+
+    pub unsafe fn wrap_term_ref(&self, term: term_t) -> Term {
+        self.assert_activated();
+        Term::new(term, self)
+    }
+
+
+    pub fn has_exception(&self) -> bool {
+        self.assert_activated();
+
+        unsafe { PL_exception(0)  != 0 }
+    }
+
+    pub fn clear_exception(&self) {
+        self.assert_activated();
+
+        unsafe { PL_clear_exception() }
+    }
+
+    pub fn exception<'b>(&'b mut self) -> Option<ExceptionTerm<'b>> {
+        let exception = unsafe { PL_exception(0) };
+        if exception == 0 {
+            None
+        }
+        else {
+            let term = unsafe { self.wrap_term_ref(exception) };
+            Some(ExceptionTerm(term))
+        }
     }
 }
 
@@ -161,11 +200,6 @@ unsafe impl FrameableContextType for Frame {}
 unsafe impl FrameableContextType for Query {}
 
 impl<'a, C: FrameableContextType> Context<'a, C> {
-    pub unsafe fn wrap_term_ref(&self, term: term_t) -> Term {
-        self.assert_activated();
-        Term::new(term, self)
-    }
-
     pub fn open_frame(&self) -> Context<Frame> {
         self.assert_activated();
         let fid = unsafe { PL_open_foreign_frame() };
@@ -265,7 +299,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         let context = context
             .map(|c| c.module_ptr())
             .unwrap_or(std::ptr::null_mut());
-        let flags = PL_Q_NORMAL | PL_Q_PASS_EXCEPTION | PL_Q_EXT_STATUS;
+        let flags = PL_Q_NORMAL | PL_Q_CATCH_EXCEPTION | PL_Q_EXT_STATUS;
         let terms = unsafe { PL_new_term_refs(args.len().try_into().unwrap()) };
         for i in 0..args.len() {
             let term = unsafe { self.wrap_term_ref(terms + i) };
@@ -317,6 +351,21 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
     pub fn open_call(&'a self, t: &Term<'a>) -> Context<'a, Query> {
         open_call(self, t)
     }
+
+    pub fn exception_copy<'b>(&'b self) -> Option<Term<'b>> {
+        self.assert_activated();
+
+        let exception = unsafe {PL_exception(0)};
+        if exception != 0 {
+            let exception_term = unsafe { Term::new(exception, self) };
+            let return_term = self.new_term_ref();
+            return_term.unify(exception_term).unwrap();
+            Some(return_term)
+        }
+        else {
+            None
+        }
+    }
 }
 
 #[derive(Debug, Error)]
@@ -358,14 +407,14 @@ pub fn semidet_to_det_result(result: SemidetResult) -> DetResult {
 
 pub type SemidetResult = Result<bool, SemidetError>;
 
-pub enum QueryResult<'a> {
+pub enum QueryResult {
     Success,
     SuccessLast,
     Failure,
-    Exception(Term<'a>),
+    Exception
 }
 
-impl<'a> QueryResult<'a> {
+impl QueryResult {
     pub fn is_success(&self) -> bool {
         match self {
             Self::Success => true,
@@ -405,17 +454,19 @@ impl<'a> QueryResult<'a> {
 
     pub fn is_exception(&self) -> bool {
         match self {
-            Self::Exception(_) => true,
+            Self::Exception => true,
             _ => false,
         }
     }
 
+    /*
     pub fn exception(&self) -> Option<Term> {
         match self {
-            Self::Exception(term) => Some(term.clone()),
+            Self::Exception => Some(term.clone()),
             _ => None,
         }
     }
+    */
 }
 
 impl<'a> Context<'a, Query> {
@@ -425,11 +476,12 @@ impl<'a> Context<'a, Query> {
         // TODO handle exceptions properly
         match result {
             -1 => {
-                //let exception = unsafe { PL_exception(self.context.qid) };
-                let exception = unsafe { PL_exception(0) };
-                let exception_term = unsafe { self.wrap_term_ref(exception) };
-                QueryResult::Exception(exception_term)
-            }
+                let exception = unsafe { PL_exception(self.context.qid) };
+                // rethrow this exception but as the special 0 exception which remains alive
+                unsafe { PL_raise_exception(exception) };
+
+                QueryResult::Exception
+            },
             0 => QueryResult::Failure,
             1 => QueryResult::Success,
             2 => QueryResult::SuccessLast,
@@ -700,10 +752,10 @@ mod tests {
 
         let term = context.new_term_ref();
         term.unify(true).unwrap();
-        let query = context.open_call(&term);
+        let mut query = context.open_call(&term);
         let next = query.next_solution();
         assert!(next.is_exception());
-        let exception_term = next.exception().unwrap();
+        let exception_term = query.exception().unwrap();
 
         let atomable: Atomable = exception_term.get().unwrap();
         assert_eq!("foo", atomable.name());
