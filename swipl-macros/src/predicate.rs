@@ -1,5 +1,5 @@
-use crate::util::*;
 use crate::kw;
+use crate::util::*;
 
 use proc_macro;
 use proc_macro2::{Span, TokenStream};
@@ -216,7 +216,8 @@ impl ForeignPredicateDefinitionImpl for DetForeignPredicateDefinition {
         name: Option<&LitStr>,
         module: Option<&LitStr>,
     ) -> TokenStream {
-        self.0.generate_registration(trampoline_name, visibility, name, module)
+        self.0
+            .generate_registration(trampoline_name, visibility, name, module)
     }
 
     fn generate_frontend(&self) -> TokenStream {
@@ -304,7 +305,8 @@ impl ForeignPredicateDefinitionImpl for SemidetForeignPredicateDefinition {
         name: Option<&LitStr>,
         module: Option<&LitStr>,
     ) -> TokenStream {
-        self.0.generate_registration(trampoline_name, visibility, name, module)
+        self.0
+            .generate_registration(trampoline_name, visibility, name, module)
     }
 
     fn generate_frontend(&self) -> TokenStream {

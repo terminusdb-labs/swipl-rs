@@ -700,7 +700,7 @@ mod tests {
         assert_eq!([42_u64, 43].as_ref(), term.get::<Vec<u64>>().unwrap());
     }
 
-    use crate::{term};
+    use crate::term;
 
     #[test]
     fn create_nested_functor_term() {

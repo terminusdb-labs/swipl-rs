@@ -160,7 +160,13 @@ impl Engine {
 
         if self
             .active
-            .compare_and_swap(false, true, atomic::Ordering::Acquire)
+            .compare_exchange(
+                false,
+                true,
+                atomic::Ordering::Relaxed,
+                atomic::Ordering::Relaxed,
+            )
+            .is_err()
         {
             panic!("engine already activated");
         }

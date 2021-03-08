@@ -1,5 +1,5 @@
-mod util;
 mod kw;
+mod util;
 
 mod predicate;
 mod prolog;

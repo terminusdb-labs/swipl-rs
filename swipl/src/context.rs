@@ -6,8 +6,8 @@ use super::module::*;
 use super::predicate::*;
 use super::term::*;
 
+use std::cell::Cell;
 use std::convert::TryInto;
-use std::sync::atomic::{AtomicBool, Ordering};
 use swipl_sys::*;
 
 use swipl_macros::prolog;
@@ -18,12 +18,12 @@ pub struct Context<'a, T: ContextType> {
     parent: Option<&'a dyn ContextParent>,
     context: T,
     engine: PL_engine_t,
-    activated: AtomicBool,
+    activated: Cell<bool>,
 }
 
 impl<'a, T: ContextType> Context<'a, T> {
     pub fn assert_activated(&self) {
-        if !self.activated.load(Ordering::Relaxed) {
+        if !self.activated.get() {
             panic!("tried to use inactive context");
         }
     }
@@ -38,10 +38,7 @@ trait ContextParent {
 
 impl<'a, T: ContextType> ContextParent for Context<'a, T> {
     fn reactivate(&self) {
-        if self
-            .activated
-            .compare_and_swap(false, true, Ordering::Acquire)
-        {
+        if self.activated.replace(true) {
             panic!("context already active");
         }
     }
@@ -80,7 +77,7 @@ impl<'a> Into<Context<'a, ActivatedEngine<'a>>> for EngineActivation<'a> {
             parent: None,
             context,
             engine,
-            activated: AtomicBool::new(true),
+            activated: Cell::new(true),
         }
     }
 }
@@ -105,7 +102,7 @@ pub unsafe fn unmanaged_engine_context() -> Context<'static, UnmanagedContext> {
         parent: None,
         context: UnmanagedContext { _x: false },
         engine: current,
-        activated: AtomicBool::new(true),
+        activated: Cell::new(true),
     }
 }
 
@@ -178,12 +175,12 @@ impl<'a, C: FrameableContextType> Context<'a, C> {
             state: FrameState::Active,
         };
 
-        self.activated.store(false, Ordering::Relaxed);
+        self.activated.set(false);
         Context {
             parent: Some(self),
             context: frame,
             engine: self.engine,
-            activated: AtomicBool::new(true),
+            activated: Cell::new(true),
         }
     }
 }
@@ -286,12 +283,12 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
 
         let query = Query { qid, closed: false };
 
-        self.activated.store(false, Ordering::Relaxed);
+        self.activated.set(false);
         Context {
             parent: Some(self),
             context: query,
             engine: self.engine,
-            activated: AtomicBool::new(true),
+            activated: Cell::new(true),
         }
     }
 
