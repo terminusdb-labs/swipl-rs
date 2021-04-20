@@ -14,6 +14,22 @@ use swipl_macros::prolog;
 
 use thiserror::Error;
 
+pub unsafe fn with_cleared_exception<R>(f: impl FnOnce() -> R) -> R {
+    let error_term_ref = PL_exception(0);
+    if error_term_ref != 0 {
+        let backup_term_ref = PL_new_term_ref();
+        assert!(PL_unify(backup_term_ref, error_term_ref) != 0);
+        PL_clear_exception();
+        let result = f();
+        PL_raise_exception(backup_term_ref);
+        PL_reset_term_refs(backup_term_ref);
+
+        result
+    } else {
+        f()
+    }
+}
+
 pub struct ExceptionTerm<'a>(Term<'a>);
 
 impl<'a> ExceptionTerm<'a> {
@@ -348,7 +364,7 @@ prolog! {
     fn read_term_from_atom(atom_term, result, options);
     #[module("user")]
     #[name("call")]
-    fn open_call(term);
+    pub fn open_call(term);
 }
 
 impl<'a, T: QueryableContextType> Context<'a, T> {
@@ -929,12 +945,6 @@ mod tests {
 
         assert!(!e.is_var());
         assert!(check_term.unify(e).unwrap());
-    }
-
-    predicates! {
-        det fn unify_with_42(_context, term) {
-            term.unify_det(42_u64)
-        }
     }
 
     #[test]

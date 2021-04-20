@@ -3,6 +3,7 @@ use super::context::*;
 use std::convert::TryInto;
 use std::fmt::Debug;
 use std::os::raw::c_char;
+use swipl_macros::term;
 use swipl_sys::*;
 
 use std::fmt;
@@ -309,14 +310,34 @@ unifiable! {
 
 term_getable! {
     (u64, term) => {
-        let mut out = 0;
-        let result = unsafe { PL_cvt_i_uint64(term.term, &mut out) };
-        if result == 0 {
-            None
+        if unsafe { PL_is_integer(term.term) == 0 } {
+            return None;
         }
-        else {
-            Some(out)
-        }
+
+        // there's a possibility for this function to error, we need to check.
+        // but there may already be an error waiting, so we need to stash that.
+        unsafe {with_cleared_exception(|| {
+            let mut out = 0;
+            let result = PL_cvt_i_uint64(term.term, &mut out);
+            let error_term_ref = PL_exception(0);
+            if error_term_ref != 0 {
+                let ctx = unmanaged_engine_context();
+                let error_term = Term::new(error_term_ref, &ctx);
+                let comparison_term = term!{ctx: error(domain_error(not_less_than_zero, _), _)};
+                // really should be a non-unifying compare but meh
+                if comparison_term.unify(&error_term).unwrap() {
+                    PL_clear_exception();
+                }
+                comparison_term.reset();
+                None
+            }
+            else if result == 0 {
+                None
+            }
+            else {
+                Some(out)
+            }
+        })}
     }
 }
 
@@ -337,7 +358,7 @@ unifiable! {
 term_getable! {
     (i64, term) => {
         let mut out = 0;
-        let result = unsafe { PL_cvt_i_int64(term.term, &mut out) };
+        let result = unsafe { PL_get_int64(term.term, &mut out) };
         if result == 0 {
             None
         }
