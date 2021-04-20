@@ -955,6 +955,12 @@ mod tests {
         let _query2 = prolog_arithmetic(&context, &term1, &term2);
     }
 
+    predicates! {
+        det fn unify_with_42(_context, term) -> DetResult {
+            term.unify_det(42_u64)
+        }
+    }
+
     #[test]
     fn register_foreign_predicate() {
         initialize_swipl_noengine();

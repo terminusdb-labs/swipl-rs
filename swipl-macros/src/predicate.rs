@@ -161,6 +161,9 @@ impl Parse for DetForeignPredicateDefinition {
             ));
         }
 
+        input.parse::<Token![->]>()?;
+        input.parse::<kw::DetResult>()?;
+
         let body = input.parse()?;
 
         Ok(Self {
@@ -306,10 +309,7 @@ impl Parse for SemidetForeignPredicateDefinition {
             ));
         }
         input.parse::<Token![->]>()?;
-        let tp: Ident = input.parse()?;
-        if tp.to_string() != "SemidetResult" {
-            return Err(syn::Error::new(tp.span(), "not a bool"));
-        }
+        input.parse::<kw::SemidetResult>()?;
 
         let body = input.parse()?;
 
