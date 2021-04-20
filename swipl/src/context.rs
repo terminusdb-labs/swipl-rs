@@ -16,6 +16,14 @@ use thiserror::Error;
 
 pub struct ExceptionTerm<'a>(Term<'a>);
 
+impl<'a> ExceptionTerm<'a> {
+    pub fn clear_exception(self) {
+        self.assert_term_handling_possible();
+
+        unsafe { PL_clear_exception() }
+    }
+}
+
 impl<'a> std::ops::Deref for ExceptionTerm<'a> {
     type Target = Term<'a>;
     fn deref(&self) -> &Term<'a> {
@@ -28,9 +36,20 @@ pub struct Context<'a, T: ContextType> {
     context: T,
     engine: PL_engine_t,
     activated: Cell<bool>,
+    exception_handling: Cell<bool>,
 }
 
 impl<'a, T: ContextType> Context<'a, T> {
+    fn new_activated(parent: Option<&'a dyn ContextParent>, context: T, engine: PL_engine_t) -> Self {
+        Context {
+            parent: parent,
+            context,
+            engine,
+            activated: Cell::new(true),
+            exception_handling: Cell::new(false),
+        }
+    }
+
     pub fn assert_activated(&self) {
         if !self.activated.get() {
             panic!("tried to use inactive context");
@@ -54,20 +73,33 @@ impl<'a, T: ContextType> Context<'a, T> {
     }
 
     pub fn clear_exception(&self) {
-        self.assert_activated();
-
-        unsafe { PL_clear_exception() }
+        self.with_exception(|e| match e {
+            None => (),
+            Some(e) => e.clear_exception()
+        })
     }
 
-    pub fn exception<'b>(&'b mut self) -> Option<ExceptionTerm<'b>> {
+    pub fn with_exception<'b, R>(&'b self, f: impl Fn(Option<ExceptionTerm<'b>>) -> R) -> R {
+        self.assert_activated();
+        if self.exception_handling.replace(true) {
+            panic!("re-entered exception handler");
+        }
+
         let exception = unsafe { PL_exception(0) };
-        if exception == 0 {
-            None
-        }
-        else {
-            let term = unsafe { self.wrap_term_ref(exception) };
-            Some(ExceptionTerm(term))
-        }
+        let arg = match exception == 0 {
+            true => None,
+            false => {
+                let term = unsafe { self.wrap_term_ref(exception) };
+                Some(ExceptionTerm(term))
+            }
+        };
+
+        // TODO should we take panics into account when clearing exception handling status?
+        let result = f(arg);
+
+        self.exception_handling.set(false);
+
+        result
     }
 }
 
@@ -112,12 +144,7 @@ impl<'a> Into<Context<'a, ActivatedEngine<'a>>> for EngineActivation<'a> {
         let engine = self.engine_ptr();
         let context = ActivatedEngine { _activation: self };
 
-        Context {
-            parent: None,
-            context,
-            engine,
-            activated: Cell::new(true),
-        }
+        Context::new_activated(None, context, engine)
     }
 }
 
@@ -125,7 +152,7 @@ unsafe impl<'a> ContextType for ActivatedEngine<'a> {}
 
 pub struct UnmanagedContext {
     // only here to prevent automatic construction
-    _x: bool,
+    _x: (),
 }
 unsafe impl ContextType for UnmanagedContext {}
 
@@ -137,12 +164,7 @@ pub unsafe fn unmanaged_engine_context() -> Context<'static, UnmanagedContext> {
         panic!("tried to create an unmanaged engine context, but no engine is active");
     }
 
-    Context {
-        parent: None,
-        context: UnmanagedContext { _x: false },
-        engine: current,
-        activated: Cell::new(true),
-    }
+    Context::new_activated(None, UnmanagedContext { _x: () }, current)
 }
 
 enum FrameState {
@@ -210,12 +232,7 @@ impl<'a, C: FrameableContextType> Context<'a, C> {
         };
 
         self.activated.set(false);
-        Context {
-            parent: Some(self),
-            context: frame,
-            engine: self.engine,
-            activated: Cell::new(true),
-        }
+        Context::new_activated(Some(self), frame, self.engine)
     }
 }
 
@@ -318,12 +335,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         let query = Query { qid, closed: false };
 
         self.activated.set(false);
-        Context {
-            parent: Some(self),
-            context: query,
-            engine: self.engine,
-            activated: Cell::new(true),
-        }
+        Context::new_activated(Some(self), query, self.engine)
     }
 
     pub fn term_from_string(&self, s: &str) -> Option<Term> {
@@ -352,7 +364,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         open_call(self, t)
     }
 
-    pub fn exception_copy<'b>(&'b self) -> Option<Term<'b>> {
+    pub fn exception<'b>(&'b self) -> Option<Term<'b>> {
         self.assert_activated();
 
         let exception = unsafe {PL_exception(0)};
@@ -752,15 +764,17 @@ mod tests {
 
         let term = context.new_term_ref();
         term.unify(true).unwrap();
-        let mut query = context.open_call(&term);
+        let query = context.open_call(&term);
         let next = query.next_solution();
         assert!(next.is_exception());
-        let exception_term = query.exception().unwrap();
+        query.with_exception(|e| {
+            let exception_term = e.unwrap();
+            let atomable: Atomable = exception_term.get().unwrap();
+            assert_eq!("foo", atomable.name());
 
-        let atomable: Atomable = exception_term.get().unwrap();
-        assert_eq!("foo", atomable.name());
+            assert!(term.get::<u64>().is_none());
+        });
 
-        assert!(term.get::<u64>().is_none());
     }
 
     predicates! {
