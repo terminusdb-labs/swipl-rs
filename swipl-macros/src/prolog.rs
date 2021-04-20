@@ -4,7 +4,7 @@ use proc_macro2::{self, Span, TokenStream};
 use quote::quote;
 use syn::parse::{Parse, ParseStream, Result};
 use syn::punctuated::Punctuated;
-use syn::{parenthesized, parse_macro_input, Attribute, Ident, LitStr, Token};
+use syn::{parenthesized, parse_macro_input, Attribute, Ident, LitStr, Token, Visibility};
 
 pub fn prolog_macro(stream: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let predicates = parse_macro_input!(stream as PrologPredicateBlock);
@@ -22,6 +22,7 @@ struct PrologPredicate {
     predicate_name: Option<LitStr>,
     predicate_module: Option<LitStr>,
     doc: Option<Attribute>,
+    visibility: Visibility,
     params: Vec<Ident>,
 }
 
@@ -40,6 +41,7 @@ impl Parse for PrologPredicate {
                 predicate_module = Some(attr.parse_args()?);
             }
         }
+        let visibility = input.parse()?;
         input.parse::<Token![fn]>()?;
         let name: Ident = input.parse()?;
         let params_stream;
@@ -53,6 +55,7 @@ impl Parse for PrologPredicate {
             predicate_name,
             predicate_module,
             doc,
+            visibility,
             params,
         })
     }
@@ -78,11 +81,12 @@ impl PrologPredicate {
             Some(module) => module.value(),
             None => "user".to_string(),
         };
+        let visibility = self.visibility;
         let gen = quote! {
             static #pred_static_ident: std::sync::atomic::AtomicPtr<std::ffi::c_void> = std::sync::atomic::AtomicPtr::new(std::ptr::null_mut());
 
             #doc
-            fn #rust_name<'a, T:#crt::context::QueryableContextType>(swipl_context: &'a #crt::context::Context<'a, T>, #(#params: &#crt::term::Term<'a>),*) -> #crt::context::Context<'a, #crt::context::Query> {
+            #visibility fn #rust_name<'a, T:#crt::context::QueryableContextType>(swipl_context: &'a #crt::context::Context<'a, T>, #(#params: &#crt::term::Term<'a>),*) -> #crt::context::Context<'a, #crt::context::Query> {
                 swipl_context.assert_activated();
                 let swipl_pred = #pred_static_ident.load(std::sync::atomic::Ordering::Relaxed);
                 let swipl_predicate;
