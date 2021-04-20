@@ -136,11 +136,38 @@ impl Parse for ForeignPredicateDefinition {
     }
 }
 
-struct DetForeignPredicateDefinition(BasicForeignPredicateDefinition);
+struct DetForeignPredicateDefinition {
+    predicate_rust_name: Ident,
+    params: Vec<Ident>,
+    body: Block,
+}
+
 impl Parse for DetForeignPredicateDefinition {
     fn parse(input: ParseStream) -> Result<Self> {
         input.parse::<kw::det>()?;
-        Ok(Self(BasicForeignPredicateDefinition::parse(input)?))
+
+        input.parse::<Token![fn]>()?;
+        let name: Ident = input.parse()?;
+        let params_stream;
+        parenthesized!(params_stream in input);
+        let params_punct: Punctuated<Ident, Token![,]> =
+            params_stream.parse_terminated(Ident::parse)?;
+        let span = params_stream.span();
+        let params: Vec<_> = params_punct.into_iter().collect();
+        if params.len() == 0 {
+            return Err(syn::Error::new(
+                span,
+                "need at least one argument for query context",
+            ));
+        }
+
+        let body = input.parse()?;
+
+        Ok(Self {
+            predicate_rust_name: name,
+            params,
+            body,
+        })
     }
 }
 
@@ -148,12 +175,12 @@ impl ForeignPredicateDefinitionImpl for DetForeignPredicateDefinition {
     fn generate_definition(&self) -> (Ident, TokenStream) {
         let crt = crate_token();
         let definition_name = Ident::new(
-            &format!("__{}_definition", self.0.predicate_rust_name),
+            &format!("__{}_definition", self.predicate_rust_name),
             Span::call_site(),
         );
-        let context_arg = &self.0.params[0];
-        let term_args = self.0.params.iter().skip(1);
-        let code = &self.0.body;
+        let context_arg = &self.params[0];
+        let term_args = self.params.iter().skip(1);
+        let code = &self.body;
         (
             definition_name.clone(),
             quote! {
@@ -167,10 +194,10 @@ impl ForeignPredicateDefinitionImpl for DetForeignPredicateDefinition {
     fn generate_trampoline(&self, definition_name: &Ident) -> (Ident, TokenStream) {
         let crt = crate_token();
         let trampoline_name = Ident::new(
-            &format!("__{}_trampoline", self.0.predicate_rust_name),
+            &format!("__{}_trampoline", self.predicate_rust_name),
             Span::call_site(),
         );
-        let known_arity = self.0.params.len() - 1;
+        let known_arity = self.params.len() - 1;
         let term_args = (0..known_arity).map(|i| quote! {&terms[#i]});
         (
             trampoline_name.clone(),
@@ -216,8 +243,37 @@ impl ForeignPredicateDefinitionImpl for DetForeignPredicateDefinition {
         name: Option<&LitStr>,
         module: Option<&LitStr>,
     ) -> TokenStream {
-        self.0
-            .generate_registration(trampoline_name, visibility, name, module)
+        let crt = crate_token();
+        let registration_name = Ident::new(
+            &format!("register_{}", self.predicate_rust_name),
+            Span::call_site(),
+        );
+        let module_lit = match module {
+            None => quote! {None},
+            Some(m) => quote! {Some(#m)},
+        };
+        let rust_name = format!("{}", self.predicate_rust_name);
+        let name_lit = match name {
+            None => quote! {#rust_name},
+            Some(n) => quote! {#n},
+        };
+        let arity = self.params.len() - 1;
+
+        quote! {
+            #visibility fn #registration_name() -> bool {
+                // unsafe justification: register_foreign_in_module is unsafe due to the possibility that someone registers a function that is not actually expecting to handle a prolog call, and is not set up right for it. But we're generating this code ourselves, so we should have taken care of all preconditions.
+                unsafe {
+                    #crt::engine::register_foreign_in_module(
+                        #module_lit,
+                        #name_lit,
+                        std::convert::TryInto::<u16>::try_into(#arity).expect("arity does not fit in an u16"),
+                        true, // deterministic
+                        None, // TODO actually figure out this meta thing
+                        #trampoline_name
+                    )
+                }
+            }
+        }
     }
 
     fn generate_frontend(&self) -> TokenStream {
@@ -225,23 +281,56 @@ impl ForeignPredicateDefinitionImpl for DetForeignPredicateDefinition {
     }
 }
 
-struct SemidetForeignPredicateDefinition(BasicForeignPredicateDefinition);
+struct SemidetForeignPredicateDefinition {
+    predicate_rust_name: Ident,
+    params: Vec<Ident>,
+    body: Block,
+}
+
 impl Parse for SemidetForeignPredicateDefinition {
     fn parse(input: ParseStream) -> Result<Self> {
         input.parse::<kw::semidet>()?;
-        Ok(Self(BasicForeignPredicateDefinition::parse(input)?))
+
+        input.parse::<Token![fn]>()?;
+        let name: Ident = input.parse()?;
+        let params_stream;
+        parenthesized!(params_stream in input);
+        let params_punct: Punctuated<Ident, Token![,]> =
+            params_stream.parse_terminated(Ident::parse)?;
+        let span = params_stream.span();
+        let params: Vec<_> = params_punct.into_iter().collect();
+        if params.len() == 0 {
+            return Err(syn::Error::new(
+                span,
+                "need at least one argument for query context",
+            ));
+        }
+        input.parse::<Token![->]>()?;
+        let tp: Ident = input.parse()?;
+        if tp.to_string() != "SemidetResult" {
+            return Err(syn::Error::new(tp.span(), "not a bool"));
+        }
+
+        let body = input.parse()?;
+
+        Ok(Self {
+            predicate_rust_name: name,
+            params,
+            body,
+        })
     }
 }
+
 impl ForeignPredicateDefinitionImpl for SemidetForeignPredicateDefinition {
     fn generate_definition(&self) -> (Ident, TokenStream) {
         let crt = crate_token();
         let definition_name = Ident::new(
-            &format!("__{}_definition", self.0.predicate_rust_name),
+            &format!("__{}_definition", self.predicate_rust_name),
             Span::call_site(),
         );
-        let context_arg = &self.0.params[0];
-        let term_args = self.0.params.iter().skip(1);
-        let code = &self.0.body;
+        let context_arg = &self.params[0];
+        let term_args = self.params.iter().skip(1);
+        let code = &self.body;
         (
             definition_name.clone(),
             quote! {
@@ -255,10 +344,10 @@ impl ForeignPredicateDefinitionImpl for SemidetForeignPredicateDefinition {
     fn generate_trampoline(&self, definition_name: &Ident) -> (Ident, TokenStream) {
         let crt = crate_token();
         let trampoline_name = Ident::new(
-            &format!("__{}_trampoline", self.0.predicate_rust_name),
+            &format!("__{}_trampoline", self.predicate_rust_name),
             Span::call_site(),
         );
-        let known_arity = self.0.params.len() - 1;
+        let known_arity = self.params.len() - 1;
         let term_args = (0..known_arity).map(|i| quote! {&terms[#i]});
         (
             trampoline_name.clone(),
@@ -288,8 +377,8 @@ impl ForeignPredicateDefinitionImpl for SemidetForeignPredicateDefinition {
                                                   #(#term_args),*);
 
                     match result {
-                        Ok(true) => 1,
                         Ok(false) => 0,
+                        Ok(true) => 1,
                         // TODO actually error correctly
                         Err(_) => -1
                     }
@@ -298,29 +387,6 @@ impl ForeignPredicateDefinitionImpl for SemidetForeignPredicateDefinition {
         )
     }
 
-    fn generate_registration(
-        &self,
-        trampoline_name: &Ident,
-        visibility: &Visibility,
-        name: Option<&LitStr>,
-        module: Option<&LitStr>,
-    ) -> TokenStream {
-        self.0
-            .generate_registration(trampoline_name, visibility, name, module)
-    }
-
-    fn generate_frontend(&self) -> TokenStream {
-        todo!();
-    }
-}
-
-struct BasicForeignPredicateDefinition {
-    predicate_rust_name: Ident,
-    params: Vec<Ident>,
-    body: Block,
-}
-
-impl BasicForeignPredicateDefinition {
     fn generate_registration(
         &self,
         trampoline_name: &Ident,
@@ -360,32 +426,9 @@ impl BasicForeignPredicateDefinition {
             }
         }
     }
-}
 
-impl Parse for BasicForeignPredicateDefinition {
-    fn parse(input: ParseStream) -> Result<Self> {
-        input.parse::<Token![fn]>()?;
-        let name: Ident = input.parse()?;
-        let params_stream;
-        parenthesized!(params_stream in input);
-        let params_punct: Punctuated<Ident, Token![,]> =
-            params_stream.parse_terminated(Ident::parse)?;
-        let span = params_stream.span();
-        let params: Vec<_> = params_punct.into_iter().collect();
-        if params.len() == 0 {
-            return Err(syn::Error::new(
-                span,
-                "need at least one argument for query context",
-            ));
-        }
-
-        let body = input.parse()?;
-
-        Ok(Self {
-            predicate_rust_name: name,
-            params,
-            body,
-        })
+    fn generate_frontend(&self) -> TokenStream {
+        todo!();
     }
 }
 
