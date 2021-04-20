@@ -83,6 +83,12 @@ impl<'a, T: ContextType> Context<'a, T> {
         }
     }
 
+    pub fn assert_no_exception(&self) {
+        if self.has_exception() {
+            panic!("tried to use context which has raised an exception");
+        }
+    }
+
     pub fn engine_ptr(&self) -> PL_engine_t {
         self.engine
     }
@@ -90,6 +96,13 @@ impl<'a, T: ContextType> Context<'a, T> {
     pub unsafe fn wrap_term_ref(&self, term: term_t) -> Term {
         self.assert_activated();
         Term::new(term, self)
+    }
+
+    pub fn raise_exception(&self, term: &Term) {
+        self.assert_activated();
+        unsafe {
+            PL_raise_exception(term.term_ptr());
+        }
     }
 
     pub fn has_exception(&self) -> bool {
@@ -354,6 +367,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         args: &[&Term],
     ) -> Context<Query> {
         self.assert_activated();
+        self.assert_no_exception();
         let context = context
             .map(|c| c.module_ptr())
             .unwrap_or(std::ptr::null_mut());
@@ -510,15 +524,6 @@ impl QueryResult {
             _ => false,
         }
     }
-
-    /*
-    pub fn exception(&self) -> Option<Term> {
-        match self {
-            Self::Exception => Some(term.clone()),
-            _ => None,
-        }
-    }
-    */
 }
 
 #[derive(Debug)]
@@ -930,6 +935,24 @@ mod tests {
         det fn unify_with_42(_context, term) {
             term.unify_det(42_u64)
         }
+    }
+
+    #[test]
+    #[should_panic(expected = "tried to use context which has raised an exception")]
+    fn call_prolog_with_raised_exception_panics() {
+        initialize_swipl_noengine();
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term1 = context.new_term_ref();
+        let term2 = context.new_term_ref();
+
+        let query = prolog_arithmetic(&context, &term1, &term2);
+        assert!(query.next_solution().is_exception());
+        assert!(query.has_exception());
+        query.discard();
+        let _query2 = prolog_arithmetic(&context, &term1, &term2);
     }
 
     #[test]
