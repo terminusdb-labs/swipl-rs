@@ -28,6 +28,11 @@ impl<'a> Term<'a> {
         self.term
     }
 
+    pub fn is_var(&self) -> bool {
+        self.assert_term_handling_possible();
+        unsafe { PL_is_variable(self.term) != 0 }
+    }
+
     /// Reset terms created after this term, including this term itself.
     /// Only safe to call when you're sure these terms aren't used afterwards.
     pub unsafe fn reset(&self) {

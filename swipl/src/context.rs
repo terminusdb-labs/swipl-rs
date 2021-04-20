@@ -141,6 +141,7 @@ impl<'a, T: ContextType> Context<'a, T> {
 
 trait ContextParent {
     fn reactivate(&self);
+    fn as_term_origin(&self) -> &dyn TermOrigin;
 }
 
 impl<'a, T: ContextType> ContextParent for Context<'a, T> {
@@ -148,6 +149,10 @@ impl<'a, T: ContextType> ContextParent for Context<'a, T> {
         if self.activated.replace(true) {
             panic!("context already active");
         }
+    }
+
+    fn as_term_origin(&self) -> &dyn TermOrigin {
+        self
     }
 }
 
@@ -542,13 +547,20 @@ impl<'a> Context<'a, Query> {
         }
     }
 
-    pub fn catch_next_solution<'b>(&'b self) -> Result<NondetQueryResult, Term<'b>> {
+    pub fn catch_next_solution(&self) -> Result<NondetQueryResult, Term<'a>> {
         self.assert_activated();
         let result = unsafe { PL_next_solution(self.context.qid) };
         match result {
             -1 => {
                 let exception = unsafe { PL_exception(self.context.qid) };
-                let exception_term = unsafe { Term::new(exception, self) };
+                let exception_term = unsafe {
+                    Term::new(
+                        exception,
+                        self.parent
+                            .expect("query should always have a parent")
+                            .as_term_origin(),
+                    )
+                };
 
                 Err(exception_term)
             }
@@ -850,10 +862,6 @@ mod tests {
     prolog! {
         #[name("is")]
         fn prolog_arithmetic(term, e);
-        #[name("writeq")]
-        fn prolog_write_term(term);
-        #[name("nl")]
-        fn prolog_write_newline();
     }
 
     use swipl_macros::term;
@@ -891,6 +899,31 @@ mod tests {
         assert!(check_term.unify(e).unwrap());
         query.discard();
         assert!(check_term.unify(&term3).unwrap());
+    }
+
+    #[test]
+    fn catch_with_exception_close_term_remains_valid() {
+        initialize_swipl_noengine();
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term1 = context.new_term_ref();
+        let term2 = context.new_term_ref();
+
+        let check_term = term! {context: error(instantiation_error, _)};
+        let query = prolog_arithmetic(&context, &term1, &term2);
+        let e = query.catch_next_solution().unwrap_err();
+        assert!(!e.is_var());
+        query.discard();
+
+        // reserve some terms which would normally overwrite any terms further on the stack
+        let _term3 = context.new_term_ref();
+        let _term4 = context.new_term_ref();
+        let _term5 = context.new_term_ref();
+
+        assert!(!e.is_var());
+        assert!(check_term.unify(e).unwrap());
     }
 
     predicates! {
