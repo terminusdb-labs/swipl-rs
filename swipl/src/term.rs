@@ -28,6 +28,13 @@ impl<'a> Term<'a> {
         self.term
     }
 
+    /// Reset terms created after this term, including this term itself.
+    /// Only safe to call when you're sure these terms aren't used afterwards.
+    pub unsafe fn reset(&self) {
+        self.assert_term_handling_possible();
+        PL_reset_term_refs(self.term);
+    }
+
     pub fn assert_term_handling_possible(&self) {
         if !self.context.is_engine_active() {
             panic!("term is not part of the active engine");

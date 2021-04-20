@@ -22,6 +22,29 @@ impl<'a> ExceptionTerm<'a> {
 
         unsafe { PL_clear_exception() }
     }
+
+    /// Call the given function with a copy of the exception term in a context where the exception has been cleared.
+    /// This function is marked unsafe because it is not safe to use the original ExceptionTerm from within the given function.
+    pub unsafe fn with_cleared_exception<'b, C: ContextType, R>(
+        &'b self,
+        ctx: &'b Context<C>,
+        f: impl FnOnce(&Term) -> R,
+    ) -> R {
+        ctx.assert_activated();
+        let backup_term_ref = PL_new_term_ref();
+        let backup_term = Term::new(backup_term_ref, ctx);
+        backup_term.unify(&self.0).unwrap();
+        PL_clear_exception();
+
+        // should we handle panics?
+        let result = f(&backup_term);
+
+        PL_raise_exception(backup_term_ref);
+
+        backup_term.reset();
+
+        result
+    }
 }
 
 impl<'a> std::ops::Deref for ExceptionTerm<'a> {
@@ -40,7 +63,11 @@ pub struct Context<'a, T: ContextType> {
 }
 
 impl<'a, T: ContextType> Context<'a, T> {
-    fn new_activated(parent: Option<&'a dyn ContextParent>, context: T, engine: PL_engine_t) -> Self {
+    fn new_activated(
+        parent: Option<&'a dyn ContextParent>,
+        context: T,
+        engine: PL_engine_t,
+    ) -> Self {
         Context {
             parent: parent,
             context,
@@ -65,21 +92,23 @@ impl<'a, T: ContextType> Context<'a, T> {
         Term::new(term, self)
     }
 
-
     pub fn has_exception(&self) -> bool {
         self.assert_activated();
 
-        unsafe { PL_exception(0)  != 0 }
+        unsafe { PL_exception(0) != 0 }
     }
 
     pub fn clear_exception(&self) {
-        self.with_exception(|e| match e {
+        self.with_uncleared_exception(|e| match e {
             None => (),
-            Some(e) => e.clear_exception()
+            Some(e) => e.clear_exception(),
         })
     }
 
-    pub fn with_exception<'b, R>(&'b self, f: impl Fn(Option<ExceptionTerm<'b>>) -> R) -> R {
+    pub fn with_uncleared_exception<'b, R>(
+        &'b self,
+        f: impl FnOnce(Option<ExceptionTerm<'b>>) -> R,
+    ) -> R {
         self.assert_activated();
         if self.exception_handling.replace(true) {
             panic!("re-entered exception handler");
@@ -100,6 +129,13 @@ impl<'a, T: ContextType> Context<'a, T> {
         self.exception_handling.set(false);
 
         result
+    }
+
+    pub fn with_exception<'b, R>(&'b self, f: impl FnOnce(Option<&Term>) -> R) -> R {
+        self.with_uncleared_exception(|e| match e {
+            None => f(None),
+            Some(e) => unsafe { e.with_cleared_exception(self, |e| f(Some(e))) },
+        })
     }
 }
 
@@ -367,14 +403,13 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
     pub fn exception<'b>(&'b self) -> Option<Term<'b>> {
         self.assert_activated();
 
-        let exception = unsafe {PL_exception(0)};
+        let exception = unsafe { PL_exception(0) };
         if exception != 0 {
             let exception_term = unsafe { Term::new(exception, self) };
             let return_term = self.new_term_ref();
             return_term.unify(exception_term).unwrap();
             Some(return_term)
-        }
-        else {
+        } else {
             None
         }
     }
@@ -423,7 +458,7 @@ pub enum QueryResult {
     Success,
     SuccessLast,
     Failure,
-    Exception
+    Exception,
 }
 
 impl QueryResult {
@@ -481,11 +516,17 @@ impl QueryResult {
     */
 }
 
+#[derive(Debug)]
+pub enum NondetQueryResult {
+    Failure,
+    Success,
+    SuccessLast,
+}
+
 impl<'a> Context<'a, Query> {
     pub fn next_solution(&self) -> QueryResult {
         self.assert_activated();
         let result = unsafe { PL_next_solution(self.context.qid) };
-        // TODO handle exceptions properly
         match result {
             -1 => {
                 let exception = unsafe { PL_exception(self.context.qid) };
@@ -493,11 +534,41 @@ impl<'a> Context<'a, Query> {
                 unsafe { PL_raise_exception(exception) };
 
                 QueryResult::Exception
-            },
+            }
             0 => QueryResult::Failure,
             1 => QueryResult::Success,
             2 => QueryResult::SuccessLast,
             _ => panic!("unknown query result type {}", result),
+        }
+    }
+
+    pub fn catch_next_solution<'b>(&'b self) -> Result<NondetQueryResult, Term<'b>> {
+        self.assert_activated();
+        let result = unsafe { PL_next_solution(self.context.qid) };
+        match result {
+            -1 => {
+                let exception = unsafe { PL_exception(self.context.qid) };
+                let exception_term = unsafe { Term::new(exception, self) };
+
+                Err(exception_term)
+            }
+            0 => Ok(NondetQueryResult::Failure),
+            1 => Ok(NondetQueryResult::Success),
+            2 => Ok(NondetQueryResult::SuccessLast),
+            _ => panic!("unknown query result type {}", result),
+        }
+    }
+
+    pub fn catch_next_solution_in_term<'b, 'c>(
+        &'b self,
+        term: &'c Term<'b>,
+    ) -> Result<NondetQueryResult, &'c Term<'b>> {
+        match self.catch_next_solution() {
+            Ok(r) => Ok(r),
+            Err(t) => {
+                term.put(&t);
+                Err(term)
+            }
         }
     }
 
@@ -774,7 +845,52 @@ mod tests {
 
             assert!(term.get::<u64>().is_none());
         });
+    }
 
+    prolog! {
+        #[name("is")]
+        fn prolog_arithmetic(term, e);
+        #[name("writeq")]
+        fn prolog_write_term(term);
+        #[name("nl")]
+        fn prolog_write_newline();
+    }
+
+    use swipl_macros::term;
+
+    #[test]
+    fn catch_with_exception() {
+        initialize_swipl_noengine();
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term1 = context.new_term_ref();
+        let term2 = context.new_term_ref();
+
+        let check_term = term! {context: error(instantiation_error, _)};
+        let query = prolog_arithmetic(&context, &term1, &term2);
+        let e = query.catch_next_solution().unwrap_err();
+        assert!(check_term.unify(e).unwrap());
+    }
+
+    #[test]
+    fn catch_with_exception_in_term() {
+        initialize_swipl_noengine();
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term1 = context.new_term_ref();
+        let term2 = context.new_term_ref();
+        let term3 = context.new_term_ref();
+
+        let check_term = term! {context: error(instantiation_error, _)};
+        let query = prolog_arithmetic(&context, &term1, &term2);
+        let e = query.catch_next_solution_in_term(&term3).unwrap_err();
+        assert!(check_term.unify(e).unwrap());
+        query.discard();
+        assert!(check_term.unify(&term3).unwrap());
     }
 
     predicates! {
@@ -801,11 +917,6 @@ mod tests {
         let query = context.open_query(None, &predicate, &[&term]);
         assert!(query.next_solution().is_success());
         assert_eq!(42, term.get::<u64>().unwrap());
-    }
-
-    prolog! {
-        #[name("is")]
-        fn prolog_arithmetic(term, e);
     }
 
     #[test]
