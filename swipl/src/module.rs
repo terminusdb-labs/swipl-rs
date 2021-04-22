@@ -1,7 +1,6 @@
-use swipl_sys::*;
-
 use super::atom::*;
 use super::context::*;
+use super::fli::*;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct Module {

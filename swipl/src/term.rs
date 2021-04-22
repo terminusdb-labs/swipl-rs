@@ -1,12 +1,12 @@
 use super::atom::*;
 use super::context::*;
+use super::fli::*;
 use std::convert::TryInto;
+use std::fmt;
 use std::fmt::Debug;
 use std::os::raw::c_char;
-use swipl_macros::term;
-use swipl_sys::*;
 
-use std::fmt;
+use swipl_macros::term;
 
 #[derive(Clone)]
 pub struct Term<'a> {

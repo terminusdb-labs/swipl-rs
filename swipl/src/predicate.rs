@@ -1,8 +1,7 @@
 use std::convert::TryInto;
 
-use swipl_sys::*;
-
 use super::context::*;
+use super::fli::*;
 use super::functor::*;
 use super::module::*;
 

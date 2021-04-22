@@ -206,7 +206,7 @@ impl ForeignPredicateDefinitionImpl for DetForeignPredicateDefinition {
             trampoline_name.clone(),
             quote! {
                 unsafe extern "C" fn #trampoline_name(
-                    term: #crt::sys::term_t,
+                    term: #crt::fli::term_t,
                     arity: std::os::raw::c_int,
                     _control: *mut std::os::raw::c_void
                 ) -> isize {
@@ -353,7 +353,7 @@ impl ForeignPredicateDefinitionImpl for SemidetForeignPredicateDefinition {
             trampoline_name.clone(),
             quote! {
                 unsafe extern "C" fn #trampoline_name(
-                    term: #crt::sys::term_t,
+                    term: #crt::fli::term_t,
                     arity: std::os::raw::c_int,
                     _control: *mut std::os::raw::c_void
                 ) -> isize {

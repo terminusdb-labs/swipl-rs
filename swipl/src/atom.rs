@@ -1,9 +1,9 @@
 use super::context::*;
+use super::fli::*;
 use super::term::*;
 use crate::{term_getable, term_putable, unifiable};
 use std::convert::TryInto;
 use std::os::raw::c_char;
-use swipl_sys::*;
 
 #[derive(PartialEq, Eq, Debug)]
 pub struct Atom {

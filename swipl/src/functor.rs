@@ -1,10 +1,12 @@
 use super::atom::*;
 use super::consts::*;
 use super::context::*;
+use super::fli::*;
 use super::term::*;
-use crate::{term_getable, term_putable, unifiable};
+
 use std::convert::TryInto;
-use swipl_sys::*;
+
+use crate::{term_getable, term_putable, unifiable};
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct Functor {

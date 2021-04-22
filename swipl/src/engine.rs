@@ -2,9 +2,9 @@ use lazy_static::*;
 use std::convert::TryInto;
 use std::ffi::CString;
 use std::os::raw::{c_int, c_void};
-use swipl_sys::*;
-
 use std::sync::{atomic, Arc, RwLock};
+
+use crate::fli::*;
 
 lazy_static! {
     static ref INITIALIZATION_STATE: Arc<RwLock<bool>> = Arc::new(RwLock::new(false));

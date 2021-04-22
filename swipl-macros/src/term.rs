@@ -252,7 +252,7 @@ impl Functor {
                 }
 
                 quote! {
-                    let #term_id_ident = unsafe { #crt::sys::PL_new_term_refs(std::convert::TryInto::try_into(#arity).unwrap()) };
+                    let #term_id_ident = unsafe { #crt::fli::PL_new_term_refs(std::convert::TryInto::try_into(#arity).unwrap()) };
                     #(#terms_init)*
 
                     #(#terms_fill)*
@@ -330,7 +330,7 @@ impl List {
                 }
 
                 quote! {
-                    let #term_id_ident = unsafe { #crt::sys::PL_new_term_refs(std::convert::TryInto::try_into(#len).unwrap()) };
+                    let #term_id_ident = unsafe { #crt::fli::PL_new_term_refs(std::convert::TryInto::try_into(#len).unwrap()) };
                     #(#terms_init)*
 
                     #(#terms_fill)*
@@ -411,7 +411,7 @@ impl Tuple {
         }
 
         let terms_assign = quote! {
-            let #term_id_ident = unsafe { #crt::sys::PL_new_term_refs(std::convert::TryInto::try_into(#len).unwrap()) };
+            let #term_id_ident = unsafe { #crt::fli::PL_new_term_refs(std::convert::TryInto::try_into(#len).unwrap()) };
             #(#terms_init)*
 
             #(#terms_fill)*

@@ -1,6 +1,7 @@
 use super::atom::*;
 use super::consts::*;
 use super::engine::*;
+use super::fli::*;
 use super::functor::*;
 use super::module::*;
 use super::predicate::*;
@@ -8,7 +9,6 @@ use super::term::*;
 
 use std::cell::Cell;
 use std::convert::TryInto;
-use swipl_sys::*;
 
 use swipl_macros::prolog;
 
