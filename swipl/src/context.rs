@@ -5,12 +5,13 @@ use super::fli::*;
 use super::functor::*;
 use super::module::*;
 use super::predicate::*;
+use super::result::*;
 use super::term::*;
 
 use std::cell::Cell;
 use std::convert::TryInto;
 
-use swipl_macros::prolog;
+use swipl_macros::{prolog, term};
 
 pub unsafe fn with_cleared_exception<R>(f: impl FnOnce() -> R) -> R {
     let error_term_ref = PL_exception(0);
@@ -112,11 +113,26 @@ impl<'a, T: ContextType> Context<'a, T> {
         Term::new(term, self)
     }
 
-    pub fn raise_exception(&self, term: &Term) {
+    pub fn raise_exception(&self, term: &Term) -> PrologResult<()>
+    where
+        T: QueryableContextType,
+    {
         self.assert_activated();
-        unsafe {
-            PL_raise_exception(term.term_ptr());
+        if term.is_var() {
+            // TODO macro needs to be able to deal with self
+            let c = self;
+            let err = term! {c: error(rust_error(raise_exception_called_with_variable), _)};
+            unsafe {
+                PL_raise_exception(err.term_ptr());
+                PL_reset_term_refs(err.term_ptr());
+            }
+        } else {
+            unsafe {
+                PL_raise_exception(term.term_ptr());
+            }
         }
+
+        Err(PrologError::Exception)
     }
 
     pub fn has_exception(&self) -> bool {

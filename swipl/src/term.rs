@@ -807,4 +807,16 @@ mod tests {
 
         // TODO actually query this term for validity
     }
+
+    #[test]
+    fn throw_error() {
+        initialize_swipl_noengine();
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let error_term = term! {context: error(some_error, _)};
+        context.raise_exception(&error_term).unwrap_err();
+        assert!(context.has_exception());
+    }
 }
