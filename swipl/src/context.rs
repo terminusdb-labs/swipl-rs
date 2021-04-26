@@ -115,13 +115,12 @@ impl<'a, T: ContextType> Context<'a, T> {
 
     pub fn raise_exception(&self, term: &Term) -> PrologResult<()>
     where
-        T: QueryableContextType,
+        T: FrameableContextType,
     {
         self.assert_activated();
         if term.is_var() {
-            // TODO macro needs to be able to deal with self
-            let c = self;
-            let err = term! {c: error(rust_error(raise_exception_called_with_variable), _)};
+            let frame = self.open_frame();
+            let err = term! {frame: error(rust_error(raise_exception_called_with_variable), _)};
             unsafe {
                 PL_raise_exception(err.term_ptr());
                 PL_reset_term_refs(err.term_ptr());
