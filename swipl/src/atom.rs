@@ -457,7 +457,7 @@ mod tests {
         let a1 = "foo".as_atom(&context);
         let term = context.new_term_ref();
         term.unify(&a1).unwrap();
-        let a2: Atom = term.get().unwrap().unwrap();
+        let a2: Atom = term.get().unwrap();
 
         assert_eq!(a1, a2);
     }
@@ -485,7 +485,7 @@ mod tests {
         let a1 = "foo".as_atom(&context);
         let term = context.new_term_ref();
         term.unify(&a1).unwrap();
-        let a2: Atomable = term.get().unwrap().unwrap();
+        let a2: Atomable = term.get().unwrap();
 
         assert_eq!("foo", a2.name());
     }

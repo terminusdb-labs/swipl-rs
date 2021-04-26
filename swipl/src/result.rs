@@ -8,6 +8,22 @@ pub enum PrologError {
     Exception,
 }
 
+impl PrologError {
+    pub fn is_failure(&self) -> bool {
+        match self {
+            PrologError::Failure => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_exception(&self) -> bool {
+        match self {
+            PrologError::Exception => true,
+            _ => false,
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct PrologException;
 
