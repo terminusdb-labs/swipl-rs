@@ -925,7 +925,7 @@ mod tests {
     }
 
     predicates! {
-        det fn unify_with_42(_context, term) {
+        semidet fn unify_with_42(_context, term) {
             term.unify(42_u64)
         }
     }

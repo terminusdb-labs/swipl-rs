@@ -87,21 +87,19 @@ trait ForeignPredicateDefinitionImpl {
 }
 
 enum ForeignPredicateDefinition {
-    Det(DetForeignPredicateDefinition),
     Semidet(SemidetForeignPredicateDefinition),
+    // TODO nondet
 }
 
 impl ForeignPredicateDefinitionImpl for ForeignPredicateDefinition {
     fn generate_definition(&self) -> (Ident, TokenStream) {
         match self {
-            Self::Det(d) => d.generate_definition(),
             Self::Semidet(d) => d.generate_definition(),
         }
     }
 
     fn generate_trampoline(&self, definition_name: &Ident) -> (Ident, TokenStream) {
         match self {
-            Self::Det(d) => d.generate_trampoline(definition_name),
             Self::Semidet(d) => d.generate_trampoline(definition_name),
         }
     }
@@ -114,7 +112,6 @@ impl ForeignPredicateDefinitionImpl for ForeignPredicateDefinition {
         module: Option<&LitStr>,
     ) -> TokenStream {
         match self {
-            Self::Det(d) => d.generate_registration(trampoline_name, visibility, name, module),
             Self::Semidet(d) => d.generate_registration(trampoline_name, visibility, name, module),
         }
     }
@@ -126,158 +123,11 @@ impl ForeignPredicateDefinitionImpl for ForeignPredicateDefinition {
 
 impl Parse for ForeignPredicateDefinition {
     fn parse(input: ParseStream) -> Result<Self> {
-        if input.peek(kw::det) {
-            Ok(Self::Det(input.parse()?))
-        } else if input.peek(kw::semidet) {
+        if input.peek(kw::semidet) {
             Ok(Self::Semidet(input.parse()?))
         } else {
             Err(input.error("expected determinism specifier (det, semidet or nondet)"))
         }
-    }
-}
-
-struct DetForeignPredicateDefinition {
-    predicate_rust_name: Ident,
-    params: Vec<Ident>,
-    body: Block,
-}
-
-impl Parse for DetForeignPredicateDefinition {
-    fn parse(input: ParseStream) -> Result<Self> {
-        input.parse::<kw::det>()?;
-
-        input.parse::<Token![fn]>()?;
-        let name: Ident = input.parse()?;
-        let params_stream;
-        parenthesized!(params_stream in input);
-        let params_punct: Punctuated<Ident, Token![,]> =
-            params_stream.parse_terminated(Ident::parse)?;
-        let span = params_stream.span();
-        let params: Vec<_> = params_punct.into_iter().collect();
-        if params.len() == 0 {
-            return Err(syn::Error::new(
-                span,
-                "need at least one argument for query context",
-            ));
-        }
-
-        let body = input.parse()?;
-
-        Ok(Self {
-            predicate_rust_name: name,
-            params,
-            body,
-        })
-    }
-}
-
-impl ForeignPredicateDefinitionImpl for DetForeignPredicateDefinition {
-    fn generate_definition(&self) -> (Ident, TokenStream) {
-        let crt = crate_token();
-        let definition_name = Ident::new(
-            &format!("__{}_definition", self.predicate_rust_name),
-            Span::call_site(),
-        );
-        let context_arg = &self.params[0];
-        let term_args = self.params.iter().skip(1);
-        let code = &self.body;
-        (
-            definition_name.clone(),
-            quote! {
-                fn #definition_name<'a, C: #crt::context::QueryableContextType>(#context_arg: &'a #crt::context::Context<'a, C>, #(#term_args : &#crt::term::Term<'a>),*) -> #crt::result::PrologResult<()> {
-                    #code
-                }
-            },
-        )
-    }
-
-    fn generate_trampoline(&self, definition_name: &Ident) -> (Ident, TokenStream) {
-        let crt = crate_token();
-        let trampoline_name = Ident::new(
-            &format!("__{}_trampoline", self.predicate_rust_name),
-            Span::call_site(),
-        );
-        let known_arity = self.params.len() - 1;
-        let term_args = (0..known_arity).map(|i| quote! {&terms[#i]});
-        (
-            trampoline_name.clone(),
-            quote! {
-                unsafe extern "C" fn #trampoline_name(
-                    term: #crt::fli::term_t,
-                    arity: std::os::raw::c_int,
-                    _control: *mut std::os::raw::c_void
-                ) -> isize {
-                    if #known_arity as usize != arity as usize {
-                        // TODO actually throw an error
-                        return 0;
-                    }
-
-                    let context = #crt::context::unmanaged_engine_context();
-                    let mut terms: [std::mem::MaybeUninit<#crt::term::Term>;#known_arity] =
-                        std::mem::MaybeUninit::uninit().assume_init();
-
-                    for i in 0..#known_arity {
-                        let term_ref = context.wrap_term_ref(term+i);
-                        terms[i] = std::mem::MaybeUninit::new(term_ref);
-                    }
-
-                    let terms: [#crt::term::Term;#known_arity] = std::mem::transmute(terms);
-
-                    let result = #definition_name(&context,
-                                                  #(#term_args),*);
-
-                    match result {
-                        Ok(_) => 1,
-                        // TODO actually error correctly
-                        Err(_) => -1
-                    }
-                }
-            },
-        )
-    }
-
-    fn generate_registration(
-        &self,
-        trampoline_name: &Ident,
-        visibility: &Visibility,
-        name: Option<&LitStr>,
-        module: Option<&LitStr>,
-    ) -> TokenStream {
-        let crt = crate_token();
-        let registration_name = Ident::new(
-            &format!("register_{}", self.predicate_rust_name),
-            Span::call_site(),
-        );
-        let module_lit = match module {
-            None => quote! {None},
-            Some(m) => quote! {Some(#m)},
-        };
-        let rust_name = format!("{}", self.predicate_rust_name);
-        let name_lit = match name {
-            None => quote! {#rust_name},
-            Some(n) => quote! {#n},
-        };
-        let arity = self.params.len() - 1;
-
-        quote! {
-            #visibility fn #registration_name() -> bool {
-                // unsafe justification: register_foreign_in_module is unsafe due to the possibility that someone registers a function that is not actually expecting to handle a prolog call, and is not set up right for it. But we're generating this code ourselves, so we should have taken care of all preconditions.
-                unsafe {
-                    #crt::engine::register_foreign_in_module(
-                        #module_lit,
-                        #name_lit,
-                        std::convert::TryInto::<u16>::try_into(#arity).expect("arity does not fit in an u16"),
-                        true, // deterministic
-                        None, // TODO actually figure out this meta thing
-                        #trampoline_name
-                    )
-                }
-            }
-        }
-    }
-
-    fn generate_frontend(&self) -> TokenStream {
-        todo!();
     }
 }
 
@@ -372,10 +222,9 @@ impl ForeignPredicateDefinitionImpl for SemidetForeignPredicateDefinition {
                                                   #(#term_args),*);
 
                     match result {
-                        Ok(false) => 0,
-                        Ok(true) => 1,
-                        // TODO actually error correctly
-                        Err(_) => -1
+                        Ok(()) => 1,
+                        Err(#crt::result::PrologError::Failure) => 0,
+                        Err(#crt::result::PrologError::Exception) => -1
                     }
                 }
             },
