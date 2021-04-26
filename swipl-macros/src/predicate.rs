@@ -202,29 +202,59 @@ impl ForeignPredicateDefinitionImpl for SemidetForeignPredicateDefinition {
                     arity: std::os::raw::c_int,
                     _control: *mut std::os::raw::c_void
                 ) -> isize {
-                    if #known_arity as usize != arity as usize {
-                        // TODO actually throw an error
-                        return 0;
-                    }
+                    let result = std::panic::catch_unwind(|| {
+                        if #known_arity as usize != arity as usize {
+                            // TODO actually throw an error
+                            return Err(#crt::result::PrologError::Failure);
+                        }
 
+                        let context = #crt::context::unmanaged_engine_context();
+                        let mut terms: [std::mem::MaybeUninit<#crt::term::Term>;#known_arity] =
+                            std::mem::MaybeUninit::uninit().assume_init();
+
+                        for i in 0..#known_arity {
+                            let term_ref = context.wrap_term_ref(term+i);
+                            terms[i] = std::mem::MaybeUninit::new(term_ref);
+                        }
+
+                        let terms: [#crt::term::Term;#known_arity] = std::mem::transmute(terms);
+
+                        #definition_name(&context,
+                                         #(#term_args),*)
+                    });
+
+                    // creating a new context here cause context is not allowed to cross the catch boundary.
                     let context = #crt::context::unmanaged_engine_context();
-                    let mut terms: [std::mem::MaybeUninit<#crt::term::Term>;#known_arity] =
-                        std::mem::MaybeUninit::uninit().assume_init();
-
-                    for i in 0..#known_arity {
-                        let term_ref = context.wrap_term_ref(term+i);
-                        terms[i] = std::mem::MaybeUninit::new(term_ref);
-                    }
-
-                    let terms: [#crt::term::Term;#known_arity] = std::mem::transmute(terms);
-
-                    let result = #definition_name(&context,
-                                                  #(#term_args),*);
-
                     match result {
-                        Ok(()) => 1,
-                        Err(#crt::result::PrologError::Failure) => 0,
-                        Err(#crt::result::PrologError::Exception) => -1
+                        Ok(result) => match result {
+                            Ok(()) => 1,
+                            Err(#crt::result::PrologError::Failure) => 0,
+                            Err(#crt::result::PrologError::Exception) => -1
+                        },
+                        Err(panic) => {
+                            let panic_term = context.new_term_ref();
+                            let error_term = term!{context: error(rust_error(panic(#&panic_term)), _)};
+
+                            match panic.downcast_ref::<&str>() {
+                                Some(panic_msg) => {
+                                    panic_term.unify(panic_msg).unwrap();
+                                }
+                                None => {
+                                    match panic.downcast_ref::<String>() {
+                                        Some(panic_msg) => {
+                                            panic_term.unify(panic_msg.as_str()).unwrap();
+                                        },
+                                        None => {
+                                            panic_term.unify("unknown panic type").unwrap();
+                                        }
+                                    }
+                                }
+                            }
+
+                            context.raise_exception(&error_term).unwrap_err();
+
+                            -1
+                        }
                     }
                 }
             },
