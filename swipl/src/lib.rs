@@ -6,6 +6,7 @@ pub mod atom;
 pub mod functor;
 pub mod module;
 pub mod predicate;
+pub mod result;
 pub mod term;
 
 pub mod context;

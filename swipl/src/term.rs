@@ -1,6 +1,7 @@
 use super::atom::*;
 use super::context::*;
 use super::fli::*;
+use super::result::*;
 use std::convert::TryInto;
 use std::fmt;
 use std::fmt::Debug;
@@ -47,15 +48,23 @@ impl<'a> Term<'a> {
         }
     }
 
-    pub fn unify<U: Unifiable>(&self, unifiable: U) -> SemidetResult {
-        unifiable.unify(self)
+    pub fn unify<U: Unifiable>(&self, unifiable: U) -> PrologResult<()> {
+        let result = unifiable.unify(self);
+
+        // unify functions may throw an exception, either directly or
+        // through some inner function. It's too much hassle to have
+        // each function check for themselves and return the
+        // appropriate thing, so we just do it all here.
+        if unsafe { PL_exception(0) != 0 } {
+            Err(PrologError::Exception)
+        } else if result {
+            Ok(())
+        } else {
+            Err(PrologError::Failure)
+        }
     }
 
-    pub fn unify_det<U: Unifiable>(&self, unifiable: U) -> DetResult {
-        semidet_to_det_result(self.unify(unifiable))
-    }
-
-    pub fn unify_arg<U: Unifiable>(&self, index: usize, unifiable: U) -> SemidetResult {
+    pub fn unify_arg<U: Unifiable>(&self, index: usize, unifiable: U) -> PrologResult<()> {
         if index == 0 {
             panic!("unify_arg was given index 0, but index starts at 1");
         }
@@ -66,14 +75,14 @@ impl<'a> Term<'a> {
 
         let result = unsafe { PL_get_arg(index.try_into().unwrap(), self.term, arg_ref) };
         let arg = unsafe { Term::new(arg_ref, self.context) };
-        let mut result2 = false;
+        let mut result2 = Err(PrologError::Failure);
         if result != 0 {
-            result2 = arg.unify(unifiable)?;
+            result2 = arg.unify(unifiable);
         }
 
         unsafe { PL_reset_term_refs(arg_ref) };
 
-        Ok(result2)
+        result2
     }
 
     pub fn get<G: TermGetable>(&self) -> Option<G> {
@@ -173,11 +182,11 @@ pub trait TermOrigin {
 ///
 /// The macro `unifiable` provides a way to safely implement this trait.
 pub unsafe trait Unifiable {
-    fn unify(&self, term: &Term) -> SemidetResult;
+    fn unify(&self, term: &Term) -> bool;
 }
 
 unsafe impl<T: Unifiable> Unifiable for &T {
-    fn unify(&self, term: &Term) -> SemidetResult {
+    fn unify(&self, term: &Term) -> bool {
         (*self).unify(term)
     }
 }
@@ -198,7 +207,7 @@ macro_rules! unifiable {
         // that matches the given context, and that the currently
         // activated engine is one for which this term was created.
         unsafe impl<'a> Unifiable for $t {
-            fn unify(&$self_, $term_: &Term) -> SemidetResult {
+            fn unify(&$self_, $term_: &Term) -> bool {
                 $term_.assert_term_handling_possible();
 
                 $b
@@ -251,7 +260,7 @@ unifiable! {
         let result = unsafe { PL_unify(self.term, term.term) };
 
         // TODO we should actually properly test for an exception here.
-        Ok(result != 0)
+        result != 0
     }
 }
 
@@ -273,7 +282,7 @@ unifiable! {
         };
         let result = unsafe { PL_unify_bool(term.term, num) };
 
-        Ok(result != 0)
+        result != 0
     }
 }
 
@@ -304,7 +313,7 @@ unifiable! {
     (self:u64, term) => {
         let result = unsafe { PL_unify_uint64(term.term, *self) };
 
-        Ok(result != 0)
+        result != 0
     }
 }
 
@@ -325,7 +334,7 @@ term_getable! {
                 let error_term = Term::new(error_term_ref, &ctx);
                 let comparison_term = term!{ctx: error(domain_error(not_less_than_zero, _), _)};
                 // really should be a non-unifying compare but meh
-                if comparison_term.unify(&error_term).unwrap() {
+                if comparison_term.unify(&error_term).is_ok() {
                     PL_clear_exception();
                 }
                 comparison_term.reset();
@@ -351,7 +360,7 @@ unifiable! {
     (self:i64, term) => {
         let result = unsafe { PL_unify_int64(term.term, *self) };
 
-        Ok(result != 0)
+        result != 0
     }
 }
 
@@ -378,7 +387,7 @@ unifiable! {
     (self:f64, term) => {
         let result = unsafe { PL_unify_float(term.term, *self) };
 
-        Ok(result != 0)
+        result != 0
     }
 }
 
@@ -411,7 +420,7 @@ unifiable! {
         )
         };
 
-        Ok(result != 0)
+        result != 0
     }
 }
 
@@ -438,7 +447,7 @@ unifiable! {
     (self:Nil, term) => {
         let result = unsafe { PL_unify_nil(term.term_ptr()) };
 
-        Ok(result != 0)
+        result != 0
     }
 }
 
@@ -463,7 +472,7 @@ unsafe impl<'a, T> Unifiable for &'a [T]
 where
     &'a T: 'a + Unifiable,
 {
-    fn unify(&self, term: &Term) -> SemidetResult {
+    fn unify(&self, term: &Term) -> bool {
         term.assert_term_handling_possible();
         // let's create a fake context so we can make a frame
         // unsafe justification: This context will only exist inside this implementation. We know we are in some valid context for term handling, so that's great.
@@ -471,7 +480,9 @@ where
 
         let frame = context.open_frame();
         let list = frame.new_term_ref();
-        list.unify(term)?;
+        if list.unify(term).is_err() {
+            return false;
+        }
         let mut success = true;
 
         for t in self.iter() {
@@ -486,12 +497,15 @@ where
                 break;
             }
 
-            success = head.unify(t)?;
+            success = head.unify(t).is_ok();
 
             // reset term - should really be a method on term
             unsafe { PL_put_variable(list.term_ptr()) };
 
-            list.unify(tail)?;
+            if list.unify(tail).is_err() {
+                return false;
+            }
+
             frame2.close_frame();
         }
 
@@ -500,7 +514,7 @@ where
             frame.close_frame();
         }
 
-        Ok(success)
+        success
     }
 }
 
@@ -569,9 +583,9 @@ mod tests {
 
         let term1 = context.new_term_ref();
         let term2 = context.new_term_ref();
-        assert!(term1.unify(42_u64).unwrap());
-        assert!(term2.unify(42_u64).unwrap());
-        assert!(term1.unify(&term2).unwrap());
+        assert!(term1.unify(42_u64).is_ok());
+        assert!(term2.unify(42_u64).is_ok());
+        assert!(term1.unify(&term2).is_ok());
     }
 
     #[test]
@@ -583,9 +597,9 @@ mod tests {
 
         let term1 = context.new_term_ref();
         let term2 = context.new_term_ref();
-        assert!(term1.unify(42_u64).unwrap());
-        assert!(term2.unify(43_u64).unwrap());
-        assert!(!term1.unify(&term2).unwrap());
+        assert!(term1.unify(42_u64).is_ok());
+        assert!(term2.unify(43_u64).is_ok());
+        assert!(!term1.unify(&term2).is_ok());
     }
 
     #[test]
@@ -596,8 +610,8 @@ mod tests {
         let context: Context<_> = activation.into();
 
         let term = context.new_term_ref();
-        assert!(term.unify(42_u64).unwrap());
-        assert!(!term.unify(43_u64).unwrap());
+        assert!(term.unify(42_u64).is_ok());
+        assert!(!term.unify(43_u64).is_ok());
     }
 
     #[test]
@@ -609,9 +623,9 @@ mod tests {
         let term = context.new_term_ref();
         let context2 = context.open_frame();
 
-        assert!(term.unify(42_u64).unwrap());
+        assert!(term.unify(42_u64).is_ok());
         context2.rewind_frame();
-        assert!(term.unify(43_u64).unwrap());
+        assert!(term.unify(43_u64).is_ok());
     }
 
     #[test]
@@ -708,7 +722,7 @@ mod tests {
         let context: Context<_> = activation.into();
 
         let term = context.new_term_ref();
-        assert!(term.unify([42_u64, 12, 3, 0, 5].as_ref()).unwrap());
+        assert!(term.unify([42_u64, 12, 3, 0, 5].as_ref()).is_ok());
 
         assert_eq!(
             [42_u64, 12, 3, 0, 5].as_ref(),
@@ -728,7 +742,7 @@ mod tests {
         let elt2 = context.new_term_ref();
         elt1.unify(42_u64).unwrap();
         elt2.unify(43_u64).unwrap();
-        assert!(term.unify([elt1, elt2].as_ref()).unwrap());
+        assert!(term.unify([elt1, elt2].as_ref()).is_ok());
 
         assert_eq!([42_u64, 43].as_ref(), term.get::<Vec<u64>>().unwrap());
     }

@@ -72,7 +72,7 @@ unifiable! {
     (self: Functor, term) => {
         let result = unsafe {PL_unify_compound(term.term_ptr(), self.functor)};
 
-        Ok(result != 0)
+        result != 0
     }
 }
 
@@ -154,8 +154,8 @@ mod tests {
 
         let f = context.new_functor("moocows", 3);
         let term = context.new_term_ref();
-        assert!(term.unify(&f).unwrap());
-        assert!(term.unify(&f).unwrap());
+        assert!(term.unify(&f).is_ok());
+        assert!(term.unify(&f).is_ok());
     }
 
     #[test]
@@ -167,7 +167,7 @@ mod tests {
 
         let f = context.new_functor("moocows", 3);
         let term = context.new_term_ref();
-        assert!(term.unify(&f).unwrap());
+        assert!(term.unify(&f).is_ok());
     }
 
     #[test]
@@ -194,8 +194,8 @@ mod tests {
         let f1 = context.new_functor("moocows", 3);
         let f2 = context.new_functor("oinkpigs", 3);
         let term = context.new_term_ref();
-        assert!(term.unify(&f1).unwrap());
-        assert!(!term.unify(&f2).unwrap());
+        assert!(term.unify(&f1).is_ok());
+        assert!(!term.unify(&f2).is_ok());
     }
 
     #[test]
@@ -219,17 +219,17 @@ mod tests {
         let f = context.new_functor("moocows", 2);
         let term = context.new_term_ref();
         assert_eq!(None, term.get_arg::<u64>(1));
-        assert!(term.unify(f).unwrap());
+        assert!(term.unify(f).is_ok());
         assert_eq!(None, term.get_arg::<u64>(1));
-        assert!(term.unify_arg(1, 42_u64).unwrap());
+        assert!(term.unify_arg(1, 42_u64).is_ok());
         assert_eq!(Some(42_u64), term.get_arg(1));
-        assert!(term.unify_arg(1, 42_u64).unwrap());
-        assert!(!term.unify_arg(1, 43_u64).unwrap());
+        assert!(term.unify_arg(1, 42_u64).is_ok());
+        assert!(!term.unify_arg(1, 43_u64).is_ok());
 
-        assert!(term.unify_arg(2, 24_u64).unwrap());
+        assert!(term.unify_arg(2, 24_u64).is_ok());
         assert_eq!(Some(24_u64), term.get_arg(2));
 
-        assert!(!term.unify_arg(3, 24_u64).unwrap());
+        assert!(!term.unify_arg(3, 24_u64).is_ok());
         assert_eq!(None, term.get_arg::<u64>(3));
     }
 }

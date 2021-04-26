@@ -12,8 +12,6 @@ use std::convert::TryInto;
 
 use swipl_macros::prolog;
 
-use thiserror::Error;
-
 pub unsafe fn with_cleared_exception<R>(f: impl FnOnce() -> R) -> R {
     let error_term_ref = PL_exception(0);
     if error_term_ref != 0 {
@@ -48,8 +46,8 @@ impl<'a> ExceptionTerm<'a> {
     ) -> R {
         ctx.assert_activated();
         let backup_term_ref = PL_new_term_ref();
+        assert!(PL_unify(backup_term_ref, self.0.term_ptr()) != 0);
         let backup_term = Term::new(backup_term_ref, ctx);
-        backup_term.unify(&self.0).unwrap();
         PL_clear_exception();
 
         // should we handle panics?
@@ -391,7 +389,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         let terms = unsafe { PL_new_term_refs(args.len().try_into().unwrap()) };
         for i in 0..args.len() {
             let term = unsafe { self.wrap_term_ref(terms + i) };
-            assert!(term.unify(args[i]).unwrap());
+            assert!(term.unify(args[i]).is_ok());
         }
 
         let qid = unsafe {
@@ -416,8 +414,8 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         let arg1 = frame.new_term_ref();
         let arg3 = frame.new_term_ref();
 
-        assert!(arg1.unify(s).unwrap());
-        assert!(arg3.unify(Nil).unwrap());
+        assert!(arg1.unify(s).is_ok());
+        assert!(arg3.unify(Nil).is_ok());
 
         let query = read_term_from_atom(&frame, &arg1, &term, &arg3);
 
@@ -449,45 +447,6 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         }
     }
 }
-
-#[derive(Debug, Error)]
-pub enum DetError {
-    #[error("unexpected failure")]
-    UnexpectedFailure,
-    #[error("unexpected choice point")]
-    UnexpectedChoicepoint,
-    #[error("exception")]
-    Exception,
-}
-
-pub type DetResult = Result<(), DetError>;
-
-#[derive(Debug, Error)]
-pub enum SemidetError {
-    #[error("unexpected choice point")]
-    UnexpectedChoicepoint,
-    #[error("exception")]
-    Exception,
-}
-
-impl From<SemidetError> for DetError {
-    fn from(e: SemidetError) -> DetError {
-        match e {
-            SemidetError::UnexpectedChoicepoint => DetError::UnexpectedChoicepoint,
-            SemidetError::Exception => DetError::Exception,
-        }
-    }
-}
-
-pub fn semidet_to_det_result(result: SemidetResult) -> DetResult {
-    match result {
-        Ok(true) => Ok(()),
-        Ok(false) => Err(DetError::UnexpectedFailure),
-        Err(e) => Err(e.into()),
-    }
-}
-
-pub type SemidetResult = Result<bool, SemidetError>;
 
 pub enum QueryResult {
     Success,
@@ -687,9 +646,9 @@ mod tests {
         let term1 = context.new_term_ref();
         let term2 = context.new_term_ref();
 
-        assert!(term2.unify(&functor_plus).unwrap());
-        assert!(term2.unify_arg(1, 40_u64).unwrap());
-        assert!(term2.unify_arg(2, 2_u64).unwrap());
+        assert!(term2.unify(&functor_plus).is_ok());
+        assert!(term2.unify_arg(1, 40_u64).is_ok());
+        assert!(term2.unify_arg(2, 2_u64).is_ok());
 
         let query = context.open_query(None, &predicate, &[&term1, &term2]);
         let next = query.next_solution();
@@ -716,9 +675,9 @@ mod tests {
         let term1 = context.new_term_ref();
         let term2 = context.new_term_ref();
 
-        assert!(term2.unify(&functor_plus).unwrap());
-        assert!(term2.unify_arg(1, 40_u64).unwrap());
-        assert!(term2.unify_arg(2, 2_u64).unwrap());
+        assert!(term2.unify(&functor_plus).is_ok());
+        assert!(term2.unify_arg(1, 40_u64).is_ok());
+        assert!(term2.unify_arg(2, 2_u64).is_ok());
 
         {
             let query = context.open_query(None, &predicate, &[&term1, &term2]);
@@ -747,9 +706,9 @@ mod tests {
         let term1 = context.new_term_ref();
         let term2 = context.new_term_ref();
 
-        assert!(term2.unify(&functor_plus).unwrap());
-        assert!(term2.unify_arg(1, 40_u64).unwrap());
-        assert!(term2.unify_arg(2, 2_u64).unwrap());
+        assert!(term2.unify(&functor_plus).is_ok());
+        assert!(term2.unify_arg(1, 40_u64).is_ok());
+        assert!(term2.unify_arg(2, 2_u64).is_ok());
 
         {
             let query = context.open_query(None, &predicate, &[&term1, &term2]);
@@ -779,9 +738,9 @@ mod tests {
         let term1 = context.new_term_ref();
         let term2 = context.new_term_ref();
 
-        assert!(term2.unify(&functor_plus).unwrap());
-        assert!(term2.unify_arg(1, 40_u64).unwrap());
-        assert!(term2.unify_arg(2, 2_u64).unwrap());
+        assert!(term2.unify(&functor_plus).is_ok());
+        assert!(term2.unify_arg(1, 40_u64).is_ok());
+        assert!(term2.unify_arg(2, 2_u64).is_ok());
 
         {
             let query = context.open_query(None, &predicate, &[&term1, &term2]);
@@ -820,7 +779,7 @@ mod tests {
 
         let term = context.term_from_string("member(X, [a,b,c])").unwrap();
         let term_x = context.new_term_ref();
-        assert!(term.unify_arg(1, &term_x).unwrap());
+        assert!(term.unify_arg(1, &term_x).is_ok());
 
         let query = context.open_call(&term);
         assert!(query.next_solution().is_nonlast_success());
@@ -864,7 +823,7 @@ mod tests {
         assert!(query.next_solution().is_last_success());
         query.cut();
 
-        assert!(term_x.unify(42_u64).unwrap());
+        assert!(term_x.unify(42_u64).is_ok());
 
         let term = context.new_term_ref();
         term.unify(true).unwrap();
@@ -900,7 +859,7 @@ mod tests {
         let check_term = term! {context: error(instantiation_error, _)};
         let query = prolog_arithmetic(&context, &term1, &term2);
         let e = query.catch_next_solution().unwrap_err();
-        assert!(check_term.unify(e).unwrap());
+        assert!(check_term.unify(e).is_ok());
     }
 
     #[test]
@@ -917,9 +876,9 @@ mod tests {
         let check_term = term! {context: error(instantiation_error, _)};
         let query = prolog_arithmetic(&context, &term1, &term2);
         let e = query.catch_next_solution_in_term(&term3).unwrap_err();
-        assert!(check_term.unify(e).unwrap());
+        assert!(check_term.unify(e).is_ok());
         query.discard();
-        assert!(check_term.unify(&term3).unwrap());
+        assert!(check_term.unify(&term3).is_ok());
     }
 
     #[test]
@@ -944,7 +903,7 @@ mod tests {
         let _term5 = context.new_term_ref();
 
         assert!(!e.is_var());
-        assert!(check_term.unify(e).unwrap());
+        assert!(check_term.unify(e).is_ok());
     }
 
     #[test]
@@ -966,8 +925,8 @@ mod tests {
     }
 
     predicates! {
-        det fn unify_with_42(_context, term) -> DetResult {
-            term.unify_det(42_u64)
+        det fn unify_with_42(_context, term) {
+            term.unify(42_u64)
         }
     }
 

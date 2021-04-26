@@ -161,9 +161,6 @@ impl Parse for DetForeignPredicateDefinition {
             ));
         }
 
-        input.parse::<Token![->]>()?;
-        input.parse::<kw::DetResult>()?;
-
         let body = input.parse()?;
 
         Ok(Self {
@@ -187,7 +184,7 @@ impl ForeignPredicateDefinitionImpl for DetForeignPredicateDefinition {
         (
             definition_name.clone(),
             quote! {
-                fn #definition_name<'a, C: #crt::context::QueryableContextType>(#context_arg: &'a #crt::context::Context<'a, C>, #(#term_args : &#crt::term::Term<'a>),*) -> #crt::context::DetResult {
+                fn #definition_name<'a, C: #crt::context::QueryableContextType>(#context_arg: &'a #crt::context::Context<'a, C>, #(#term_args : &#crt::term::Term<'a>),*) -> #crt::result::PrologResult<()> {
                     #code
                 }
             },
@@ -308,8 +305,6 @@ impl Parse for SemidetForeignPredicateDefinition {
                 "need at least one argument for query context",
             ));
         }
-        input.parse::<Token![->]>()?;
-        input.parse::<kw::SemidetResult>()?;
 
         let body = input.parse()?;
 
@@ -334,7 +329,7 @@ impl ForeignPredicateDefinitionImpl for SemidetForeignPredicateDefinition {
         (
             definition_name.clone(),
             quote! {
-                fn #definition_name<'a, C: #crt::context::QueryableContextType>(#context_arg: &'a #crt::context::Context<'a, C>, #(#term_args : &#crt::term::Term<'a>),*) -> #crt::context::SemidetResult {
+                fn #definition_name<'a, C: #crt::context::QueryableContextType>(#context_arg: &'a #crt::context::Context<'a, C>, #(#term_args : &#crt::term::Term<'a>),*) -> #crt::result::PrologResult<()> {
                     #code
                 }
             },

@@ -102,7 +102,7 @@ unifiable! {
     (self:Atom, term) => {
         let result = unsafe { PL_unify_atom(term.term_ptr(), self.atom) };
 
-        Ok(result != 0)
+        result != 0
     }
 }
 
@@ -259,7 +259,7 @@ unifiable! {
             )
         };
 
-        Ok(result != 0)
+        result != 0
     }
 }
 
@@ -391,9 +391,9 @@ mod tests {
 
         let term = context.new_term_ref();
 
-        assert!(term.unify(&a1).unwrap());
-        assert!(term.unify(a1).unwrap());
-        assert!(!term.unify(a2).unwrap());
+        assert!(term.unify(&a1).is_ok());
+        assert!(term.unify(a1).is_ok());
+        assert!(!term.unify(a2).is_ok());
     }
 
     #[test]
@@ -408,11 +408,11 @@ mod tests {
 
         let term = context.new_term_ref();
 
-        assert!(term.unify(atomable("foo")).unwrap());
-        assert!(term.unify(atomable("foo")).unwrap());
-        assert!(term.unify(a1).unwrap());
-        assert!(!term.unify(atomable("bar")).unwrap());
-        assert!(!term.unify(a2).unwrap());
+        assert!(term.unify(atomable("foo")).is_ok());
+        assert!(term.unify(atomable("foo")).is_ok());
+        assert!(term.unify(a1).is_ok());
+        assert!(!term.unify(atomable("bar")).is_ok());
+        assert!(!term.unify(a2).is_ok());
     }
 
     #[test]
@@ -429,9 +429,9 @@ mod tests {
 
         let term = context.new_term_ref();
 
-        assert!(term.unify(&a1).unwrap());
-        assert!(term.unify(&a1).unwrap());
-        assert!(!term.unify(&a2).unwrap());
+        assert!(term.unify(&a1).is_ok());
+        assert!(term.unify(&a1).is_ok());
+        assert!(!term.unify(&a2).is_ok());
     }
 
     #[test]
