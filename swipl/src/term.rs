@@ -74,6 +74,10 @@ impl<'a> Term<'a> {
         let arg_ref = unsafe { PL_new_term_ref() };
 
         let result = unsafe { PL_get_arg(index.try_into().unwrap(), self.term, arg_ref) };
+        if unsafe { PL_exception(0) != 0 } {
+            return Err(PrologError::Exception);
+        }
+
         let arg = unsafe { Term::new(arg_ref, self.context) };
         let mut result2 = Err(PrologError::Failure);
         if result != 0 {
@@ -85,11 +89,21 @@ impl<'a> Term<'a> {
         result2
     }
 
-    pub fn get<G: TermGetable>(&self) -> Option<G> {
-        G::get(self)
+    pub fn get<G: TermGetable>(&self) -> OptPrologResult<G> {
+        let opt = G::get(self);
+
+        // get functions may throw an exception, either directly or
+        // through some inner function. It's too much hassle to have
+        // each function check for themselves and return the
+        // appropriate thing, so we just do it all here.
+        if unsafe { PL_exception(0) != 0 } {
+            Err(PrologException)
+        } else {
+            Ok(opt)
+        }
     }
 
-    pub fn get_arg<G: TermGetable>(&self, index: usize) -> Option<G> {
+    pub fn get_arg<G: TermGetable>(&self, index: usize) -> OptPrologResult<G> {
         if index == 0 {
             panic!("unify_arg was given index 0, but index starts at 1");
         }
@@ -99,8 +113,12 @@ impl<'a> Term<'a> {
         let arg_ref = unsafe { PL_new_term_ref() };
 
         let result = unsafe { PL_get_arg(index.try_into().unwrap(), self.term, arg_ref) };
+        if unsafe { PL_exception(0) != 0 } {
+            return Err(PrologException);
+        }
+
         let arg = unsafe { Term::new(arg_ref, self.context) };
-        let mut result2 = None;
+        let mut result2 = Ok(None);
         if result != 0 {
             result2 = arg.get();
         }
@@ -548,12 +566,12 @@ unsafe impl<T: TermGetable> TermGetable for Vec<T> {
             }
 
             let elt = head.get();
-            if elt.is_none() {
+            if elt.is_err() || elt.as_ref().unwrap().is_none() {
                 success = false;
                 break;
             }
 
-            result.push(elt.unwrap());
+            result.push(elt.unwrap().unwrap());
 
             // reset term - should really be a method on term
             unsafe { PL_put_variable(list.term_ptr()) };
@@ -636,12 +654,12 @@ mod tests {
         let context: Context<_> = activation.into();
 
         let term1 = context.new_term_ref();
-        assert!(term1.get::<bool>().is_none());
+        assert!(term1.get::<bool>().unwrap().is_none());
         term1.unify(true).unwrap();
-        assert_eq!(Some(true), term1.get::<bool>());
+        assert_eq!(Some(true), term1.get::<bool>().unwrap());
         let term2 = context.new_term_ref();
         term2.unify(false).unwrap();
-        assert_eq!(Some(false), term2.get::<bool>());
+        assert_eq!(Some(false), term2.get::<bool>().unwrap());
     }
 
     #[test]
@@ -652,15 +670,15 @@ mod tests {
         let context: Context<_> = activation.into();
 
         let term1 = context.new_term_ref();
-        assert!(term1.get::<u64>().is_none());
+        assert!(term1.get::<u64>().unwrap().is_none());
         term1.unify(42_u64).unwrap();
-        assert_eq!(Some(42), term1.get::<u64>());
+        assert_eq!(Some(42), term1.get::<u64>().unwrap());
         let term2 = context.new_term_ref();
         term2.unify(0xffffffff_u64).unwrap();
-        assert_eq!(Some(0xffffffff), term2.get::<u64>());
+        assert_eq!(Some(0xffffffff), term2.get::<u64>().unwrap());
         let term3 = context.new_term_ref();
         term3.unify(0xffffffffffffffff_u64).unwrap();
-        assert_eq!(Some(0xffffffffffffffff), term3.get::<u64>());
+        assert_eq!(Some(0xffffffffffffffff), term3.get::<u64>().unwrap());
     }
 
     #[test]
@@ -671,9 +689,9 @@ mod tests {
         let context: Context<_> = activation.into();
 
         let term1 = context.new_term_ref();
-        assert!(term1.get::<u64>().is_none());
+        assert!(term1.get::<u64>().unwrap().is_none());
         term1.put_val(42_u64);
-        assert_eq!(Some(42), term1.get::<u64>());
+        assert_eq!(Some(42), term1.get::<u64>().unwrap());
     }
 
     #[test]
@@ -697,9 +715,9 @@ mod tests {
         let context: Context<_> = activation.into();
 
         let term1 = context.new_term_ref();
-        assert!(term1.get::<String>().is_none());
+        assert!(term1.get::<String>().unwrap().is_none());
         term1.unify("hello there").unwrap();
-        assert_eq!("hello there", term1.get::<String>().unwrap());
+        assert_eq!("hello there", term1.get::<String>().unwrap().unwrap());
     }
 
     #[test]
@@ -711,7 +729,7 @@ mod tests {
 
         let term1 = context.new_term_ref();
         term1.unify(42_u64).unwrap();
-        assert_eq!(None, term1.get::<bool>());
+        assert_eq!(None, term1.get::<bool>().unwrap());
     }
 
     #[test]
@@ -726,7 +744,7 @@ mod tests {
 
         assert_eq!(
             [42_u64, 12, 3, 0, 5].as_ref(),
-            term.get::<Vec<u64>>().unwrap()
+            term.get::<Vec<u64>>().unwrap().unwrap()
         );
     }
 
@@ -744,7 +762,10 @@ mod tests {
         elt2.unify(43_u64).unwrap();
         assert!(term.unify([elt1, elt2].as_ref()).is_ok());
 
-        assert_eq!([42_u64, 43].as_ref(), term.get::<Vec<u64>>().unwrap());
+        assert_eq!(
+            [42_u64, 43].as_ref(),
+            term.get::<Vec<u64>>().unwrap().unwrap()
+        );
     }
 
     use crate::term;

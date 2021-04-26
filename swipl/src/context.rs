@@ -654,7 +654,7 @@ mod tests {
         let next = query.next_solution();
 
         assert!(next.is_success() && next.is_last());
-        assert_eq!(42_u64, term1.get().unwrap());
+        assert_eq!(42_u64, term1.get().unwrap().unwrap());
 
         let next = query.next_solution();
         assert!(next.is_failure());
@@ -684,11 +684,11 @@ mod tests {
             let next = query.next_solution();
 
             assert!(next.is_last_success());
-            assert_eq!(42_u64, term1.get().unwrap());
+            assert_eq!(42_u64, term1.get().unwrap().unwrap());
         }
 
         // after leaving the block, we have discarded
-        assert!(term1.get::<u64>().is_none());
+        assert!(term1.get::<u64>().unwrap().is_none());
     }
 
     #[test]
@@ -715,12 +715,12 @@ mod tests {
             let next = query.next_solution();
 
             assert!(next.is_last_success());
-            assert_eq!(42_u64, term1.get().unwrap());
+            assert_eq!(42_u64, term1.get().unwrap().unwrap());
             query.discard();
         }
 
         // after leaving the block, we have discarded
-        assert!(term1.get::<u64>().is_none());
+        assert!(term1.get::<u64>().unwrap().is_none());
     }
 
     #[test]
@@ -747,12 +747,12 @@ mod tests {
             let next = query.next_solution();
 
             assert!(next.is_last_success());
-            assert_eq!(42_u64, term1.get().unwrap());
+            assert_eq!(42_u64, term1.get().unwrap().unwrap());
             query.cut();
         }
 
         // a cut query leaves data intact
-        assert_eq!(42_u64, term1.get().unwrap());
+        assert_eq!(42_u64, term1.get().unwrap().unwrap());
     }
 
     #[test]
@@ -766,8 +766,8 @@ mod tests {
         let functor_foo = context.new_functor("foo", 1);
         let functor_bar = context.new_functor("bar", 2);
 
-        assert_eq!(functor_foo, term.get().unwrap());
-        assert_eq!(functor_bar, term.get_arg(1).unwrap());
+        assert_eq!(functor_foo, term.get().unwrap().unwrap());
+        assert_eq!(functor_bar, term.get_arg(1).unwrap().unwrap());
     }
 
     #[test]
@@ -832,10 +832,10 @@ mod tests {
         assert!(next.is_exception());
         query.with_exception(|e| {
             let exception_term = e.unwrap();
-            let atomable: Atomable = exception_term.get().unwrap();
+            let atomable: Atomable = exception_term.get().unwrap().unwrap();
             assert_eq!("foo", atomable.name());
 
-            assert!(term.get::<u64>().is_none());
+            assert!(term.get::<u64>().unwrap().is_none());
         });
     }
 
@@ -947,7 +947,7 @@ mod tests {
 
         let query = context.open_query(None, &predicate, &[&term]);
         assert!(query.next_solution().is_success());
-        assert_eq!(42, term.get::<u64>().unwrap());
+        assert_eq!(42, term.get::<u64>().unwrap().unwrap());
     }
 
     #[test]
@@ -962,6 +962,6 @@ mod tests {
 
         let q = prolog_arithmetic(&context, &term, &expr);
         assert!(q.next_solution().is_success());
-        assert_eq!(4, term.get::<u64>().unwrap());
+        assert_eq!(4, term.get::<u64>().unwrap().unwrap());
     }
 }
