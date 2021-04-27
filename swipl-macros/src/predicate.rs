@@ -327,13 +327,12 @@ impl Parse for NondetForeignPredicateDefinition {
         input.parse::<Token![fn]>()?;
         let name: Ident = input.parse()?;
 
+        input.parse::<syn::token::Lt>()?;
+        let data_type = input.parse::<syn::Path>()?;
+        input.parse::<syn::token::Gt>()?;
+
         let params_stream;
         parenthesized!(params_stream in input);
-
-        let data_name = params_stream.parse::<Ident>()?;
-        params_stream.parse::<Token![:]>()?;
-        let data_type = params_stream.parse::<syn::Path>()?;
-        params_stream.parse::<Token![,]>()?;
 
         let params_punct: Punctuated<Ident, Token![,]> =
             params_stream.parse_terminated(Ident::parse)?;
@@ -356,6 +355,9 @@ impl Parse for NondetForeignPredicateDefinition {
         blocks.parse::<Token![,]>()?;
 
         blocks.parse::<kw::call>()?;
+        let call_params_stream;
+        parenthesized!(call_params_stream in blocks);
+        let data_name = call_params_stream.parse::<Ident>()?;
         blocks.parse::<Token![=>]>()?;
         let call_body = blocks.parse()?;
 
