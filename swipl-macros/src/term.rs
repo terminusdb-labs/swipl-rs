@@ -42,6 +42,7 @@ pub fn term_macro(stream: proc_macro::TokenStream) -> proc_macro::TokenStream {
             #term_ident
         }
     };
+    //println!("{:#?}", gen);
     gen.into()
 }
 
