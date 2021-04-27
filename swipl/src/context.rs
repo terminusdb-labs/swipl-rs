@@ -113,7 +113,7 @@ impl<'a, T: ContextType> Context<'a, T> {
         Term::new(term, self)
     }
 
-    pub fn raise_exception(&self, term: &Term) -> PrologResult<()>
+    pub fn raise_exception<R>(&self, term: &Term) -> PrologResult<R>
     where
         T: FrameableContextType,
     {

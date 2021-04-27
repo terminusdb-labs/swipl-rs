@@ -816,7 +816,7 @@ mod tests {
         let context: Context<_> = activation.into();
 
         let error_term = term! {context: error(some_error, _)};
-        context.raise_exception(&error_term).unwrap_err();
+        context.raise_exception::<()>(&error_term).unwrap_err();
         assert!(context.has_exception());
     }
 }
