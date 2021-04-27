@@ -185,7 +185,7 @@ impl ForeignPredicateDefinitionImpl for SemidetForeignPredicateDefinition {
         let term_args = self.params.iter().skip(1);
         let code = &self.body;
         quote! {
-            fn #definition_name<'a, C: #crt::context::QueryableContextType>(#[allow(unused)] #context_arg: &'a #crt::context::Context<'a, C>, #(#term_args : &#crt::term::Term<'a>),*) -> #crt::result::PrologResult<()> {
+            fn #definition_name<'a, C: #crt::context::QueryableContextType>(#context_arg: &'a #crt::context::Context<'a, C>, #(#term_args : &#crt::term::Term<'a>),*) -> #crt::result::PrologResult<()> {
                 #code
             }
         }
@@ -256,7 +256,7 @@ impl ForeignPredicateDefinitionImpl for SemidetForeignPredicateDefinition {
                                 }
                             }
 
-                            context.raise_exception(&error_term).unwrap_err();
+                            context.raise_exception::<()>(&error_term).unwrap_err();
 
                             0
                         }
@@ -391,11 +391,11 @@ impl ForeignPredicateDefinitionImpl for NondetForeignPredicateDefinition {
         let data_name = &self.data_name;
         let data_type = &self.data_type;
         quote! {
-            fn #definition_setup_name<'a, C: #crt::context::QueryableContextType>(#[allow(unused)] #context_arg: &'a #crt::context::Context<'a, C>, #(#term_args : &#crt::term::Term<'a>),*) -> #crt::result::PrologResult<#data_type> {
+            fn #definition_setup_name<'a, C: #crt::context::QueryableContextType>(#[allow(unused)] #context_arg: &'a #crt::context::Context<'a, C>, #(#[allow(unused)] #term_args : &#crt::term::Term<'a>),*) -> #crt::result::PrologResult<#data_type> {
                 #setup_code
             }
 
-            fn #definition_call_name<'a, C: #crt::context::QueryableContextType>(#data_name: &mut #data_type, #[allow(unused)] #context_arg: &'a #crt::context::Context<'a, C>, #(#term_args_2 : &#crt::term::Term<'a>),*) -> #crt::result::PrologResult<bool> {
+            fn #definition_call_name<'a, C: #crt::context::QueryableContextType>(#data_name: &mut #data_type, #[allow(unused)] #context_arg: &'a #crt::context::Context<'a, C>, #(#[allow(unused)] #term_args_2 : &#crt::term::Term<'a>),*) -> #crt::result::PrologResult<bool> {
                 #call_code
             }
         }
@@ -407,6 +407,11 @@ impl ForeignPredicateDefinitionImpl for NondetForeignPredicateDefinition {
             &format!("__{}_trampoline", self.predicate_rust_name),
             Span::call_site(),
         );
+        let trampoline_type_check = Ident::new(
+            &format!("__{}_trampoline_type_check", self.predicate_rust_name),
+            Span::call_site(),
+        );
+
         let definition_setup_name = nondet_definition_setup_name(&self.predicate_rust_name);
         let definition_call_name = nondet_definition_call_name(&self.predicate_rust_name);
         let data_type = &self.data_type;
@@ -416,11 +421,16 @@ impl ForeignPredicateDefinitionImpl for NondetForeignPredicateDefinition {
         (
             trampoline_name.clone(),
             quote! {
+                fn #trampoline_type_check<T: Send+Unpin>() {}
+
                 unsafe extern "C" fn #trampoline_name(
                     term: #crt::fli::term_t,
                     arity: std::os::raw::c_int,
                     control: *mut std::os::raw::c_void
                 ) -> isize {
+                    // first, assert that the data type is send and unpin
+                    #trampoline_type_check::<#data_type>();
+
                     let result = std::panic::catch_unwind(|| {
                         if #known_arity as usize != arity as usize {
                             // TODO actually throw an error
@@ -509,7 +519,7 @@ impl ForeignPredicateDefinitionImpl for NondetForeignPredicateDefinition {
                                 }
                             }
 
-                            context.raise_exception(&error_term).unwrap_err();
+                            context.raise_exception::<()>(&error_term).unwrap_err();
 
                             0
                         }
