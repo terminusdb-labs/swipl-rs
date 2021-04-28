@@ -1,4 +1,7 @@
 # swipl-rs
+
+![build](https://github.com/terminusdb-labs/swipl-rs/actions/workflows/rust.yml/badge.svg?branch=master)
+
 Rust bindings to SWI-Prolog.
 
 ## Overview
