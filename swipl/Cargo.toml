@@ -5,6 +5,7 @@ authors = ["Matthijs van Otterdijk <matthijs@terminusdb.com>"]
 edition = "2018"
 license = "Apache-2.0/MIT"
 description = "A high-level library for building SWI-Prolog extensions and embedding SWI-Prolog in rust applications"
+repository = "https://github.com/terminusdb-labs/swipl-rs/"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

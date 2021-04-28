@@ -6,6 +6,7 @@ edition = "2018"
 links = "swipl"
 license = "Apache-2.0/MIT"
 description = "Low-level bindings to the SWI-Prolog Foreign Language Interface"
+repository = "https://github.com/terminusdb-labs/swipl-rs/"
 
 [dependencies]
 [build-dependencies]

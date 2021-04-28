@@ -5,6 +5,7 @@ authors = ["Matthijs van Otterdijk <matthijs@terminusdb.com>"]
 edition = "2018"
 license = "Apache-2.0/MIT"
 description = "Tool for working with crates that use the SWI-Prolog Foreign Language Interface"
+repository = "https://github.com/terminusdb-labs/swipl-rs/"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
