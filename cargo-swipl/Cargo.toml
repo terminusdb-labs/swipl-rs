@@ -9,4 +9,4 @@ license = "Apache-2.0/MIT"
 
 [dependencies]
 clap = "2.33.3"
-swipl-info = {path="../swipl-info"}
+swipl-info = {path="../swipl-info", version="0.1"}
