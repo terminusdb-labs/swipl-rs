@@ -20,7 +20,11 @@ fn subcmd(subcommand: &ArgMatches, cmd: &str) {
         command.args(args);
     }
 
-    command.spawn().unwrap().wait().unwrap();
+    let exit_status = command.spawn().unwrap().wait().unwrap();
+
+    if let Some(code) = exit_status.code() {
+        std::process::exit(code);
+    }
 }
 
 fn main() {
