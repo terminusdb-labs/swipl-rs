@@ -36,4 +36,4 @@ jobs:
     - name: Install cargo-swipl
       run: cargo install --path ./cargo-swipl
     - name: Run tests
-      run: SWIPL='C:\Program Files\swipl\bin\swipl.exe' cargo swipl test
+      run: cargo swipl test
