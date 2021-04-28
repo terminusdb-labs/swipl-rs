@@ -10,4 +10,4 @@ description = "Low-level bindings to the SWI-Prolog Foreign Language Interface"
 [dependencies]
 [build-dependencies]
 bindgen = "0.56.0"
-swipl-info = {path = "../swipl-info"}
+swipl-info = {path = "../swipl-info", version = "0.1"}
