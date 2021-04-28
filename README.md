@@ -20,13 +20,14 @@ Implemented so far:
 - easy frontend to `call/1` for easy term calling
 - get, put, and unify for all common relevant rust and prolog types
 - macro for generating bindings to prolog predicates
-
-To be implemented (roughly in order of delivery):
 - compound term production
 - exception handling
 - macros for easy foreign predicate writing
+
+To be implemented (roughly in order of delivery):
 - macros for easy blob definitions
 - pack generation cargo tool
+- async/await support
 
 ## Plans
 The goal for this project is full native rust packs for SWI-Prolog, without requiring any c glue. A pack in SWI-Prolog is a package that is installable through `pack_install(..)`. There are a few tricky bits towards this goal which I'll list here.
