@@ -1,0 +1,14 @@
+[package]
+name = "swipl-module-example"
+version = "0.1.0"
+authors = ["Matthijs van Otterdijk <matthijs@terminusdb.com>"]
+edition = "2018"
+publish = false
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+swipl = {path="../swipl"}
