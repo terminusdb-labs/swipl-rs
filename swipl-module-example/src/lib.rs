@@ -1,7 +1,13 @@
 use swipl::atom::*;
+use swipl::blob::*;
 use swipl::context::*;
 use swipl::result::*;
+use swipl::stream::*;
 use swipl::*;
+
+use std::cmp::Ordering;
+use std::io::{self, Write};
+use std::sync::Arc;
 
 predicates! {
     semidet fn unify_with_42(_context, term) {
@@ -63,6 +69,32 @@ predicates! {
             }
         }
     }
+
+    semidet fn unify_with_blob(_context, term, num_term) {
+        let num: u64 = num_term.get()?;
+        let arc = Arc::new(Moo { num });
+        term.unify(&arc)
+    }
+
+    semidet fn moo_num(_context, moo_term, num_term) {
+        let arc: Arc<Moo> = moo_term.get()?;
+        num_term.unify(arc.num)
+    }
+}
+
+#[arc_blob("moo")]
+struct Moo {
+    num: u64,
+}
+
+impl ArcBlobImpl for Moo {
+    fn compare(&self, other: &Self) -> Ordering {
+        self.num.cmp(&other.num)
+    }
+
+    fn write(&self, stream: &mut PrologStream) -> io::Result<()> {
+        write!(stream, "<moo {}>", self.num)
+    }
 }
 
 #[no_mangle]
@@ -76,4 +108,6 @@ pub extern "C" fn install() {
     register_throw_a_thing();
     register_rusty_panic();
     register_decrement();
+    register_unify_with_blob();
+    register_moo_num();
 }
