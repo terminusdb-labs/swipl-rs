@@ -174,7 +174,7 @@ pub fn wrapped_arc_blob_macro(item: proc_macro::TokenStream) -> proc_macro::Toke
     }
 
     let result = quote! {
-        #visibility struct #item_name(Arc<#inner_type_name>);
+        #visibility struct #item_name(#visibility Arc<#inner_type_name>);
 
         impl std::ops::Deref for #item_name {
             type Target = #inner_type_name;
@@ -192,11 +192,11 @@ pub fn wrapped_arc_blob_macro(item: proc_macro::TokenStream) -> proc_macro::Toke
                 #name_lit
             }
 
-            fn get_arc(&self) -> &Arc<#inner_type_name> {
+            fn get_arc(&self) -> &std::sync::Arc<#inner_type_name> {
                 &self.0
             }
 
-            fn from_arc(arc: Arc<#inner_type_name>) -> Self {
+            fn from_arc(arc: std::sync::Arc<#inner_type_name>) -> Self {
                 Self(arc)
             }
         }
