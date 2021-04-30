@@ -1,10 +1,11 @@
 use crate::util::*;
+use crate::kw;
 
 use proc_macro;
 use proc_macro2::{Span, TokenStream};
 use quote::{quote, ToTokens};
 use syn::parse::{Parse, ParseStream, Result};
-use syn::{parse_macro_input, Ident, Item, ItemEnum, ItemStruct, LitByteStr, LitStr};
+use syn::{parse_macro_input, Token, Ident, Item, ItemEnum, ItemStruct, LitByteStr, LitStr};
 
 pub fn arc_blob_macro(
     attr: proc_macro::TokenStream,
@@ -32,6 +33,16 @@ pub fn arc_blob_macro(
     let blob_release = Ident::new(&format!("__{}_blob_release", item_name), Span::call_site());
     let blob_compare = Ident::new(&format!("__{}_blob_compare", item_name), Span::call_site());
     let blob_write = Ident::new(&format!("__{}_blob_write", item_name), Span::call_site());
+
+    let default_implementation;
+    if attr_def.defaults {
+        default_implementation = quote! {
+            impl #crt::blob::ArcBlobImpl for #item_name {}
+        };
+    }
+    else {
+        default_implementation = quote!{};
+    }
 
     let result = quote! {
         #item_def
@@ -119,6 +130,8 @@ pub fn arc_blob_macro(
                 unsafe { std::mem::transmute(definition) }
             }
         }
+
+        #default_implementation
     };
 
     result.into()
@@ -126,13 +139,24 @@ pub fn arc_blob_macro(
 
 struct ArcBlobAttr {
     name: LitStr,
+    defaults: bool
 }
 
 impl Parse for ArcBlobAttr {
     fn parse(input: ParseStream) -> Result<Self> {
         let name = input.parse()?;
 
-        Ok(Self { name })
+        let defaults;
+        if input.peek(Token![,]) {
+            input.parse::<Token![,]>()?;
+            input.parse::<kw::defaults>()?;
+            defaults = true;
+        }
+        else {
+            defaults = false;
+        }
+
+        Ok(Self { name, defaults })
     }
 }
 

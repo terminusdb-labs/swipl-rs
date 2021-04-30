@@ -59,8 +59,7 @@ pub trait ArcBlobImpl: ArcBlobInfo + Send + Sync + Unpin {
         Ordering::Equal
     }
     fn write(&self, stream: &mut PrologStream) -> io::Result<()> {
-        let blob_name = Self::blob_name();
-        write!(stream, "<{}>", blob_name)
+        write!(stream, "<{}>", Self::blob_name())
     }
 }
 
@@ -163,12 +162,20 @@ unsafe impl<T: ArcBlob> TermPutable for Arc<T> {
     }
 }
 
-pub trait WrappedArcBlobImpl {
+pub trait WrappedArcBlobInfo {
     type Inner: Send + Sync + Unpin;
+    fn blob_name() -> &'static str;
     fn get_arc(&self) -> &Arc<Self::Inner>;
     fn from_arc(a: Arc<Self::Inner>) -> Self;
-    fn compare(this: &Self::Inner, other: &Self::Inner) -> Ordering;
-    fn write(this: &Self::Inner, stream: &mut PrologStream);
+}
+
+pub trait WrappedArcBlobImpl : WrappedArcBlobInfo {
+    fn compare(_this: &Self::Inner, _other: &Self::Inner) -> Ordering {
+        Ordering::Equal
+    }
+    fn write(&self, stream: &mut PrologStream) -> io::Result<()> {
+        write!(stream, "<{}>", Self::blob_name())
+    }
 }
 
 pub unsafe trait WrappedArcBlob: WrappedArcBlobImpl {
