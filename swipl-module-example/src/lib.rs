@@ -1,9 +1,4 @@
-use swipl::atom::*;
-use swipl::blob::*;
-use swipl::context::*;
-use swipl::result::*;
-use swipl::stream::*;
-use swipl::*;
+use swipl::prelude::*;
 
 use std::cmp::Ordering;
 use std::io::{self, Write};

@@ -1,9 +1,10 @@
-pub mod fli;
-
 pub mod consts;
+pub mod fli;
 
 pub mod atom;
 pub mod blob;
+pub mod context;
+pub mod engine;
 pub mod functor;
 pub mod module;
 pub mod predicate;
@@ -11,7 +12,6 @@ pub mod result;
 pub mod stream;
 pub mod term;
 
-pub mod context;
-pub mod engine;
+pub mod prelude;
 
 pub use swipl_macros::{arc_blob, predicates, prolog, term, wrapped_arc_blob};
