@@ -11,6 +11,7 @@ pub mod predicate;
 pub mod result;
 pub mod stream;
 pub mod term;
+pub mod text;
 
 pub mod prelude;
 
