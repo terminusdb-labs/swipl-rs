@@ -461,6 +461,32 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
             None
         }
     }
+
+    pub fn try_or_die<R,E:IntoPrologException>(&self, r: Result<R,E>) -> PrologResult<R> {
+        match r {
+            Ok(ok) => Ok(ok),
+            Err(e) => {
+                let reset_term = self.new_term_ref();
+                let exception_term = e.into_prolog_exception(self);
+                let result = self.raise_exception(&exception_term);
+
+                unsafe { reset_term.reset(); }
+
+                result
+            }
+        }
+    }
+}
+
+pub trait IntoPrologException {
+    fn into_prolog_exception<'a, 'b, T:QueryableContextType>(self, context: &'a Context<'b, T>) -> Term<'a>;
+}
+
+impl IntoPrologException for std::io::Error {
+    fn into_prolog_exception<'a, 'b, T:QueryableContextType>(self, context: &'a Context<'b, T>) -> Term<'a> {
+        let msg = format!("{}", self);
+        term!{context: error(rust_io_error(#msg))}
+    }
 }
 
 pub enum QueryResult {
