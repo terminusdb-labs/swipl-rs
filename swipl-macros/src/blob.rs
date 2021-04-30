@@ -13,7 +13,8 @@ pub fn arc_blob_macro(
     let crt = crate_token();
     let attr_def = parse_macro_input!(attr as ArcBlobAttr);
 
-    let name = attr_def.name.value();
+    let name_lit = attr_def.name;
+    let name = name_lit.value();
     let mut name_bytes = Vec::with_capacity(name.as_bytes().len() + 1);
     name_bytes.extend_from_slice(name.as_bytes());
     name_bytes.push(0);
@@ -34,6 +35,12 @@ pub fn arc_blob_macro(
 
     let result = quote! {
         #item_def
+
+        impl ArcBlobInfo for #item_name {
+            fn blob_name() -> &'static str {
+                #name_lit
+            }
+        }
 
         static #blob_definition_ident: std::sync::atomic::AtomicPtr<#crt::fli::PL_blob_t> = std::sync::atomic::AtomicPtr::new(std::ptr::null_mut());
 

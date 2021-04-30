@@ -1,5 +1,5 @@
 use std::cmp::Ordering;
-use std::io;
+use std::io::{self, Write};
 use std::os::raw::{c_int, c_void};
 use std::sync::Arc;
 
@@ -50,9 +50,18 @@ pub fn create_blob_definition(
     result
 }
 
-pub trait ArcBlobImpl: Send + Sync + Unpin {
-    fn compare(&self, other: &Self) -> Ordering;
-    fn write(&self, stream: &mut PrologStream) -> io::Result<()>;
+pub trait ArcBlobInfo {
+    fn blob_name() -> &'static str;
+}
+
+pub trait ArcBlobImpl: ArcBlobInfo + Send + Sync + Unpin {
+    fn compare(&self, _other: &Self) -> Ordering {
+        Ordering::Equal
+    }
+    fn write(&self, stream: &mut PrologStream) -> io::Result<()> {
+        let blob_name = Self::blob_name();
+        write!(stream, "<{}>", blob_name)
+    }
 }
 
 pub unsafe trait ArcBlob: ArcBlobImpl {
