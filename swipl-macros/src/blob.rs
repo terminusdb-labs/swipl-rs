@@ -376,9 +376,9 @@ struct WrappedArcBlobItem {
 }
 impl Parse for WrappedArcBlobItem {
     fn parse(input: ParseStream) -> Result<Self> {
-        let visibility = input.parse()?;
         let name = input.parse()?;
         input.parse::<Token![,]>()?;
+        let visibility = input.parse()?;
         let wrap_type = input.parse()?;
         input.parse::<Token![,]>()?;
         let inner_type = input.parse()?;
