@@ -169,11 +169,11 @@ pub trait WrappedArcBlobInfo {
     fn from_arc(a: Arc<Self::Inner>) -> Self;
 }
 
-pub trait WrappedArcBlobImpl : WrappedArcBlobInfo {
+pub trait WrappedArcBlobImpl: WrappedArcBlobInfo {
     fn compare(_this: &Self::Inner, _other: &Self::Inner) -> Ordering {
         Ordering::Equal
     }
-    fn write(&self, stream: &mut PrologStream) -> io::Result<()> {
+    fn write(_this: &Self::Inner, stream: &mut PrologStream) -> io::Result<()> {
         write!(stream, "<{}>", Self::blob_name())
     }
 }

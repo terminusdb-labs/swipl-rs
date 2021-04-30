@@ -28,7 +28,7 @@ pub fn arc_blob(attr: TokenStream, item: TokenStream) -> TokenStream {
     blob::arc_blob_macro(attr, item)
 }
 
-#[proc_macro_attribute]
-pub fn wrapped_arc_blob(_attr: TokenStream, item: TokenStream) -> TokenStream {
-    item
+#[proc_macro]
+pub fn wrapped_arc_blob(item: TokenStream) -> TokenStream {
+    blob::wrapped_arc_blob_macro(item)
 }

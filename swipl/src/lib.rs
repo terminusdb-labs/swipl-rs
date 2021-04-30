@@ -14,4 +14,4 @@ pub mod term;
 pub mod context;
 pub mod engine;
 
-pub use swipl_macros::{arc_blob, predicates, prolog, term};
+pub use swipl_macros::{arc_blob, predicates, prolog, term, wrapped_arc_blob};

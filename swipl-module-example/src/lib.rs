@@ -80,6 +80,17 @@ predicates! {
         let arc: Arc<Moo> = moo_term.get()?;
         num_term.unify(arc.num)
     }
+
+    semidet fn unify_with_wrapped_blob(_context, term, num_term) {
+        let num: u64 = num_term.get()?;
+        let arc = Arc::new(Inner { num });
+        term.unify(&MooMoo(arc))
+    }
+
+    semidet fn moomoo_num(_context, moo_term, num_term) {
+        let wrapper: MooMoo = moo_term.get()?;
+        num_term.unify(wrapper.num)
+    }
 }
 
 #[arc_blob("moo")]
@@ -97,6 +108,18 @@ impl ArcBlobImpl for Moo {
     }
 }
 
+wrapped_arc_blob!("moomoo", MooMoo, Inner);
+
+impl WrappedArcBlobImpl for MooMoo {
+    fn write(inner: &Inner, stream: &mut PrologStream) -> io::Result<()> {
+        write!(stream, "<moomoo {}>", inner.num)
+    }
+}
+
+struct Inner {
+    num: u64,
+}
+
 #[no_mangle]
 pub extern "C" fn install() {
     register_unify_with_42();
@@ -110,4 +133,6 @@ pub extern "C" fn install() {
     register_decrement();
     register_unify_with_blob();
     register_moo_num();
+    register_unify_with_wrapped_blob();
+    register_moomoo_num();
 }
