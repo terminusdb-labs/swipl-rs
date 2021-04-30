@@ -51,7 +51,7 @@ predicates! {
     nondet fn decrement<u64>(context, start, cur) {
         setup => {
             let num = start.get()?;
-            Ok(num)
+            Ok(Some(num))
         },
         call(num) => {
             cur.unify(*num)?;

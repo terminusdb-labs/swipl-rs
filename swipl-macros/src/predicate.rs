@@ -393,7 +393,7 @@ impl ForeignPredicateDefinitionImpl for NondetForeignPredicateDefinition {
         let data_name = &self.data_name;
         let data_type = &self.data_type;
         quote! {
-            fn #definition_setup_name<'a, C: #crt::context::QueryableContextType>(#[allow(unused)] #context_arg: &'a #crt::context::Context<'a, C>, #(#[allow(unused)] #term_args : &#crt::term::Term<'a>),*) -> #crt::result::PrologResult<#data_type> {
+            fn #definition_setup_name<'a, C: #crt::context::QueryableContextType>(#[allow(unused)] #context_arg: &'a #crt::context::Context<'a, C>, #(#[allow(unused)] #term_args : &#crt::term::Term<'a>),*) -> #crt::result::PrologResult<Option<#data_type>> {
                 #setup_code
             }
 
@@ -455,8 +455,15 @@ impl ForeignPredicateDefinitionImpl for NondetForeignPredicateDefinition {
                                 // this is the first call
                                 let result = #definition_setup_name(&context,
                                                                #(#term_args),*)?;
+                                if let Some(result) = result {
+                                    // proceed
+                                    data = Box::new(result);
+                                }
+                                else {
+                                    // we're done
+                                    return Ok(None);
+                                }
 
-                                data = Box::new(result);
                             },
                             2 => {
                                 // this is a subsequent call - there should already be data.
