@@ -6,33 +6,15 @@ Rust bindings to SWI-Prolog.
 
 ## Overview
 This repository is a workspace for a handful of crates:
-- swipl-info: a small utility crate that extracts information about the currently active version of swi-prolog.
-- swipl-sys: low-level bindings to SWI-Prolog, generated through bindgen, in a build environment as discovered by swipl-info.
 - cargo-swipl: a cargo utility for working with swipl crates. In particular, this allows running of unit tests in crates that depend on swipl-sys.
+- swipl-info: a small utility crate that extracts information about the currently active version of swi-prolog.
+- swipl-fli: low-level bindings to SWI-Prolog, generated through bindgen, in a build environment as discovered by swipl-info.
+- swipl-macros: procedural macros for generating bindings to prolog predicates, and glue code for defining native prolog predicates.
 - swipl: high-level safe bindings to SWI-Prolog.
 
-This is all still in a pretty early state. Implemented so far is prolog engine creation and destruction, term ref creation on those engines, unification and retrieval for a number of terms, and querying prolog from rust. 
+Together, they provide an ecosystem for developing swipl foreign libraries, as well as for embedding swipl inside rust applications, without needing any c glue or unsafe code.
 
-Implemented so far:
-- engine creation and destruction
-- context management
-- term ref creation, bound to context lifetimes
-- get and unify for a number of rust and prolog types
-- prolog calling
-- complex term creation from string (through a prolog call)
-- easy frontend to `call/1` for easy term calling
-- get, put, and unify for all common relevant rust and prolog types
-- macro for generating bindings to prolog predicates
-- compound term production
-- exception handling
-- macros for easy foreign predicate writing
-
-To be implemented (roughly in order of delivery):
-- macros for easy blob definitions
-- pack generation cargo tool
-- async/await support
-
-## Plans
+## Problems solved
 The goal for this project is full native rust packs for SWI-Prolog, without requiring any c glue. A pack in SWI-Prolog is a package that is installable through `pack_install(..)`. There are a few tricky bits towards this goal which I'll list here.
 
 My personal reason for this is that the maintainance of [`terminus_store_prolog`](https://github.com/terminusdb/terminus_store_prolog/) is becoming more and more cumbersome. This project depends heavily on an ever-increasing layer of c glue to marshall rust things into prolog. I greatly desire a reduction of complexity here. 
@@ -52,7 +34,24 @@ The SWI-Prolog native interface requires disciplined use. Many calls will result
 
 The `swipl` crate intends to prevent all undefined behavior through the compiler where possible, and where not possible, to panic at runtime when a precondition fails. For example, as it is, the `swipl` crate will prevent use of terms whose frame has gone out of scope at compile time, through lifetimes. However, only at runtime will it check that a term is used in the context of the right engine.
 
-## Foreign predicate definition and shared library production
+### Easy predicate definitions
+Through the power of macros, defining prolog predicates in rust is pretty easy and can be done without requiring you to write any unsafe code. This is done through the `predicate!` macro, which supports both semidet and nondet predicates. See the example module for examples.
+
+## Plans
+### Calling into prolog
+Calling into prolog is already possible, but the API could be better.
+
+### Integration between async/await and prolog engines
+SWI-Prolog implements engines, prolog runtimes which can be suspended and which can move between threads. In the near-future I wish to integrate these engines with rust's async/await mechanism, so that native predicates may be implemented using async/await, causing a prolog engine to suspend and wake up when the native predicate can make progress.
+
+### Foreign predicate definition and shared library production
 The purpose of a swipl pack written in rust is to provide predicates for swipl that have been written in rust. It is therefore not enough to just have the means to interact with the swipl library. In addition, a native rust module needs to provide an `install()` function where foreign predicates are registered.
 
-It is my intention to implement this through attribute macros and the `cargo-swipl` tool. By marking rust functions with an attribute like `#[swipl:predicate]`, this function can be transformed into something suitable for registering. A command like `cargo swipl pack build` could pick up on these attributes and generate a shim crate with the `install()` function as a very last step in the build process, producing the shared library in the format that SWI-Prolog expects (a .so file on linux, a .dll on windows).
+Currently, users of the swipl-rs library have to make their crate compile to cdylib and provide this install method themselves. However, it is my intention to implement an auto-discovery mechanism for all native predicates through the `cargo-swipl` tool. It should be possible to auto-generate a rust file that is to be compiled as cdylib that does all the registry glue.. A command like `cargo swipl module build` could pick up on these attributes and generate a shim crate with the `install()` function as a very last step in the build process, producing the shared library in the format that SWI-Prolog expects (a .so file on linux, a .dll on windows).
+
+### Full pack support
+SWI-Prolog expects packs to store their native libraries in particular location which is added to the foreign load path. It also expects an additional `prolog/` directory  containing prolog code, which all packs need, if only to load the foreign code module. Finally it expects a `pack.pl` file containing the pack metadata. `cargo-swipl` should be able to support this format and work with it directly.
+
+- `cargo swipl pack new <pack-name>` - to generate a new stub project with all files in the correct location, a stub prolog file that loads the foreign library, and a Makefile which calls into `cargo swipl pack`.
+- `cargo swipl pack build` - to rebuild the pack.
+- `cargo swipl pack clean` - to clean the project
