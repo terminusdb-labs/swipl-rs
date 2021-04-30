@@ -455,39 +455,21 @@ pub fn clone_blob_macro(
 }
 
 pub fn wrapped_clone_blob_macro(item: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let crt = crate_token();
-
     let item_def = parse_macro_input!(item as WrappedArcBlobItem);
     let name_lit = item_def.name;
-    let name = name_lit.value();
-    let mut name_bytes = Vec::with_capacity(name.as_bytes().len() + 1);
-    name_bytes.extend_from_slice(name.as_bytes());
-    name_bytes.push(0);
-    let name_bytes_lit = LitByteStr::new(&name_bytes, Span::call_site());
-
     let item_name = &item_def.wrap_type;
     let visibility = &item_def.visibility;
     let inner_type_name = &item_def.inner_type;
 
-    let blob_definition_ident = Ident::new(
-        &format!("__{}_blob_definition", item_name),
-        Span::call_site(),
-    );
-
-    let blob_release = Ident::new(&format!("__{}_blob_release", item_name), Span::call_site());
-    let blob_compare = Ident::new(&format!("__{}_blob_compare", item_name), Span::call_site());
-    let blob_write = Ident::new(&format!("__{}_blob_write", item_name), Span::call_site());
-
-    let default_implementation;
+    let attr;
     if item_def.defaults {
-        default_implementation = quote! {
-            impl #crt::blob::CloneBlobImpl for #item_name {}
-        };
+        attr = quote! {#[clone_blob(#name_lit, defaults)]};
     } else {
-        default_implementation = quote! {};
+        attr = quote! {#[clone_blob(#name_lit)]};
     }
 
     let result = quote! {
+        #attr
         #[derive(Clone)]
         #visibility struct #item_name(#visibility #inner_type_name);
 
@@ -498,110 +480,6 @@ pub fn wrapped_clone_blob_macro(item: proc_macro::TokenStream) -> proc_macro::To
                 &self.0
             }
         }
-
-        impl CloneBlobInfo for #item_name {
-            fn blob_name() -> &'static str {
-                #name_lit
-            }
-        }
-
-        static #blob_definition_ident: std::sync::atomic::AtomicPtr<#crt::fli::PL_blob_t> = std::sync::atomic::AtomicPtr::new(std::ptr::null_mut());
-
-        unsafe extern "C" fn #blob_release(a: #crt::fli::atom_t) -> std::os::raw::c_int {
-            #crt::blob::release_clone_blob::<#item_name>(a);
-
-            1
-        }
-
-        unsafe extern "C" fn #blob_compare(a: #crt::fli::atom_t, b: #crt::fli::atom_t)->std::os::raw::c_int {
-            let a_val = #crt::fli::PL_blob_data(a,
-                                                std::ptr::null_mut(),
-                                                std::ptr::null_mut())
-                as *const #item_name;
-            let b_val = #crt::fli::PL_blob_data(b,
-                                                std::ptr::null_mut(),
-                                                std::ptr::null_mut())
-                as *const #item_name;
-            match #crt::blob::CloneBlobImpl::compare(&*a_val, &*b_val) {
-                std::cmp::Ordering::Less => -1,
-                std::cmp::Ordering::Equal => 0,
-                std::cmp::Ordering::Greater => 1
-            }
-        }
-
-        unsafe extern "C" fn #blob_write(s: *mut #crt::fli::IOSTREAM,
-                                         a: #crt::fli::atom_t,
-                                         _flags: std::os::raw::c_int)
-                                         -> std::os::raw::c_int {
-            let a_val = #crt::fli::PL_blob_data(a,
-                                                std::ptr::null_mut(),
-                                                std::ptr::null_mut())
-                as *const #item_name;
-            let mut stream = #crt::stream::PrologStream::wrap(s);
-            match #crt::blob::CloneBlobImpl::write(&*a_val, &mut stream) {
-                Ok(_) => 1,
-                Err(_) => 0
-            }
-        }
-
-        unsafe impl #crt::blob::CloneBlob for #item_name {
-            fn get_blob_definition() -> &'static #crt::fli::PL_blob_t {
-                let mut definition = #blob_definition_ident.load(std::sync::atomic::Ordering::Relaxed);
-                if definition.is_null() {
-                    let new_definition = Box::new(#crt::blob::create_blob_definition(
-                        #name_bytes_lit,
-                        false,
-                        false,
-                        false,
-                        None,
-                        Some(#blob_release),
-                        Some(#blob_compare),
-                        Some(#blob_write),
-                        None,
-                        None));
-
-                    let new_definition_ptr = Box::into_raw(new_definition);
-                    if #blob_definition_ident.compare_exchange(
-                        std::ptr::null_mut(),
-                        new_definition_ptr,
-                        std::sync::atomic::Ordering::Relaxed,
-                        std::sync::atomic::Ordering::Relaxed,
-                    ).is_err() {
-                        // swap failed, so someone beat us to creating the definition.
-                        // We have to forget what we created.
-                        std::mem::drop(unsafe { Box::from_raw(new_definition_ptr) });
-                    }
-
-                    definition = #blob_definition_ident.load(std::sync::atomic::Ordering::Relaxed);
-                }
-
-                unsafe { std::mem::transmute(definition) }
-            }
-        }
-
-        unsafe impl #crt::term::Unifiable for #item_name {
-            fn unify(&self, term: &#crt::term::Term) -> bool {
-                let blob_definition = Self::get_blob_definition();
-                unsafe { #crt::blob::unify_with_cloneable(term, blob_definition, self) }
-            }
-        }
-
-        unsafe impl #crt::term::TermGetable for #item_name {
-            fn get(term: &#crt::term::Term) -> Option<Self> {
-                let blob_definition = Self::get_blob_definition();
-                let cloned_opt = unsafe { #crt::blob::get_cloned_from_term(term, blob_definition) };
-                cloned_opt
-            }
-        }
-
-        unsafe impl #crt::term::TermPutable for #item_name {
-            fn put(&self, term: &#crt::term::Term) {
-                let blob_definition = Self::get_blob_definition();
-                unsafe { #crt::blob::put_cloneable_in_term(term, blob_definition, self) }
-            }
-        }
-
-        #default_implementation
     };
 
     result.into()
