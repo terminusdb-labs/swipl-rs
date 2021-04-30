@@ -11,6 +11,7 @@ This repository is a workspace for a handful of crates:
 - swipl-fli: low-level bindings to SWI-Prolog, generated through bindgen, in a build environment as discovered by swipl-info.
 - swipl-macros: procedural macros for generating bindings to prolog predicates, and glue code for defining native prolog predicates.
 - swipl: high-level safe bindings to SWI-Prolog.
+- swipl-module-example: an example SWI-Prolog foreign library implementation.
 
 Together, they provide an ecosystem for developing swipl foreign libraries, as well as for embedding swipl inside rust applications, without needing any c glue or unsafe code.
 
