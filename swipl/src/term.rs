@@ -469,6 +469,20 @@ unifiable! {
     }
 }
 
+unifiable! {
+    (self:String, term) => {
+        let result = unsafe { PL_unify_chars(
+            term.term_ptr(),
+            (PL_STRING | REP_UTF8).try_into().unwrap(),
+            self.len().try_into().unwrap(),
+            self.as_bytes().as_ptr() as *const c_char,
+        )
+        };
+
+        result != 0
+    }
+}
+
 term_getable! {
     (String, term) => {
         term.get_str(|s|s.map(|s|s.to_owned()))
@@ -477,6 +491,18 @@ term_getable! {
 
 term_putable! {
     (self:str, term) => {
+        unsafe { PL_put_chars(
+            term.term_ptr(),
+            (PL_STRING | REP_UTF8).try_into().unwrap(),
+            self.len().try_into().unwrap(),
+            self.as_bytes().as_ptr() as *const c_char,
+        )
+        };
+    }
+}
+
+term_putable! {
+    (self:String, term) => {
         unsafe { PL_put_chars(
             term.term_ptr(),
             (PL_STRING | REP_UTF8).try_into().unwrap(),
