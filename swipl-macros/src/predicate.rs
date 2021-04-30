@@ -48,7 +48,6 @@ impl AttributedForeignPredicateDefinition {
 
 impl Parse for AttributedForeignPredicateDefinition {
     fn parse(input: ParseStream) -> Result<Self> {
-        let visibility = input.parse()?;
         let attrs: Vec<Attribute> = input.call(Attribute::parse_outer)?;
         let mut doc = None;
         let mut predicate_name = None;
@@ -63,6 +62,7 @@ impl Parse for AttributedForeignPredicateDefinition {
             }
         }
 
+        let visibility = input.parse()?;
         let predicate = input.parse()?;
 
         Ok(Self {
