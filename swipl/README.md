@@ -34,3 +34,20 @@ true.
 ```
 
 (Substitute your project name, and substitute release for debug if you did a release build).
+
+# Testing
+At build time, the low-level `swipl-fli` crate will auto-discover your
+swipl installation and link against that. The shared objects of this
+installation may not be on your path though. In fact, usually they
+aren't. This means you cannot just run `cargo test` to run your unit
+tests, as this link location is not stored anywhere.
+
+In order to run your unit tests, consider installing `cargo-swipl` like so:
+```bash
+cargo install cargo-swipl
+```
+
+You can then do `cargo swipl test` to run your tests. `cargo-swipl`
+will auto-discover your swipl installation in exactly the same way as
+the `swipl-fli` build, and adds it to the load path before calling
+`cargo test`.
