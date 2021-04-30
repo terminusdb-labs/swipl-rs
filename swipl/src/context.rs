@@ -462,7 +462,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         }
     }
 
-    pub fn try_or_die<R,E:IntoPrologException>(&self, r: Result<R,E>) -> PrologResult<R> {
+    pub fn try_or_die<R, E: IntoPrologException>(&self, r: Result<R, E>) -> PrologResult<R> {
         match r {
             Ok(ok) => Ok(ok),
             Err(e) => {
@@ -470,7 +470,9 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
                 let exception_term = e.into_prolog_exception(self);
                 let result = self.raise_exception(&exception_term);
 
-                unsafe { reset_term.reset(); }
+                unsafe {
+                    reset_term.reset();
+                }
 
                 result
             }
@@ -479,13 +481,19 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
 }
 
 pub trait IntoPrologException {
-    fn into_prolog_exception<'a, 'b, T:QueryableContextType>(self, context: &'a Context<'b, T>) -> Term<'a>;
+    fn into_prolog_exception<'a, 'b, T: QueryableContextType>(
+        self,
+        context: &'a Context<'b, T>,
+    ) -> Term<'a>;
 }
 
 impl IntoPrologException for std::io::Error {
-    fn into_prolog_exception<'a, 'b, T:QueryableContextType>(self, context: &'a Context<'b, T>) -> Term<'a> {
+    fn into_prolog_exception<'a, 'b, T: QueryableContextType>(
+        self,
+        context: &'a Context<'b, T>,
+    ) -> Term<'a> {
         let msg = format!("{}", self);
-        term!{context: error(rust_io_error(#msg))}
+        term! {context: error(rust_io_error(#msg))}
     }
 }
 

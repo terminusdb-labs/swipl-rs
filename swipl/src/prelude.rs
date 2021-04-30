@@ -9,4 +9,6 @@ pub use crate::result::*;
 pub use crate::stream::*;
 pub use crate::term::*;
 
-pub use crate::{arc_blob, predicates, prolog, term, wrapped_arc_blob};
+pub use crate::{
+    arc_blob, clone_blob, predicates, prolog, term, wrapped_arc_blob, wrapped_clone_blob,
+};

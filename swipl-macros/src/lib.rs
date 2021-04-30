@@ -32,3 +32,13 @@ pub fn arc_blob(attr: TokenStream, item: TokenStream) -> TokenStream {
 pub fn wrapped_arc_blob(item: TokenStream) -> TokenStream {
     blob::wrapped_arc_blob_macro(item)
 }
+
+#[proc_macro_attribute]
+pub fn clone_blob(attr: TokenStream, item: TokenStream) -> TokenStream {
+    blob::clone_blob_macro(attr, item)
+}
+
+#[proc_macro]
+pub fn wrapped_clone_blob(item: TokenStream) -> TokenStream {
+    blob::wrapped_clone_blob_macro(item)
+}

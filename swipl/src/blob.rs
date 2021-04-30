@@ -84,6 +84,29 @@ pub unsafe fn unify_with_arc<T>(
     result != 0
 }
 
+pub unsafe fn unify_with_cloneable<T: Clone + Sized + Unpin>(
+    term: &Term,
+    blob_definition: &'static fli::PL_blob_t,
+    val: &T,
+) -> bool {
+    term.assert_term_handling_possible();
+    let cloned = val.clone();
+
+    let result = fli::PL_unify_blob(
+        term.term_ptr(),
+        &cloned as *const T as *mut c_void,
+        std::mem::size_of::<T>() as fli::size_t,
+        blob_definition as *const fli::PL_blob_t as *mut fli::PL_blob_t,
+    );
+
+    if result != 0 {
+        std::mem::forget(cloned);
+        true
+    } else {
+        false
+    }
+}
+
 pub unsafe fn get_arc_from_term<T>(
     term: &Term,
     blob_definition: &'static fli::PL_blob_t,
@@ -114,6 +137,35 @@ pub unsafe fn get_arc_from_term<T>(
     }
 }
 
+pub unsafe fn get_cloned_from_term<T: Clone + Sized + Unpin>(
+    term: &Term,
+    blob_definition: &'static fli::PL_blob_t,
+) -> Option<T> {
+    term.assert_term_handling_possible();
+
+    let mut blob_type = std::ptr::null_mut();
+    if fli::PL_is_blob(term.term_ptr(), &mut blob_type) == 0
+        || blob_definition as *const fli::PL_blob_t != blob_type
+    {
+        return None;
+    }
+
+    let mut data: *mut T = std::ptr::null_mut();
+    let result = fli::PL_get_blob(
+        term.term_ptr(),
+        &mut data as *mut *mut T as *mut *mut c_void,
+        std::ptr::null_mut(),
+        std::ptr::null_mut(),
+    );
+
+    if result == 0 {
+        None
+    } else {
+        let cloned = (*data).clone();
+        Some(cloned)
+    }
+}
+
 pub unsafe fn put_arc_in_term<T>(
     term: &Term,
     blob_definition: &'static fli::PL_blob_t,
@@ -129,6 +181,25 @@ pub unsafe fn put_arc_in_term<T>(
     );
 }
 
+pub unsafe fn put_cloneable_in_term<T: Clone + Sized + Unpin>(
+    term: &Term,
+    blob_definition: &'static fli::PL_blob_t,
+    val: &T,
+) {
+    term.assert_term_handling_possible();
+
+    let cloned = val.clone();
+
+    fli::PL_put_blob(
+        term.term_ptr(),
+        &cloned as *const T as *mut c_void,
+        std::mem::size_of::<T>() as fli::size_t,
+        blob_definition as *const fli::PL_blob_t as *mut fli::PL_blob_t,
+    );
+
+    std::mem::forget(cloned);
+}
+
 pub unsafe fn acquire_arc_blob<T>(atom: fli::atom_t) {
     let data = fli::PL_blob_data(atom, std::ptr::null_mut(), std::ptr::null_mut()) as *const T;
 
@@ -139,6 +210,13 @@ pub unsafe fn release_arc_blob<T>(atom: fli::atom_t) {
     let data = fli::PL_blob_data(atom, std::ptr::null_mut(), std::ptr::null_mut()) as *const T;
 
     Arc::decrement_strong_count(data);
+}
+
+pub unsafe fn release_clone_blob<T>(atom: fli::atom_t) {
+    let data =
+        fli::PL_blob_data(atom, std::ptr::null_mut(), std::ptr::null_mut()) as *const T as *mut T;
+
+    std::ptr::drop_in_place(data);
 }
 
 unsafe impl<T: ArcBlob> Unifiable for Arc<T> {
@@ -179,5 +257,23 @@ pub trait WrappedArcBlobImpl: WrappedArcBlobInfo {
 }
 
 pub unsafe trait WrappedArcBlob: WrappedArcBlobImpl {
+    fn get_blob_definition() -> &'static fli::PL_blob_t;
+}
+
+pub trait CloneBlobInfo {
+    fn blob_name() -> &'static str;
+}
+
+pub trait CloneBlobImpl: CloneBlobInfo + Sized + Sync + Clone {
+    fn compare(&self, _other: &Self) -> Ordering {
+        Ordering::Equal
+    }
+
+    fn write(&self, stream: &mut PrologStream) -> io::Result<()> {
+        write!(stream, "<{}>", Self::blob_name())
+    }
+}
+
+pub unsafe trait CloneBlob: CloneBlobImpl {
     fn get_blob_definition() -> &'static fli::PL_blob_t;
 }
