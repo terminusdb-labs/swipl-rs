@@ -5,11 +5,16 @@ use swipl_info::*;
 
 fn main() {
     let info = get_swipl_info();
-    println!("cargo:rustc-link-lib=swipl");
-    println!(
-        "cargo:rustc-link-search={}/{}",
-        info.swi_home, info.pack_so_dir
-    );
+    if cfg!(target_os = "windows") {
+        println!("cargo:rustc-link-lib=libswipl");
+        println!("cargo:rustc-link-search={}/bin", info.swi_home);
+    } else {
+        println!("cargo:rustc-link-lib=swipl");
+        println!(
+            "cargo:rustc-link-search={}/{}",
+            info.swi_home, info.pack_so_dir
+        );
+    }
 
     println!("cargo:rerun-if-changed=c/wrapper.h");
     let bindings = bindgen::Builder::default()
