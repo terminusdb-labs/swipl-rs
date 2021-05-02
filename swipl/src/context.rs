@@ -402,6 +402,18 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         callable.open(self, None, args)
     }
 
+    pub fn call_once<C: Callable<N>, const N: usize>(
+        &self,
+        callable: C,
+        args: [&Term; N],
+    ) -> PrologResult<()> {
+        let query = callable.open(self, None, args);
+        query.next_solution()?;
+        query.cut();
+
+        Ok(())
+    }
+
     pub fn open_with_module<C: Callable<N>, const N: usize>(
         &self,
         callable: C,
