@@ -1,3 +1,4 @@
+use std::env;
 use std::process::Command;
 
 #[derive(Debug)]
@@ -12,7 +13,7 @@ pub fn get_swipl_info() -> SwiplInfo {
     // by retrieving SWIPL from env, this should work within swipl
     // build environments, as these set this environment variable
     // appropriately.
-    let swipl_path = option_env!("SWIPL").unwrap_or("swipl");
+    let swipl_path = env::var("SWIPL").unwrap_or_else(|_| "swipl".to_string());
 
     let output = Command::new(swipl_path)
         .arg("-g")
