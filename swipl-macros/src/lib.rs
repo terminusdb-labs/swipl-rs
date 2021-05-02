@@ -2,6 +2,7 @@ mod kw;
 mod util;
 
 mod blob;
+mod pred;
 mod predicate;
 mod prolog;
 mod term;
@@ -11,6 +12,11 @@ use proc_macro::TokenStream;
 #[proc_macro]
 pub fn prolog(stream: TokenStream) -> TokenStream {
     prolog::prolog_macro(stream).into()
+}
+
+#[proc_macro]
+pub fn pred(stream: TokenStream) -> TokenStream {
+    pred::pred_macro(stream).into()
 }
 
 #[proc_macro]

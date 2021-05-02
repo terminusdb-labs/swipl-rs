@@ -1,4 +1,5 @@
 use super::atom::*;
+use super::callable::*;
 use super::consts::*;
 use super::engine::*;
 use super::fli::*;
@@ -71,14 +72,14 @@ impl<'a> std::ops::Deref for ExceptionTerm<'a> {
 
 pub struct Context<'a, T: ContextType> {
     parent: Option<&'a dyn ContextParent>,
-    context: T,
+    pub context: T,
     engine: PL_engine_t,
     activated: Cell<bool>,
     exception_handling: Cell<bool>,
 }
 
 impl<'a, T: ContextType> Context<'a, T> {
-    fn new_activated(
+    pub unsafe fn new_activated(
         parent: Option<&'a dyn ContextParent>,
         context: T,
         engine: PL_engine_t,
@@ -90,6 +91,10 @@ impl<'a, T: ContextType> Context<'a, T> {
             activated: Cell::new(true),
             exception_handling: Cell::new(false),
         }
+    }
+
+    pub unsafe fn deactivate(&self) {
+        self.activated.set(false)
     }
 
     pub fn assert_activated(&self) {
@@ -181,7 +186,7 @@ impl<'a, T: ContextType> Context<'a, T> {
     }
 }
 
-trait ContextParent {
+pub trait ContextParent {
     fn reactivate(&self);
     fn as_term_origin(&self) -> &dyn TermOrigin;
 }
@@ -227,7 +232,7 @@ impl<'a> Into<Context<'a, ActivatedEngine<'a>>> for EngineActivation<'a> {
         let engine = self.engine_ptr();
         let context = ActivatedEngine { _activation: self };
 
-        Context::new_activated(None, context, engine)
+        unsafe { Context::new_activated(None, context, engine) }
     }
 }
 
@@ -315,7 +320,7 @@ impl<'a, C: FrameableContextType> Context<'a, C> {
         };
 
         self.activated.set(false);
-        Context::new_activated(Some(self), frame, self.engine)
+        unsafe { Context::new_activated(Some(self), frame, self.engine) }
     }
 }
 
@@ -389,6 +394,23 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         }
     }
 
+    pub fn open<C: Callable<N>, const N: usize>(
+        &self,
+        callable: C,
+        args: [&Term; N],
+    ) -> Context<C::ContextType> {
+        callable.open(self, None, args)
+    }
+
+    pub fn open_with_module<C: Callable<N>, const N: usize>(
+        &self,
+        callable: C,
+        module: Option<&Module>,
+        args: [&Term; N],
+    ) -> Context<C::ContextType> {
+        callable.open(self, module, args)
+    }
+
     pub fn open_query(
         &self,
         context: Option<&Module>,
@@ -419,7 +441,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         let query = Query { qid, closed: false };
 
         self.activated.set(false);
-        Context::new_activated(Some(self), query, self.engine)
+        unsafe { Context::new_activated(Some(self), query, self.engine) }
     }
 
     pub fn term_from_string(&self, s: &str) -> Option<Term> {
