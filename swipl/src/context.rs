@@ -640,6 +640,37 @@ impl Drop for Query {
     }
 }
 
+pub unsafe fn prolog_catch_unwind<F: FnOnce() -> R + std::panic::UnwindSafe, R>(
+    f: F,
+) -> PrologResult<R> {
+    let result = std::panic::catch_unwind(f);
+    match result {
+        Ok(result) => Ok(result),
+        Err(panic) => {
+            let context = unmanaged_engine_context();
+            let panic_term = context.new_term_ref();
+            let error_term = term! {context: error(rust_error(panic(#&panic_term)), _)};
+
+            match panic.downcast_ref::<&str>() {
+                Some(panic_msg) => {
+                    panic_term.unify(panic_msg).unwrap();
+                }
+                None => match panic.downcast_ref::<String>() {
+                    Some(panic_msg) => {
+                        panic_term.unify(panic_msg.as_str()).unwrap();
+                    }
+                    None => {
+                        panic_term.unify("unknown panic type").unwrap();
+                    }
+                },
+            }
+
+            context.raise_exception::<()>(&error_term).unwrap_err();
+            Err(PrologError::Exception)
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

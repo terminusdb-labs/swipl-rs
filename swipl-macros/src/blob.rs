@@ -76,10 +76,11 @@ pub fn arc_blob_macro(
                                                 std::ptr::null_mut(),
                                                 std::ptr::null_mut())
                 as *const #item_name;
-            match #crt::blob::ArcBlobImpl::compare(&*a_val, &*b_val) {
-                std::cmp::Ordering::Less => -1,
-                std::cmp::Ordering::Equal => 0,
-                std::cmp::Ordering::Greater => 1
+            match #crt::context::prolog_catch_unwind(||#crt::blob::ArcBlobImpl::compare(&*a_val, &*b_val)) {
+                Ok(std::cmp::Ordering::Less) => -1,
+                Ok(std::cmp::Ordering::Equal) => 0,
+                Ok(std::cmp::Ordering::Greater) => 1,
+                Err(_) => 0
             }
         }
 
@@ -91,10 +92,12 @@ pub fn arc_blob_macro(
                                                 std::ptr::null_mut(),
                                                 std::ptr::null_mut())
                 as *const #item_name;
-            let mut stream = #crt::stream::PrologStream::wrap(s);
-            match #crt::blob::ArcBlobImpl::write(&*a_val, &mut stream) {
-                Ok(_) => 1,
-                Err(_) => 0
+            match #crt::context::prolog_catch_unwind(|| {
+                let mut stream = #crt::stream::PrologStream::wrap(s);
+                #crt::blob::ArcBlobImpl::write(&*a_val, &mut stream)
+            }) {
+                Ok(Ok(_)) => 1,
+                _ => 0,
             }
         }
 
@@ -222,10 +225,11 @@ pub fn wrapped_arc_blob_macro(item: proc_macro::TokenStream) -> proc_macro::Toke
                                                 std::ptr::null_mut(),
                                                 std::ptr::null_mut())
                 as *const #inner_type_name;
-            match <#item_name as #crt::blob::WrappedArcBlobImpl>::compare(&*a_val, &*b_val) {
-                std::cmp::Ordering::Less => -1,
-                std::cmp::Ordering::Equal => 0,
-                std::cmp::Ordering::Greater => 1
+            match #crt::context::prolog_catch_unwind(||<#item_name as #crt::blob::WrappedArcBlobImpl>::compare(&*a_val, &*b_val)) {
+                Ok(std::cmp::Ordering::Less) => -1,
+                Ok(std::cmp::Ordering::Equal) => 0,
+                Ok(std::cmp::Ordering::Greater) => 1,
+                Err(_) => 0
             }
         }
 
@@ -237,8 +241,10 @@ pub fn wrapped_arc_blob_macro(item: proc_macro::TokenStream) -> proc_macro::Toke
                                                 std::ptr::null_mut(),
                                                 std::ptr::null_mut())
                 as *const #inner_type_name;
-            let mut stream = #crt::stream::PrologStream::wrap(s);
-            match <#item_name as #crt::blob::WrappedArcBlobImpl>::write(&*a_val, &mut stream) {
+            match #crt::context::prolog_catch_unwind(|| {
+                let mut stream = #crt::stream::PrologStream::wrap(s);
+                <#item_name as #crt::blob::WrappedArcBlobImpl>::write(&*a_val, &mut stream)
+            }) {
                 Ok(_) => 1,
                 Err(_) => 0
             }
@@ -369,10 +375,11 @@ pub fn clone_blob_macro(
                                                 std::ptr::null_mut(),
                                                 std::ptr::null_mut())
                 as *const #item_name;
-            match #crt::blob::CloneBlobImpl::compare(&*a_val, &*b_val) {
-                std::cmp::Ordering::Less => -1,
-                std::cmp::Ordering::Equal => 0,
-                std::cmp::Ordering::Greater => 1
+            match #crt::context::prolog_catch_unwind(||#crt::blob::CloneBlobImpl::compare(&*a_val, &*b_val)) {
+                Ok(std::cmp::Ordering::Less) => -1,
+                Ok(std::cmp::Ordering::Equal) => 0,
+                Ok(std::cmp::Ordering::Greater) => 1,
+                Err(_) => 0
             }
         }
 
@@ -384,10 +391,12 @@ pub fn clone_blob_macro(
                                                 std::ptr::null_mut(),
                                                 std::ptr::null_mut())
                 as *const #item_name;
-            let mut stream = #crt::stream::PrologStream::wrap(s);
-            match #crt::blob::CloneBlobImpl::write(&*a_val, &mut stream) {
-                Ok(_) => 1,
-                Err(_) => 0
+            match #crt::context::prolog_catch_unwind(||{
+                let mut stream = #crt::stream::PrologStream::wrap(s);
+                #crt::blob::CloneBlobImpl::write(&*a_val, &mut stream)
+            }) {
+                Ok(Ok(_)) => 1,
+                _ => 0
             }
         }
 

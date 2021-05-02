@@ -208,7 +208,7 @@ impl ForeignPredicateDefinitionImpl for SemidetForeignPredicateDefinition {
                     arity: std::os::raw::c_int,
                     _control: *mut std::os::raw::c_void
                 ) -> isize {
-                    let result = std::panic::catch_unwind(|| {
+                    let result = #crt::context::prolog_catch_unwind(|| {
                         if #known_arity as usize != arity as usize {
                             // TODO actually throw an error
                             return Err(#crt::result::PrologError::Failure);
@@ -229,37 +229,12 @@ impl ForeignPredicateDefinitionImpl for SemidetForeignPredicateDefinition {
                                          #(#term_args),*)
                     });
 
-                    // creating a new context here cause context is not allowed to cross the catch boundary.
-                    let context = #crt::context::unmanaged_engine_context();
                     match result {
                         Ok(result) => match result {
                             Ok(()) => 1,
                             Err(_) => 0,
                         },
-                        Err(panic) => {
-                            let panic_term = context.new_term_ref();
-                            let error_term = term!{context: error(rust_error(panic(#&panic_term)), _)};
-
-                            match panic.downcast_ref::<&str>() {
-                                Some(panic_msg) => {
-                                    panic_term.unify(panic_msg).unwrap();
-                                }
-                                None => {
-                                    match panic.downcast_ref::<String>() {
-                                        Some(panic_msg) => {
-                                            panic_term.unify(panic_msg.as_str()).unwrap();
-                                        },
-                                        None => {
-                                            panic_term.unify("unknown panic type").unwrap();
-                                        }
-                                    }
-                                }
-                            }
-
-                            context.raise_exception::<()>(&error_term).unwrap_err();
-
-                            0
-                        }
+                        Err(_) => 0
                     }
                 }
             },
@@ -433,7 +408,7 @@ impl ForeignPredicateDefinitionImpl for NondetForeignPredicateDefinition {
                     // first, assert that the data type is send and unpin
                     #trampoline_type_check::<#data_type>();
 
-                    let result = std::panic::catch_unwind(|| {
+                    let result = #crt::context::prolog_catch_unwind(|| {
                         if #known_arity as usize != arity as usize {
                             // TODO actually throw an error
                             return Err(#crt::result::PrologError::Failure);
@@ -500,38 +475,13 @@ impl ForeignPredicateDefinitionImpl for NondetForeignPredicateDefinition {
                         Ok(retry)
                     });
 
-                    // creating a new context here cause context is not allowed to cross the catch boundary.
-                    let context = #crt::context::unmanaged_engine_context();
                     match result {
                         Ok(result) => match result {
                             Ok(None) => 1,
                             Ok(Some(r)) => r as isize,
                             Err(_) => 0,
                         },
-                        Err(panic) => {
-                            let panic_term = context.new_term_ref();
-                            let error_term = term!{context: error(rust_error(panic(#&panic_term)), _)};
-
-                            match panic.downcast_ref::<&str>() {
-                                Some(panic_msg) => {
-                                    panic_term.unify(panic_msg).unwrap();
-                                }
-                                None => {
-                                    match panic.downcast_ref::<String>() {
-                                        Some(panic_msg) => {
-                                            panic_term.unify(panic_msg.as_str()).unwrap();
-                                        },
-                                        None => {
-                                            panic_term.unify("unknown panic type").unwrap();
-                                        }
-                                    }
-                                }
-                            }
-
-                            context.raise_exception::<()>(&error_term).unwrap_err();
-
-                            0
-                        }
+                        Err(_) => 0
                     }
                 }
             },
