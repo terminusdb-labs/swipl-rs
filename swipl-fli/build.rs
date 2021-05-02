@@ -17,6 +17,7 @@ fn main() {
     }
 
     println!("cargo:rerun-if-changed=c/wrapper.h");
+    println!("cargo:rerun-if-env-changed=SWIPL");
     let bindings = bindgen::Builder::default()
         .header("c/wrapper.h")
         .clang_arg(format!("-I{}/include", info.swi_home))
