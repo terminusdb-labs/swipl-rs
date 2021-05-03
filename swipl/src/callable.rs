@@ -145,6 +145,17 @@ impl<'a, C: OpenCallable> Context<'a, C> {
 
         Ok(())
     }
+
+    pub fn ignore(self) -> PrologResult<()> {
+        if let Err(PrologError::Exception) = self.next_solution() {
+            Err(PrologError::Exception)
+        }
+        else {
+            self.cut();
+
+            Ok(())
+        }
+    }
 }
 
 unsafe impl<T: OpenCallable> ContextType for T {}
