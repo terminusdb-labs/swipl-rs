@@ -184,6 +184,19 @@ impl<'a, T: ContextType> Context<'a, T> {
             Some(e) => unsafe { e.with_cleared_exception(self, |e| f(Some(e))) },
         })
     }
+
+    pub fn catch<R>(
+        &self,
+        result: PrologResult<R>,
+        handler: impl Fn(&Term) -> PrologResult<R>,
+    ) -> PrologResult<R> {
+        match result {
+            Err(PrologError::Exception) => self.with_exception(move |term| {
+                handler(term.expect("expected exception term due to exception result"))
+            }),
+            _ => result,
+        }
+    }
 }
 
 pub trait ContextParent {
@@ -307,7 +320,6 @@ pub unsafe trait FrameableContextType: ContextType {}
 unsafe impl FrameableContextType for UnmanagedContext {}
 unsafe impl<'a> FrameableContextType for ActivatedEngine<'a> {}
 unsafe impl FrameableContextType for Frame {}
-unsafe impl FrameableContextType for Query {}
 
 impl<'a, C: FrameableContextType> Context<'a, C> {
     pub fn open_frame(&self) -> Context<Frame> {
@@ -365,13 +377,6 @@ impl UnsafeActiveEnginePromise {
 
 unsafe impl ActiveEnginePromise for UnsafeActiveEnginePromise {}
 
-pub struct Query {
-    qid: qid_t,
-    closed: bool,
-}
-
-unsafe impl ContextType for Query {}
-
 pub unsafe trait QueryableContextType: FrameableContextType {}
 unsafe impl QueryableContextType for UnmanagedContext {}
 unsafe impl<'a> QueryableContextType for ActivatedEngine<'a> {}
@@ -423,40 +428,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         callable.open(self, module, args)
     }
 
-    pub fn open_query(
-        &self,
-        context: Option<&Module>,
-        predicate: &Predicate,
-        args: &[&Term],
-    ) -> Context<Query> {
-        self.assert_activated();
-        self.assert_no_exception();
-        let context = context
-            .map(|c| c.module_ptr())
-            .unwrap_or(std::ptr::null_mut());
-        let flags = PL_Q_NORMAL | PL_Q_CATCH_EXCEPTION | PL_Q_EXT_STATUS;
-        let terms = unsafe { PL_new_term_refs(args.len().try_into().unwrap()) };
-        for i in 0..args.len() {
-            let term = unsafe { self.wrap_term_ref(terms + i) };
-            assert!(term.unify(args[i]).is_ok());
-        }
-
-        let qid = unsafe {
-            PL_open_query(
-                context,
-                flags.try_into().unwrap(),
-                predicate.predicate_ptr(),
-                terms,
-            )
-        };
-
-        let query = Query { qid, closed: false };
-
-        self.activated.set(false);
-        unsafe { Context::new_activated(Some(self), query, self.engine) }
-    }
-
-    pub fn term_from_string(&self, s: &str) -> Option<Term> {
+    pub fn term_from_string(&self, s: &str) -> PrologResult<Term> {
         let term = self.new_term_ref();
         let frame = self.open_frame();
 
@@ -466,19 +438,13 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         assert!(arg1.unify(s).is_ok());
         assert!(arg3.unify(Nil).is_ok());
 
-        let query = read_term_from_atom(&frame, &arg1, &term, &arg3);
-
-        let result = match query.next_solution() {
-            QueryResult::SuccessLast => Some(term),
-            _ => None,
-        };
-        query.cut();
+        read_term_from_atom(&frame, &arg1, &term, &arg3).once()?;
         frame.close_frame();
 
-        result
+        Ok(term)
     }
 
-    pub fn open_call(&'a self, t: &Term<'a>) -> Context<'a, Query> {
+    pub fn open_call(&'a self, t: &Term<'a>) -> Context<'a, impl OpenCallable> {
         open_call(self, t)
     }
 
@@ -531,148 +497,6 @@ impl IntoPrologException for std::io::Error {
     }
 }
 
-pub enum QueryResult {
-    Success,
-    SuccessLast,
-    Failure,
-    Exception,
-}
-
-impl QueryResult {
-    pub fn is_success(&self) -> bool {
-        match self {
-            Self::Success => true,
-            Self::SuccessLast => true,
-            _ => false,
-        }
-    }
-
-    pub fn is_last(&self) -> bool {
-        match self {
-            Self::SuccessLast => true,
-            Self::Failure => true,
-            _ => false,
-        }
-    }
-
-    pub fn is_nonlast_success(&self) -> bool {
-        match self {
-            Self::Success => true,
-            _ => false,
-        }
-    }
-
-    pub fn is_last_success(&self) -> bool {
-        match self {
-            Self::SuccessLast => true,
-            _ => false,
-        }
-    }
-
-    pub fn is_failure(&self) -> bool {
-        match self {
-            Self::Failure => true,
-            _ => false,
-        }
-    }
-
-    pub fn is_exception(&self) -> bool {
-        match self {
-            Self::Exception => true,
-            _ => false,
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum NondetQueryResult {
-    Failure,
-    Success,
-    SuccessLast,
-}
-
-impl<'a> Context<'a, Query> {
-    pub fn next_solution(&self) -> QueryResult {
-        self.assert_activated();
-        let result = unsafe { PL_next_solution(self.context.qid) };
-        match result {
-            -1 => {
-                let exception = unsafe { PL_exception(self.context.qid) };
-                // rethrow this exception but as the special 0 exception which remains alive
-                unsafe { PL_raise_exception(exception) };
-
-                QueryResult::Exception
-            }
-            0 => QueryResult::Failure,
-            1 => QueryResult::Success,
-            2 => QueryResult::SuccessLast,
-            _ => panic!("unknown query result type {}", result),
-        }
-    }
-
-    pub fn catch_next_solution(&self) -> Result<NondetQueryResult, Term<'a>> {
-        self.assert_activated();
-        let result = unsafe { PL_next_solution(self.context.qid) };
-        match result {
-            -1 => {
-                let exception = unsafe { PL_exception(self.context.qid) };
-                let exception_term = unsafe {
-                    Term::new(
-                        exception,
-                        self.parent
-                            .expect("query should always have a parent")
-                            .as_term_origin(),
-                    )
-                };
-
-                Err(exception_term)
-            }
-            0 => Ok(NondetQueryResult::Failure),
-            1 => Ok(NondetQueryResult::Success),
-            2 => Ok(NondetQueryResult::SuccessLast),
-            _ => panic!("unknown query result type {}", result),
-        }
-    }
-
-    pub fn catch_next_solution_in_term<'b, 'c>(
-        &'b self,
-        term: &'c Term<'b>,
-    ) -> Result<NondetQueryResult, &'c Term<'b>> {
-        match self.catch_next_solution() {
-            Ok(r) => Ok(r),
-            Err(t) => {
-                // TODO unwrap bad
-                term.put(&t).unwrap();
-                Err(term)
-            }
-        }
-    }
-
-    pub fn cut(mut self) {
-        self.assert_activated();
-        unsafe { PL_cut_query(self.context.qid) };
-        self.context.closed = true;
-    }
-
-    pub fn discard(mut self) {
-        self.assert_activated();
-
-        unsafe { PL_close_query(self.context.qid) };
-        self.context.closed = true;
-    }
-}
-
-impl Drop for Query {
-    fn drop(&mut self) {
-        // honestly, since closing a query may result in exceptions,
-        // this is too late. We'll just assume the user intended to
-        // discard, to encourage proper closing.
-        if !self.closed {
-            unsafe { PL_close_query(self.qid) };
-        }
-    }
-}
-
 pub unsafe fn prolog_catch_unwind<F: FnOnce() -> R + std::panic::UnwindSafe, R>(
     f: F,
 ) -> PrologResult<R> {
@@ -708,6 +532,7 @@ pub unsafe fn prolog_catch_unwind<F: FnOnce() -> R + std::panic::UnwindSafe, R>(
 mod tests {
     use super::*;
     use crate::predicates;
+
     #[test]
     fn get_term_ref_on_fresh_engine() {
         initialize_swipl_noengine();
@@ -745,7 +570,7 @@ mod tests {
     }
 
     #[test]
-    fn query_det() {
+    fn query_det() -> PrologResult<()> {
         initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
@@ -755,26 +580,29 @@ mod tests {
         let functor_plus = context.new_functor("+", 2);
         let module = context.new_module("user");
         let predicate = context.new_predicate(&functor_is, &module);
+        let callable = CallablePredicate::new(&predicate, &context).unwrap();
 
         let term1 = context.new_term_ref();
         let term2 = context.new_term_ref();
 
-        assert!(term2.unify(&functor_plus).is_ok());
-        assert!(term2.unify_arg(1, 40_u64).is_ok());
-        assert!(term2.unify_arg(2, 2_u64).is_ok());
+        term2.unify(&functor_plus)?;
+        term2.unify_arg(1, 40_u64)?;
+        term2.unify_arg(2, 2_u64)?;
 
-        let query = context.open_query(None, &predicate, &[&term1, &term2]);
+        let query = context.open(callable, [&term1, &term2]);
+        let next = query.next_solution()?;
+
+        assert!(!next);
+        assert_eq!(42_u64, term1.get()?);
+
         let next = query.next_solution();
+        assert!(next.is_err());
 
-        assert!(next.is_success() && next.is_last());
-        assert_eq!(42_u64, term1.get().unwrap());
-
-        let next = query.next_solution();
-        assert!(next.is_failure());
+        Ok(())
     }
 
     #[test]
-    fn query_auto_discard() {
+    fn query_auto_discard() -> PrologResult<()> {
         initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
@@ -784,6 +612,7 @@ mod tests {
         let functor_plus = context.new_functor("+", 2);
         let module = context.new_module("user");
         let predicate = context.new_predicate(&functor_is, &module);
+        let callable = CallablePredicate::new(&predicate, &context).unwrap();
 
         let term1 = context.new_term_ref();
         let term2 = context.new_term_ref();
@@ -793,19 +622,21 @@ mod tests {
         assert!(term2.unify_arg(2, 2_u64).is_ok());
 
         {
-            let query = context.open_query(None, &predicate, &[&term1, &term2]);
-            let next = query.next_solution();
+            let query = context.open(callable, [&term1, &term2]);
+            let next = query.next_solution()?;
 
-            assert!(next.is_last_success());
+            assert!(!next);
             assert_eq!(42_u64, term1.get().unwrap());
         }
 
         // after leaving the block, we have discarded
         assert!(term1.get::<u64>().unwrap_err().is_failure());
+
+        Ok(())
     }
 
     #[test]
-    fn query_manual_discard() {
+    fn query_manual_discard() -> PrologResult<()> {
         initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
@@ -815,29 +646,32 @@ mod tests {
         let functor_plus = context.new_functor("+", 2);
         let module = context.new_module("user");
         let predicate = context.new_predicate(&functor_is, &module);
+        let callable = CallablePredicate::new(&predicate, &context).unwrap();
 
         let term1 = context.new_term_ref();
         let term2 = context.new_term_ref();
 
-        assert!(term2.unify(&functor_plus).is_ok());
-        assert!(term2.unify_arg(1, 40_u64).is_ok());
-        assert!(term2.unify_arg(2, 2_u64).is_ok());
+        term2.unify(&functor_plus)?;
+        term2.unify_arg(1, 40_u64)?;
+        term2.unify_arg(2, 2_u64)?;
 
         {
-            let query = context.open_query(None, &predicate, &[&term1, &term2]);
-            let next = query.next_solution();
+            let query = context.open(callable, [&term1, &term2]);
+            let next = query.next_solution()?;
 
-            assert!(next.is_last_success());
-            assert_eq!(42_u64, term1.get().unwrap());
+            assert!(!next);
+            assert_eq!(42_u64, term1.get()?);
             query.discard();
         }
 
         // after leaving the block, we have discarded
         assert!(term1.get::<u64>().unwrap_err().is_failure());
+
+        Ok(())
     }
 
     #[test]
-    fn query_cut() {
+    fn query_cut() -> PrologResult<()> {
         initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
@@ -847,25 +681,28 @@ mod tests {
         let functor_plus = context.new_functor("+", 2);
         let module = context.new_module("user");
         let predicate = context.new_predicate(&functor_is, &module);
+        let callable = CallablePredicate::new(&predicate, &context).unwrap();
 
         let term1 = context.new_term_ref();
         let term2 = context.new_term_ref();
 
-        assert!(term2.unify(&functor_plus).is_ok());
-        assert!(term2.unify_arg(1, 40_u64).is_ok());
-        assert!(term2.unify_arg(2, 2_u64).is_ok());
+        term2.unify(&functor_plus)?;
+        term2.unify_arg(1, 40_u64)?;
+        term2.unify_arg(2, 2_u64)?;
 
         {
-            let query = context.open_query(None, &predicate, &[&term1, &term2]);
-            let next = query.next_solution();
+            let query = context.open(callable, [&term1, &term2]);
+            let next = query.next_solution()?;
 
-            assert!(next.is_last_success());
-            assert_eq!(42_u64, term1.get().unwrap());
+            assert!(!next);
+            assert_eq!(42_u64, term1.get()?);
             query.cut();
         }
 
         // a cut query leaves data intact
-        assert_eq!(42_u64, term1.get().unwrap());
+        assert_eq!(42_u64, term1.get()?);
+
+        Ok(())
     }
 
     #[test]
@@ -884,7 +721,7 @@ mod tests {
     }
 
     #[test]
-    fn open_call_nondet() {
+    fn open_call_nondet() -> PrologResult<()> {
         initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
@@ -895,26 +732,22 @@ mod tests {
         assert!(term.unify_arg(1, &term_x).is_ok());
 
         let query = context.open_call(&term);
-        assert!(query.next_solution().is_nonlast_success());
-        term_x
-            .get_atomable(|a| assert_eq!("a", a.unwrap().name()))
-            .unwrap();
+        assert!(query.next_solution()?);
+        term_x.get_atomable(|a| assert_eq!("a", a.unwrap().name()))?;
 
-        assert!(query.next_solution().is_nonlast_success());
-        term_x
-            .get_atomable(|a| assert_eq!("b", a.unwrap().name()))
-            .unwrap();
+        assert!(query.next_solution()?);
+        term_x.get_atomable(|a| assert_eq!("b", a.unwrap().name()))?;
 
-        assert!(query.next_solution().is_last_success());
-        term_x
-            .get_atomable(|a| assert_eq!("c", a.unwrap().name()))
-            .unwrap();
+        assert!(!query.next_solution()?);
+        term_x.get_atomable(|a| assert_eq!("c", a.unwrap().name()))?;
 
-        assert!(query.next_solution().is_failure());
+        assert!(query.next_solution().unwrap_err().is_failure());
+
+        Ok(())
     }
 
     #[test]
-    fn open_query_with_0_arg_predicate() {
+    fn open_query_with_0_arg_predicate() -> PrologResult<()> {
         initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
@@ -923,32 +756,35 @@ mod tests {
         let functor = context.new_functor("true", 0);
         let module = context.new_module("user");
         let predicate = context.new_predicate(&functor, &module);
+        let callable = CallablePredicate::new(&predicate, &context).unwrap();
 
-        let query = context.open_query(None, &predicate, &[]);
-        assert!(query.next_solution().is_last_success());
+        let query = context.open(callable, []);
+        assert!(!query.next_solution()?);
+
+        Ok(())
     }
 
     #[test]
-    fn freeze_exception_is_delayed_until_next_query() {
+    fn freeze_exception_is_delayed_until_next_query() -> PrologResult<()> {
         initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
-        let term = context.term_from_string("freeze(X, throw(foo))").unwrap();
+        let term = context.term_from_string("freeze(X, throw(foo))")?;
         let term_x = context.new_term_ref();
-        term.unify_arg(1, &term_x).unwrap();
+        term.unify_arg(1, &term_x)?;
         let query = context.open_call(&term);
-        assert!(query.next_solution().is_last_success());
+        assert!(!query.next_solution()?);
         query.cut();
 
         assert!(term_x.unify(42_u64).is_ok());
 
         let term = context.new_term_ref();
-        term.unify(true).unwrap();
+        term.unify(true)?;
         let query = context.open_call(&term);
         let next = query.next_solution();
-        assert!(next.is_exception());
+        assert!(next.unwrap_err().is_exception());
         query.with_exception(|e| {
             let exception_term = e.unwrap();
             let atomable: Atomable = exception_term.get().unwrap();
@@ -956,79 +792,13 @@ mod tests {
 
             assert!(term.get::<u64>().unwrap_err().is_failure());
         });
+
+        Ok(())
     }
 
     prolog! {
         #[name("is")]
         fn prolog_arithmetic(term, e);
-    }
-
-    use swipl_macros::term;
-
-    #[test]
-    fn catch_with_exception() -> PrologResult<()> {
-        initialize_swipl_noengine();
-        let engine = Engine::new();
-        let activation = engine.activate();
-        let context: Context<_> = activation.into();
-
-        let term1 = context.new_term_ref();
-        let term2 = context.new_term_ref();
-
-        let check_term = term! {context: error(instantiation_error, _)}?;
-        let query = prolog_arithmetic(&context, &term1, &term2);
-        let e = query.catch_next_solution().unwrap_err();
-        assert!(check_term.unify(e).is_ok());
-
-        Ok(())
-    }
-
-    #[test]
-    fn catch_with_exception_in_term() -> PrologResult<()> {
-        initialize_swipl_noengine();
-        let engine = Engine::new();
-        let activation = engine.activate();
-        let context: Context<_> = activation.into();
-
-        let term1 = context.new_term_ref();
-        let term2 = context.new_term_ref();
-        let term3 = context.new_term_ref();
-
-        let check_term = term! {context: error(instantiation_error, _)}?;
-        let query = prolog_arithmetic(&context, &term1, &term2);
-        let e = query.catch_next_solution_in_term(&term3).unwrap_err();
-        assert!(check_term.unify(e).is_ok());
-        query.discard();
-        assert!(check_term.unify(&term3).is_ok());
-
-        Ok(())
-    }
-
-    #[test]
-    fn catch_with_exception_close_term_remains_valid() -> PrologResult<()> {
-        initialize_swipl_noengine();
-        let engine = Engine::new();
-        let activation = engine.activate();
-        let context: Context<_> = activation.into();
-
-        let term1 = context.new_term_ref();
-        let term2 = context.new_term_ref();
-
-        let check_term = term! {context: error(instantiation_error, _)}?;
-        let query = prolog_arithmetic(&context, &term1, &term2);
-        let e = query.catch_next_solution().unwrap_err();
-        assert!(!e.is_var());
-        query.discard();
-
-        // reserve some terms which would normally overwrite any terms further on the stack
-        let _term3 = context.new_term_ref();
-        let _term4 = context.new_term_ref();
-        let _term5 = context.new_term_ref();
-
-        assert!(!e.is_var());
-        assert!(check_term.unify(e).is_ok());
-
-        Ok(())
     }
 
     #[test]
@@ -1043,7 +813,7 @@ mod tests {
         let term2 = context.new_term_ref();
 
         let query = prolog_arithmetic(&context, &term1, &term2);
-        assert!(query.next_solution().is_exception());
+        assert!(query.next_solution().unwrap_err().is_exception());
         assert!(query.has_exception());
         query.discard();
         let _query2 = prolog_arithmetic(&context, &term1, &term2);
@@ -1056,7 +826,7 @@ mod tests {
     }
 
     #[test]
-    fn register_foreign_predicate() {
+    fn register_foreign_predicate() -> PrologResult<()> {
         initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
@@ -1069,10 +839,13 @@ mod tests {
         let functor = context.new_functor("unify_with_42", 1);
         let module = context.new_module("user");
         let predicate = context.new_predicate(&functor, &module);
+        let callable = CallablePredicate::new(&predicate, &context).unwrap();
 
-        let query = context.open_query(None, &predicate, &[&term]);
-        assert!(query.next_solution().is_success());
+        let query = context.open(callable, [&term]);
+        assert!(!query.next_solution()?);
         assert_eq!(42, term.get::<u64>().unwrap());
+
+        Ok(())
     }
 
     #[test]
@@ -1086,7 +859,7 @@ mod tests {
         let expr = context.term_from_string("2+2").unwrap();
 
         let q = prolog_arithmetic(&context, &term, &expr);
-        assert!(q.next_solution().is_success());
+        assert!(q.next_solution().is_ok());
         assert_eq!(4, term.get::<u64>().unwrap());
     }
 }

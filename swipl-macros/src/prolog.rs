@@ -83,34 +83,16 @@ impl PrologPredicate {
         };
         let visibility = self.visibility;
         let gen = quote! {
-            static #pred_static_ident: std::sync::atomic::AtomicPtr<std::ffi::c_void> = std::sync::atomic::AtomicPtr::new(std::ptr::null_mut());
+            static #pred_static_ident: #crt::callable::LazyCallablePredicate<#params_len> = #crt::callable::LazyCallablePredicate::new(Some(#predicate_module), #predicate_name);
 
             #doc
-            #visibility fn #rust_name<'a, T:#crt::context::QueryableContextType>(swipl_context: &'a #crt::context::Context<'a, T>, #(#params: &#crt::term::Term<'a>),*) -> #crt::context::Context<'a, #crt::context::Query> {
+            #visibility fn #rust_name<'a, T:#crt::context::QueryableContextType>(swipl_context: &'a #crt::context::Context<'a, T>, #(#params: &#crt::term::Term<'a>),*) -> #crt::context::Context<'a, impl #crt::callable::OpenCallable> {
                 swipl_context.assert_activated();
-                let swipl_pred = #pred_static_ident.load(std::sync::atomic::Ordering::Relaxed);
-                let swipl_predicate;
-                if swipl_pred.is_null() {
-                    // create that predicate
-                    swipl_predicate = #crt::context::ActiveEnginePromise::new_predicate(
-                        swipl_context,
-                        &#crt::context::ActiveEnginePromise::new_functor(
-                            swipl_context,
-                            #predicate_name,
-                            std::convert::TryInto::try_into(#params_len).expect("expected param len to fit inside a u16")),
-                        &#crt::context::ActiveEnginePromise::new_module(
-                            swipl_context,
-                            #predicate_module));
-                    // and store it in the static
-                    #pred_static_ident.store(swipl_predicate.predicate_ptr(), std::sync::atomic::Ordering::Relaxed);
-                }
-                else {
-                    swipl_predicate = unsafe {#crt::predicate::Predicate::wrap(swipl_pred)};
-                }
-                let swipl_call_args:Vec<&#crt::term::Term<'a>> = vec![#(#params),*];
+                let swipl_call_args = [#(#params),*];
+
 
                 // TODO figure out what to do with that context module
-                swipl_context.open_query(None, &swipl_predicate, &swipl_call_args)
+                swipl_context.open(#pred_static_ident.as_callable(), swipl_call_args)
             }
         };
 

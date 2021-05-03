@@ -58,6 +58,19 @@ impl<const N: usize> Callable<N> for LazyCallablePredicate<N> {
     }
 }
 
+impl<'a, const N: usize> Callable<N> for &'a LazyCallablePredicate<N> {
+    type ContextType = OpenPredicate;
+
+    fn open<'b, C: ContextType>(
+        self,
+        context: &'b Context<C>,
+        module: Option<&Module>,
+        args: [&Term; N],
+    ) -> Context<'b, OpenPredicate> {
+        self.as_callable().open(context, module, args)
+    }
+}
+
 #[derive(Error, Debug)]
 pub enum PredicateWrapError {
     #[error("predicate has arity {actual} but {expected} was required")]
@@ -125,14 +138,24 @@ impl<'a, C: OpenCallable> Context<'a, C> {
     pub fn discard(self) {
         C::discard(self)
     }
+
+    pub fn once(self) -> PrologResult<()> {
+        self.next_solution()?;
+        self.cut();
+
+        Ok(())
+    }
 }
 
 unsafe impl<T: OpenCallable> ContextType for T {}
+unsafe impl<T: OpenCallable> FrameableContextType for T {}
 
 unsafe impl OpenCallable for OpenPredicate {
     fn next_solution<'a>(this: &Context<'a, Self>) -> PrologResult<bool> {
+        println!("lets next solution");
         this.assert_activated();
         let result = unsafe { PL_next_solution(this.context.qid) };
+        println!("result: {}", result);
         match result {
             -1 => {
                 let exception = unsafe { PL_exception(this.context.qid) };
@@ -142,8 +165,8 @@ unsafe impl OpenCallable for OpenPredicate {
                 Err(PrologError::Exception)
             }
             0 => Err(PrologError::Failure),
-            1 => Ok(false),
-            2 => Ok(true),
+            1 => Ok(true),
+            2 => Ok(false),
             _ => panic!("unknown query result type {}", result),
         }
     }
@@ -162,6 +185,14 @@ unsafe impl OpenCallable for OpenPredicate {
 
         unsafe { PL_close_query(this.context.qid) };
         this.context.closed = true;
+    }
+}
+
+impl Drop for OpenPredicate {
+    fn drop(&mut self) {
+        if !self.closed {
+            unsafe { PL_close_query(self.qid) };
+        }
     }
 }
 
