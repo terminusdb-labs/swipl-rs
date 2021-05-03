@@ -12,3 +12,6 @@ repository = "https://github.com/terminusdb-labs/swipl-rs/"
 [build-dependencies]
 bindgen = "0.56.0"
 swipl-info = {path = "../swipl-info", version = "0.2"}
+
+[features]
+static = []
