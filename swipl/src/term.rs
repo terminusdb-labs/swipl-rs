@@ -130,7 +130,7 @@ impl<'a> Term<'a> {
         result2
     }
 
-    pub fn get_str<R, F>(&self, func: F) -> R
+    pub fn get_str<R, F>(&self, func: F) -> PrologResult<R>
     where
         F: Fn(Option<&str>) -> R,
     {
@@ -145,6 +145,11 @@ impl<'a> Term<'a> {
                 (CVT_STRING | REP_UTF8).try_into().unwrap(),
             )
         };
+
+        if unsafe { PL_exception(0) != 0 } {
+            return Err(PrologError::Exception);
+        }
+
         let arg = if result == 0 {
             None
         } else {
@@ -156,10 +161,10 @@ impl<'a> Term<'a> {
             Some(swipl_string)
         };
 
-        func(arg)
+        Ok(func(arg))
     }
 
-    pub fn get_atom<R, F>(&self, func: F) -> R
+    pub fn get_atom<R, F>(&self, func: F) -> PrologResult<R>
     where
         F: Fn(Option<&Atom>) -> R,
     {
@@ -167,7 +172,7 @@ impl<'a> Term<'a> {
         unsafe { get_atom(self, func) }
     }
 
-    pub fn get_atomable<R, F>(&self, func: F) -> R
+    pub fn get_atomable<R, F>(&self, func: F) -> PrologResult<R>
     where
         F: Fn(Option<&Atomable>) -> R,
     {
@@ -175,12 +180,18 @@ impl<'a> Term<'a> {
         unsafe { get_atomable(self, func) }
     }
 
-    pub fn put<T: TermPutable + ?Sized>(&self, val: &T) {
+    pub fn put<T: TermPutable + ?Sized>(&self, val: &T) -> PrologResult<()> {
         val.put(self);
+
+        if unsafe { PL_exception(0) != 0 } {
+            Err(PrologError::Exception)
+        } else {
+            Ok(())
+        }
     }
 
-    pub fn put_val<T: TermPutable>(&self, val: T) {
-        self.put(&val);
+    pub fn put_val<T: TermPutable>(&self, val: T) -> PrologResult<()> {
+        self.put(&val)
     }
 }
 
@@ -485,7 +496,11 @@ unifiable! {
 
 term_getable! {
     (String, term) => {
-        term.get_str(|s|s.map(|s|s.to_owned()))
+        match term.get_str(|s|s.map(|s|s.to_owned())) {
+            Ok(r) => r,
+            // ignore error - it'll be picked up by the wrapper
+            Err(_) => None
+        }
     }
 }
 
@@ -743,7 +758,7 @@ mod tests {
 
         let term1 = context.new_term_ref();
         assert!(term1.get::<u64>().unwrap_err().is_failure());
-        term1.put_val(42_u64);
+        term1.put_val(42_u64).unwrap();
         assert_eq!(42, term1.get::<u64>().unwrap());
     }
 
@@ -755,9 +770,11 @@ mod tests {
         let context: Context<_> = activation.into();
 
         let term1 = context.new_term_ref();
-        term1.get_str(|s| assert!(s.is_none()));
+        term1.get_str(|s| assert!(s.is_none())).unwrap();
         term1.unify("hello there").unwrap();
-        term1.get_str(|s| assert_eq!("hello there", s.unwrap()));
+        term1
+            .get_str(|s| assert_eq!("hello there", s.unwrap()))
+            .unwrap();
     }
 
     #[test]

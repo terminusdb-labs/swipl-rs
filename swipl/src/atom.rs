@@ -1,5 +1,6 @@
 use super::context::*;
 use super::fli::*;
+use super::result::*;
 use super::term::*;
 use crate::{term_getable, term_putable, unifiable};
 use std::convert::TryInto;
@@ -107,12 +108,16 @@ unifiable! {
 }
 
 #[allow(unused_unsafe)]
-pub unsafe fn get_atom<'a, F, R>(term: &Term<'a>, func: F) -> R
+pub unsafe fn get_atom<'a, F, R>(term: &Term<'a>, func: F) -> PrologResult<R>
 where
     F: Fn(Option<&Atom>) -> R,
 {
     let mut atom = 0;
     let result = unsafe { PL_get_atom(term.term_ptr(), &mut atom) };
+
+    if unsafe { PL_exception(0) != 0 } {
+        return Err(PrologError::Exception);
+    }
 
     let arg = if result == 0 {
         None
@@ -126,12 +131,16 @@ where
     // prevent destructor from running since we never increased the refcount
     std::mem::forget(arg);
 
-    result
+    Ok(result)
 }
 
 term_getable! {
     (Atom, term) => {
-        term.get_atom(|a| a.map(|a|a.clone()))
+        match term.get_atom(|a| a.map(|a|a.clone())) {
+            Ok(r) => r,
+            // ignore this error - it'll be picked up again by the wrapper
+            Err(_) => None
+        }
     }
 }
 
@@ -264,7 +273,7 @@ unifiable! {
 }
 
 #[allow(unused_unsafe)]
-pub unsafe fn get_atomable<'a, F, R>(term: &Term<'a>, func: F) -> R
+pub unsafe fn get_atomable<'a, F, R>(term: &Term<'a>, func: F) -> PrologResult<R>
 where
     F: Fn(Option<&Atomable>) -> R,
 {
@@ -278,6 +287,10 @@ where
             (CVT_ATOM | REP_UTF8).try_into().unwrap(),
         )
     };
+
+    if unsafe { PL_exception(0) != 0 } {
+        return Err(PrologError::Exception);
+    }
 
     let arg = if result == 0 {
         None
@@ -295,12 +308,16 @@ where
     // prevent destructor from running since we never increased the refcount
     std::mem::forget(arg);
 
-    result
+    Ok(result)
 }
 
 term_getable! {
     (Atomable<'static>, term) => {
-        term.get_atomable(|a|a.map(|a|a.owned()))
+        match term.get_atomable(|a|a.map(|a|a.owned())) {
+            Ok(r) => r,
+            // ignore error - it'll be picked up in the wrapper
+            Err(_) => None
+        }
     }
 }
 
@@ -444,7 +461,7 @@ mod tests {
         let a1 = "foo".as_atom(&context);
         let term = context.new_term_ref();
         term.unify(&a1).unwrap();
-        term.get_atom(|a2| assert_eq!(&a1, a2.unwrap()));
+        term.get_atom(|a2| assert_eq!(&a1, a2.unwrap())).unwrap();
     }
 
     #[test]
@@ -472,7 +489,8 @@ mod tests {
         let a1 = "foo".as_atom(&context);
         let term = context.new_term_ref();
         term.unify(&a1).unwrap();
-        term.get_atomable(|a2| assert_eq!("foo", a2.unwrap().name()));
+        term.get_atomable(|a2| assert_eq!("foo", a2.unwrap().name()))
+            .unwrap();
     }
 
     #[test]

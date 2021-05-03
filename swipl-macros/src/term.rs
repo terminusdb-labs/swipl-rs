@@ -438,7 +438,7 @@ impl Tuple {
                 cur_ident.unify_arg(1, &#term_ident).unwrap();
                 let next_ident = __swipl_frame.new_term_ref();
                 cur_ident.unify_arg(2, &next_ident).unwrap();
-                cur_ident.put(&next_ident);
+                cur_ident.put(&next_ident).unwrap();
             });
         }
 

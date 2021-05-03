@@ -641,7 +641,8 @@ impl<'a> Context<'a, Query> {
         match self.catch_next_solution() {
             Ok(r) => Ok(r),
             Err(t) => {
-                term.put(&t);
+                // TODO unwrap bad
+                term.put(&t).unwrap();
                 Err(term)
             }
         }
@@ -897,13 +898,19 @@ mod tests {
 
         let query = context.open_call(&term);
         assert!(query.next_solution().is_nonlast_success());
-        term_x.get_atomable(|a| assert_eq!("a", a.unwrap().name()));
+        term_x
+            .get_atomable(|a| assert_eq!("a", a.unwrap().name()))
+            .unwrap();
 
         assert!(query.next_solution().is_nonlast_success());
-        term_x.get_atomable(|a| assert_eq!("b", a.unwrap().name()));
+        term_x
+            .get_atomable(|a| assert_eq!("b", a.unwrap().name()))
+            .unwrap();
 
         assert!(query.next_solution().is_last_success());
-        term_x.get_atomable(|a| assert_eq!("c", a.unwrap().name()));
+        term_x
+            .get_atomable(|a| assert_eq!("c", a.unwrap().name()))
+            .unwrap();
 
         assert!(query.next_solution().is_failure());
     }
