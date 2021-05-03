@@ -149,8 +149,7 @@ impl<'a, C: OpenCallable> Context<'a, C> {
     pub fn ignore(self) -> PrologResult<()> {
         if let Err(PrologError::Exception) = self.next_solution() {
             Err(PrologError::Exception)
-        }
-        else {
+        } else {
             self.cut();
 
             Ok(())

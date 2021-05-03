@@ -5,6 +5,26 @@ use std::io::{self, Write};
 use std::sync::Arc;
 
 predicates! {
+    semidet fn unify_with_foo(context, term) {
+        let atom = context.new_atom("foo");
+        term.unify(&atom)
+    }
+
+    nondet fn unify_with_bar_baz<Vec<&'static str>>(context, term) {
+        setup => {
+            Ok(Some(vec!["bar", "baz"]))
+        },
+        call(v) => {
+            let next = v.pop().unwrap();
+            let atom = context.new_atom(next);
+            term.unify(&atom)?;
+
+            Ok(!v.is_empty())
+        }
+    }
+}
+
+predicates! {
     semidet fn unify_with_42(_context, term) {
         term.unify(42_u64)
     }
@@ -130,4 +150,7 @@ pub extern "C" fn install() {
     register_moo_num();
     register_unify_with_wrapped_blob();
     register_moomoo_num();
+
+    register_unify_with_foo();
+    register_unify_with_bar_baz();
 }

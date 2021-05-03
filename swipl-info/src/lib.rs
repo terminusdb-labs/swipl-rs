@@ -1,14 +1,29 @@
+//! A helper crate to retrieve information about the installed swipl environment.
 use std::env;
 use std::process::Command;
 
+/// Struct containing information about a SWI-Prolog installation
 #[derive(Debug)]
 pub struct SwiplInfo {
+    /// The main directory where SWI-Prolog is located
     pub swi_home: String,
+    /// The directory subpath where dynamic libraries live
     pub pack_so_dir: String,
+    /// The cflags that swipl advises should be used in module compiles
     pub cflags: String,
+    /// The ldflags that swipl advises should be used in module compiles
     pub ldflags: String,
 }
 
+/// Retrieve information about the installed swipl environment.
+///
+/// This will check the SWIPL environment variable for a path to the
+/// swipl binary. If this environment variable is not set, it'll
+/// attempt to find swipl by assuming it is on the PATH. When found,
+/// some prolog is run to extract this information using the
+/// `prolog_pack` library, and returned as a `SwiplInfo`.
+///
+/// If swipl is not found, this function panics.
 pub fn get_swipl_info() -> SwiplInfo {
     // by retrieving SWIPL from env, this should work within swipl
     // build environments, as these set this environment variable
