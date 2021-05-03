@@ -1,17 +1,67 @@
 use crate::context::*;
 use crate::fli::*;
 use crate::module::*;
+use crate::predicate::*;
 use crate::result::*;
 use crate::term::*;
-use crate::predicate::*;
+use std::convert::TryInto;
+use std::os::raw::c_void;
+use std::sync::atomic::{AtomicPtr, Ordering};
 use thiserror::Error;
 
-use std::convert::TryInto;
+pub struct LazyCallablePredicate<const N: usize> {
+    module: Option<&'static str>,
+    name: &'static str,
+    predicate: AtomicPtr<c_void>,
+}
+
+impl<const N: usize> LazyCallablePredicate<N> {
+    pub const fn new(module: Option<&'static str>, name: &'static str) -> Self {
+        Self {
+            module,
+            name,
+            predicate: AtomicPtr::new(std::ptr::null_mut()),
+        }
+    }
+
+    pub fn as_callable(&self) -> CallablePredicate<N> {
+        let mut loaded = self.predicate.load(Ordering::Relaxed);
+        if loaded.is_null() {
+            // it really doesn't matter what engine this comes
+            // from, as predicates are process wide and live
+            // forever.
+            let context = unsafe { unmanaged_engine_context() };
+            let functor = context.new_functor(self.name, N as u16);
+            let module_name = self.module.unwrap_or("");
+            let module = context.new_module(module_name);
+
+            loaded = context.new_predicate(&functor, &module).predicate_ptr();
+
+            self.predicate
+                .store(loaded, std::sync::atomic::Ordering::Relaxed);
+        }
+
+        unsafe { CallablePredicate::wrap(loaded) }
+    }
+}
+
+impl<const N: usize> Callable<N> for LazyCallablePredicate<N> {
+    type ContextType = OpenPredicate;
+
+    fn open<'a, C: ContextType>(
+        self,
+        context: &'a Context<C>,
+        module: Option<&Module>,
+        args: [&Term; N],
+    ) -> Context<'a, OpenPredicate> {
+        self.as_callable().open(context, module, args)
+    }
+}
 
 #[derive(Error, Debug)]
 pub enum PredicateWrapError {
     #[error("predicate has arity {actual} but {expected} was required")]
-    WrongArity{expected: u16, actual: u16}
+    WrongArity { expected: u16, actual: u16 },
 }
 
 #[derive(Clone, Copy)]
@@ -25,12 +75,17 @@ impl<const N: usize> CallablePredicate<N> {
         Self { predicate }
     }
 
-    pub fn new<P: ActiveEnginePromise>(predicate: &Predicate, promise: &P) -> Result<Self, PredicateWrapError> {
+    pub fn new<P: ActiveEnginePromise>(
+        predicate: &Predicate,
+        promise: &P,
+    ) -> Result<Self, PredicateWrapError> {
         let arity = predicate.arity(promise);
         if arity as usize != N {
-            Err(PredicateWrapError::WrongArity{expected: N as u16, actual: arity})
-        }
-        else {
+            Err(PredicateWrapError::WrongArity {
+                expected: N as u16,
+                actual: arity,
+            })
+        } else {
             Ok(unsafe { Self::wrap(predicate.predicate_ptr()) })
         }
     }

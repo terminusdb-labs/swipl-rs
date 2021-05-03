@@ -19,21 +19,9 @@ pub fn pred_macro(stream: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let crt = crate_token();
     let result = quote! {
         {
-            static pred: std::sync::atomic::AtomicPtr<std::os::raw::c_void> = std::sync::atomic::AtomicPtr::new(std::ptr::null_mut());
-            let mut loaded = pred.load(std::sync::atomic::Ordering::Relaxed);
-            if loaded.is_null()  {
-                // it really doesn't matter what engine this comes
-                // from, as predicates are process wide and live
-                // forever.
-                let context = unsafe { #crt::context::unmanaged_engine_context() };
-                let functor = context.new_functor(#name_lit, #arity);
-                let module = context.new_module(#module_lit);
-                loaded = context.new_predicate(&functor, &module).predicate_ptr();
+            static pred: #crt::callable::LazyCallablePredicate<#arity> = #crt::callable::LazyCallablePredicate::new(Some(#module_lit), #name_lit);
 
-                pred.store(loaded, std::sync::atomic::Ordering::Relaxed);
-            }
-
-            unsafe { #crt::callable::CallablePredicate::<#arity>::wrap(loaded) }
+            pred.as_callable()
         }
     };
 
