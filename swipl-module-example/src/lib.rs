@@ -40,7 +40,7 @@ predicates! {
     }
 
     semidet fn throw_a_thing(context) {
-        let term = term!{context: error(moo, _)};
+        let term = term!{context: error(moo, _)}?;
         context.raise_exception(&term)
     }
 

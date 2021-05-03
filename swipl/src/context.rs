@@ -125,7 +125,7 @@ impl<'a, T: ContextType> Context<'a, T> {
         self.assert_activated();
         if term.is_var() {
             let frame = self.open_frame();
-            let err = term! {frame: error(rust_error(raise_exception_called_with_variable), _)};
+            let err = term! {frame: error(rust_error(raise_exception_called_with_variable), _)}?;
             unsafe {
                 PL_raise_exception(err.term_ptr());
                 PL_reset_term_refs(err.term_ptr());
@@ -527,7 +527,8 @@ impl IntoPrologException for std::io::Error {
         context: &'a Context<'b, T>,
     ) -> Term<'a> {
         let msg = format!("{}", self);
-        term! {context: error(rust_io_error(#msg))}
+        // TODO unwrap bad
+        (term! {context: error(rust_io_error(#msg))}).unwrap()
     }
 }
 
@@ -684,7 +685,7 @@ pub unsafe fn prolog_catch_unwind<F: FnOnce() -> R + std::panic::UnwindSafe, R>(
         Err(panic) => {
             let context = unmanaged_engine_context();
             let panic_term = context.new_term_ref();
-            let error_term = term! {context: error(rust_error(panic(#&panic_term)), _)};
+            let error_term = term! {context: error(rust_error(panic(#&panic_term)), _)}?;
 
             match panic.downcast_ref::<&str>() {
                 Some(panic_msg) => {
@@ -968,7 +969,7 @@ mod tests {
     use swipl_macros::term;
 
     #[test]
-    fn catch_with_exception() {
+    fn catch_with_exception() -> PrologResult<()> {
         initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
@@ -977,14 +978,16 @@ mod tests {
         let term1 = context.new_term_ref();
         let term2 = context.new_term_ref();
 
-        let check_term = term! {context: error(instantiation_error, _)};
+        let check_term = term! {context: error(instantiation_error, _)}?;
         let query = prolog_arithmetic(&context, &term1, &term2);
         let e = query.catch_next_solution().unwrap_err();
         assert!(check_term.unify(e).is_ok());
+
+        Ok(())
     }
 
     #[test]
-    fn catch_with_exception_in_term() {
+    fn catch_with_exception_in_term() -> PrologResult<()> {
         initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
@@ -994,16 +997,18 @@ mod tests {
         let term2 = context.new_term_ref();
         let term3 = context.new_term_ref();
 
-        let check_term = term! {context: error(instantiation_error, _)};
+        let check_term = term! {context: error(instantiation_error, _)}?;
         let query = prolog_arithmetic(&context, &term1, &term2);
         let e = query.catch_next_solution_in_term(&term3).unwrap_err();
         assert!(check_term.unify(e).is_ok());
         query.discard();
         assert!(check_term.unify(&term3).is_ok());
+
+        Ok(())
     }
 
     #[test]
-    fn catch_with_exception_close_term_remains_valid() {
+    fn catch_with_exception_close_term_remains_valid() -> PrologResult<()> {
         initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
@@ -1012,7 +1017,7 @@ mod tests {
         let term1 = context.new_term_ref();
         let term2 = context.new_term_ref();
 
-        let check_term = term! {context: error(instantiation_error, _)};
+        let check_term = term! {context: error(instantiation_error, _)}?;
         let query = prolog_arithmetic(&context, &term1, &term2);
         let e = query.catch_next_solution().unwrap_err();
         assert!(!e.is_var());
@@ -1025,6 +1030,8 @@ mod tests {
 
         assert!(!e.is_var());
         assert!(check_term.unify(e).is_ok());
+
+        Ok(())
     }
 
     #[test]

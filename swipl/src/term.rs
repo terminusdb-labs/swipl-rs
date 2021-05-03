@@ -356,7 +356,8 @@ unifiable! {
                 let error_term = ctx.new_term_ref();
                 PL_unify(error_term.term_ptr(), error_term_ref);
                 PL_clear_exception();
-                let comparison_term = term!{ctx: error(type_error(integer, _), _)};
+                // todo unwrap bad
+                let comparison_term = (term!{ctx: error(type_error(integer, _), _)}).unwrap();
                 // really should be a non-unifying compare but meh
                 if comparison_term.unify(&error_term).is_err() {
                     PL_raise_exception(error_term.term_ptr());
@@ -388,7 +389,8 @@ term_getable! {
                 let error_term = ctx.new_term_ref();
                 PL_unify(error_term.term_ptr(), error_term_ref);
                 PL_clear_exception();
-                let comparison_term = term!{ctx: error(domain_error(not_less_than_zero, _), _)};
+                // TODO unwrap bad
+                let comparison_term = (term!{ctx: error(domain_error(not_less_than_zero, _), _)}).unwrap();
                 // really should be a non-unifying compare but meh
                 if comparison_term.unify(&error_term).is_err() {
                     PL_raise_exception(error_term.term_ptr());
@@ -660,6 +662,8 @@ unsafe impl<T: TermGetable> TermGetable for Vec<T> {
 mod tests {
     use crate::context::*;
     use crate::engine::*;
+    use crate::result::*;
+
     #[test]
     fn unify_some_terms_with_success() {
         initialize_swipl_noengine();
@@ -838,28 +842,31 @@ mod tests {
     use crate::term;
 
     #[test]
-    fn create_nested_functor_term() {
+    fn create_nested_functor_term() -> PrologResult<()> {
         initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
         let var_term = context.new_term_ref();
-        let _term = term! {context: foo(bar([a,b,42], baz(42, (1,((3)),true), #&var_term), quux(Var), quux2(Var)), "hi", yay(OtherVar, #&var_term), _, _, _a, _a)};
+        let _term = term! {context: foo(bar([a,b,42], baz(42, (1,((3)),true), #&var_term), quux(Var), quux2(Var)), "hi", yay(OtherVar, #&var_term), _, _, _a, _a)}?;
         var_term.unify(crate::atom::atomable("hallo")).unwrap();
 
         // TODO actually query this term for validity
+        Ok(())
     }
 
     #[test]
-    fn throw_error() {
+    fn throw_error() -> PrologResult<()> {
         initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
-        let error_term = term! {context: error(some_error, _)};
+        let error_term = term! {context: error(some_error, _)}?;
         context.raise_exception::<()>(&error_term).unwrap_err();
         assert!(context.has_exception());
+
+        Ok(())
     }
 }

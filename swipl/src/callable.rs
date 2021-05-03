@@ -133,14 +133,16 @@ impl<const N: usize> Callable<N> for CallablePredicate<N> {
 mod tests {
     use crate::prelude::*;
     #[test]
-    fn call_prolog_inline() {
+    fn call_prolog_inline() -> PrologResult<()> {
         initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
-        let term = term! {context: flurps(flargh)};
+        let term = term! {context: flurps(flargh)}?;
         context.call_once(pred!(writeq/1), [&term]).unwrap();
         context.call_once(pred!(nl/0), []).unwrap();
+
+        Ok(())
     }
 }

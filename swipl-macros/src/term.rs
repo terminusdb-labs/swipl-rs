@@ -29,17 +29,25 @@ pub fn term_macro(stream: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let mut vars = HashMap::new();
     let (_, code) = definition.term.generate(0, 1, &mut vars);
 
+    let crt = crate_token();
     let gen = quote! {
         {
            let #term_ident = #context.new_term_ref();
 
             let __swipl_frame = #context.open_frame();
 
-            #code
+            let result: #crt::result::PrologResult<()> = (||{ #code Ok(()) })();
 
-            __swipl_frame.close_frame();
-
-            #term_ident
+            match result {
+                Ok(()) => {
+                    __swipl_frame.close_frame();
+                    Ok(#term_ident)
+                },
+                Err(e) => {
+                    __swipl_frame.discard_frame();
+                    Err(e)
+                }
+            }
         }
     };
     //println!("{:#?}", gen);
@@ -126,25 +134,25 @@ impl Leaf {
             match self {
                 Self::Atom(ident) => {
                     let ident_str = format!("{}", ident);
-                    quote! {#into.unify(&#crt::atom::atomable(#ident_str)).unwrap();}
+                    quote! {#into.unify(&#crt::atom::atomable(#ident_str))?;}
                 }
                 Self::String(s) => {
-                    quote! {#into.unify(#s).unwrap();}
+                    quote! {#into.unify(#s)?;}
                 }
                 Self::Int(i) => {
                     // terrible, but necessary?
                     let int_str = format!("{}", i);
                     if int_str.chars().next().unwrap() == '-' {
-                        quote! {#into.unify(#i as i64).unwrap();}
+                        quote! {#into.unify(#i as i64)?;}
                     } else {
-                        quote! {#into.unify(#i as u64).unwrap();}
+                        quote! {#into.unify(#i as u64)?;}
                     }
                 }
                 Self::Float(f) => {
-                    quote! {#into.unify(#f as f64).unwrap();}
+                    quote! {#into.unify(#f as f64)?;}
                 }
                 Self::Bool(b) => {
-                    quote! {#into.unify(#b).unwrap();}
+                    quote! {#into.unify(#b)?;}
                 }
                 Self::Variable(v) => {
                     let var_name = format!("{}", v);
@@ -154,7 +162,7 @@ impl Leaf {
                         quote! {}
                     } else if let Some(var_id) = vars.get(&var_name) {
                         let var_ident = term_ident_from_id(*var_id);
-                        quote! {#into.unify(&#var_ident).unwrap();}
+                        quote! {#into.unify(&#var_ident)?;}
                     } else {
                         vars.insert(var_name, into_id);
                         // this term is already a variable. No need to do anything.
@@ -162,7 +170,7 @@ impl Leaf {
                     }
                 }
                 Self::TemplateExpr(expr) => {
-                    quote! {#into.unify(#expr).unwrap();}
+                    quote! {#into.unify(#expr)?;}
                 }
             },
         )
@@ -222,7 +230,7 @@ impl Functor {
         let functor_put = quote! {
             {
                 let functor = __swipl_frame.new_functor(#head_str, std::convert::TryInto::try_into(#arity).unwrap());
-                #into.unify(&functor).unwrap();
+                #into.unify(&functor)?;
             }
         };
 
@@ -242,7 +250,7 @@ impl Functor {
                 let terms_init = term_idents.iter().enumerate()
                     .map(|(ix, ident)| quote! {
                         let #ident = unsafe {#crt::term::Term::new(#term_id_ident + #ix, &__swipl_frame)};
-                        #into.unify_arg(#ix+1, &#ident).unwrap();
+                        #into.unify_arg(#ix+1, &#ident)?;
                     });
 
                 let mut terms_fill = Vec::with_capacity(arity);
@@ -347,7 +355,7 @@ impl List {
                 #elements_assign
 
                 let arr = [#(&#term_idents),*];
-                #into.unify(arr.as_ref()).unwrap();
+                #into.unify(arr.as_ref())?;
             },
         )
     }
@@ -420,10 +428,10 @@ impl Tuple {
 
         let final_setup = quote! {
             let cur_ident = __swipl_frame.new_term_ref();
-            cur_ident.unify(&#into).unwrap();
+            cur_ident.unify(&#into)?;
 
             let comma_functor = __swipl_frame.new_functor(",", 2);
-            cur_ident.unify(&comma_functor).unwrap();
+            cur_ident.unify(&comma_functor)?;
         };
 
         let mut terms_chain = Vec::with_capacity(len);
@@ -434,18 +442,18 @@ impl Tuple {
             // - make current the second element
             let term_ident = &term_idents[i];
             terms_chain.push(quote! {
-                cur_ident.unify(&comma_functor).unwrap();
-                cur_ident.unify_arg(1, &#term_ident).unwrap();
+                cur_ident.unify(&comma_functor)?;
+                cur_ident.unify_arg(1, &#term_ident)?;
                 let next_ident = __swipl_frame.new_term_ref();
-                cur_ident.unify_arg(2, &next_ident).unwrap();
-                cur_ident.put(&next_ident).unwrap();
+                cur_ident.unify_arg(2, &next_ident)?;
+                cur_ident.put(&next_ident)?;
             });
         }
 
         // for the last element, we only need to put it in the second position
         let last_elt = &term_idents[len - 1];
         terms_chain.push(quote! {
-            cur_ident.unify(&#last_elt).unwrap();
+            cur_ident.unify(&#last_elt)?;
         });
 
         // build up tuple
