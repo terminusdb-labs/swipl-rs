@@ -356,8 +356,11 @@ unifiable! {
                 let error_term = ctx.new_term_ref();
                 PL_unify(error_term.term_ptr(), error_term_ref);
                 PL_clear_exception();
-                // todo unwrap bad
-                let comparison_term = (term!{ctx: error(type_error(integer, _), _)}).unwrap();
+                let comparison_term = match term!{ctx: error(type_error(integer, _), _)} {
+                    Ok(t) => t,
+                    // let wrapper pick up the error
+                    Err(_) => return false
+                };
                 // really should be a non-unifying compare but meh
                 if comparison_term.unify(&error_term).is_err() {
                     PL_raise_exception(error_term.term_ptr());
@@ -389,8 +392,11 @@ term_getable! {
                 let error_term = ctx.new_term_ref();
                 PL_unify(error_term.term_ptr(), error_term_ref);
                 PL_clear_exception();
-                // TODO unwrap bad
-                let comparison_term = (term!{ctx: error(domain_error(not_less_than_zero, _), _)}).unwrap();
+                let comparison_term = match term!{ctx: error(domain_error(not_less_than_zero, _), _)} {
+                    Ok(r) => r,
+                    // let wrapper pick up the error
+                    Err(_) => return None
+                };
                 // really should be a non-unifying compare but meh
                 if comparison_term.unify(&error_term).is_err() {
                     PL_raise_exception(error_term.term_ptr());

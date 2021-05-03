@@ -501,7 +501,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
             Ok(ok) => Ok(ok),
             Err(e) => {
                 let reset_term = self.new_term_ref();
-                let exception_term = e.into_prolog_exception(self);
+                let exception_term = e.into_prolog_exception(self)?;
                 let result = self.raise_exception(&exception_term);
 
                 unsafe {
@@ -518,17 +518,16 @@ pub trait IntoPrologException {
     fn into_prolog_exception<'a, 'b, T: QueryableContextType>(
         self,
         context: &'a Context<'b, T>,
-    ) -> Term<'a>;
+    ) -> PrologResult<Term<'a>>;
 }
 
 impl IntoPrologException for std::io::Error {
     fn into_prolog_exception<'a, 'b, T: QueryableContextType>(
         self,
         context: &'a Context<'b, T>,
-    ) -> Term<'a> {
+    ) -> PrologResult<Term<'a>> {
         let msg = format!("{}", self);
-        // TODO unwrap bad
-        (term! {context: error(rust_io_error(#msg))}).unwrap()
+        term! {context: error(rust_io_error(#msg))}
     }
 }
 
@@ -651,14 +650,12 @@ impl<'a> Context<'a, Query> {
 
     pub fn cut(mut self) {
         self.assert_activated();
-        // TODO handle exceptions
         unsafe { PL_cut_query(self.context.qid) };
         self.context.closed = true;
     }
 
     pub fn discard(mut self) {
         self.assert_activated();
-        // TODO handle exceptions
 
         unsafe { PL_close_query(self.context.qid) };
         self.context.closed = true;
