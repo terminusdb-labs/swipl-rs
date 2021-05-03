@@ -3,8 +3,16 @@ use crate::fli::*;
 use crate::module::*;
 use crate::result::*;
 use crate::term::*;
+use crate::predicate::*;
+use thiserror::Error;
 
 use std::convert::TryInto;
+
+#[derive(Error, Debug)]
+pub enum PredicateWrapError {
+    #[error("predicate has arity {actual} but {expected} was required")]
+    WrongArity{expected: u16, actual: u16}
+}
 
 #[derive(Clone, Copy)]
 pub struct CallablePredicate<const N: usize> {
@@ -15,6 +23,16 @@ impl<const N: usize> CallablePredicate<N> {
     pub unsafe fn wrap(predicate: predicate_t) -> Self {
         // no check for arity or if the predicate even exists!
         Self { predicate }
+    }
+
+    pub fn new<P: ActiveEnginePromise>(predicate: &Predicate, promise: &P) -> Result<Self, PredicateWrapError> {
+        let arity = predicate.arity(promise);
+        if arity as usize != N {
+            Err(PredicateWrapError::WrongArity{expected: N as u16, actual: arity})
+        }
+        else {
+            Ok(unsafe { Self::wrap(predicate.predicate_ptr()) })
+        }
     }
 }
 
@@ -140,8 +158,8 @@ mod tests {
         let context: Context<_> = activation.into();
 
         let term = term! {context: flurps(flargh)}?;
-        context.call_once(pred!(writeq/1), [&term]).unwrap();
-        context.call_once(pred!(nl/0), []).unwrap();
+        context.call_once(pred!(writeq / 1), [&term]).unwrap();
+        context.call_once(pred!(nl / 0), []).unwrap();
 
         Ok(())
     }
