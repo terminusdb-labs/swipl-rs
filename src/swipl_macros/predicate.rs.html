@@ -829,7 +829,7 @@
             #<span class="ident">visibility</span> <span class="kw">fn</span> #<span class="ident">registration_name</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
                 <span class="comment">// unsafe justification: register_foreign_in_module is unsafe due to the possibility that someone registers a function that is not actually expecting to handle a prolog call, and is not set up right for it. But we&#39;re generating this code ourselves, so we should have taken care of all preconditions.</span>
                 <span class="kw">unsafe</span> {
-                    #<span class="ident">crt</span>::<span class="ident">engine</span>::<span class="ident">register_foreign_in_module</span>(
+                    #<span class="ident">crt</span>::<span class="ident">init</span>::<span class="ident">register_foreign_in_module</span>(
                         #<span class="ident">module_lit</span>,
                         #<span class="ident">name_lit</span>,
                         <span class="ident">std</span>::<span class="ident">convert</span>::<span class="ident">TryInto</span>::<span class="op">&lt;</span><span class="ident">u16</span><span class="op">&gt;</span>::<span class="ident">try_into</span>(#<span class="ident">arity</span>).<span class="ident">expect</span>(<span class="string">&quot;arity does not fit in an u16&quot;</span>),
@@ -1076,7 +1076,7 @@
             #<span class="ident">visibility</span> <span class="kw">fn</span> #<span class="ident">registration_name</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
                 <span class="comment">// unsafe justification: register_foreign_in_module is unsafe due to the possibility that someone registers a function that is not actually expecting to handle a prolog call, and is not set up right for it. But we&#39;re generating this code ourselves, so we should have taken care of all preconditions.</span>
                 <span class="kw">unsafe</span> {
-                    #<span class="ident">crt</span>::<span class="ident">engine</span>::<span class="ident">register_foreign_in_module</span>(
+                    #<span class="ident">crt</span>::<span class="ident">init</span>::<span class="ident">register_foreign_in_module</span>(
                         #<span class="ident">module_lit</span>,
                         #<span class="ident">name_lit</span>,
                         <span class="ident">std</span>::<span class="ident">convert</span>::<span class="ident">TryInto</span>::<span class="op">&lt;</span><span class="ident">u16</span><span class="op">&gt;</span>::<span class="ident">try_into</span>(#<span class="ident">arity</span>).<span class="ident">expect</span>(<span class="string">&quot;arity does not fit in an u16&quot;</span>),

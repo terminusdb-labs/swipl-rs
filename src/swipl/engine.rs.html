@@ -216,143 +216,51 @@
 <span id="213">213</span>
 <span id="214">214</span>
 <span id="215">215</span>
-<span id="216">216</span>
-<span id="217">217</span>
-<span id="218">218</span>
-<span id="219">219</span>
-<span id="220">220</span>
-<span id="221">221</span>
-<span id="222">222</span>
-<span id="223">223</span>
-<span id="224">224</span>
-<span id="225">225</span>
-<span id="226">226</span>
-<span id="227">227</span>
-<span id="228">228</span>
-<span id="229">229</span>
-<span id="230">230</span>
-<span id="231">231</span>
-<span id="232">232</span>
-<span id="233">233</span>
-<span id="234">234</span>
-<span id="235">235</span>
-<span id="236">236</span>
-<span id="237">237</span>
-<span id="238">238</span>
-<span id="239">239</span>
-<span id="240">240</span>
-<span id="241">241</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="kw">use</span> <span class="ident">lazy_static</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">convert</span>::<span class="ident">TryInto</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ffi</span>::<span class="ident">CString</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">os</span>::<span class="ident">raw</span>::{<span class="ident">c_int</span>, <span class="ident">c_void</span>};
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::{<span class="ident">atomic</span>, <span class="ident">Arc</span>, <span class="ident">RwLock</span>};
+<span class="doccomment">//! Prolog engines.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! A single process can run multiple prolog engines. Prolog engines</span>
+<span class="doccomment">//! are somewhat equivalent to a prolog thread. However, it is</span>
+<span class="doccomment">//! possible to move them between threads, or run multiple engines on</span>
+<span class="doccomment">//! the same thread. From the perspective of prolog though, a single</span>
+<span class="doccomment">//! engine corresponds with a single flow of execution.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! When using swipl-rs to implement foreign predicates as part of a</span>
+<span class="doccomment">//! loadable module, you generally do not have to worry about prolog</span>
+<span class="doccomment">//! engines, unless you&#39;re spawning extra threads.</span>
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::<span class="ident">atomic</span>;
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">fli</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">init</span>::<span class="kw-2">*</span>;
 
-<span class="macro">lazy_static</span><span class="macro">!</span> {
-    <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">INITIALIZATION_STATE</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">RwLock</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Arc</span>::<span class="ident">new</span>(<span class="ident">RwLock</span>::<span class="ident">new</span>(<span class="bool-val">false</span>));
-}
-
-<span class="kw">static</span> <span class="ident">ARG0</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [<span class="ident">u8</span>] <span class="op">=</span> <span class="string">b&quot;rust-swipl\0&quot;</span>; <span class="comment">// fake program name</span>
-<span class="kw">static</span> <span class="ident">ARG1</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [<span class="ident">u8</span>] <span class="op">=</span> <span class="string">b&quot;--quiet\0&quot;</span>; <span class="comment">// suppress swipl banner printing</span>
-
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">initialize_swipl</span>() {
-    {
-        <span class="kw">let</span> <span class="ident">initialized</span> <span class="op">=</span> <span class="ident">INITIALIZATION_STATE</span>.<span class="ident">read</span>().<span class="ident">unwrap</span>();
-        <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">initialized</span> {
-            <span class="kw">return</span>;
-        }
-    }
-
-    <span class="comment">// lock the rest of this initialization function to prevent concurrent initializers. Ideally this should happen in swipl itself, but unfortunately, it doesn&#39;t.</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">initialized</span> <span class="op">=</span> <span class="ident">INITIALIZATION_STATE</span>.<span class="ident">write</span>().<span class="ident">unwrap</span>();
-    <span class="comment">// There&#39;s actually a slight chance that initialization happened just now by some other thread. So check again.</span>
-    <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">initialized</span> {
-        <span class="kw">return</span>;
-    }
-
-    <span class="comment">// TOOD we just pick &quot;rust-swipl&quot; as a fake program name here. This seems to work fine. But what we should really do is pass along the actual argv[0].</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">args</span>: [<span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">i8</span>; <span class="number">3</span>] <span class="op">=</span> [
-        <span class="ident">ARG0</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">i8</span>,
-        <span class="ident">ARG1</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">i8</span>,
-        <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>(),
-    ];
-    <span class="comment">// unsafe justification: this initializes the swipl library and is idempotent</span>
-    <span class="comment">// That said, there is actually a chance that some non-rust code is concurrently initializing prolog, which may lead to errors. There is unfortunately nothing that can be done about this.</span>
-    <span class="kw">unsafe</span> { <span class="ident">PL_initialise</span>(<span class="number">2</span>, <span class="ident">args</span>.<span class="ident">as_mut_ptr</span>()) };
-    <span class="kw-2">*</span><span class="ident">initialized</span> <span class="op">=</span> <span class="bool-val">true</span>;
-}
-
-<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">register_foreign_in_module</span>(
-    <span class="ident">module</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>,
-    <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-    <span class="ident">arity</span>: <span class="ident">u16</span>,
-    <span class="ident">deterministic</span>: <span class="ident">bool</span>,
-    <span class="ident">meta</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>,
-    <span class="ident">function_ptr</span>: <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span>(<span class="ident">terms</span>: <span class="ident">term_t</span>, <span class="ident">arity</span>: <span class="ident">c_int</span>, <span class="ident">control</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">isize</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-    <span class="kw">if</span> <span class="ident">meta</span>.<span class="ident">is_some</span>() <span class="op">&amp;&amp;</span> <span class="ident">meta</span>.<span class="ident">unwrap</span>().<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">arity</span> <span class="kw">as</span> <span class="ident">usize</span> {
-        <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;supplied a meta argument that is not of equal length to the arity&quot;</span>);
-    }
-
-    <span class="comment">// We get a handle to the read guard of initialization state.</span>
-    <span class="comment">// This ensures that we&#39;re either in the pre-initialization state</span>
-    <span class="comment">// or the post-initialization state, but not currently</span>
-    <span class="comment">// initializing.</span>
-    <span class="comment">// if unitialized, no further checks are needed.</span>
-    <span class="comment">// but if initialized, we need to ensure we&#39;re actually on an engine currently.</span>
-    <span class="kw">let</span> <span class="ident">initialized</span> <span class="op">=</span> <span class="ident">INITIALIZATION_STATE</span>.<span class="ident">read</span>().<span class="ident">unwrap</span>();
-    <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">initialized</span> <span class="op">&amp;&amp;</span> <span class="ident">current_engine_ptr</span>().<span class="ident">is_null</span>() {
-        <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;Tried to register a foreign predicate in a context where swipl is initialized, but no engine is active.&quot;</span>);
-    }
-
-    <span class="kw">let</span> <span class="ident">c_module</span> <span class="op">=</span> <span class="ident">module</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">module</span><span class="op">|</span> <span class="ident">CString</span>::<span class="ident">new</span>(<span class="ident">module</span>).<span class="ident">unwrap</span>());
-    <span class="kw">let</span> <span class="ident">c_name</span> <span class="op">=</span> <span class="ident">CString</span>::<span class="ident">new</span>(<span class="ident">name</span>).<span class="ident">unwrap</span>();
-    <span class="kw">let</span> <span class="ident">c_meta</span> <span class="op">=</span> <span class="ident">meta</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">m</span><span class="op">|</span> <span class="ident">CString</span>::<span class="ident">new</span>(<span class="ident">m</span>).<span class="ident">unwrap</span>());
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">PL_FA_VARARGS</span>;
-    <span class="kw">if</span> <span class="op">!</span><span class="ident">deterministic</span> {
-        <span class="ident">flags</span> <span class="op">|</span><span class="op">=</span> <span class="ident">PL_FA_NONDETERMINISTIC</span>;
-    }
-
-    <span class="comment">// an unfortunate need for transmute to make the fli eat the pointer</span>
-    <span class="kw">let</span> <span class="ident">converted_function_ptr</span> <span class="op">=</span> <span class="ident">std</span>::<span class="ident">mem</span>::<span class="ident">transmute</span>(<span class="ident">function_ptr</span>);
-    <span class="kw">let</span> <span class="ident">c_module_ptr</span> <span class="op">=</span> <span class="ident">c_module</span>
-        .<span class="ident">as_ref</span>()
-        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">m</span><span class="op">|</span> <span class="ident">m</span>.<span class="ident">as_ptr</span>())
-        .<span class="ident">unwrap_or</span>(<span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>());
-
-    <span class="ident">PL_register_foreign_in_module</span>(
-        <span class="ident">c_module_ptr</span>,
-        <span class="ident">c_name</span>.<span class="ident">as_ptr</span>(),
-        <span class="ident">arity</span> <span class="kw">as</span> <span class="ident">c_int</span>,
-        <span class="prelude-val">Some</span>(<span class="ident">converted_function_ptr</span>),
-        <span class="ident">flags</span>.<span class="ident">try_into</span>().<span class="ident">unwrap</span>(),
-        <span class="ident">c_meta</span>
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">m</span><span class="op">|</span> <span class="ident">m</span>.<span class="ident">as_ptr</span>())
-            .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null</span>()),
-    ) <span class="op">=</span><span class="op">=</span> <span class="number">1</span>
-}
-
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">initialize_swipl_noengine</span>() {
-    <span class="ident">initialize_swipl</span>();
-    <span class="comment">// unsafe justification: setting engine to nothing should always be allowed</span>
-    <span class="kw">unsafe</span> { <span class="ident">PL_set_engine</span>(<span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>(), <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>()) };
-}
-
+<span class="doccomment">/// A Prolog engine.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Prolog engines can be active or inactive. When activated, an</span>
+<span class="doccomment">/// `EngineActivation` is returned, which when dropped will set the</span>
+<span class="doccomment">/// engine back into an inactive state.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Engine</span> {
     <span class="ident">engine_ptr</span>: <span class="ident">PL_engine_t</span>,
     <span class="ident">active</span>: <span class="ident">atomic</span>::<span class="ident">AtomicBool</span>,
 }
 
+<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">Send</span> <span class="kw">for</span> <span class="ident">Engine</span> {}
+<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">Sync</span> <span class="kw">for</span> <span class="ident">Engine</span> {}
+
+<span class="doccomment">/// A prolog engine activation.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// When activating a prolog engine, this object is returned. The</span>
+<span class="doccomment">/// object is guaranteed to not outlive the engine it was created</span>
+<span class="doccomment">/// from. Furthermore, any one engine can have at most one activation</span>
+<span class="doccomment">/// in existence at any time, and each thread can have at most one</span>
+<span class="doccomment">/// engine activated on it.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">EngineActivation</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="ident">engine</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Engine</span>,
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">EngineActivation</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Returns the engine pointer of the engine associated with this activation.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">engine_ptr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PL_engine_t</span> {
         <span class="self">self</span>.<span class="ident">engine</span>.<span class="ident">engine_ptr</span>
     }
@@ -361,6 +269,10 @@
 <span class="comment">//const PL_ENGINE_MAIN: PL_engine_t = 1 as PL_engine_t;</span>
 <span class="kw">const</span> <span class="ident">PL_ENGINE_CURRENT</span>: <span class="ident">PL_engine_t</span> <span class="op">=</span> <span class="number">2</span> <span class="kw">as</span> <span class="ident">PL_engine_t</span>;
 
+<span class="doccomment">/// Returns the current engine pointer.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This is unsafe because behavior of this function is undefined if</span>
+<span class="doccomment">/// SWI-Prolog has not yet been activated.</span>
 <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">current_engine_ptr</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PL_engine_t</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">current</span> <span class="op">=</span> <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>();
     <span class="comment">// This following bit is what makes this function unsafe.</span>
@@ -371,8 +283,11 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Engine</span> {
+    <span class="doccomment">/// Create a new prolog engine.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If SWI-Prolog has not been initialized yet, it&#39;ll be done here.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Engine</span> {
-        <span class="ident">initialize_swipl</span>();
+        <span class="ident">initialize_swipl_noengine</span>();
         <span class="comment">// unsafe justification: creating a swipl engine is allowed from any thread as long as swipl has been initialized</span>
         <span class="kw">let</span> <span class="ident">engine_ptr</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">PL_create_engine</span>(<span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>()) };
 
@@ -382,8 +297,16 @@
         }
     }
 
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">from_main</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Engine</span> {
+        <span class="ident">Engine</span> {
+            <span class="ident">engine_ptr</span>: <span class="number">1</span> <span class="kw">as</span> <span class="ident">PL_engine_t</span>,
+            <span class="ident">active</span>: <span class="ident">atomic</span>::<span class="ident">AtomicBool</span>::<span class="ident">new</span>(<span class="bool-val">false</span>),
+        }
+    }
+
+    <span class="doccomment">/// Returns true if some engine is currently active on this thread.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">some_engine_active</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-        <span class="ident">initialize_swipl</span>();
+        <span class="ident">initialize_swipl_noengine</span>();
         <span class="comment">// unsafe justification: swipl was initialized above so engine should be queryable</span>
         <span class="kw">let</span> <span class="ident">current</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">current_engine_ptr</span>() };
 
@@ -394,10 +317,33 @@
         }
     }
 
+    <span class="doccomment">/// Returns true if this engine is the engine currently active on this thread.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_active</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-        <span class="ident">is_engine_active</span>(<span class="self">self</span>.<span class="ident">engine_ptr</span>)
+        <span class="kw">unsafe</span> { <span class="ident">is_engine_active</span>(<span class="self">self</span>.<span class="ident">engine_ptr</span>) }
     }
 
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">set_activated</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">EngineActivation</span> {
+        <span class="kw">if</span> <span class="self">self</span>
+            .<span class="ident">active</span>
+            .<span class="ident">compare_exchange</span>(
+                <span class="bool-val">false</span>,
+                <span class="bool-val">true</span>,
+                <span class="ident">atomic</span>::<span class="ident">Ordering</span>::<span class="ident">Relaxed</span>,
+                <span class="ident">atomic</span>::<span class="ident">Ordering</span>::<span class="ident">Relaxed</span>,
+            )
+            .<span class="ident">is_err</span>()
+        {
+            <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;engine already activated&quot;</span>);
+        }
+
+        <span class="ident">EngineActivation</span> { <span class="ident">engine</span>: <span class="self">self</span> }
+    }
+
+    <span class="doccomment">/// Activate this engine.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This will panic if an engine is already active on this</span>
+    <span class="doccomment">/// thread. Otherwise, it&#39;ll return an `EngineActivation` whose</span>
+    <span class="doccomment">/// lifetime is bound to this engine.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">activate</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">EngineActivation</span> {
         <span class="kw">if</span> <span class="self">Self</span>::<span class="ident">some_engine_active</span>() {
             <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;tried to activate engine on a thread that already has an active engine&quot;</span>);
@@ -428,9 +374,11 @@
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_engine_active</span>(<span class="ident">engine</span>: <span class="ident">PL_engine_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-    <span class="comment">// unsafe justification: swipl should have been initialized as we have an engine handle here</span>
-    <span class="kw">let</span> <span class="ident">current</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">current_engine_ptr</span>() };
+<span class="doccomment">/// Checks if the given engine pointer is the engine that is currently active on this thread.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This is unsafe because behavior is undefined if SWI-Prolog has not yet been initialized.</span>
+<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">is_engine_active</span>(<span class="ident">engine</span>: <span class="ident">PL_engine_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">let</span> <span class="ident">current</span> <span class="op">=</span> <span class="ident">current_engine_ptr</span>();
 
     <span class="ident">current</span> <span class="op">=</span><span class="op">=</span> <span class="ident">engine</span>
 }
