@@ -1,3 +1,17 @@
+//! Prolog atoms.
+//!
+//! Atoms are a core datatype in prolog. An atom is a string that is
+//! kept around in a lookup table. Each occurence of an atom for the
+//! same string points at the same object. This allows for easy
+//! comparison.
+//!
+//! Atoms are reference-counted. When nothing refers to an atom
+//! anymore, the atom may be garbage collected, freeing up the memory
+//! of the string.
+//!
+//! This module provides functions and types for interacting with
+//! prolog atoms.
+
 use super::context::*;
 use super::fli::*;
 use super::result::*;
@@ -6,16 +20,33 @@ use crate::{term_getable, term_putable, unifiable};
 use std::convert::TryInto;
 use std::os::raw::c_char;
 
+/// A wrapper for a prolog atom.
+///
+/// When created, the underlying atom will have its reference count
+/// increased. When dropped, the reference count will decrease.
 #[derive(PartialEq, Eq, Debug)]
 pub struct Atom {
     atom: atom_t,
 }
 
 impl Atom {
+    /// Wrap an `atom_t`, which is how the SWI-Prolog fli represents atoms.
+    ///
+    /// This is unsafe because no check is done to ensure that the
+    /// atom_t indeed points at a valid atom. The caller will have to
+    /// ensure that this is the case.
     pub unsafe fn wrap(atom: atom_t) -> Atom {
         Atom { atom }
     }
 
+    /// Create a new atom from the given string.
+    ///
+    /// If the atom already exists, this will raise the reference
+    /// count on that atom and then return the existing atom.
+    ///
+    /// This is unsafe because no check is done to ensure we are in a
+    /// context where atoms may be created. The caller will have to
+    /// ensure that a prolog engine is active.
     pub unsafe fn new(name: &str) -> Atom {
         // there's a worrying bit of information in the documentation.
         // It says that in some cases for small strings,
@@ -43,10 +74,16 @@ impl Atom {
         Atom::wrap(atom)
     }
 
+    /// Return the underlying `atom_t` which SWI-Prolog uses to refer to the atom.
     pub fn atom_ptr(&self) -> atom_t {
         self.atom
     }
 
+    /// Retrieve the name of this atom, that is, the string with which it was created.
+    ///
+    /// This requires an `ActiveEnginePromise` to be passed in to
+    /// ensure that we are indeed in a context where atoms may be
+    /// inspected.
     pub fn name<P: ActiveEnginePromise>(&self, _: &P) -> &str {
         // TODO we're just assuming that what we get out of prolog is
         // utf-8. but it's not. On windows, a different encoding is
@@ -107,6 +144,10 @@ unifiable! {
     }
 }
 
+/// Get an atom out of a term.
+///
+/// This is unsafe because we don't check if the term is part of the
+/// active engine.
 #[allow(unused_unsafe)]
 pub unsafe fn get_atom<'a, F, R>(term: &Term<'a>, func: F) -> PrologResult<R>
 where
@@ -150,6 +191,7 @@ term_putable! {
     }
 }
 
+/// A type that allows easy conversion of strings from and to an atom.
 pub enum Atomable<'a> {
     Str(&'a str),
     String(String),
@@ -168,10 +210,12 @@ impl<'a> From<String> for Atomable<'a> {
 }
 
 impl<'a> Atomable<'a> {
+    /// Create a new Atomable out of a String or an &str.
     pub fn new<T: Into<Atomable<'a>>>(s: T) -> Self {
         s.into()
     }
 
+    /// Return the name.
     pub fn name(&self) -> &str {
         match self {
             Self::Str(s) => s,
@@ -179,6 +223,7 @@ impl<'a> Atomable<'a> {
         }
     }
 
+    /// Convert this Atomable into a new Atomable which is guaranteed to own its data.
     pub fn owned(&self) -> Atomable<'static> {
         match self {
             Self::Str(s) => Atomable::String(s.to_string()),
@@ -187,13 +232,23 @@ impl<'a> Atomable<'a> {
     }
 }
 
+/// Wrapper for `Atomable::new`.
 pub fn atomable<'a, T: Into<Atomable<'a>>>(s: T) -> Atomable<'a> {
     Atomable::new(s)
 }
 
+/// Trait for types which can be turned into an `Atom`.
 pub trait IntoAtom {
+    /// Turn this object into an `Atom`.
+    ///
+    /// The second argument ensures that this function is called in a
+    /// context where atoms are allowed to be created.
     fn into_atom<P: ActiveEnginePromise>(self, promise: &P) -> Atom;
 
+    /// Turn this object into an `Atom`, without doing any safety checks.
+    ///
+    /// This is unsafe, because we may not be in a context where atom
+    /// handling is possible.
     unsafe fn into_atom_unsafe(self) -> Atom
     where
         Self: Sized,
@@ -235,7 +290,12 @@ impl<'a> IntoAtom for &'a str {
     }
 }
 
+/// Trait for types which can be turned into an `Atom` from a borrow.
 pub trait AsAtom {
+    /// Turn the borrowed object into an `Atom`.
+    ///
+    /// The second argument ensures that this function is called in a
+    /// context where atoms are allowed to be created.
     fn as_atom<P: ActiveEnginePromise>(&self, promise: &P) -> Atom;
 }
 
@@ -272,6 +332,16 @@ unifiable! {
     }
 }
 
+/// Get an atomable out of a term.
+///
+/// This is very much like `get_atom`, but instead of retrieving the
+/// atom, we retrieve the atom's name as an &str, wrapped by an
+/// `Atomable`. This means the atom reference count does not have to
+/// be manipulated, and it should be slightly faster than first
+/// getting the atom and then extracting its name.
+///
+/// This is unsafe because we don't check if the term is part of the
+/// active engine.
 #[allow(unused_unsafe)]
 pub unsafe fn get_atomable<'a, F, R>(term: &Term<'a>, func: F) -> PrologResult<R>
 where

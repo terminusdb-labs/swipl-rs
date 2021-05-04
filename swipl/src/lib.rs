@@ -1,3 +1,13 @@
+//! swipl provides a high-level interface to SWI-Prolog. It allows you
+//! to write modules or foreign libraries which will be loaded by
+//! SWI-Prolog to to provide predicates written in rust. It can also
+//! be used to embed SWI-Prolog in a rust application.
+//!
+//! The code in this crate is divided up into multiple modules. The easiest way to make use of it all is to use the prelude module, which re-exports the contents of all the other modules:
+//! ```
+//! use swipl::prelude::*;
+//! ```
+
 pub mod consts;
 pub mod fli;
 

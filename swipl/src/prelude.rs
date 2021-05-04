@@ -1,3 +1,4 @@
+//! Module which re-exports all public symbols in this crate, for easy importing.
 pub use crate::atom::*;
 pub use crate::blob::*;
 pub use crate::callable::*;

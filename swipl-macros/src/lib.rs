@@ -1,3 +1,5 @@
+//! swipl-macros provides procedural macros for the swipl crate.
+
 mod kw;
 mod util;
 
@@ -222,12 +224,40 @@ pub fn pred(stream: TokenStream) -> TokenStream {
 ///     }
 /// }
 /// ```
-
 #[proc_macro]
 pub fn predicates(stream: TokenStream) -> TokenStream {
     predicate::predicates_macro(stream).into()
 }
 
+/// Generate a term from a rust expression.
+///
+/// This macro takes two arguments, a context to generate the term in,
+/// and a rust expression representing the prolog term to generate..
+///
+/// The macro returns a `PrologResult<Term>` containing new term,
+/// created through `context.new_term_ref()`, which contains a prolog
+/// term corresponding to the description. The `term!` macro cannot
+/// actually fail with a PrologFailure, but it is possible for a
+/// resource limit exception to be triggered by one of the underlying
+/// calls into prolog.
+///
+/// # Examples
+/// Generate a nested functor term:
+/// ```ignore
+/// let term = term!{context: foo(bar(baz, quux))}?;
+///```
+///
+/// Embed a value in the term:
+/// ```ignore
+/// let num = 42;
+/// let term = term!{context: foo(#42)}?;
+/// ```
+///
+/// Embed a term in the term:
+/// ```ignore
+/// let inner = context.new_term_ref();
+/// let term = term!{context: foo(#&inner)}?;
+/// ```
 #[proc_macro]
 pub fn term(stream: TokenStream) -> TokenStream {
     term::term_macro(stream).into()
