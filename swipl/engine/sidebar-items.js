@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["current_engine_ptr",""],["initialize_swipl",""],["initialize_swipl_noengine",""],["is_engine_active",""],["register_foreign_in_module",""]],"struct":[["Engine",""],["EngineActivation",""]]});
