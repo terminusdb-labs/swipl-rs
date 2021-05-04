@@ -2,8 +2,8 @@
 //!
 //! A single process can run multiple prolog engines. Prolog engines
 //! are somewhat equivalent to a prolog thread. However, it is
-//! possible to move them between threads, or run multiple engiens on
-//! the same threads. From the perspective of prolog though, a single
+//! possible to move them between threads, or run multiple engines on
+//! the same thread. From the perspective of prolog though, a single
 //! engine corresponds with a single flow of execution.
 //!
 //! When using swipl-rs to implement foreign predicates as part of a
