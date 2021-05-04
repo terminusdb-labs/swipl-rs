@@ -22,7 +22,27 @@
 <span id="19">19</span>
 <span id="20">20</span>
 <span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
 </pre><div class="example-wrap"><pre class="rust ">
+<span class="doccomment">//! swipl provides a high-level interface to SWI-Prolog. It allows you</span>
+<span class="doccomment">//! to write modules or foreign libraries which will be loaded by</span>
+<span class="doccomment">//! SWI-Prolog to to provide predicates written in rust. It can also</span>
+<span class="doccomment">//! be used to embed SWI-Prolog in a rust application.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! The code in this crate is divided up into multiple modules. The easiest way to make use of it all is to use the prelude module, which re-exports the contents of all the other modules:</span>
+<span class="doccomment">//! ```</span>
+<span class="doccomment">//! use swipl::prelude::*;</span>
+<span class="doccomment">//! ```</span>
+
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">consts</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">fli</span>;
 

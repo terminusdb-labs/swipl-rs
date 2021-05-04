@@ -511,7 +511,91 @@
 <span id="508">508</span>
 <span id="509">509</span>
 <span id="510">510</span>
+<span id="511">511</span>
+<span id="512">512</span>
+<span id="513">513</span>
+<span id="514">514</span>
+<span id="515">515</span>
+<span id="516">516</span>
+<span id="517">517</span>
+<span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
+<span id="521">521</span>
+<span id="522">522</span>
+<span id="523">523</span>
+<span id="524">524</span>
+<span id="525">525</span>
+<span id="526">526</span>
+<span id="527">527</span>
+<span id="528">528</span>
+<span id="529">529</span>
+<span id="530">530</span>
+<span id="531">531</span>
+<span id="532">532</span>
+<span id="533">533</span>
+<span id="534">534</span>
+<span id="535">535</span>
+<span id="536">536</span>
+<span id="537">537</span>
+<span id="538">538</span>
+<span id="539">539</span>
+<span id="540">540</span>
+<span id="541">541</span>
+<span id="542">542</span>
+<span id="543">543</span>
+<span id="544">544</span>
+<span id="545">545</span>
+<span id="546">546</span>
+<span id="547">547</span>
+<span id="548">548</span>
+<span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
+<span id="552">552</span>
+<span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
+<span id="556">556</span>
+<span id="557">557</span>
+<span id="558">558</span>
+<span id="559">559</span>
+<span id="560">560</span>
+<span id="561">561</span>
+<span id="562">562</span>
+<span id="563">563</span>
+<span id="564">564</span>
+<span id="565">565</span>
+<span id="566">566</span>
+<span id="567">567</span>
+<span id="568">568</span>
+<span id="569">569</span>
+<span id="570">570</span>
+<span id="571">571</span>
+<span id="572">572</span>
+<span id="573">573</span>
+<span id="574">574</span>
+<span id="575">575</span>
+<span id="576">576</span>
+<span id="577">577</span>
+<span id="578">578</span>
+<span id="579">579</span>
+<span id="580">580</span>
 </pre><div class="example-wrap"><pre class="rust ">
+<span class="doccomment">//! Prolog atoms.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! Atoms are a core datatype in prolog. An atom is a string that is</span>
+<span class="doccomment">//! kept around in a lookup table. Each occurence of an atom for the</span>
+<span class="doccomment">//! same string points at the same object. This allows for easy</span>
+<span class="doccomment">//! comparison.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! Atoms are reference-counted. When nothing refers to an atom</span>
+<span class="doccomment">//! anymore, the atom may be garbage collected, freeing up the memory</span>
+<span class="doccomment">//! of the string.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! This module provides functions and types for interacting with</span>
+<span class="doccomment">//! prolog atoms.</span>
+
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">context</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">fli</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">result</span>::<span class="kw-2">*</span>;
@@ -520,16 +604,33 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">convert</span>::<span class="ident">TryInto</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">os</span>::<span class="ident">raw</span>::<span class="ident">c_char</span>;
 
+<span class="doccomment">/// A wrapper for a prolog atom.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// When created, the underlying atom will have its reference count</span>
+<span class="doccomment">/// increased. When dropped, the reference count will decrease.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Atom</span> {
     <span class="ident">atom</span>: <span class="ident">atom_t</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Atom</span> {
+    <span class="doccomment">/// Wrap an `atom_t`, which is how the SWI-Prolog fli represents atoms.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This is unsafe because no check is done to ensure that the</span>
+    <span class="doccomment">/// atom_t indeed points at a valid atom. The caller will have to</span>
+    <span class="doccomment">/// ensure that this is the case.</span>
     <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">wrap</span>(<span class="ident">atom</span>: <span class="ident">atom_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Atom</span> {
         <span class="ident">Atom</span> { <span class="ident">atom</span> }
     }
 
+    <span class="doccomment">/// Create a new atom from the given string.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If the atom already exists, this will raise the reference</span>
+    <span class="doccomment">/// count on that atom and then return the existing atom.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This is unsafe because no check is done to ensure we are in a</span>
+    <span class="doccomment">/// context where atoms may be created. The caller will have to</span>
+    <span class="doccomment">/// ensure that a prolog engine is active.</span>
     <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Atom</span> {
         <span class="comment">// there&#39;s a worrying bit of information in the documentation.</span>
         <span class="comment">// It says that in some cases for small strings,</span>
@@ -557,10 +658,16 @@
         <span class="ident">Atom</span>::<span class="ident">wrap</span>(<span class="ident">atom</span>)
     }
 
+    <span class="doccomment">/// Return the underlying `atom_t` which SWI-Prolog uses to refer to the atom.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">atom_ptr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">atom_t</span> {
         <span class="self">self</span>.<span class="ident">atom</span>
     }
 
+    <span class="doccomment">/// Retrieve the name of this atom, that is, the string with which it was created.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This requires an `ActiveEnginePromise` to be passed in to</span>
+    <span class="doccomment">/// ensure that we are indeed in a context where atoms may be</span>
+    <span class="doccomment">/// inspected.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">ActiveEnginePromise</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw">_</span>: <span class="kw-2">&amp;</span><span class="ident">P</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">str</span> {
         <span class="comment">// TODO we&#39;re just assuming that what we get out of prolog is</span>
         <span class="comment">// utf-8. but it&#39;s not. On windows, a different encoding is</span>
@@ -621,6 +728,10 @@
     }
 }
 
+<span class="doccomment">/// Get an atom out of a term.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This is unsafe because we don&#39;t check if the term is part of the</span>
+<span class="doccomment">/// active engine.</span>
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_unsafe</span>)]</span>
 <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">get_atom</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">F</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">term</span>: <span class="kw-2">&amp;</span><span class="ident">Term</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>, <span class="ident">func</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PrologResult</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>
 <span class="kw">where</span>
@@ -664,6 +775,7 @@
     }
 }
 
+<span class="doccomment">/// A type that allows easy conversion of strings from and to an atom.</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Atomable</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="ident">Str</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>),
     <span class="ident">String</span>(<span class="ident">String</span>),
@@ -682,10 +794,12 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Atomable</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Create a new Atomable out of a String or an &amp;str.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Atomable</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">s</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">s</span>.<span class="ident">into</span>()
     }
 
+    <span class="doccomment">/// Return the name.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">str</span> {
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="self">Self</span>::<span class="ident">Str</span>(<span class="ident">s</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">s</span>,
@@ -693,6 +807,7 @@
         }
     }
 
+    <span class="doccomment">/// Convert this Atomable into a new Atomable which is guaranteed to own its data.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">owned</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Atomable</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="self">Self</span>::<span class="ident">Str</span>(<span class="ident">s</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Atomable</span>::<span class="ident">String</span>(<span class="ident">s</span>.<span class="ident">to_string</span>()),
@@ -701,13 +816,23 @@
     }
 }
 
+<span class="doccomment">/// Wrapper for `Atomable::new`.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">atomable</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Atomable</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">s</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Atomable</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="ident">Atomable</span>::<span class="ident">new</span>(<span class="ident">s</span>)
 }
 
+<span class="doccomment">/// Trait for types which can be turned into an `Atom`.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">IntoAtom</span> {
+    <span class="doccomment">/// Turn this object into an `Atom`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The second argument ensures that this function is called in a</span>
+    <span class="doccomment">/// context where atoms are allowed to be created.</span>
     <span class="kw">fn</span> <span class="ident">into_atom</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">ActiveEnginePromise</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">promise</span>: <span class="kw-2">&amp;</span><span class="ident">P</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Atom</span>;
 
+    <span class="doccomment">/// Turn this object into an `Atom`, without doing any safety checks.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This is unsafe, because we may not be in a context where atom</span>
+    <span class="doccomment">/// handling is possible.</span>
     <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">into_atom_unsafe</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Atom</span>
     <span class="kw">where</span>
         <span class="self">Self</span>: <span class="ident">Sized</span>,
@@ -749,7 +874,12 @@
     }
 }
 
+<span class="doccomment">/// Trait for types which can be turned into an `Atom` from a borrow.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">AsAtom</span> {
+    <span class="doccomment">/// Turn the borrowed object into an `Atom`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The second argument ensures that this function is called in a</span>
+    <span class="doccomment">/// context where atoms are allowed to be created.</span>
     <span class="kw">fn</span> <span class="ident">as_atom</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">ActiveEnginePromise</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">promise</span>: <span class="kw-2">&amp;</span><span class="ident">P</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Atom</span>;
 }
 
@@ -786,6 +916,16 @@
     }
 }
 
+<span class="doccomment">/// Get an atomable out of a term.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This is very much like `get_atom`, but instead of retrieving the</span>
+<span class="doccomment">/// atom, we retrieve the atom&#39;s name as an &amp;str, wrapped by an</span>
+<span class="doccomment">/// `Atomable`. This means the atom reference count does not have to</span>
+<span class="doccomment">/// be manipulated, and it should be slightly faster than first</span>
+<span class="doccomment">/// getting the atom and then extracting its name.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This is unsafe because we don&#39;t check if the term is part of the</span>
+<span class="doccomment">/// active engine.</span>
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_unsafe</span>)]</span>
 <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">get_atomable</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">F</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">term</span>: <span class="kw-2">&amp;</span><span class="ident">Term</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>, <span class="ident">func</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PrologResult</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>
 <span class="kw">where</span>
