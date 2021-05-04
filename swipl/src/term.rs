@@ -668,6 +668,7 @@ unsafe impl<T: TermGetable> TermGetable for Vec<T> {
 mod tests {
     use crate::context::*;
     use crate::engine::*;
+    use crate::init::*;
     use crate::result::*;
 
     #[test]

@@ -127,6 +127,7 @@ impl<'a> Functorable<'a> {
 mod tests {
     use super::*;
     use crate::engine::*;
+    use crate::init::*;
 
     #[test]
     fn create_and_query_functor() {

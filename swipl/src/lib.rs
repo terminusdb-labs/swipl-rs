@@ -17,6 +17,7 @@ pub mod callable;
 pub mod context;
 pub mod engine;
 pub mod functor;
+pub mod init;
 pub mod module;
 pub mod predicate;
 pub mod result;

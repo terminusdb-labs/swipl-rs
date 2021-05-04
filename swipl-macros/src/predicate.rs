@@ -268,7 +268,7 @@ impl ForeignPredicateDefinitionImpl for SemidetForeignPredicateDefinition {
             #visibility fn #registration_name() -> bool {
                 // unsafe justification: register_foreign_in_module is unsafe due to the possibility that someone registers a function that is not actually expecting to handle a prolog call, and is not set up right for it. But we're generating this code ourselves, so we should have taken care of all preconditions.
                 unsafe {
-                    #crt::engine::register_foreign_in_module(
+                    #crt::init::register_foreign_in_module(
                         #module_lit,
                         #name_lit,
                         std::convert::TryInto::<u16>::try_into(#arity).expect("arity does not fit in an u16"),
@@ -515,7 +515,7 @@ impl ForeignPredicateDefinitionImpl for NondetForeignPredicateDefinition {
             #visibility fn #registration_name() -> bool {
                 // unsafe justification: register_foreign_in_module is unsafe due to the possibility that someone registers a function that is not actually expecting to handle a prolog call, and is not set up right for it. But we're generating this code ourselves, so we should have taken care of all preconditions.
                 unsafe {
-                    #crt::engine::register_foreign_in_module(
+                    #crt::init::register_foreign_in_module(
                         #module_lit,
                         #name_lit,
                         std::convert::TryInto::<u16>::try_into(#arity).expect("arity does not fit in an u16"),

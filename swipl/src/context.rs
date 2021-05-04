@@ -218,7 +218,10 @@ impl<'a, T: ContextType> ContextParent for Context<'a, T> {
 
 impl<'a, T: ContextType> TermOrigin for Context<'a, T> {
     fn is_engine_active(&self) -> bool {
-        is_engine_active(self.engine)
+        // unsafe justification: We have an active context, therefore
+        // SWI-Prolog should have been initialized, which makes this
+        // call safe.
+        unsafe { is_engine_active(self.engine) }
     }
 
     fn origin_engine_ptr(&self) -> PL_engine_t {
@@ -531,6 +534,7 @@ pub unsafe fn prolog_catch_unwind<F: FnOnce() -> R + std::panic::UnwindSafe, R>(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::init::*;
     use crate::predicates;
 
     #[test]

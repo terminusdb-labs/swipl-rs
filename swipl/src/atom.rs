@@ -414,6 +414,7 @@ impl<'a> AsRef<str> for Atomable<'a> {
 mod tests {
     use super::*;
     use crate::engine::*;
+    use crate::init::*;
     #[test]
     fn create_atom_and_retrieve_name() {
         initialize_swipl_noengine();

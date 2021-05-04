@@ -5,6 +5,7 @@ pub use crate::callable::*;
 pub use crate::context::*;
 pub use crate::engine::*;
 pub use crate::functor::*;
+pub use crate::init::*;
 pub use crate::module::*;
 pub use crate::predicate::*;
 pub use crate::result::*;
