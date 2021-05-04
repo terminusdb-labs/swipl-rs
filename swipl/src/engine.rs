@@ -87,8 +87,10 @@ impl Engine {
 
     /// Returns true if some engine is currently active on this thread.
     pub fn some_engine_active() -> bool {
-        initialize_swipl_noengine();
-        // unsafe justification: swipl was initialized above so engine should be queryable
+        if !is_swipl_initialized() {
+            return false;
+        }
+        // unsafe justification: swipl was shown to be initialized above so engine should be queryable
         let current = unsafe { current_engine_ptr() };
 
         if current.is_null() {

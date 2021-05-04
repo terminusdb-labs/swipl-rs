@@ -1,3 +1,6 @@
+//! Prolog contexts.
+//!
+//! 
 use super::atom::*;
 use super::callable::*;
 use super::consts::*;
@@ -534,12 +537,10 @@ pub unsafe fn prolog_catch_unwind<F: FnOnce() -> R + std::panic::UnwindSafe, R>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::init::*;
     use crate::predicates;
 
     #[test]
     fn get_term_ref_on_fresh_engine() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
@@ -549,7 +550,6 @@ mod tests {
 
     #[test]
     fn get_term_ref_on_frame() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context1: Context<_> = activation.into();
@@ -564,7 +564,6 @@ mod tests {
     #[test]
     #[should_panic]
     fn get_term_ref_from_inactive_context_panics() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context1: Context<_> = activation.into();
@@ -575,7 +574,6 @@ mod tests {
 
     #[test]
     fn query_det() -> PrologResult<()> {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
@@ -607,7 +605,6 @@ mod tests {
 
     #[test]
     fn query_auto_discard() -> PrologResult<()> {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
@@ -641,7 +638,6 @@ mod tests {
 
     #[test]
     fn query_manual_discard() -> PrologResult<()> {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
@@ -676,7 +672,6 @@ mod tests {
 
     #[test]
     fn query_cut() -> PrologResult<()> {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
@@ -711,7 +706,6 @@ mod tests {
 
     #[test]
     fn term_from_string_works() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
@@ -726,7 +720,6 @@ mod tests {
 
     #[test]
     fn open_call_nondet() -> PrologResult<()> {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
@@ -752,7 +745,6 @@ mod tests {
 
     #[test]
     fn open_query_with_0_arg_predicate() -> PrologResult<()> {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
@@ -770,7 +762,6 @@ mod tests {
 
     #[test]
     fn freeze_exception_is_delayed_until_next_query() -> PrologResult<()> {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
@@ -808,7 +799,6 @@ mod tests {
     #[test]
     #[should_panic(expected = "tried to use context which has raised an exception")]
     fn call_prolog_with_raised_exception_panics() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
@@ -831,7 +821,6 @@ mod tests {
 
     #[test]
     fn register_foreign_predicate() -> PrologResult<()> {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
 
@@ -854,7 +843,6 @@ mod tests {
 
     #[test]
     fn call_prolog_from_generated_rust_query_opener() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();

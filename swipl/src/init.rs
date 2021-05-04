@@ -16,10 +16,8 @@ use std::convert::TryInto;
 use std::ffi::CString;
 use std::os::raw::{c_int, c_void};
 use std::sync::{Arc, RwLock};
-use std::sync::atomic::{AtomicBool, Ordering};
 
 lazy_static! {
-    static ref IS_INITIALIZED: AtomicBool = AtomicBool::new(false);
     static ref INITIALIZATION_STATE: Arc<RwLock<Option<Engine>>> = Arc::new(RwLock::new(None));
 }
 
@@ -31,7 +29,7 @@ pub fn activate_main() -> EngineActivation<'static> {
 
 /// Check if SWI-Prolog has been initialized.
 pub fn is_swipl_initialized() -> bool {
-    IS_INITIALIZED.load(Ordering::Relaxed)
+    unsafe { PL_is_initialised(std::ptr::null_mut(), std::ptr::null_mut()) != 0 }
 }
 
 static ARG0: &'static [u8] = b"rust-swipl\0"; // fake program name
@@ -45,10 +43,8 @@ static ARG1: &'static [u8] = b"--quiet\0"; // suppress swipl banner printing
 /// `EngineActivation` will be returned containing the main prolog
 /// engine.
 pub fn initialize_swipl() -> Option<EngineActivation<'static>> {
-    {
-        if is_swipl_initialized() {
-            return None;
-        }
+    if is_swipl_initialized() {
+        return None;
     }
 
     // lock the rest of this initialization function to prevent concurrent initializers. Ideally this should happen in swipl itself, but unfortunately, it doesn't.
@@ -68,7 +64,6 @@ pub fn initialize_swipl() -> Option<EngineActivation<'static>> {
     // That said, there is actually a chance that some non-rust code is concurrently initializing prolog, which may lead to errors. There is unfortunately nothing that can be done about this.
     unsafe { PL_initialise(2, args.as_mut_ptr()) };
     *initialized = Some(unsafe { Engine::from_main() });
-    IS_INITIALIZED.store(true, Ordering::Relaxed);
 
     Some(unsafe { std::mem::transmute((*initialized).as_ref().unwrap().set_activated()) })
 }
