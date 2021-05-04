@@ -4,6 +4,8 @@ interface to SWI-Prolog (wrapping the `swipl-fli` crate), and which
 exposes all macros used to generate bindings, foreign predicate
 definitions and blob types (exposing the `swipl-macros` crate).
 
+[Documentation](https://terminusdb-labs.github.io/swipl-rs/swipl/)
+
 ## Building SWI-Prolog foreign libraries
 In order to use this library to build something that SWI-Prolog can
 use, you have to set your `crate-type` to `cdylib`, and provide a main

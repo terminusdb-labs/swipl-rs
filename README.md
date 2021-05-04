@@ -4,6 +4,8 @@
 
 Rust bindings to SWI-Prolog.
 
+[Documentation](https://terminusdb-labs.github.io/swipl-rs/)
+
 ## Overview
 This repository is a workspace for a handful of crates:
 - cargo-swipl: a cargo utility for working with swipl crates. In particular, this allows running of unit tests in crates that depend on swipl-sys.
