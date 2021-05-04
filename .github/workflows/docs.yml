@@ -1,0 +1,29 @@
+name: Docs
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install SWI Prolog on Linux
+        run: |
+          sudo apt-add-repository ppa:swi-prolog/stable
+          sudo apt-get update
+          sudo apt install swi-prolog-nox
+
+      - name: Generate docs
+        run: cargo doc --workspace --no-deps --exclude cargo-swipl --exclude swipl-module-example
+
+      - name: Generate index
+        run: echo '<!DOCTYPE html><html><head><meta http-equiv="Refresh" content="0; url=https://terminusdb-labs.github.io/swipl-rs/swipl/"/></head></html>' > target/doc/index.html
+
+      - name: Deploy to GH pages
+        uses: JamesIves/github-pages-deploy-action@4.0.0
+        with:
+          branch: gh-pages
+          folder: target/doc
