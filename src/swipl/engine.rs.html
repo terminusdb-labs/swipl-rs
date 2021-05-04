@@ -216,6 +216,8 @@
 <span id="213">213</span>
 <span id="214">214</span>
 <span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Prolog engines.</span>
 <span class="doccomment">//!</span>
@@ -306,8 +308,10 @@
 
     <span class="doccomment">/// Returns true if some engine is currently active on this thread.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">some_engine_active</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-        <span class="ident">initialize_swipl_noengine</span>();
-        <span class="comment">// unsafe justification: swipl was initialized above so engine should be queryable</span>
+        <span class="kw">if</span> <span class="op">!</span><span class="ident">is_swipl_initialized</span>() {
+            <span class="kw">return</span> <span class="bool-val">false</span>;
+        }
+        <span class="comment">// unsafe justification: swipl was shown to be initialized above so engine should be queryable</span>
         <span class="kw">let</span> <span class="ident">current</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">current_engine_ptr</span>() };
 
         <span class="kw">if</span> <span class="ident">current</span>.<span class="ident">is_null</span>() {
