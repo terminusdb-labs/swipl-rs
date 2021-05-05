@@ -1,11 +1,11 @@
 use crate::context::*;
+use crate::engine::*;
 use crate::fli::*;
+use crate::functor::*;
 use crate::module::*;
 use crate::predicate::*;
 use crate::result::*;
 use crate::term::*;
-use crate::functor::*;
-use crate::engine::*;
 use std::convert::TryInto;
 use std::os::raw::c_void;
 use std::sync::atomic::{AtomicPtr, Ordering};

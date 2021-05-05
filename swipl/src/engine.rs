@@ -167,6 +167,7 @@ pub fn is_engine_active(engine: PL_engine_t) -> bool {
     current == engine
 }
 
+/// Panic if no engine is active on this thread.
 pub fn assert_some_engine_is_active() {
     if !Engine::some_engine_active() {
         panic!("No SWI-Prolog engine is active");

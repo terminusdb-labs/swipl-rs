@@ -42,6 +42,8 @@ impl Atom {
 
     /// Create a new atom from the given string.
     ///
+    /// This will panic if no prolog engine is active on this thread.
+    ///
     /// If the atom already exists, this will raise the reference
     /// count on that atom and then return the existing atom.
     pub fn new(name: &str) -> Atom {
@@ -83,7 +85,7 @@ impl Atom {
 
     /// Retrieve the name of this atom, that is, the string with which it was created.
     ///
-    /// This requires an engine to be active. If none is active, this function will panic.
+    /// This will panic if no prolog engine is active on this thread.
     pub fn name(&self) -> &str {
         assert_some_engine_is_active();
         // TODO we're just assuming that what we get out of prolog is

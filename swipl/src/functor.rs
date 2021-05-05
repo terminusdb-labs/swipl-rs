@@ -1,3 +1,11 @@
+//! Prolog functors.
+//!
+//! A functor is a core datatype in prolog. It is a combination of an
+//! atom and an arity. Unlike atoms, functors are not
+//! reference-counted and are never garbage collected.
+//!
+//! This module provides functions and types for interacting with
+//! prolog functors.
 use super::atom::*;
 use super::consts::*;
 use super::engine::*;
@@ -8,16 +16,25 @@ use std::convert::TryInto;
 
 use crate::{term_getable, term_putable, unifiable};
 
+/// A wrapper for a prolog functor.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct Functor {
     functor: functor_t,
 }
 
 impl Functor {
+    /// Wrap a `functor_t`, which is how the SWI-Prolog fli represents functors.
+    ///
+    /// This is unsafe because no check is done to ensure that the
+    /// functor_t indeed points at a valid functor. The caller will
+    /// have to ensure that this is the case.
     pub unsafe fn wrap(functor: functor_t) -> Self {
         Self { functor }
     }
 
+    /// Create a new functor from the given name and arity.
+    ///
+    /// This will panic if no prolog engine is active on this thread.
     pub fn new<A: IntoAtom>(name: A, arity: u16) -> Functor {
         assert_some_engine_is_active();
         if arity as usize > MAX_ARITY {
@@ -30,14 +47,23 @@ impl Functor {
         unsafe { Functor::wrap(functor) }
     }
 
+    /// Return the underlying `functor_` which SWI-Prolog uses to refer to the functor.
     pub fn functor_ptr(&self) -> functor_t {
         self.functor
     }
 
+    /// Retrieve the name of this functor as an atom and pass it into the given function.
+    ///
+    /// The atom does not outlive this call, and the reference count
+    /// is never incremented. This may be slightly faster in some
+    /// cases than returning the name directly.
+    ///
+    /// This will panic if no prolog engine is active on this thread.
     pub fn with_name<F, R>(&self, func: F) -> R
     where
         F: Fn(&Atom) -> R,
     {
+        assert_some_engine_is_active();
         let atom = unsafe { Atom::wrap(PL_functor_name(self.functor)) };
 
         let result = func(&atom);
@@ -47,14 +73,25 @@ impl Functor {
         result
     }
 
+    /// Retrieve the name of this functor as an atom.
+    ///
+    /// This will panic if no prolog engine is active on this thread.
     pub fn name(&self) -> Atom {
         self.with_name(|n| n.clone())
     }
 
+    /// Retrieve the name of this functor as a string.
+    ///
+    /// This will panic if no prolog engine is active on this thread.
     pub fn name_string(&self) -> String {
         self.with_name(|n| n.name().to_string())
     }
 
+    /// Retrieve the name of this functor as a &str, which is passed into the given function.
+    ///
+    /// This avoids unnecessary string copies.
+    ///
+    /// This will panic if no prolog engine is active on this thread.
     pub fn with_name_string<F, R>(&self, func: F) -> R
     where
         F: Fn(&str) -> R,
@@ -62,6 +99,9 @@ impl Functor {
         self.with_name(|n| func(n.name()))
     }
 
+    /// Retrieve the arity of this functor.
+    ///
+    /// This will panic if no prolog engine is active on this thread.
     pub fn arity(&self) -> u16 {
         assert_some_engine_is_active();
         let arity = unsafe { PL_functor_arity(self.functor) };
@@ -96,28 +136,6 @@ term_getable! {
 term_putable! {
     (self: Functor, term) => {
         unsafe {PL_put_functor(term.term_ptr(), self.functor)};
-    }
-}
-
-pub struct Functorable<'a> {
-    name: Atomable<'a>,
-    arity: u16,
-}
-
-impl<'a> Functorable<'a> {
-    pub fn new<A: Into<Atomable<'a>>>(name: A, arity: u16) -> Self {
-        if arity as usize > MAX_ARITY {
-            panic!("tried to create a functorable with arity >1024: {}", arity);
-        }
-
-        Self {
-            name: name.into(),
-            arity,
-        }
-    }
-
-    pub fn as_functor(&self) -> Functor {
-        Functor::new(&self.name, self.arity)
     }
 }
 

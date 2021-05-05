@@ -491,10 +491,10 @@ pub unsafe fn prolog_catch_unwind<F: FnOnce() -> R + std::panic::UnwindSafe, R>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::predicates;
-    use crate::functor::*;
     use crate::atom::*;
+    use crate::functor::*;
     use crate::predicate::*;
+    use crate::predicates;
 
     #[test]
     fn get_term_ref_on_fresh_engine() {
