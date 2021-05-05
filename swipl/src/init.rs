@@ -70,7 +70,7 @@ pub fn initialize_swipl() -> Option<EngineActivation<'static>> {
     // unsafe justification: this initializes the swipl library and is idempotent
     // That said, there is actually a chance that some non-rust code is concurrently initializing prolog, which may lead to errors. There is unfortunately nothing that can be done about this.
     unsafe { PL_initialise(2, args.as_mut_ptr()) };
-    *initialized = Some(unsafe { Engine::from_main() });
+    *initialized = Some(unsafe { Engine::from_current() });
 
     Some(unsafe { std::mem::transmute((*initialized).as_ref().unwrap().set_activated()) })
 }

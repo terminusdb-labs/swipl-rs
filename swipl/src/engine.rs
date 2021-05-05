@@ -78,9 +78,9 @@ impl Engine {
         }
     }
 
-    pub(crate) unsafe fn from_main() -> Engine {
+    pub(crate) unsafe fn from_current() -> Engine {
         Engine {
-            engine_ptr: 1 as PL_engine_t,
+            engine_ptr: current_engine_ptr(),
             active: atomic::AtomicBool::new(false),
         }
     }
