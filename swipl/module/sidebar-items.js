@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["Module",""]]});
+initSidebarItems({"struct":[["Module","A wrapped fora  prolog module."]]});

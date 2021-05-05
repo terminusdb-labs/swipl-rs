@@ -293,7 +293,7 @@
         <span class="kw">unsafe</span> { <span class="ident">Functor</span>::<span class="ident">wrap</span>(<span class="ident">functor</span>) }
     }
 
-    <span class="doccomment">/// Return the underlying `functor_` which SWI-Prolog uses to refer to the functor.</span>
+    <span class="doccomment">/// Return the underlying `functor_t` which SWI-Prolog uses to refer to the functor.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">functor_ptr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">functor_t</span> {
         <span class="self">self</span>.<span class="ident">functor</span>
     }

@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["Predicate",""]]});
+initSidebarItems({"struct":[["Predicate","A wrapper for a prolog predicate."]]});
