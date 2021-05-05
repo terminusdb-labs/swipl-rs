@@ -739,7 +739,7 @@
                 <span class="ident">top</span> <span class="op">+</span><span class="op">=</span> <span class="ident">arity</span> <span class="op">+</span> <span class="number">1</span>;
                 <span class="kw">let</span> <span class="ident">terms_init</span> <span class="op">=</span> <span class="ident">term_idents</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>()
                     .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">ix</span>, <span class="ident">ident</span>)<span class="op">|</span> <span class="macro">quote</span><span class="macro">!</span> {
-                        <span class="kw">let</span> #<span class="ident">ident</span> <span class="op">=</span> <span class="kw">unsafe</span> {#<span class="ident">crt</span>::<span class="ident">term</span>::<span class="ident">Term</span>::<span class="ident">new</span>(#<span class="ident">term_id_ident</span> <span class="op">+</span> #<span class="ident">ix</span>, <span class="kw-2">&amp;</span><span class="ident">__swipl_frame</span>)};
+                        <span class="kw">let</span> #<span class="ident">ident</span> <span class="op">=</span> <span class="kw">unsafe</span> {#<span class="ident">crt</span>::<span class="ident">term</span>::<span class="ident">Term</span>::<span class="ident">new</span>(#<span class="ident">term_id_ident</span> <span class="op">+</span> #<span class="ident">ix</span>, <span class="ident">__swipl_frame</span>.<span class="ident">as_term_origin</span>())};
                         #<span class="ident">into</span>.<span class="ident">unify_arg</span>(#<span class="ident">ix</span><span class="op">+</span><span class="number">1</span>, <span class="kw-2">&amp;</span>#<span class="ident">ident</span>)<span class="question-mark">?</span>;
                     });
 
@@ -814,7 +814,7 @@
                 <span class="comment">// initialize terms</span>
                 <span class="kw">let</span> <span class="ident">terms_init</span> <span class="op">=</span> <span class="ident">term_idents</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>()
                     .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">ix</span>, <span class="ident">ident</span>)<span class="op">|</span> <span class="macro">quote</span><span class="macro">!</span> {
-                        <span class="kw">let</span> #<span class="ident">ident</span> <span class="op">=</span> <span class="kw">unsafe</span> {#<span class="ident">crt</span>::<span class="ident">term</span>::<span class="ident">Term</span>::<span class="ident">new</span>(#<span class="ident">term_id_ident</span> <span class="op">+</span> #<span class="ident">ix</span>, <span class="kw-2">&amp;</span><span class="ident">__swipl_frame</span>)};
+                        <span class="kw">let</span> #<span class="ident">ident</span> <span class="op">=</span> <span class="kw">unsafe</span> {#<span class="ident">crt</span>::<span class="ident">term</span>::<span class="ident">Term</span>::<span class="ident">new</span>(#<span class="ident">term_id_ident</span> <span class="op">+</span> #<span class="ident">ix</span>, <span class="ident">__swipl_frame</span>.<span class="ident">as_term_origin</span>())};
                     });
 
                 <span class="comment">// one extra for the term_id_ident ref</span>
@@ -895,7 +895,7 @@
         <span class="comment">// initialize terms</span>
         <span class="kw">let</span> <span class="ident">terms_init</span> <span class="op">=</span> <span class="ident">term_idents</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>().<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">ix</span>, <span class="ident">ident</span>)<span class="op">|</span> {
             <span class="macro">quote</span><span class="macro">!</span> {
-                <span class="kw">let</span> #<span class="ident">ident</span> <span class="op">=</span> <span class="kw">unsafe</span> {#<span class="ident">crt</span>::<span class="ident">term</span>::<span class="ident">Term</span>::<span class="ident">new</span>(#<span class="ident">term_id_ident</span> <span class="op">+</span> #<span class="ident">ix</span>, <span class="kw-2">&amp;</span><span class="ident">__swipl_frame</span>)};
+                <span class="kw">let</span> #<span class="ident">ident</span> <span class="op">=</span> <span class="kw">unsafe</span> {#<span class="ident">crt</span>::<span class="ident">term</span>::<span class="ident">Term</span>::<span class="ident">new</span>(#<span class="ident">term_id_ident</span> <span class="op">+</span> #<span class="ident">ix</span>, <span class="ident">__swipl_frame</span>.<span class="ident">as_term_origin</span>())};
             }
         });
 
