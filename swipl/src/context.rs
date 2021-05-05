@@ -354,7 +354,7 @@ pub unsafe trait ActiveEnginePromise: Sized {
     }
 
     fn new_predicate(&self, functor: &Functor, module: &Module) -> Predicate {
-        unsafe { Predicate::new(functor, module) }
+        Predicate::new(functor, module)
     }
 }
 
@@ -573,7 +573,7 @@ mod tests {
         let functor_plus = context.new_functor("+", 2);
         let module = context.new_module("user");
         let predicate = context.new_predicate(&functor_is, &module);
-        let callable = CallablePredicate::new(&predicate, &context).unwrap();
+        let callable = CallablePredicate::new(&predicate).unwrap();
 
         let term1 = context.new_term_ref();
         let term2 = context.new_term_ref();
@@ -604,7 +604,7 @@ mod tests {
         let functor_plus = context.new_functor("+", 2);
         let module = context.new_module("user");
         let predicate = context.new_predicate(&functor_is, &module);
-        let callable = CallablePredicate::new(&predicate, &context).unwrap();
+        let callable = CallablePredicate::new(&predicate).unwrap();
 
         let term1 = context.new_term_ref();
         let term2 = context.new_term_ref();
@@ -637,7 +637,7 @@ mod tests {
         let functor_plus = context.new_functor("+", 2);
         let module = context.new_module("user");
         let predicate = context.new_predicate(&functor_is, &module);
-        let callable = CallablePredicate::new(&predicate, &context).unwrap();
+        let callable = CallablePredicate::new(&predicate).unwrap();
 
         let term1 = context.new_term_ref();
         let term2 = context.new_term_ref();
@@ -671,7 +671,7 @@ mod tests {
         let functor_plus = context.new_functor("+", 2);
         let module = context.new_module("user");
         let predicate = context.new_predicate(&functor_is, &module);
-        let callable = CallablePredicate::new(&predicate, &context).unwrap();
+        let callable = CallablePredicate::new(&predicate).unwrap();
 
         let term1 = context.new_term_ref();
         let term2 = context.new_term_ref();
@@ -743,7 +743,7 @@ mod tests {
         let functor = context.new_functor("true", 0);
         let module = context.new_module("user");
         let predicate = context.new_predicate(&functor, &module);
-        let callable = CallablePredicate::new(&predicate, &context).unwrap();
+        let callable = CallablePredicate::new(&predicate).unwrap();
 
         let query = context.open(callable, []);
         assert!(!query.next_solution()?);
@@ -823,7 +823,7 @@ mod tests {
         let functor = context.new_functor("unify_with_42", 1);
         let module = context.new_module("user");
         let predicate = context.new_predicate(&functor, &module);
-        let callable = CallablePredicate::new(&predicate, &context).unwrap();
+        let callable = CallablePredicate::new(&predicate).unwrap();
 
         let query = context.open(callable, [&term]);
         assert!(!query.next_solution()?);

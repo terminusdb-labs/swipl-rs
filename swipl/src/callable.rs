@@ -88,11 +88,8 @@ impl<const N: usize> CallablePredicate<N> {
         Self { predicate }
     }
 
-    pub fn new<P: ActiveEnginePromise>(
-        predicate: &Predicate,
-        promise: &P,
-    ) -> Result<Self, PredicateWrapError> {
-        let arity = predicate.arity(promise);
+    pub fn new(predicate: &Predicate) -> Result<Self, PredicateWrapError> {
+        let arity = predicate.arity();
         if arity as usize != N {
             Err(PredicateWrapError::WrongArity {
                 expected: N as u16,

@@ -1,6 +1,6 @@
 use std::convert::TryInto;
 
-use super::context::*;
+use super::engine::*;
 use super::fli::*;
 use super::functor::*;
 use super::module::*;
@@ -14,17 +14,19 @@ impl Predicate {
         Self { predicate }
     }
 
-    pub unsafe fn new(functor: &Functor, module: &Module) -> Self {
-        let predicate = PL_pred(functor.functor_ptr(), module.module_ptr());
+    pub fn new(functor: &Functor, module: &Module) -> Self {
+        assert_some_engine_is_active();
+        let predicate = unsafe { PL_pred(functor.functor_ptr(), module.module_ptr()) };
 
-        Self::wrap(predicate)
+        unsafe { Self::wrap(predicate) }
     }
 
     pub fn predicate_ptr(&self) -> predicate_t {
         self.predicate
     }
 
-    pub fn arity<P: ActiveEnginePromise>(&self, _: &P) -> u16 {
+    pub fn arity(&self) -> u16 {
+        assert_some_engine_is_active();
         let mut arity = 0;
         unsafe {
             PL_predicate_info(
