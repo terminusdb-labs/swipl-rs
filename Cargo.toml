@@ -6,5 +6,6 @@ members = [
         "swipl-macros",
         "swipl",
         "cargo-swipl",
-        "examples/swipl-module-example"
+        "examples/swipl-module-example",
+        "examples/standalone-example"
 ]
