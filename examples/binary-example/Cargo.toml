@@ -1,5 +1,5 @@
 [package]
-name = "standalone-example"
+name = "binary-example"
 version = "0.1.0"
 authors = ["Matthijs van Otterdijk <matthijs@terminusdb.com>"]
 edition = "2018"
