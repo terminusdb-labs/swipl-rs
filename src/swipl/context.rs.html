@@ -815,51 +815,14 @@
 <span id="812">812</span>
 <span id="813">813</span>
 <span id="814">814</span>
-<span id="815">815</span>
-<span id="816">816</span>
-<span id="817">817</span>
-<span id="818">818</span>
-<span id="819">819</span>
-<span id="820">820</span>
-<span id="821">821</span>
-<span id="822">822</span>
-<span id="823">823</span>
-<span id="824">824</span>
-<span id="825">825</span>
-<span id="826">826</span>
-<span id="827">827</span>
-<span id="828">828</span>
-<span id="829">829</span>
-<span id="830">830</span>
-<span id="831">831</span>
-<span id="832">832</span>
-<span id="833">833</span>
-<span id="834">834</span>
-<span id="835">835</span>
-<span id="836">836</span>
-<span id="837">837</span>
-<span id="838">838</span>
-<span id="839">839</span>
-<span id="840">840</span>
-<span id="841">841</span>
-<span id="842">842</span>
-<span id="843">843</span>
-<span id="844">844</span>
-<span id="845">845</span>
-<span id="846">846</span>
-<span id="847">847</span>
-<span id="848">848</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Prolog contexts.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//!</span>
-<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">atom</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">callable</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">engine</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">fli</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">functor</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">module</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">predicate</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">result</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">term</span>::<span class="kw-2">*</span>;
 
@@ -1192,40 +1155,6 @@
     }
 }
 
-<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">trait</span> <span class="ident">ActiveEnginePromise</span>: <span class="ident">Sized</span> {
-    <span class="kw">fn</span> <span class="ident">new_atom</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Atom</span> {
-        <span class="ident">Atom</span>::<span class="ident">new</span>(<span class="ident">name</span>)
-    }
-
-    <span class="kw">fn</span> <span class="ident">new_functor</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="ident">IntoAtom</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="ident">A</span>, <span class="ident">arity</span>: <span class="ident">u16</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Functor</span> {
-        <span class="ident">Functor</span>::<span class="ident">new</span>(<span class="ident">name</span>, <span class="ident">arity</span>)
-    }
-
-    <span class="kw">fn</span> <span class="ident">new_module</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="ident">IntoAtom</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="ident">A</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Module</span> {
-        <span class="ident">Module</span>::<span class="ident">new</span>(<span class="ident">name</span>)
-    }
-
-    <span class="kw">fn</span> <span class="ident">new_predicate</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">functor</span>: <span class="kw-2">&amp;</span><span class="ident">Functor</span>, <span class="ident">module</span>: <span class="kw-2">&amp;</span><span class="ident">Module</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Predicate</span> {
-        <span class="ident">Predicate</span>::<span class="ident">new</span>(<span class="ident">functor</span>, <span class="ident">module</span>)
-    }
-}
-
-<span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">ActiveEnginePromise</span> <span class="kw">for</span> <span class="ident">EngineActivation</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {}
-<span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">C</span>: <span class="ident">ContextType</span><span class="op">&gt;</span> <span class="ident">ActiveEnginePromise</span> <span class="kw">for</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">C</span><span class="op">&gt;</span> {}
-<span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">ActiveEnginePromise</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">TermOrigin</span> {}
-
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">UnsafeActiveEnginePromise</span> {
-    <span class="ident">_x</span>: <span class="ident">bool</span>,
-}
-
-<span class="kw">impl</span> <span class="ident">UnsafeActiveEnginePromise</span> {
-    <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">Self</span> { <span class="ident">_x</span>: <span class="bool-val">false</span> }
-    }
-}
-
-<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">ActiveEnginePromise</span> <span class="kw">for</span> <span class="ident">UnsafeActiveEnginePromise</span> {}
-
 <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">trait</span> <span class="ident">QueryableContextType</span>: <span class="ident">FrameableContextType</span> {}
 <span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">QueryableContextType</span> <span class="kw">for</span> <span class="ident">UnmanagedContext</span> {}
 <span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">QueryableContextType</span> <span class="kw">for</span> <span class="ident">ActivatedEngine</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {}
@@ -1381,6 +1310,9 @@
 <span class="kw">mod</span> <span class="ident">tests</span> {
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">predicates</span>;
+    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">functor</span>::<span class="kw-2">*</span>;
+    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">atom</span>::<span class="kw-2">*</span>;
+    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">predicate</span>::<span class="kw-2">*</span>;
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">get_term_ref_on_fresh_engine</span>() {
@@ -1421,10 +1353,10 @@
         <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
         <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
 
-        <span class="kw">let</span> <span class="ident">functor_is</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_functor</span>(<span class="string">&quot;is&quot;</span>, <span class="number">2</span>);
-        <span class="kw">let</span> <span class="ident">functor_plus</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_functor</span>(<span class="string">&quot;+&quot;</span>, <span class="number">2</span>);
-        <span class="kw">let</span> <span class="ident">module</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_module</span>(<span class="string">&quot;user&quot;</span>);
-        <span class="kw">let</span> <span class="ident">predicate</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_predicate</span>(<span class="kw-2">&amp;</span><span class="ident">functor_is</span>, <span class="kw-2">&amp;</span><span class="ident">module</span>);
+        <span class="kw">let</span> <span class="ident">functor_is</span> <span class="op">=</span> <span class="ident">Functor</span>::<span class="ident">new</span>(<span class="string">&quot;is&quot;</span>, <span class="number">2</span>);
+        <span class="kw">let</span> <span class="ident">functor_plus</span> <span class="op">=</span> <span class="ident">Functor</span>::<span class="ident">new</span>(<span class="string">&quot;+&quot;</span>, <span class="number">2</span>);
+        <span class="kw">let</span> <span class="ident">module</span> <span class="op">=</span> <span class="ident">Module</span>::<span class="ident">new</span>(<span class="string">&quot;user&quot;</span>);
+        <span class="kw">let</span> <span class="ident">predicate</span> <span class="op">=</span> <span class="ident">Predicate</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">functor_is</span>, <span class="kw-2">&amp;</span><span class="ident">module</span>);
         <span class="kw">let</span> <span class="ident">callable</span> <span class="op">=</span> <span class="ident">CallablePredicate</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">predicate</span>).<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">term1</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_term_ref</span>();
@@ -1452,10 +1384,10 @@
         <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
         <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
 
-        <span class="kw">let</span> <span class="ident">functor_is</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_functor</span>(<span class="string">&quot;is&quot;</span>, <span class="number">2</span>);
-        <span class="kw">let</span> <span class="ident">functor_plus</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_functor</span>(<span class="string">&quot;+&quot;</span>, <span class="number">2</span>);
-        <span class="kw">let</span> <span class="ident">module</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_module</span>(<span class="string">&quot;user&quot;</span>);
-        <span class="kw">let</span> <span class="ident">predicate</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_predicate</span>(<span class="kw-2">&amp;</span><span class="ident">functor_is</span>, <span class="kw-2">&amp;</span><span class="ident">module</span>);
+        <span class="kw">let</span> <span class="ident">functor_is</span> <span class="op">=</span> <span class="ident">Functor</span>::<span class="ident">new</span>(<span class="string">&quot;is&quot;</span>, <span class="number">2</span>);
+        <span class="kw">let</span> <span class="ident">functor_plus</span> <span class="op">=</span> <span class="ident">Functor</span>::<span class="ident">new</span>(<span class="string">&quot;+&quot;</span>, <span class="number">2</span>);
+        <span class="kw">let</span> <span class="ident">module</span> <span class="op">=</span> <span class="ident">Module</span>::<span class="ident">new</span>(<span class="string">&quot;user&quot;</span>);
+        <span class="kw">let</span> <span class="ident">predicate</span> <span class="op">=</span> <span class="ident">Predicate</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">functor_is</span>, <span class="kw-2">&amp;</span><span class="ident">module</span>);
         <span class="kw">let</span> <span class="ident">callable</span> <span class="op">=</span> <span class="ident">CallablePredicate</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">predicate</span>).<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">term1</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_term_ref</span>();
@@ -1485,10 +1417,10 @@
         <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
         <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
 
-        <span class="kw">let</span> <span class="ident">functor_is</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_functor</span>(<span class="string">&quot;is&quot;</span>, <span class="number">2</span>);
-        <span class="kw">let</span> <span class="ident">functor_plus</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_functor</span>(<span class="string">&quot;+&quot;</span>, <span class="number">2</span>);
-        <span class="kw">let</span> <span class="ident">module</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_module</span>(<span class="string">&quot;user&quot;</span>);
-        <span class="kw">let</span> <span class="ident">predicate</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_predicate</span>(<span class="kw-2">&amp;</span><span class="ident">functor_is</span>, <span class="kw-2">&amp;</span><span class="ident">module</span>);
+        <span class="kw">let</span> <span class="ident">functor_is</span> <span class="op">=</span> <span class="ident">Functor</span>::<span class="ident">new</span>(<span class="string">&quot;is&quot;</span>, <span class="number">2</span>);
+        <span class="kw">let</span> <span class="ident">functor_plus</span> <span class="op">=</span> <span class="ident">Functor</span>::<span class="ident">new</span>(<span class="string">&quot;+&quot;</span>, <span class="number">2</span>);
+        <span class="kw">let</span> <span class="ident">module</span> <span class="op">=</span> <span class="ident">Module</span>::<span class="ident">new</span>(<span class="string">&quot;user&quot;</span>);
+        <span class="kw">let</span> <span class="ident">predicate</span> <span class="op">=</span> <span class="ident">Predicate</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">functor_is</span>, <span class="kw-2">&amp;</span><span class="ident">module</span>);
         <span class="kw">let</span> <span class="ident">callable</span> <span class="op">=</span> <span class="ident">CallablePredicate</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">predicate</span>).<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">term1</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_term_ref</span>();
@@ -1519,10 +1451,10 @@
         <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
         <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
 
-        <span class="kw">let</span> <span class="ident">functor_is</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_functor</span>(<span class="string">&quot;is&quot;</span>, <span class="number">2</span>);
-        <span class="kw">let</span> <span class="ident">functor_plus</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_functor</span>(<span class="string">&quot;+&quot;</span>, <span class="number">2</span>);
-        <span class="kw">let</span> <span class="ident">module</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_module</span>(<span class="string">&quot;user&quot;</span>);
-        <span class="kw">let</span> <span class="ident">predicate</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_predicate</span>(<span class="kw-2">&amp;</span><span class="ident">functor_is</span>, <span class="kw-2">&amp;</span><span class="ident">module</span>);
+        <span class="kw">let</span> <span class="ident">functor_is</span> <span class="op">=</span> <span class="ident">Functor</span>::<span class="ident">new</span>(<span class="string">&quot;is&quot;</span>, <span class="number">2</span>);
+        <span class="kw">let</span> <span class="ident">functor_plus</span> <span class="op">=</span> <span class="ident">Functor</span>::<span class="ident">new</span>(<span class="string">&quot;+&quot;</span>, <span class="number">2</span>);
+        <span class="kw">let</span> <span class="ident">module</span> <span class="op">=</span> <span class="ident">Module</span>::<span class="ident">new</span>(<span class="string">&quot;user&quot;</span>);
+        <span class="kw">let</span> <span class="ident">predicate</span> <span class="op">=</span> <span class="ident">Predicate</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">functor_is</span>, <span class="kw-2">&amp;</span><span class="ident">module</span>);
         <span class="kw">let</span> <span class="ident">callable</span> <span class="op">=</span> <span class="ident">CallablePredicate</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">predicate</span>).<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">term1</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_term_ref</span>();
@@ -1554,8 +1486,8 @@
         <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
 
         <span class="kw">let</span> <span class="ident">term</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">term_from_string</span>(<span class="string">&quot;foo(bar(baz,quux))&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">functor_foo</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_functor</span>(<span class="string">&quot;foo&quot;</span>, <span class="number">1</span>);
-        <span class="kw">let</span> <span class="ident">functor_bar</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_functor</span>(<span class="string">&quot;bar&quot;</span>, <span class="number">2</span>);
+        <span class="kw">let</span> <span class="ident">functor_foo</span> <span class="op">=</span> <span class="ident">Functor</span>::<span class="ident">new</span>(<span class="string">&quot;foo&quot;</span>, <span class="number">1</span>);
+        <span class="kw">let</span> <span class="ident">functor_bar</span> <span class="op">=</span> <span class="ident">Functor</span>::<span class="ident">new</span>(<span class="string">&quot;bar&quot;</span>, <span class="number">2</span>);
 
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">functor_foo</span>, <span class="ident">term</span>.<span class="ident">get</span>().<span class="ident">unwrap</span>());
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">functor_bar</span>, <span class="ident">term</span>.<span class="ident">get_arg</span>(<span class="number">1</span>).<span class="ident">unwrap</span>());
@@ -1592,9 +1524,9 @@
         <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
         <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
 
-        <span class="kw">let</span> <span class="ident">functor</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_functor</span>(<span class="string">&quot;true&quot;</span>, <span class="number">0</span>);
-        <span class="kw">let</span> <span class="ident">module</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_module</span>(<span class="string">&quot;user&quot;</span>);
-        <span class="kw">let</span> <span class="ident">predicate</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_predicate</span>(<span class="kw-2">&amp;</span><span class="ident">functor</span>, <span class="kw-2">&amp;</span><span class="ident">module</span>);
+        <span class="kw">let</span> <span class="ident">functor</span> <span class="op">=</span> <span class="ident">Functor</span>::<span class="ident">new</span>(<span class="string">&quot;true&quot;</span>, <span class="number">0</span>);
+        <span class="kw">let</span> <span class="ident">module</span> <span class="op">=</span> <span class="ident">Module</span>::<span class="ident">new</span>(<span class="string">&quot;user&quot;</span>);
+        <span class="kw">let</span> <span class="ident">predicate</span> <span class="op">=</span> <span class="ident">Predicate</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">functor</span>, <span class="kw-2">&amp;</span><span class="ident">module</span>);
         <span class="kw">let</span> <span class="ident">callable</span> <span class="op">=</span> <span class="ident">CallablePredicate</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">predicate</span>).<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">query</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">open</span>(<span class="ident">callable</span>, []);
@@ -1672,9 +1604,9 @@
         <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
         <span class="kw">let</span> <span class="ident">term</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_term_ref</span>();
 
-        <span class="kw">let</span> <span class="ident">functor</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_functor</span>(<span class="string">&quot;unify_with_42&quot;</span>, <span class="number">1</span>);
-        <span class="kw">let</span> <span class="ident">module</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_module</span>(<span class="string">&quot;user&quot;</span>);
-        <span class="kw">let</span> <span class="ident">predicate</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_predicate</span>(<span class="kw-2">&amp;</span><span class="ident">functor</span>, <span class="kw-2">&amp;</span><span class="ident">module</span>);
+        <span class="kw">let</span> <span class="ident">functor</span> <span class="op">=</span> <span class="ident">Functor</span>::<span class="ident">new</span>(<span class="string">&quot;unify_with_42&quot;</span>, <span class="number">1</span>);
+        <span class="kw">let</span> <span class="ident">module</span> <span class="op">=</span> <span class="ident">Module</span>::<span class="ident">new</span>(<span class="string">&quot;user&quot;</span>);
+        <span class="kw">let</span> <span class="ident">predicate</span> <span class="op">=</span> <span class="ident">Predicate</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">functor</span>, <span class="kw-2">&amp;</span><span class="ident">module</span>);
         <span class="kw">let</span> <span class="ident">callable</span> <span class="op">=</span> <span class="ident">CallablePredicate</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">predicate</span>).<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">query</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">open</span>(<span class="ident">callable</span>, [<span class="kw-2">&amp;</span><span class="ident">term</span>]);
