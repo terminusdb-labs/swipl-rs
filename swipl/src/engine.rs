@@ -38,6 +38,7 @@ unsafe impl Sync for Engine {}
 #[derive(Debug)]
 pub struct EngineActivation<'a> {
     engine: &'a Engine,
+    _x: std::marker::PhantomData<*mut ()>,
 }
 
 impl<'a> EngineActivation<'a> {
@@ -119,7 +120,10 @@ impl Engine {
             panic!("engine already activated");
         }
 
-        EngineActivation { engine: self }
+        EngineActivation {
+            engine: self,
+            _x: Default::default(),
+        }
     }
 
     /// Activate this engine.
@@ -149,7 +153,10 @@ impl Engine {
         let result = unsafe { PL_set_engine(self.engine_ptr, std::ptr::null_mut()) };
 
         match result as u32 {
-            PL_ENGINE_SET => EngineActivation { engine: self },
+            PL_ENGINE_SET => EngineActivation {
+                engine: self,
+                _x: Default::default(),
+            },
             PL_ENGINE_INUSE => panic!("engine already activated"),
             PL_ENGINE_INVAL => panic!("engine handle not recognized by swipl"),
             _ => panic!("unknown result from PL_set_engine"),

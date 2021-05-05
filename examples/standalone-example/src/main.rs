@@ -1,7 +1,8 @@
 use swipl::prelude::*;
 
 fn main() -> PrologResult<()> {
-    let activation = initialize_swipl().unwrap();
+    let activator = MainEngineActivator::new();
+    let activation = activator.initialize().unwrap();
     let context: Context<_> = activation.into();
 
     let term = term! {context: hello(world)}?;
