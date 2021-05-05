@@ -6,9 +6,9 @@
 //! objects.
 //!
 //! Currently, there's four kind of states that we keep track of:
-//! - Activated - this is the state an engine will be in when we just
-//!   created it. If you're directly working with engines, this will be
-//!   your initial state.
+//! - ActivatedEngine - this is the state an engine will be in when we
+//!   just created it. If you're directly working with engines, this
+//!   will be your initial state.
 //! - Unmanaged - this is the state an engine will be in when prolog
 //!   is calling into the rust library, for example, when a foreign
 //!   predicate implemented in rust is being called.
@@ -315,12 +315,12 @@ pub unsafe trait ContextType {}
 ///
 /// Example:
 /// ```
-/// use swipl::prelude::*;
+/// # use swipl::prelude::*;
 /// let engine = Engine::new();
 /// let activation = engine.activate();
 
-/// // Note: context type annotation is is usually not necessary
 /// let context: Context<ActivatedEngine> = activation.into();
+/// // Note: Context<_> would also work as a type annotation
 /// ```
 pub struct ActivatedEngine<'a> {
     _activation: EngineActivation<'a>,
@@ -356,15 +356,11 @@ unsafe impl ContextType for Unmanaged {}
 ///
 /// Example:
 /// ```
-/// use swipl::prelude::*;
-/// // create an unmanaged engine for the example
-/// initialize_swipl_noengine();
-/// unsafe { swipl::fli::PL_thread_attach_engine(std::ptr::null_mut()); }
-///
+/// # use swipl::prelude::*;
+/// # initialize_swipl_noengine();
+/// # unsafe { swipl::fli::PL_thread_attach_engine(std::ptr::null_mut()); }
 /// let context = unsafe { unmanaged_engine_context() };
-///
-/// // cleanup
-/// unsafe { swipl::fli::PL_thread_destroy_engine(); }
+/// # unsafe { swipl::fli::PL_thread_destroy_engine(); }
 /// ```
 pub unsafe fn unmanaged_engine_context() -> Context<'static, Unmanaged> {
     let current = current_engine_ptr();
@@ -579,10 +575,14 @@ prolog! {
     fn read_term_from_atom(atom_term, result, options);
     #[module("user")]
     #[name("call")]
-    pub fn open_call(term);
+    fn open_call(term);
 }
 
 impl<'a, T: QueryableContextType> Context<'a, T> {
+    /// Create a new Term reference in the current context.
+    ///
+    /// The term ref takes on the lifetime of the Context reference,
+    /// ensuring that it cannot outlive the context that created it.
     pub fn new_term_ref(&self) -> Term {
         self.assert_activated();
         unsafe {
@@ -591,6 +591,25 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         }
     }
 
+    /// Open a query.
+    ///
+    /// Example:
+    /// ```
+    /// # use swipl::prelude::*;
+    /// # fn main() -> PrologResult<()> {
+    /// #  let engine = Engine::new();
+    /// #  let activation = engine.activate();
+    /// #  let context: Context<_> = activation.into();
+    ///
+    ///    let query = context.open(pred!{format/2},
+    ///                             [&term!{context: "hello, ~q~n"}?,
+    ///                              &term!{context: ["world"]}?]);
+    ///    query.next_solution()?;
+    ///    query.cut();
+    /// #
+    /// #  Ok(())
+    /// # }
+    /// ```
     pub fn open<C: Callable<N>, const N: usize>(
         &self,
         callable: C,
@@ -599,6 +618,23 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         callable.open(self, None, args)
     }
 
+    /// Open a query, get a single result and cut.
+    ///
+    /// Example:
+    /// ```
+    /// # use swipl::prelude::*;
+    /// # fn main() -> PrologResult<()> {
+    /// #  let engine = Engine::new();
+    /// #  let activation = engine.activate();
+    /// #  let context: Context<_> = activation.into();
+    ///
+    ///    context.call_once(pred!{format/2},
+    ///                      [&term!{context: "hello, ~q~n"}?,
+    ///                      &term!{context: ["world"]}?])?;
+    /// #
+    /// #  Ok(())
+    /// # }
+    /// ```
     pub fn call_once<C: Callable<N>, const N: usize>(
         &self,
         callable: C,
@@ -611,6 +647,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         Ok(())
     }
 
+    /// Open a query, optionally passing in a context module.
     pub fn open_with_module<C: Callable<N>, const N: usize>(
         &self,
         callable: C,
@@ -620,6 +657,12 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         callable.open(self, module, args)
     }
 
+    /// Turn the given string into a prolog term.
+    ///
+    /// This uses the prolog predicate `read_term_from_atom/3` for the
+    /// heavy lifting.
+    ///
+    /// Consider using the `term!` macro instead.
     pub fn term_from_string(&self, s: &str) -> PrologResult<Term> {
         let term = self.new_term_ref();
         let frame = self.open_frame();
@@ -636,24 +679,16 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         Ok(term)
     }
 
+    /// Open a query for the given term using the `call/1` prolog predicate.
     pub fn open_call(&'a self, t: &Term<'a>) -> Context<'a, impl OpenCall> {
         open_call(self, t)
     }
 
-    pub fn exception<'b>(&'b self) -> Option<Term<'b>> {
-        self.assert_activated();
-
-        let exception = unsafe { PL_exception(0) };
-        if exception != 0 {
-            let exception_term = unsafe { Term::new(exception, self.as_term_origin()) };
-            let return_term = self.new_term_ref();
-            return_term.unify(exception_term).unwrap();
-            Some(return_term)
-        } else {
-            None
-        }
-    }
-
+    /// Turn a result into a `PrologResult`.
+    ///
+    /// For this to work, the `Err` component of the `Result` needs to
+    /// implement the trait `IntoPrologException`. This is currently
+    /// only the case for [std::io::Error].
     pub fn try_or_die<R, E: IntoPrologException>(&self, r: Result<R, E>) -> PrologResult<R> {
         match r {
             Ok(ok) => Ok(ok),
@@ -672,7 +707,11 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
     }
 }
 
+/// Trait for turning errors into prolog exceptions
 pub trait IntoPrologException {
+    /// Turns this error into a prolog exception using the given context.
+    ///
+    /// The result is a `Term` containing the prolog exception.
     fn into_prolog_exception<'a, 'b, T: QueryableContextType>(
         self,
         context: &'a Context<'b, T>,
@@ -689,6 +728,16 @@ impl IntoPrologException for std::io::Error {
     }
 }
 
+/// Call the given function, converting panics into prolog exceptions.
+///
+/// If the inner function panics, an exception of the form
+/// `error(rust_error(panic("..the panic message..")))` will be
+/// raised, and this function will return
+/// `Err(PrologError::Exception)`. Otherwise, This function will
+/// return `Ok(())`.
+///
+/// This is used by various macros to ensure that panics from user
+/// code do not propagate into prolog.
 pub unsafe fn prolog_catch_unwind<F: FnOnce() -> R + std::panic::UnwindSafe, R>(
     f: F,
 ) -> PrologResult<R> {

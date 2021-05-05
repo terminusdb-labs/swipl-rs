@@ -7,16 +7,15 @@ pub fn crate_token() -> TokenStream {
     let current_crate_name = std::env::var("CARGO_CRATE_NAME");
     if current_crate_name.is_ok() && current_crate_name.unwrap() == "swipl" {
         // check that this is either compiling swipl as the primary package, or that environment variables indicating a rustdoc binary compile is missing.
-        if std::env::var("CARGO_PRIMARY_PACKAGE").is_ok() ||
-            std::env::var("UNSTABLE_RUSTDOC_TEST_LINE").is_err() {
-            quote!{crate}
-        }
-        else {
+        if std::env::var("CARGO_PRIMARY_PACKAGE").is_ok()
+            || std::env::var("UNSTABLE_RUSTDOC_TEST_LINE").is_err()
+        {
+            quote! {crate}
+        } else {
             // not the primary package but one of the tests. assume 'swipl'.
-            quote!{swipl}
+            quote! {swipl}
         }
-    }
-    else {
+    } else {
         match crate_name("swipl") {
             Ok(name) => {
                 let name_ident = Ident::new(&name, Span::call_site());
@@ -24,7 +23,7 @@ pub fn crate_token() -> TokenStream {
             }
             Err(_) => {
                 quote! {swipl}
-            },
+            }
         }
     }
 }
