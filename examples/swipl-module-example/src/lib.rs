@@ -44,10 +44,10 @@ predicates! {
         term2.unify(num)
     }
 
-    semidet fn term_is_flurps(context, term) {
+    semidet fn term_is_flurps(_context, term) {
         let val: Atom = term.get()?;
 
-        into_prolog_result(val.name(context) == "flurps")
+        into_prolog_result(val.name() == "flurps")
     }
 
     semidet fn add_two_numbers(_context, n1_term, n2_term, out_term) {

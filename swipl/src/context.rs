@@ -3,7 +3,6 @@
 //!
 use super::atom::*;
 use super::callable::*;
-use super::consts::*;
 use super::engine::*;
 use super::fli::*;
 use super::functor::*;
@@ -13,7 +12,6 @@ use super::result::*;
 use super::term::*;
 
 use std::cell::Cell;
-use std::convert::TryInto;
 
 use swipl_macros::{prolog, term};
 
@@ -348,14 +346,7 @@ pub unsafe trait ActiveEnginePromise: Sized {
     }
 
     fn new_functor<A: IntoAtom>(&self, name: A, arity: u16) -> Functor {
-        if arity as usize > MAX_ARITY {
-            panic!("functor arity is >1024: {}", arity);
-        }
-        let atom = name.into_atom();
-
-        let functor = unsafe { PL_new_functor(atom.atom_ptr(), arity.try_into().unwrap()) };
-
-        unsafe { Functor::wrap(functor) }
+        Functor::new(name, arity)
     }
 
     fn new_module<A: IntoAtom>(&self, name: A) -> Module {

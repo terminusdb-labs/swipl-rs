@@ -19,23 +19,23 @@ impl Functor {
         Self { functor }
     }
 
-    pub unsafe fn new<A: IntoAtom>(name: A, arity: u16) -> Functor {
+    pub fn new<A: IntoAtom>(name: A, arity: u16) -> Functor {
         assert_some_engine_is_active();
         if arity as usize > MAX_ARITY {
             panic!("functor arity is >1024: {}", arity);
         }
         let atom = name.into_atom();
 
-        let functor = PL_new_functor(atom.atom_ptr(), arity.try_into().unwrap());
+        let functor = unsafe { PL_new_functor(atom.atom_ptr(), arity.try_into().unwrap()) };
 
-        Functor::wrap(functor)
+        unsafe { Functor::wrap(functor) }
     }
 
     pub fn functor_ptr(&self) -> functor_t {
         self.functor
     }
 
-    pub fn with_name<P: ActiveEnginePromise, F, R>(&self, _: &P, func: F) -> R
+    pub fn with_name<F, R>(&self, func: F) -> R
     where
         F: Fn(&Atom) -> R,
     {
@@ -48,22 +48,23 @@ impl Functor {
         result
     }
 
-    pub fn name<P: ActiveEnginePromise>(&self, promise: &P) -> Atom {
-        self.with_name(promise, |n| n.clone())
+    pub fn name(&self) -> Atom {
+        self.with_name(|n| n.clone())
     }
 
-    pub fn name_string<P: ActiveEnginePromise>(&self, promise: &P) -> String {
-        self.with_name(promise, |n| n.name().to_string())
+    pub fn name_string(&self) -> String {
+        self.with_name(|n| n.name().to_string())
     }
 
-    pub fn with_name_string<P: ActiveEnginePromise, F, R>(&self, promise: &P, func: F) -> R
+    pub fn with_name_string<F, R>(&self, func: F) -> R
     where
         F: Fn(&str) -> R,
     {
-        self.with_name(promise, |n| func(n.name()))
+        self.with_name(|n| func(n.name()))
     }
 
-    pub fn arity<P: ActiveEnginePromise>(&self, _: &P) -> u16 {
+    pub fn arity(&self) -> u16 {
+        assert_some_engine_is_active();
         let arity = unsafe { PL_functor_arity(self.functor) };
 
         arity.try_into().unwrap()
@@ -139,12 +140,12 @@ mod tests {
 
         let f = context.new_functor("moocows", 3);
 
-        assert_eq!("moocows", f.name_string(&context));
-        assert_eq!("moocows", f.name(&context).name());
-        f.with_name(&context, |name| assert_eq!("moocows", name.name()));
-        f.with_name_string(&context, |name| assert_eq!("moocows", name));
+        assert_eq!("moocows", f.name_string());
+        assert_eq!("moocows", f.name().name());
+        f.with_name(|name| assert_eq!("moocows", name.name()));
+        f.with_name_string(|name| assert_eq!("moocows", name));
 
-        assert_eq!(3, f.arity(&context));
+        assert_eq!(3, f.arity());
     }
 
     #[test]
