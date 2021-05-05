@@ -294,7 +294,7 @@
             <span class="kw">let</span> <span class="ident">module_name</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">module</span>.<span class="ident">unwrap_or</span>(<span class="string">&quot;&quot;</span>);
             <span class="kw">let</span> <span class="ident">module</span> <span class="op">=</span> <span class="ident">Module</span>::<span class="ident">new</span>(<span class="ident">module_name</span>);
 
-            <span class="ident">loaded</span> <span class="op">=</span> <span class="ident">Predicate</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">functor</span>, <span class="kw-2">&amp;</span><span class="ident">module</span>).<span class="ident">predicate_ptr</span>();
+            <span class="ident">loaded</span> <span class="op">=</span> <span class="ident">Predicate</span>::<span class="ident">new</span>(<span class="ident">functor</span>, <span class="ident">module</span>).<span class="ident">predicate_ptr</span>();
 
             <span class="self">self</span>.<span class="ident">predicate</span>
                 .<span class="ident">store</span>(<span class="ident">loaded</span>, <span class="ident">std</span>::<span class="ident">sync</span>::<span class="ident">atomic</span>::<span class="ident">Ordering</span>::<span class="ident">Relaxed</span>);
@@ -310,7 +310,7 @@
     <span class="kw">fn</span> <span class="ident">open</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">C</span>: <span class="ident">ContextType</span><span class="op">&gt;</span>(
         <span class="self">self</span>,
         <span class="ident">context</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>,
-        <span class="ident">module</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Module</span><span class="op">&gt;</span>,
+        <span class="ident">module</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Module</span><span class="op">&gt;</span>,
         <span class="ident">args</span>: [<span class="kw-2">&amp;</span><span class="ident">Term</span>; <span class="ident">N</span>],
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">OpenPredicate</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">as_callable</span>().<span class="ident">open</span>(<span class="ident">context</span>, <span class="ident">module</span>, <span class="ident">args</span>)
@@ -323,7 +323,7 @@
     <span class="kw">fn</span> <span class="ident">open</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span>, <span class="ident">C</span>: <span class="ident">ContextType</span><span class="op">&gt;</span>(
         <span class="self">self</span>,
         <span class="ident">context</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>,
-        <span class="ident">module</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Module</span><span class="op">&gt;</span>,
+        <span class="ident">module</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Module</span><span class="op">&gt;</span>,
         <span class="ident">args</span>: [<span class="kw-2">&amp;</span><span class="ident">Term</span>; <span class="ident">N</span>],
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span>, <span class="ident">OpenPredicate</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">as_callable</span>().<span class="ident">open</span>(<span class="ident">context</span>, <span class="ident">module</span>, <span class="ident">args</span>)
@@ -347,7 +347,7 @@
         <span class="self">Self</span> { <span class="ident">predicate</span> }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">predicate</span>: <span class="kw-2">&amp;</span><span class="ident">Predicate</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">PredicateWrapError</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">predicate</span>: <span class="ident">Predicate</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">PredicateWrapError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">arity</span> <span class="op">=</span> <span class="ident">predicate</span>.<span class="ident">arity</span>();
         <span class="kw">if</span> <span class="ident">arity</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">!</span><span class="op">=</span> <span class="ident">N</span> {
             <span class="prelude-val">Err</span>(<span class="ident">PredicateWrapError</span>::<span class="ident">WrongArity</span> {
@@ -366,7 +366,7 @@
     <span class="kw">fn</span> <span class="ident">open</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">C</span>: <span class="ident">ContextType</span><span class="op">&gt;</span>(
         <span class="self">self</span>,
         <span class="ident">context</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>,
-        <span class="ident">module</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Module</span><span class="op">&gt;</span>,
+        <span class="ident">module</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Module</span><span class="op">&gt;</span>,
         <span class="ident">args</span>: [<span class="kw-2">&amp;</span><span class="ident">Term</span>; <span class="ident">N</span>],
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="self">Self</span>::<span class="ident">ContextType</span><span class="op">&gt;</span>;
 }
@@ -466,7 +466,7 @@
     <span class="kw">fn</span> <span class="ident">open</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">C</span>: <span class="ident">ContextType</span><span class="op">&gt;</span>(
         <span class="self">self</span>,
         <span class="ident">context</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>,
-        <span class="ident">module</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Module</span><span class="op">&gt;</span>,
+        <span class="ident">module</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Module</span><span class="op">&gt;</span>,
         <span class="ident">args</span>: [<span class="kw-2">&amp;</span><span class="ident">Term</span>; <span class="ident">N</span>],
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="self">Self</span>::<span class="ident">ContextType</span><span class="op">&gt;</span> {
         <span class="ident">context</span>.<span class="ident">assert_activated</span>();
