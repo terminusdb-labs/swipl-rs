@@ -1,6 +1,55 @@
 //! Prolog contexts.
 //!
+//! As you interact with SWI-Prolog, the underlying prolog engine
+//! moves into different states, where different things are
+//! allowed. We keep track of this underlying state through Context
+//! objects.
 //!
+//! Currently, there's four kind of states that we keep track of:
+//! - Activated - this is the state an engine will be in when we just
+//!   created it. If you're directly working with engines, this will be
+//!   your initial state.
+//! - Unmanaged - this is the state an engine will be in when prolog
+//!   is calling into the rust library, for example, when a foreign
+//!   predicate implemented in rust is being called.
+//! - Framed - In any context, you can create a prolog frame. A prolog
+//!   frame allows you to rewind the state of all prolog terms to their
+//!   state at the time of frame creation.
+//! - OpenCall - While calling into prolog, this is the context you'll
+//!   be in as you're walking through the solutions. This is a special
+//!   context where a lot of the normal features are disabled.
+//!
+//! Contexts are either active or inactive. A context starts out as
+//! active, but as soon as you do something that creates a new context
+//! (create a frame, open a query), the context will become
+//! inactive. Once the created context is dropped, the original
+//! context will become active again.
+//!
+//! With the exception of the OpenCall context, all contexts let you
+//! create new term refs, which are handles to data on the prolog
+//! stack. These term refs can only be created while the context is
+//! active. However, they can be manipulated as long as the context
+//! that created them exists. As soon as the context is dropped
+//! though, the Term will become invalid and trying to do anything
+//! with it will result in a compile error.
+//!
+//! The OpenCall context is special in that no new terms are allowed
+//! to be created, nor are you allowed to open another query. It is
+//! however possible to create a new frame in this context, which
+//! would once again put you in a state where these things are
+//! possible. Of course, you'll have to drop this frame before you're
+//! able to manipulate the OpenCall context again (such as retrieving
+//! the next solution from the query).
+//!
+//! Various operations may cause the underlying engine to go into an
+//! exceptional state. This is signaled by these operations returning
+//! an `Err(PrologError::Exception)`. This means that a special
+//! exception term has been set. Most context operations are
+//! impossible while in this state, and attempting to perform them
+//! will result in a panic. Your options are either to return back
+//! into prolog (if you're implementing a foreign predicate), which
+//! will then raise this exception in prolog, or to clear the
+//! exception.
 use super::callable::*;
 use super::engine::*;
 use super::fli::*;
@@ -12,7 +61,7 @@ use std::cell::Cell;
 
 use swipl_macros::{prolog, term};
 
-pub unsafe fn with_cleared_exception<R>(f: impl FnOnce() -> R) -> R {
+pub(crate) unsafe fn with_cleared_exception<R>(f: impl FnOnce() -> R) -> R {
     let error_term_ref = PL_exception(0);
     if error_term_ref != 0 {
         let backup_term_ref = PL_new_term_ref();
@@ -28,9 +77,15 @@ pub unsafe fn with_cleared_exception<R>(f: impl FnOnce() -> R) -> R {
     }
 }
 
+/// A term wrapper for the special exception term.
+///
+/// The exception term lives in a special place on the prolog stack
+/// where frame rewinds have no effect.
 pub struct ExceptionTerm<'a>(Term<'a>);
 
 impl<'a> ExceptionTerm<'a> {
+    /// Clear the exception, so that the engine is no longer in an
+    /// exceptional state.
     pub fn clear_exception(self) {
         self.assert_term_handling_possible();
 
@@ -38,8 +93,13 @@ impl<'a> ExceptionTerm<'a> {
     }
 
     /// Call the given function with a copy of the exception term in a context where the exception has been cleared.
-    /// This function is marked unsafe because it is not safe to use the original ExceptionTerm from within the given function.
-    pub unsafe fn with_cleared_exception<'b, C: ContextType, R>(
+    ///
+    /// This function is marked unsafe because it is not safe to use
+    /// the original ExceptionTerm from within the given function, but
+    /// we still have a handle to it through self. The caller will
+    /// have to ensure that the function that is passed in will not
+    /// use this exception term.
+    unsafe fn with_cleared_exception<'b, C: ContextType, R>(
         &'b self,
         ctx: &'b Context<C>,
         f: impl FnOnce(&Term) -> R,
@@ -68,6 +128,9 @@ impl<'a> std::ops::Deref for ExceptionTerm<'a> {
     }
 }
 
+/// A context that the underlying prolog engine is in.
+///
+/// See the module documentation for an explanation of this type.
 pub struct Context<'a, T: ContextType> {
     parent: Option<&'a dyn ContextParent>,
     pub context: T,
@@ -87,7 +150,7 @@ impl<'a, T: ContextType> Context<'a, T> {
         }
     }
 
-    pub unsafe fn new_activated<'b, T2: ContextType>(
+    pub(crate) unsafe fn new_activated<'b, T2: ContextType>(
         parent: &'a Context<'b, T2>,
         context: T,
         engine: PL_engine_t,
@@ -101,35 +164,50 @@ impl<'a, T: ContextType> Context<'a, T> {
         }
     }
 
-    pub unsafe fn deactivate(&self) {
+    pub(crate) unsafe fn deactivate(&self) {
         self.activated.set(false)
     }
 
+    /// Panics if this context is not active.
     pub fn assert_activated(&self) {
         if !self.activated.get() {
             panic!("tried to use inactive context");
         }
     }
 
+    /// Panics if the engine is in an exceptional state.
     pub fn assert_no_exception(&self) {
         if self.has_exception() {
             panic!("tried to use context which has raised an exception");
         }
     }
 
+    /// Returns the underlying engine pointer.
     pub fn engine_ptr(&self) -> PL_engine_t {
         self.engine
     }
 
-    pub fn as_term_origin(&self) -> TermOrigin {
+    /// Return the engine pointer as a `TermOrigin`, which is used in the construction of a `Term` in unsafe code.
+    fn as_term_origin(&self) -> TermOrigin {
         unsafe { TermOrigin::new(self.engine_ptr()) }
     }
 
+    /// Wrap the given term_t into a Term with a lifetime corresponding to this context.
+    ///
+    /// This is unsafe because there's no way of checking that the
+    /// given term_t is indeed from this context. The caller will have
+    /// to ensure that the term lives at least as long as this
+    /// context.
     pub unsafe fn wrap_term_ref(&self, term: term_t) -> Term {
         self.assert_activated();
         Term::new(term, self.as_term_origin())
     }
 
+    /// Put the engine in an exceptional state.
+    ///
+    /// The given term will be copied and put into the exception
+    /// term. This function always returns
+    /// `Err(PrologError::Exception)`.
     pub fn raise_exception<R>(&self, term: &Term) -> PrologResult<R>
     where
         T: FrameableContextType,
@@ -151,12 +229,14 @@ impl<'a, T: ContextType> Context<'a, T> {
         Err(PrologError::Exception)
     }
 
+    /// Returns true if the underlying engine is in an exceptional state.
     pub fn has_exception(&self) -> bool {
         self.assert_activated();
 
         unsafe { PL_exception(0) != 0 }
     }
 
+    /// Clear the current exception if there is any.
     pub fn clear_exception(&self) {
         self.with_uncleared_exception(|e| match e {
             None => (),
@@ -164,6 +244,11 @@ impl<'a, T: ContextType> Context<'a, T> {
         })
     }
 
+    /// Call the given function with the exception term, if it exists.
+    ///
+    /// The given function is able to clear the exception term, but
+    /// not much else is allowed from safe code. Any attempt to do a
+    /// get, put or unify with the given term will result in a panic.
     pub fn with_uncleared_exception<'b, R>(
         &'b self,
         f: impl FnOnce(Option<ExceptionTerm<'b>>) -> R,
@@ -190,24 +275,17 @@ impl<'a, T: ContextType> Context<'a, T> {
         result
     }
 
+    /// Call the given function with a copy of the exception term, from a context where the exception state has temporarily been cleared.
+    ///
+    /// This allows analysis on the exception term using all the
+    /// normal safe functions for doing so. When the function returns,
+    /// the engine will go back into an exceptional state with the
+    /// original exception term.
     pub fn with_exception<'b, R>(&'b self, f: impl FnOnce(Option<&Term>) -> R) -> R {
         self.with_uncleared_exception(|e| match e {
             None => f(None),
             Some(e) => unsafe { e.with_cleared_exception(self, |e| f(Some(e))) },
         })
-    }
-
-    pub fn catch<R>(
-        &self,
-        result: PrologResult<R>,
-        handler: impl Fn(&Term) -> PrologResult<R>,
-    ) -> PrologResult<R> {
-        match result {
-            Err(PrologError::Exception) => self.with_exception(move |term| {
-                handler(term.expect("expected exception term due to exception result"))
-            }),
-            _ => result,
-        }
     }
 }
 
@@ -233,6 +311,17 @@ impl<'a, T: ContextType> Drop for Context<'a, T> {
 
 pub unsafe trait ContextType {}
 
+/// Context type for an active engine. This wraps an `EngineActivation`.
+///
+/// Example:
+/// ```
+/// use swipl::prelude::*;
+/// let engine = Engine::new();
+/// let activation = engine.activate();
+
+/// // Note: context type annotation is is usually not necessary
+/// let context: Context<ActivatedEngine> = activation.into();
+/// ```
 pub struct ActivatedEngine<'a> {
     _activation: EngineActivation<'a>,
 }
@@ -248,13 +337,35 @@ impl<'a> Into<Context<'a, ActivatedEngine<'a>>> for EngineActivation<'a> {
 
 unsafe impl<'a> ContextType for ActivatedEngine<'a> {}
 
+/// Context type for an unmanaged engine.
+///
+/// See [unmanaged_engine_context] for usage.
 pub struct Unmanaged {
     // only here to prevent automatic construction
     _x: (),
 }
 unsafe impl ContextType for Unmanaged {}
 
-// This is unsafe to call if we are not in a swipl environment, or if some other context is active. Furthermore, the lifetime will most definitely be wrong. This should be used by code that doesn't promiscuously spread this context. all further accesses should be through borrows.
+/// Create an unmanaged context for situations where the thread has an engine that rust doesn't know about.
+///
+/// This is unsafe to call if we are not in a swipl environment, or if
+/// some other context is active. Furthermore, the lifetime will most
+/// definitely be wrong. This should be used by code that doesn't
+/// promiscuously spread this context. all further accesses should be
+/// through borrows.
+///
+/// Example:
+/// ```
+/// use swipl::prelude::*;
+/// // create an unmanaged engine for the example
+/// initialize_swipl_noengine();
+/// unsafe { swipl::fli::PL_thread_attach_engine(std::ptr::null_mut()); }
+///
+/// let context = unsafe { unmanaged_engine_context() };
+///
+/// // cleanup
+/// unsafe { swipl::fli::PL_thread_destroy_engine(); }
+/// ```
 pub unsafe fn unmanaged_engine_context() -> Context<'static, Unmanaged> {
     let current = current_engine_ptr();
 
@@ -270,6 +381,101 @@ enum FrameState {
     Closed,
 }
 
+/// Context type for a prolog frame.
+///
+/// # Examples
+/// Discard a frame through dropping:
+/// ```
+/// use swipl::prelude::*;
+/// fn main() -> PrologResult<()> {
+///    // create a context
+///    let engine = Engine::new();
+///    let activation = engine.activate();
+///    let context: Context<_> = activation.into();
+///
+///    let term = context.new_term_ref();
+///
+///    {
+///        let frame = context.open_frame();
+///        term.unify(42_u64)?;
+///    }
+///
+///    assert!(term.is_var());
+///
+///    Ok(())
+/// }
+/// ```
+///
+/// Discard a frame explicitely:
+/// ```
+/// use swipl::prelude::*;
+/// fn main() -> PrologResult<()> {
+///    // create a context
+///    let engine = Engine::new();
+///    let activation = engine.activate();
+///    let context: Context<_> = activation.into();
+///
+///    let term = context.new_term_ref();
+///
+///    let frame = context.open_frame();
+///    term.unify(42_u64)?;
+///
+///    frame.discard();
+///    assert!(term.is_var());
+///
+///    Ok(())
+/// }
+/// ```
+///
+/// Close a frame:
+/// ```
+/// use swipl::prelude::*;
+/// fn main() -> PrologResult<()> {
+///    // create a context
+///    let engine = Engine::new();
+///    let activation = engine.activate();
+///    let context: Context<_> = activation.into();
+///
+///    let term = context.new_term_ref();
+///
+///    let frame = context.open_frame();
+///    term.unify(42_u64)?;
+///    let term2 = frame.new_term_ref();
+///
+///    frame.close();
+///    assert_eq!(42_u64, term.get()?);
+///    // the following would result in a compile error:
+///    // term2.unify(42_u64)?;
+///
+///    Ok(())
+/// }
+/// ```
+///
+/// Rewind a frame:
+/// ```
+/// use swipl::prelude::*;
+/// fn main() -> PrologResult<()> {
+///    // create a context
+///    let engine = Engine::new();
+///    let activation = engine.activate();
+///    let context: Context<_> = activation.into();
+///
+///    let term = context.new_term_ref();
+///
+///    let frame = context.open_frame();
+///    term.unify(42_u64)?;
+///
+///    let frame = frame.rewind();
+///    // term is a variable again so the following unification will succeed
+///    term.unify(43_u64)?;
+///
+///    frame.close();
+///    assert_eq!(43_u64, term.get()?);
+///
+///    Ok(())
+/// }
+/// ```
+///
 pub struct Frame {
     fid: PL_fid_t,
     state: FrameState,
@@ -295,30 +501,59 @@ impl Drop for Frame {
 }
 
 impl<'a> Context<'a, Frame> {
-    pub fn close_frame(mut self) {
+    /// Close the frame.
+    ///
+    /// After closing, any terms created in the context of this frame
+    /// will no longer be usable. Any data created and put in terms
+    /// that are still in scope will be retained.
+    pub fn close(mut self) {
         self.context.state = FrameState::Closed;
         // unsafe justification: reasons for safety are the same as in a normal drop. Also, since we just set framestate to discarded, the drop won't try to subsequently close this same frame.
         unsafe { PL_close_foreign_frame(self.context.fid) };
     }
 
-    pub fn discard_frame(self) {
+    /// Discard the frame.
+    ///
+    /// This will destroy the frame. Any terms created in the context
+    /// of this frame will no longer be usable. Furthermore, any term
+    /// manipulation that happened since opening this frame will be
+    /// undone. This is equivalent to a rewind followed by a close.
+    pub fn discard(self) {
         // would happen automatically but might as well be explicit
         std::mem::drop(self)
     }
 
-    pub fn rewind_frame(&self) {
+    /// Rewind the frame.
+    ///
+    /// This will rewind the frame. Any terms created in the context
+    /// of this frame will no longer be usable. Furthermore, any term
+    /// manipulation that happened since opening this frame will be
+    /// undone.
+    ///
+    /// This returns a new context which is to be used for further
+    /// manipulation of this frame.
+    pub fn rewind(self) -> Context<'a, Frame> {
         self.assert_activated();
         // unsafe justification: We just checked that this frame right here is currently the active context. Therefore it can be rewinded.
         unsafe { PL_rewind_foreign_frame(self.context.fid) };
+
+        self
     }
 }
 
+/// A trait marker for context types for which it is safe to open frames.
 pub unsafe trait FrameableContextType: ContextType {}
 unsafe impl FrameableContextType for Unmanaged {}
 unsafe impl<'a> FrameableContextType for ActivatedEngine<'a> {}
 unsafe impl FrameableContextType for Frame {}
 
 impl<'a, C: FrameableContextType> Context<'a, C> {
+    /// Open a new frame.
+    ///
+    /// This returns a new context for the frame. The current context
+    /// will become inactive, until the new context is dropped. This
+    /// may happen implicitely, when it goes out of scope, or
+    /// explicitely, by calling `close()` or `discard()` on it.
     pub fn open_frame(&self) -> Context<Frame> {
         self.assert_activated();
         let fid = unsafe { PL_open_foreign_frame() };
@@ -333,6 +568,7 @@ impl<'a, C: FrameableContextType> Context<'a, C> {
     }
 }
 
+/// A trait marker for context types for hich it is safe to open queries and create new term refs.
 pub unsafe trait QueryableContextType: FrameableContextType {}
 unsafe impl QueryableContextType for Unmanaged {}
 unsafe impl<'a> QueryableContextType for ActivatedEngine<'a> {}
@@ -395,12 +631,12 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         assert!(arg3.unify(Nil).is_ok());
 
         read_term_from_atom(&frame, &arg1, &term, &arg3).once()?;
-        frame.close_frame();
+        frame.close();
 
         Ok(term)
     }
 
-    pub fn open_call(&'a self, t: &Term<'a>) -> Context<'a, impl OpenCallable> {
+    pub fn open_call(&'a self, t: &Term<'a>) -> Context<'a, impl OpenCall> {
         open_call(self, t)
     }
 

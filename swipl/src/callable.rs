@@ -101,7 +101,7 @@ impl<const N: usize> CallablePredicate<N> {
 }
 
 pub trait Callable<const N: usize> {
-    type ContextType: OpenCallable;
+    type ContextType: OpenCall;
 
     fn open<'a, C: ContextType>(
         self,
@@ -116,13 +116,13 @@ pub struct OpenPredicate {
     closed: bool,
 }
 
-pub unsafe trait OpenCallable: Sized {
+pub unsafe trait OpenCall: Sized {
     fn next_solution<'a>(this: &Context<'a, Self>) -> PrologResult<bool>;
     fn cut<'a>(this: Context<'a, Self>);
     fn discard<'a>(this: Context<'a, Self>);
 }
 
-impl<'a, C: OpenCallable> Context<'a, C> {
+impl<'a, C: OpenCall> Context<'a, C> {
     pub fn next_solution(&self) -> PrologResult<bool> {
         C::next_solution(self)
     }
@@ -153,10 +153,10 @@ impl<'a, C: OpenCallable> Context<'a, C> {
     }
 }
 
-unsafe impl<T: OpenCallable> ContextType for T {}
-unsafe impl<T: OpenCallable> FrameableContextType for T {}
+unsafe impl<T: OpenCall> ContextType for T {}
+unsafe impl<T: OpenCall> FrameableContextType for T {}
 
-unsafe impl OpenCallable for OpenPredicate {
+unsafe impl OpenCall for OpenPredicate {
     fn next_solution<'a>(this: &Context<'a, Self>) -> PrologResult<bool> {
         this.assert_activated();
         let result = unsafe { PL_next_solution(this.context.qid) };

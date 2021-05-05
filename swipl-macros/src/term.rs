@@ -40,11 +40,11 @@ pub fn term_macro(stream: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
             match result {
                 Ok(()) => {
-                    __swipl_frame.close_frame();
+                    __swipl_frame.close();
                     Ok(#term_ident)
                 },
                 Err(e) => {
-                    __swipl_frame.discard_frame();
+                    __swipl_frame.discard();
                     Err(e)
                 }
             }
@@ -247,11 +247,12 @@ impl Functor {
                     .collect();
 
                 top += arity + 1;
-                let terms_init = term_idents.iter().enumerate()
-                    .map(|(ix, ident)| quote! {
-                        let #ident = unsafe {#crt::term::Term::new(#term_id_ident + #ix, __swipl_frame.as_term_origin())};
+                let terms_init = term_idents.iter().enumerate().map(|(ix, ident)| {
+                    quote! {
+                        let #ident = unsafe {__swipl_frame.wrap_term_ref(#term_id_ident + #ix)};
                         #into.unify_arg(#ix+1, &#ident)?;
-                    });
+                    }
+                });
 
                 let mut terms_fill = Vec::with_capacity(arity);
                 for (i, p) in self.params.iter().enumerate() {
@@ -322,10 +323,11 @@ impl List {
         let elements_assign = match len > 0 {
             true => {
                 // initialize terms
-                let terms_init = term_idents.iter().enumerate()
-                    .map(|(ix, ident)| quote! {
-                        let #ident = unsafe {#crt::term::Term::new(#term_id_ident + #ix, __swipl_frame.as_term_origin())};
-                    });
+                let terms_init = term_idents.iter().enumerate().map(|(ix, ident)| {
+                    quote! {
+                        let #ident = unsafe {__swipl_frame.wrap_term_ref(#term_id_ident + #ix)};
+                    }
+                });
 
                 // one extra for the term_id_ident ref
                 top += 1;
@@ -405,7 +407,7 @@ impl Tuple {
         // initialize terms
         let terms_init = term_idents.iter().enumerate().map(|(ix, ident)| {
             quote! {
-                let #ident = unsafe {#crt::term::Term::new(#term_id_ident + #ix, __swipl_frame.as_term_origin())};
+                let #ident = unsafe {__swipl_frame.wrap_term_ref(#term_id_ident + #ix)};
             }
         });
 

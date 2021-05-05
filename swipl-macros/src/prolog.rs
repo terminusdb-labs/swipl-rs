@@ -86,7 +86,7 @@ impl PrologPredicate {
             static #pred_static_ident: #crt::callable::LazyCallablePredicate<#params_len> = #crt::callable::LazyCallablePredicate::new(Some(#predicate_module), #predicate_name);
 
             #doc
-            #visibility fn #rust_name<'a, T:#crt::context::QueryableContextType>(swipl_context: &'a #crt::context::Context<'a, T>, #(#params: &#crt::term::Term<'a>),*) -> #crt::context::Context<'a, impl #crt::callable::OpenCallable> {
+            #visibility fn #rust_name<'a, T:#crt::context::QueryableContextType>(swipl_context: &'a #crt::context::Context<'a, T>, #(#params: &#crt::term::Term<'a>),*) -> #crt::context::Context<'a, impl #crt::callable::OpenCall> {
                 swipl_context.assert_activated();
                 let swipl_call_args = [#(#params),*];
 

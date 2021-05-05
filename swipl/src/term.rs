@@ -23,7 +23,7 @@ impl<'a> Debug for Term<'a> {
 }
 
 impl<'a> Term<'a> {
-    pub unsafe fn new(term: term_t, origin: TermOrigin<'a>) -> Self {
+    pub(crate) unsafe fn new(term: term_t, origin: TermOrigin<'a>) -> Self {
         Term { term, origin }
     }
 
@@ -197,7 +197,7 @@ impl<'a> Term<'a> {
 }
 
 #[derive(Clone)]
-pub struct TermOrigin<'a> {
+pub(crate) struct TermOrigin<'a> {
     engine: PL_engine_t,
     _lifetime: std::marker::PhantomData<&'a ()>,
 }
@@ -624,12 +624,12 @@ where
                 return false;
             }
 
-            frame2.close_frame();
+            frame2.close();
         }
 
         if success {
             success = unsafe { PL_unify_nil(list.term_ptr()) != 0 };
-            frame.close_frame();
+            frame.close();
         }
 
         success
@@ -676,10 +676,10 @@ unsafe impl<T: TermGetable> TermGetable for Vec<T> {
             // reset term - should really be a method on term
             unsafe { PL_put_variable(list.term_ptr()) };
             list.unify(tail).unwrap();
-            frame2.close_frame();
+            frame2.close();
         }
 
-        frame.close_frame();
+        frame.close();
 
         match success {
             true => Some(result),
@@ -745,7 +745,7 @@ mod tests {
         let context2 = context.open_frame();
 
         assert!(term.unify(42_u64).is_ok());
-        context2.rewind_frame();
+        context2.rewind();
         assert!(term.unify(43_u64).is_ok());
     }
 
