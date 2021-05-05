@@ -555,6 +555,8 @@
 <span id="552">552</span>
 <span id="553">553</span>
 <span id="554">554</span>
+<span id="555">555</span>
+<span id="556">556</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Prolog atoms.</span>
 <span class="doccomment">//!</span>
@@ -600,6 +602,8 @@
 
     <span class="doccomment">/// Create a new atom from the given string.</span>
     <span class="doccomment">///</span>
+    <span class="doccomment">/// This will panic if no prolog engine is active on this thread.</span>
+    <span class="doccomment">///</span>
     <span class="doccomment">/// If the atom already exists, this will raise the reference</span>
     <span class="doccomment">/// count on that atom and then return the existing atom.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Atom</span> {
@@ -641,7 +645,7 @@
 
     <span class="doccomment">/// Retrieve the name of this atom, that is, the string with which it was created.</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// This requires an engine to be active. If none is active, this function will panic.</span>
+    <span class="doccomment">/// This will panic if no prolog engine is active on this thread.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">str</span> {
         <span class="ident">assert_some_engine_is_active</span>();
         <span class="comment">// TODO we&#39;re just assuming that what we get out of prolog is</span>

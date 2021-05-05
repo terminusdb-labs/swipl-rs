@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["Functor",""],["Functorable",""]]});
+initSidebarItems({"struct":[["Functor","A wrapper for a prolog functor."]]});

@@ -225,6 +225,7 @@
 <span id="222">222</span>
 <span id="223">223</span>
 <span id="224">224</span>
+<span id="225">225</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Prolog engines.</span>
 <span class="doccomment">//!</span>
@@ -395,6 +396,7 @@
     <span class="ident">current</span> <span class="op">=</span><span class="op">=</span> <span class="ident">engine</span>
 }
 
+<span class="doccomment">/// Panic if no engine is active on this thread.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">assert_some_engine_is_active</span>() {
     <span class="kw">if</span> <span class="op">!</span><span class="ident">Engine</span>::<span class="ident">some_engine_active</span>() {
         <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;No SWI-Prolog engine is active&quot;</span>);
