@@ -1096,6 +1096,11 @@
 <span id="1093">1093</span>
 <span id="1094">1094</span>
 <span id="1095">1095</span>
+<span id="1096">1096</span>
+<span id="1097">1097</span>
+<span id="1098">1098</span>
+<span id="1099">1099</span>
+<span id="1100">1100</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Prolog contexts.</span>
 <span class="doccomment">//!</span>
@@ -1408,6 +1413,11 @@
     }
 }
 
+<span class="doccomment">/// A type of context.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This is the object that is wrapped by [Context]. Implementors can</span>
+<span class="doccomment">/// use this to hold context-specific information. Any functions are</span>
+<span class="doccomment">/// to be implemented on `Context&lt;YourContextType&gt;`.</span>
 <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">trait</span> <span class="ident">ContextType</span> {}
 
 <span class="doccomment">/// Context type for an active engine. This wraps an `EngineActivation`.</span>
