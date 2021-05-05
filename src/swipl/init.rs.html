@@ -157,31 +157,6 @@
 <span id="154">154</span>
 <span id="155">155</span>
 <span id="156">156</span>
-<span id="157">157</span>
-<span id="158">158</span>
-<span id="159">159</span>
-<span id="160">160</span>
-<span id="161">161</span>
-<span id="162">162</span>
-<span id="163">163</span>
-<span id="164">164</span>
-<span id="165">165</span>
-<span id="166">166</span>
-<span id="167">167</span>
-<span id="168">168</span>
-<span id="169">169</span>
-<span id="170">170</span>
-<span id="171">171</span>
-<span id="172">172</span>
-<span id="173">173</span>
-<span id="174">174</span>
-<span id="175">175</span>
-<span id="176">176</span>
-<span id="177">177</span>
-<span id="178">178</span>
-<span id="179">179</span>
-<span id="180">180</span>
-<span id="181">181</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Prolog initialization logic.</span>
 <span class="doccomment">//!</span>
@@ -227,47 +202,6 @@
 <span class="kw">static</span> <span class="ident">ARG0</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [<span class="ident">u8</span>] <span class="op">=</span> <span class="string">b&quot;rust-swipl\0&quot;</span>; <span class="comment">// fake program name</span>
 <span class="kw">static</span> <span class="ident">ARG1</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [<span class="ident">u8</span>] <span class="op">=</span> <span class="string">b&quot;--quiet\0&quot;</span>; <span class="comment">// suppress swipl banner printing</span>
 
-<span class="doccomment">/// Struct for activating the main engine.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// It&#39;s only purpose is to provide a lifetime to the</span>
-<span class="doccomment">/// `EngineActivation` for the main engine, ensuring that the</span>
-<span class="doccomment">/// activation is only allowed to live as long as the</span>
-<span class="doccomment">/// `MainEngineActivator`.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">MainEngineActivator</span> {
-    <span class="ident">_x</span>: <span class="ident">std</span>::<span class="ident">marker</span>::<span class="ident">PhantomData</span><span class="op">&lt;</span><span class="kw-2">*</span><span class="kw-2">mut</span> ()<span class="op">&gt;</span>,
-}
-
-<span class="kw">impl</span> <span class="ident">MainEngineActivator</span> {
-    <span class="doccomment">/// Create a new activator.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">_x</span>: <span class="ident">Default</span>::<span class="ident">default</span>(),
-        }
-    }
-
-    <span class="doccomment">/// Initialize SWI-Prolog, returning an `EngineActivation` if SWI-Prolog was not yet initialized.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">initialize</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">EngineActivation</span><span class="op">&gt;</span> {
-        <span class="ident">initialize_swipl</span>(<span class="self">self</span>)
-    }
-
-    <span class="doccomment">/// Reactivate the main engine.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This is only available if the rust library was originally</span>
-    <span class="doccomment">/// responsible for initializing the SWI-Prolog environment, and</span>
-    <span class="doccomment">/// the main engine has since been deactivated. If initialization</span>
-    <span class="doccomment">/// happened external to the library, there is no safe way to get</span>
-    <span class="doccomment">/// hold of the main engine. This will result in a panic.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">reactivate</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">EngineActivation</span> {
-        <span class="kw">let</span> <span class="ident">initialized</span> <span class="op">=</span> <span class="ident">INITIALIZATION_STATE</span>.<span class="ident">read</span>().<span class="ident">unwrap</span>();
-
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">engine</span>) <span class="op">=</span> <span class="ident">initialized</span>.<span class="ident">as_ref</span>() {
-            <span class="kw">unsafe</span> { <span class="ident">std</span>::<span class="ident">mem</span>::<span class="ident">transmute</span>(<span class="ident">engine</span>.<span class="ident">activate</span>()) }
-        } <span class="kw">else</span> {
-            <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;swipl-rs cannot reactiate the main engine because SWI-Prolog was not initialized, or initialized externally.&quot;</span>);
-        }
-    }
-}
-
 <span class="doccomment">/// Initialize SWI-Prolog.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// This requires a borrow to a MainEngineActivator, whose lifetime will be used to</span>
@@ -276,7 +210,7 @@
 <span class="doccomment">/// do nothing, and None will be returned. Otherwise, An</span>
 <span class="doccomment">/// `EngineActivation` will be returned containing the main prolog</span>
 <span class="doccomment">/// engine.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">initialize_swipl</span>(<span class="ident">_activator</span>: <span class="kw-2">&amp;</span><span class="ident">MainEngineActivator</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">EngineActivation</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">initialize_swipl</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">EngineActivation</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span><span class="op">&gt;</span> {
     <span class="kw">if</span> <span class="ident">is_swipl_initialized</span>() {
         <span class="kw">return</span> <span class="prelude-val">None</span>;
     }
@@ -306,10 +240,26 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// If SWI-Prolog was already initialized, this will do nothing.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">initialize_swipl_noengine</span>() {
-    <span class="kw">let</span> <span class="ident">activator</span> <span class="op">=</span> <span class="ident">MainEngineActivator</span>::<span class="ident">new</span>();
-    <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">initialize_swipl</span>(<span class="kw-2">&amp;</span><span class="ident">activator</span>);
+    <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">initialize_swipl</span>();
     <span class="comment">// dropping the activation will deactivate the engine</span>
     <span class="ident">std</span>::<span class="ident">mem</span>::<span class="ident">drop</span>(<span class="ident">activation</span>);
+}
+
+<span class="doccomment">/// Reactivate the main engine.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This is only available if the rust library was originally</span>
+<span class="doccomment">/// responsible for initializing the SWI-Prolog environment, and</span>
+<span class="doccomment">/// the main engine has since been deactivated. If initialization</span>
+<span class="doccomment">/// happened external to the library, there is no safe way to get</span>
+<span class="doccomment">/// hold of the main engine. This will result in a panic.</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">reactivate_swipl</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">EngineActivation</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">initialized</span> <span class="op">=</span> <span class="ident">INITIALIZATION_STATE</span>.<span class="ident">read</span>().<span class="ident">unwrap</span>();
+
+    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">engine</span>) <span class="op">=</span> <span class="ident">initialized</span>.<span class="ident">as_ref</span>() {
+        <span class="kw">unsafe</span> { <span class="ident">std</span>::<span class="ident">mem</span>::<span class="ident">transmute</span>(<span class="ident">engine</span>.<span class="ident">activate</span>()) }
+    } <span class="kw">else</span> {
+        <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;swipl-rs cannot reactiate the main engine because SWI-Prolog was not initialized, or initialized externally.&quot;</span>);
+    }
 }
 
 <span class="doccomment">/// Register a foreign predicate.</span>
