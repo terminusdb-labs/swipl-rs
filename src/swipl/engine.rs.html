@@ -233,6 +233,10 @@
 <span id="230">230</span>
 <span id="231">231</span>
 <span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Prolog engines.</span>
 <span class="doccomment">//!</span>
@@ -271,6 +275,10 @@
 <span class="doccomment">/// from. Furthermore, any one engine can have at most one activation</span>
 <span class="doccomment">/// in existence at any time, and each thread can have at most one</span>
 <span class="doccomment">/// engine activated on it.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// EngineActivation does not implement Send or Sync. This means it&#39;s</span>
+<span class="doccomment">/// only allowed to be used from the thread that originally created</span>
+<span class="doccomment">/// it.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">EngineActivation</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="ident">engine</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Engine</span>,

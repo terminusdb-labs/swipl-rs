@@ -104,6 +104,12 @@
 <span id="101">101</span>
 <span id="102">102</span>
 <span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Prolog modules.</span>
 <span class="doccomment">//!</span>
@@ -122,6 +128,12 @@
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Module</span> {
     <span class="ident">module</span>: <span class="ident">module_t</span>,
 }
+
+<span class="comment">// a `module_t` is a pointer which is normally not send or</span>
+<span class="comment">// sync. SWI-Prolog however guarantees that this pointer will remain</span>
+<span class="comment">// valid.</span>
+<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">Send</span> <span class="kw">for</span> <span class="ident">Module</span> {}
+<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">Sync</span> <span class="kw">for</span> <span class="ident">Module</span> {}
 
 <span class="kw">impl</span> <span class="ident">Module</span> {
     <span class="doccomment">/// Wrap a `module_t`, which is how the SWI-Prolog fli represents modules.</span>
