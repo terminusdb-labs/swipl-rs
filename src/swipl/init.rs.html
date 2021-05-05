@@ -212,7 +212,7 @@
     <span class="comment">// unsafe justification: this initializes the swipl library and is idempotent</span>
     <span class="comment">// That said, there is actually a chance that some non-rust code is concurrently initializing prolog, which may lead to errors. There is unfortunately nothing that can be done about this.</span>
     <span class="kw">unsafe</span> { <span class="ident">PL_initialise</span>(<span class="number">2</span>, <span class="ident">args</span>.<span class="ident">as_mut_ptr</span>()) };
-    <span class="kw-2">*</span><span class="ident">initialized</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="kw">unsafe</span> { <span class="ident">Engine</span>::<span class="ident">from_main</span>() });
+    <span class="kw-2">*</span><span class="ident">initialized</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="kw">unsafe</span> { <span class="ident">Engine</span>::<span class="ident">from_current</span>() });
 
     <span class="prelude-val">Some</span>(<span class="kw">unsafe</span> { <span class="ident">std</span>::<span class="ident">mem</span>::<span class="ident">transmute</span>((<span class="kw-2">*</span><span class="ident">initialized</span>).<span class="ident">as_ref</span>().<span class="ident">unwrap</span>().<span class="ident">set_activated</span>()) })
 }

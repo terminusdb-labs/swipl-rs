@@ -307,9 +307,9 @@
         }
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">from_main</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Engine</span> {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">from_current</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Engine</span> {
         <span class="ident">Engine</span> {
-            <span class="ident">engine_ptr</span>: <span class="number">1</span> <span class="kw">as</span> <span class="ident">PL_engine_t</span>,
+            <span class="ident">engine_ptr</span>: <span class="ident">current_engine_ptr</span>(),
             <span class="ident">active</span>: <span class="ident">atomic</span>::<span class="ident">AtomicBool</span>::<span class="ident">new</span>(<span class="bool-val">false</span>),
         }
     }

@@ -257,8 +257,6 @@
 <span id="254">254</span>
 <span id="255">255</span>
 <span id="256">256</span>
-<span id="257">257</span>
-<span id="258">258</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">context</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">engine</span>::<span class="kw-2">*</span>;
@@ -420,10 +418,8 @@
 
 <span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">OpenCallable</span> <span class="kw">for</span> <span class="ident">OpenPredicate</span> {
     <span class="kw">fn</span> <span class="ident">next_solution</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">this</span>: <span class="kw-2">&amp;</span><span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="self">Self</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PrologResult</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
-        <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;lets next solution&quot;</span>);
         <span class="ident">this</span>.<span class="ident">assert_activated</span>();
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">PL_next_solution</span>(<span class="ident">this</span>.<span class="ident">context</span>.<span class="ident">qid</span>) };
-        <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;result: {}&quot;</span>, <span class="ident">result</span>);
         <span class="kw">match</span> <span class="ident">result</span> {
             <span class="op">-</span><span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">exception</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">PL_exception</span>(<span class="ident">this</span>.<span class="ident">context</span>.<span class="ident">qid</span>) };
