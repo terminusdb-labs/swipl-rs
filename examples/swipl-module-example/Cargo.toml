@@ -11,4 +11,4 @@ publish = false
 crate-type = ["cdylib"]
 
 [dependencies]
-swipl = {path="../swipl"}
+swipl = {path="../../swipl"}
