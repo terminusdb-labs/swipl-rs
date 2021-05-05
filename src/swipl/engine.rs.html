@@ -218,6 +218,13 @@
 <span id="215">215</span>
 <span id="216">216</span>
 <span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Prolog engines.</span>
 <span class="doccomment">//!</span>
@@ -323,7 +330,7 @@
 
     <span class="doccomment">/// Returns true if this engine is the engine currently active on this thread.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_active</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-        <span class="kw">unsafe</span> { <span class="ident">is_engine_active</span>(<span class="self">self</span>.<span class="ident">engine_ptr</span>) }
+        <span class="ident">is_engine_active</span>(<span class="self">self</span>.<span class="ident">engine_ptr</span>)
     }
 
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">set_activated</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">EngineActivation</span> {
@@ -380,11 +387,18 @@
 
 <span class="doccomment">/// Checks if the given engine pointer is the engine that is currently active on this thread.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// This is unsafe because behavior is undefined if SWI-Prolog has not yet been initialized.</span>
-<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">is_engine_active</span>(<span class="ident">engine</span>: <span class="ident">PL_engine_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-    <span class="kw">let</span> <span class="ident">current</span> <span class="op">=</span> <span class="ident">current_engine_ptr</span>();
+<span class="doccomment">/// This will panic is SWI-Prolog was not yet initialized.</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_engine_active</span>(<span class="ident">engine</span>: <span class="ident">PL_engine_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+    <span class="ident">assert_swipl_is_initialized</span>();
+    <span class="kw">let</span> <span class="ident">current</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">current_engine_ptr</span>() };
 
     <span class="ident">current</span> <span class="op">=</span><span class="op">=</span> <span class="ident">engine</span>
+}
+
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">assert_some_engine_is_active</span>() {
+    <span class="kw">if</span> <span class="op">!</span><span class="ident">Engine</span>::<span class="ident">some_engine_active</span>() {
+        <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;No SWI-Prolog engine is active&quot;</span>);
+    }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">EngineActivation</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
