@@ -32,6 +32,13 @@ pub fn is_swipl_initialized() -> bool {
     unsafe { PL_is_initialised(std::ptr::null_mut(), std::ptr::null_mut()) != 0 }
 }
 
+/// Panic if SWI-Prolog has not been initialized.
+pub fn assert_swipl_is_initialized() {
+    if !is_swipl_initialized() {
+        panic!("SWI-Prolog has not yet been initialized");
+    }
+}
+
 static ARG0: &'static [u8] = b"rust-swipl\0"; // fake program name
 static ARG1: &'static [u8] = b"--quiet\0"; // suppress swipl banner printing
 

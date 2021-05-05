@@ -1,5 +1,6 @@
 use super::atom::*;
 use super::context::*;
+use super::engine::*;
 use super::fli::*;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -12,9 +13,10 @@ impl Module {
         Self { module }
     }
 
-    pub unsafe fn new<A: IntoAtom>(name: A) -> Self {
-        let atom = name.into_atom_unsafe();
-        Self::wrap(PL_new_module(atom.atom_ptr()))
+    pub fn new<A: IntoAtom>(name: A) -> Self {
+        assert_some_engine_is_active();
+        let atom = name.into_atom();
+        unsafe { Self::wrap(PL_new_module(atom.atom_ptr())) }
     }
 
     pub fn module_ptr(&self) -> module_t {
@@ -39,21 +41,20 @@ impl Module {
     }
 
     pub fn name_string<P: ActiveEnginePromise>(&self, promise: &P) -> String {
-        self.with_name(promise, |n| n.name(promise).to_string())
+        self.with_name(promise, |n| n.name().to_string())
     }
 
     pub fn with_name_string<P: ActiveEnginePromise, F, R>(&self, promise: &P, func: F) -> R
     where
         F: Fn(&str) -> R,
     {
-        self.with_name(promise, |n| func(n.name(promise)))
+        self.with_name(promise, |n| func(n.name()))
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::engine::*;
     use crate::init::*;
 
     #[test]

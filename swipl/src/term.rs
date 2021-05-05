@@ -177,7 +177,7 @@ impl<'a> Term<'a> {
         F: Fn(Option<&Atomable>) -> R,
     {
         self.assert_term_handling_possible();
-        unsafe { get_atomable(self, func) }
+        get_atomable(self, func)
     }
 
     pub fn put<T: TermPutable + ?Sized>(&self, val: &T) -> PrologResult<()> {

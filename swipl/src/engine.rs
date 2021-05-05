@@ -102,7 +102,7 @@ impl Engine {
 
     /// Returns true if this engine is the engine currently active on this thread.
     pub fn is_active(&self) -> bool {
-        unsafe { is_engine_active(self.engine_ptr) }
+        is_engine_active(self.engine_ptr)
     }
 
     pub(crate) unsafe fn set_activated(&self) -> EngineActivation {
@@ -159,11 +159,18 @@ impl Engine {
 
 /// Checks if the given engine pointer is the engine that is currently active on this thread.
 ///
-/// This is unsafe because behavior is undefined if SWI-Prolog has not yet been initialized.
-pub unsafe fn is_engine_active(engine: PL_engine_t) -> bool {
-    let current = current_engine_ptr();
+/// This will panic is SWI-Prolog was not yet initialized.
+pub fn is_engine_active(engine: PL_engine_t) -> bool {
+    assert_swipl_is_initialized();
+    let current = unsafe { current_engine_ptr() };
 
     current == engine
+}
+
+pub fn assert_some_engine_is_active() {
+    if !Engine::some_engine_active() {
+        panic!("No SWI-Prolog engine is active");
+    }
 }
 
 impl<'a> Drop for EngineActivation<'a> {

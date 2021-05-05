@@ -12,8 +12,9 @@
 //! This module provides functions and types for interacting with
 //! prolog atoms.
 
-use super::context::*;
+use super::engine::*;
 use super::fli::*;
+use super::init::*;
 use super::result::*;
 use super::term::*;
 use crate::{term_getable, term_putable, unifiable};
@@ -43,11 +44,8 @@ impl Atom {
     ///
     /// If the atom already exists, this will raise the reference
     /// count on that atom and then return the existing atom.
-    ///
-    /// This is unsafe because no check is done to ensure we are in a
-    /// context where atoms may be created. The caller will have to
-    /// ensure that a prolog engine is active.
-    pub unsafe fn new(name: &str) -> Atom {
+    pub fn new(name: &str) -> Atom {
+        assert_swipl_is_initialized();
         // there's a worrying bit of information in the documentation.
         // It says that in some cases for small strings,
         // PL_new_atom_mbchars will recalculate the size of the string
@@ -58,20 +56,24 @@ impl Atom {
             let mut buf: [u8; S_USIZE] = [0; S_USIZE];
             buf[..name.len()].clone_from_slice(name.as_bytes());
 
-            PL_new_atom_mbchars(
-                REP_UTF8.try_into().unwrap(),
-                name.len().try_into().unwrap(),
-                buf.as_ptr() as *const c_char,
-            )
+            unsafe {
+                PL_new_atom_mbchars(
+                    REP_UTF8.try_into().unwrap(),
+                    name.len().try_into().unwrap(),
+                    buf.as_ptr() as *const c_char,
+                )
+            }
         } else {
-            PL_new_atom_mbchars(
-                REP_UTF8.try_into().unwrap(),
-                name.len().try_into().unwrap(),
-                name.as_ptr() as *const c_char,
-            )
+            unsafe {
+                PL_new_atom_mbchars(
+                    REP_UTF8.try_into().unwrap(),
+                    name.len().try_into().unwrap(),
+                    name.as_ptr() as *const c_char,
+                )
+            }
         };
 
-        Atom::wrap(atom)
+        unsafe { Atom::wrap(atom) }
     }
 
     /// Return the underlying `atom_t` which SWI-Prolog uses to refer to the atom.
@@ -81,10 +83,9 @@ impl Atom {
 
     /// Retrieve the name of this atom, that is, the string with which it was created.
     ///
-    /// This requires an `ActiveEnginePromise` to be passed in to
-    /// ensure that we are indeed in a context where atoms may be
-    /// inspected.
-    pub fn name<P: ActiveEnginePromise>(&self, _: &P) -> &str {
+    /// This requires an engine to be active. If none is active, this function will panic.
+    pub fn name(&self) -> &str {
+        assert_some_engine_is_active();
         // TODO we're just assuming that what we get out of prolog is
         // utf-8. but it's not. On windows, a different encoding is
         // used and it is unclear to me if they convert to utf8 just
@@ -123,6 +124,7 @@ impl Atom {
 
 impl Clone for Atom {
     fn clone(&self) -> Self {
+        assert_some_engine_is_active();
         unsafe { PL_register_atom(self.atom) };
         Atom { atom: self.atom }
     }
@@ -130,6 +132,7 @@ impl Clone for Atom {
 
 impl Drop for Atom {
     fn drop(&mut self) {
+        assert_some_engine_is_active();
         unsafe {
             PL_unregister_atom(self.atom);
         }
@@ -240,53 +243,36 @@ pub fn atomable<'a, T: Into<Atomable<'a>>>(s: T) -> Atomable<'a> {
 /// Trait for types which can be turned into an `Atom`.
 pub trait IntoAtom {
     /// Turn this object into an `Atom`.
-    ///
-    /// The second argument ensures that this function is called in a
-    /// context where atoms are allowed to be created.
-    fn into_atom<P: ActiveEnginePromise>(self, promise: &P) -> Atom;
-
-    /// Turn this object into an `Atom`, without doing any safety checks.
-    ///
-    /// This is unsafe, because we may not be in a context where atom
-    /// handling is possible.
-    unsafe fn into_atom_unsafe(self) -> Atom
-    where
-        Self: Sized,
-    {
-        let promise = UnsafeActiveEnginePromise::new();
-        self.into_atom(&promise)
-    }
+    fn into_atom(self) -> Atom;
 }
 
 impl IntoAtom for Atom {
-    fn into_atom<P: ActiveEnginePromise>(self, _: &P) -> Atom {
+    fn into_atom(self) -> Atom {
         self
     }
 }
 
 impl IntoAtom for &Atom {
-    fn into_atom<P: ActiveEnginePromise>(self, _: &P) -> Atom {
+    fn into_atom(self) -> Atom {
         self.clone()
     }
 }
 
 impl<'a> IntoAtom for &Atomable<'a> {
-    fn into_atom<P: ActiveEnginePromise>(self, _: &P) -> Atom {
-        // unsafe justification: with an active engine, it is safe to create atoms
-        unsafe { Atom::new(self.as_ref()) }
+    fn into_atom(self) -> Atom {
+        Atom::new(self.as_ref())
     }
 }
 
 impl<'a> IntoAtom for Atomable<'a> {
-    fn into_atom<P: ActiveEnginePromise>(self, promise: &P) -> Atom {
-        (&self).into_atom(promise)
+    fn into_atom(self) -> Atom {
+        (&self).into_atom()
     }
 }
 
 impl<'a> IntoAtom for &'a str {
-    fn into_atom<P: ActiveEnginePromise>(self, _: &P) -> Atom {
-        // unsafe justification: with an active engine, it is safe to create atoms
-        unsafe { Atom::new(self) }
+    fn into_atom(self) -> Atom {
+        Atom::new(self)
     }
 }
 
@@ -296,24 +282,24 @@ pub trait AsAtom {
     ///
     /// The second argument ensures that this function is called in a
     /// context where atoms are allowed to be created.
-    fn as_atom<P: ActiveEnginePromise>(&self, promise: &P) -> Atom;
+    fn as_atom(&self) -> Atom;
 }
 
 impl AsAtom for Atom {
-    fn as_atom<P: ActiveEnginePromise>(&self, _: &P) -> Atom {
+    fn as_atom(&self) -> Atom {
         self.clone()
     }
 }
 
 impl<'a> AsAtom for Atomable<'a> {
-    fn as_atom<P: ActiveEnginePromise>(&self, promise: &P) -> Atom {
-        self.into_atom(promise)
+    fn as_atom(&self) -> Atom {
+        self.into_atom()
     }
 }
 
 impl AsAtom for str {
-    fn as_atom<P: ActiveEnginePromise>(&self, promise: &P) -> Atom {
-        self.into_atom(promise)
+    fn as_atom(&self) -> Atom {
+        self.into_atom()
     }
 }
 
@@ -339,14 +325,11 @@ unifiable! {
 /// `Atomable`. This means the atom reference count does not have to
 /// be manipulated, and it should be slightly faster than first
 /// getting the atom and then extracting its name.
-///
-/// This is unsafe because we don't check if the term is part of the
-/// active engine.
-#[allow(unused_unsafe)]
-pub unsafe fn get_atomable<'a, F, R>(term: &Term<'a>, func: F) -> PrologResult<R>
+pub fn get_atomable<'a, F, R>(term: &Term<'a>, func: F) -> PrologResult<R>
 where
     F: Fn(Option<&Atomable>) -> R,
 {
+    assert_some_engine_is_active();
     let mut ptr = std::ptr::null_mut();
     let mut len = 0;
     let result = unsafe {
@@ -413,8 +396,7 @@ impl<'a> AsRef<str> for Atomable<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::engine::*;
-    use crate::init::*;
+    use crate::context::*;
     #[test]
     fn create_atom_and_retrieve_name() {
         initialize_swipl_noengine();
@@ -423,7 +405,7 @@ mod tests {
         let context: Context<_> = activation.into();
 
         let atom = context.new_atom("the cow says moo");
-        let name = atom.name(&context);
+        let name = atom.name();
 
         assert_eq!(name, "the cow says moo");
     }
@@ -505,15 +487,14 @@ mod tests {
 
     #[test]
     fn unify_from_atomable_turned_atom() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
-        let a1 = atomable("foo").as_atom(&context);
-        let a2 = atomable("bar").as_atom(&context);
+        let a1 = atomable("foo").as_atom();
+        let a2 = atomable("bar").as_atom();
 
-        assert_eq!("foo", a1.name(&context));
+        assert_eq!("foo", a1.name());
 
         let term = context.new_term_ref();
 
@@ -524,12 +505,11 @@ mod tests {
 
     #[test]
     fn retrieve_atom_temporarily() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
-        let a1 = "foo".as_atom(&context);
+        let a1 = "foo".as_atom();
         let term = context.new_term_ref();
         term.unify(&a1).unwrap();
         term.get_atom(|a2| assert_eq!(&a1, a2.unwrap())).unwrap();
@@ -537,12 +517,11 @@ mod tests {
 
     #[test]
     fn retrieve_atom() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
-        let a1 = "foo".as_atom(&context);
+        let a1 = "foo".as_atom();
         let term = context.new_term_ref();
         term.unify(&a1).unwrap();
         let a2: Atom = term.get().unwrap();
@@ -552,12 +531,11 @@ mod tests {
 
     #[test]
     fn retrieve_atomable_temporarily() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
-        let a1 = "foo".as_atom(&context);
+        let a1 = "foo".as_atom();
         let term = context.new_term_ref();
         term.unify(&a1).unwrap();
         term.get_atomable(|a2| assert_eq!("foo", a2.unwrap().name()))
@@ -566,12 +544,11 @@ mod tests {
 
     #[test]
     fn retrieve_atomable() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
-        let a1 = "foo".as_atom(&context);
+        let a1 = "foo".as_atom();
         let term = context.new_term_ref();
         term.unify(&a1).unwrap();
         let a2: Atomable = term.get().unwrap();

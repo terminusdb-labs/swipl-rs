@@ -1,6 +1,6 @@
 //! Prolog contexts.
 //!
-//! 
+//!
 use super::atom::*;
 use super::callable::*;
 use super::consts::*;
@@ -224,7 +224,7 @@ impl<'a, T: ContextType> TermOrigin for Context<'a, T> {
         // unsafe justification: We have an active context, therefore
         // SWI-Prolog should have been initialized, which makes this
         // call safe.
-        unsafe { is_engine_active(self.engine) }
+        is_engine_active(self.engine)
     }
 
     fn origin_engine_ptr(&self) -> PL_engine_t {
@@ -344,14 +344,14 @@ impl<'a, C: FrameableContextType> Context<'a, C> {
 
 pub unsafe trait ActiveEnginePromise: Sized {
     fn new_atom(&self, name: &str) -> Atom {
-        unsafe { Atom::new(name) }
+        Atom::new(name)
     }
 
     fn new_functor<A: IntoAtom>(&self, name: A, arity: u16) -> Functor {
         if arity as usize > MAX_ARITY {
             panic!("functor arity is >1024: {}", arity);
         }
-        let atom = name.into_atom(self);
+        let atom = name.into_atom();
 
         let functor = unsafe { PL_new_functor(atom.atom_ptr(), arity.try_into().unwrap()) };
 
@@ -359,7 +359,7 @@ pub unsafe trait ActiveEnginePromise: Sized {
     }
 
     fn new_module<A: IntoAtom>(&self, name: A) -> Module {
-        unsafe { Module::new(name) }
+        Module::new(name)
     }
 
     fn new_predicate(&self, functor: &Functor, module: &Module) -> Predicate {

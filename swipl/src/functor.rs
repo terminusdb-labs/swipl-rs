@@ -1,6 +1,7 @@
 use super::atom::*;
 use super::consts::*;
 use super::context::*;
+use super::engine::*;
 use super::fli::*;
 use super::term::*;
 
@@ -19,10 +20,11 @@ impl Functor {
     }
 
     pub unsafe fn new<A: IntoAtom>(name: A, arity: u16) -> Functor {
+        assert_some_engine_is_active();
         if arity as usize > MAX_ARITY {
             panic!("functor arity is >1024: {}", arity);
         }
-        let atom = name.into_atom_unsafe();
+        let atom = name.into_atom();
 
         let functor = PL_new_functor(atom.atom_ptr(), arity.try_into().unwrap());
 
@@ -51,14 +53,14 @@ impl Functor {
     }
 
     pub fn name_string<P: ActiveEnginePromise>(&self, promise: &P) -> String {
-        self.with_name(promise, |n| n.name(promise).to_string())
+        self.with_name(promise, |n| n.name().to_string())
     }
 
     pub fn with_name_string<P: ActiveEnginePromise, F, R>(&self, promise: &P, func: F) -> R
     where
         F: Fn(&str) -> R,
     {
-        self.with_name(promise, |n| func(n.name(promise)))
+        self.with_name(promise, |n| func(n.name()))
     }
 
     pub fn arity<P: ActiveEnginePromise>(&self, _: &P) -> u16 {
@@ -126,7 +128,6 @@ impl<'a> Functorable<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::engine::*;
     use crate::init::*;
 
     #[test]
@@ -139,8 +140,8 @@ mod tests {
         let f = context.new_functor("moocows", 3);
 
         assert_eq!("moocows", f.name_string(&context));
-        assert_eq!("moocows", f.name(&context).name(&context));
-        f.with_name(&context, |name| assert_eq!("moocows", name.name(&context)));
+        assert_eq!("moocows", f.name(&context).name());
+        f.with_name(&context, |name| assert_eq!("moocows", name.name()));
         f.with_name_string(&context, |name| assert_eq!("moocows", name));
 
         assert_eq!(3, f.arity(&context));
