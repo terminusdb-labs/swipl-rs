@@ -1,3 +1,4 @@
+//! Support for calling into prolog.
 use crate::context::*;
 use crate::engine::*;
 use crate::fli::*;
@@ -11,6 +12,10 @@ use std::os::raw::c_void;
 use std::sync::atomic::{AtomicPtr, Ordering};
 use thiserror::Error;
 
+/// Looks up a predicate on first call to `as_callable` and keeps it cached afterwards.
+///
+/// This is used by both the `prolog!` macro and the `pred!` macro to
+/// only look up a predicate once.
 pub struct LazyCallablePredicate<const N: usize> {
     module: Option<&'static str>,
     name: &'static str,
@@ -18,6 +23,7 @@ pub struct LazyCallablePredicate<const N: usize> {
 }
 
 impl<const N: usize> LazyCallablePredicate<N> {
+    /// Create a new `LazyCallablepredicate` from a module, a name, and the const type argument which is used as arity.
     pub const fn new(module: Option<&'static str>, name: &'static str) -> Self {
         Self {
             module,
@@ -26,6 +32,10 @@ impl<const N: usize> LazyCallablePredicate<N> {
         }
     }
 
+    /// Return a `CallablePredicate` from the information in this struct.
+    ///
+    /// If this was previously called for this struct, it'll return
+    /// what it previously looked up. Otherwise, it'll do the lookup.
     pub fn as_callable(&self) -> CallablePredicate<N> {
         assert_some_engine_is_active();
         let mut loaded = self.predicate.load(Ordering::Relaxed);
@@ -45,31 +55,32 @@ impl<const N: usize> LazyCallablePredicate<N> {
 }
 
 impl<const N: usize> Callable<N> for LazyCallablePredicate<N> {
-    type ContextType = OpenPredicate;
+    type ContextType = OpenQuery;
 
     fn open<'a, C: ContextType>(
         self,
         context: &'a Context<C>,
         module: Option<Module>,
         args: [&Term; N],
-    ) -> Context<'a, OpenPredicate> {
+    ) -> Context<'a, OpenQuery> {
         self.as_callable().open(context, module, args)
     }
 }
 
 impl<'a, const N: usize> Callable<N> for &'a LazyCallablePredicate<N> {
-    type ContextType = OpenPredicate;
+    type ContextType = OpenQuery;
 
     fn open<'b, C: ContextType>(
         self,
         context: &'b Context<C>,
         module: Option<Module>,
         args: [&Term; N],
-    ) -> Context<'b, OpenPredicate> {
+    ) -> Context<'b, OpenQuery> {
         self.as_callable().open(context, module, args)
     }
 }
 
+/// Error type for turning a [Predicate](crate::predicate::Predicate) into a [CallablePredicate].
 #[derive(Error, Debug)]
 pub enum PredicateWrapError {
     #[error("predicate has arity {actual} but {expected} was required")]
@@ -100,6 +111,14 @@ impl<const N: usize> CallablePredicate<N> {
     }
 }
 
+/// Trait for things that can be called as if they are prolog predicates.
+///
+/// This is obviously the case for prolog predicates themselves, which
+/// are implemented through [CallablePredicate]. The intention though
+/// is to also implement frontends for foreign predicates through this
+/// trait, so that they may be used as prolog predicates without
+/// actually having to go through prolog. However, this is currently
+/// not yet implemented.
 pub trait Callable<const N: usize> {
     type ContextType: OpenCall;
 
@@ -111,7 +130,8 @@ pub trait Callable<const N: usize> {
     ) -> Context<'a, Self::ContextType>;
 }
 
-pub struct OpenPredicate {
+/// An open query.
+pub struct OpenQuery {
     qid: qid_t,
     closed: bool,
 }
@@ -156,7 +176,7 @@ impl<'a, C: OpenCall> Context<'a, C> {
 unsafe impl<T: OpenCall> ContextType for T {}
 unsafe impl<T: OpenCall> FrameableContextType for T {}
 
-unsafe impl OpenCall for OpenPredicate {
+unsafe impl OpenCall for OpenQuery {
     fn next_solution<'a>(this: &Context<'a, Self>) -> PrologResult<bool> {
         this.assert_activated();
         let result = unsafe { PL_next_solution(this.context.qid) };
@@ -192,7 +212,7 @@ unsafe impl OpenCall for OpenPredicate {
     }
 }
 
-impl Drop for OpenPredicate {
+impl Drop for OpenQuery {
     fn drop(&mut self) {
         if !self.closed {
             unsafe { PL_close_query(self.qid) };
@@ -201,7 +221,7 @@ impl Drop for OpenPredicate {
 }
 
 impl<const N: usize> Callable<N> for CallablePredicate<N> {
-    type ContextType = OpenPredicate;
+    type ContextType = OpenQuery;
 
     fn open<'a, C: ContextType>(
         self,
@@ -229,7 +249,7 @@ impl<const N: usize> Callable<N> for CallablePredicate<N> {
                 terms,
             );
 
-            let query = OpenPredicate { qid, closed: false };
+            let query = OpenQuery { qid, closed: false };
 
             context.deactivate();
             Context::new_activated(context, query, context.engine_ptr())

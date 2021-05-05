@@ -309,6 +309,11 @@ impl<'a, T: ContextType> Drop for Context<'a, T> {
     }
 }
 
+/// A type of context.
+///
+/// This is the object that is wrapped by [Context]. Implementors can
+/// use this to hold context-specific information. Any functions are
+/// to be implemented on `Context<YourContextType>`.
 pub unsafe trait ContextType {}
 
 /// Context type for an active engine. This wraps an `EngineActivation`.
