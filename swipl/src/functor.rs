@@ -47,7 +47,7 @@ impl Functor {
         unsafe { Functor::wrap(functor) }
     }
 
-    /// Return the underlying `functor_` which SWI-Prolog uses to refer to the functor.
+    /// Return the underlying `functor_t` which SWI-Prolog uses to refer to the functor.
     pub fn functor_ptr(&self) -> functor_t {
         self.functor
     }
