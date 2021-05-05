@@ -47,7 +47,7 @@ impl<'a> ExceptionTerm<'a> {
         ctx.assert_activated();
         let backup_term_ref = PL_new_term_ref();
         assert!(PL_unify(backup_term_ref, self.0.term_ptr()) != 0);
-        let backup_term = Term::new(backup_term_ref, ctx);
+        let backup_term = Term::new(backup_term_ref, ctx.as_term_origin());
         PL_clear_exception();
 
         // should we handle panics?
@@ -113,7 +113,7 @@ impl<'a, T: ContextType> Context<'a, T> {
 
     pub unsafe fn wrap_term_ref(&self, term: term_t) -> Term {
         self.assert_activated();
-        Term::new(term, self)
+        Term::new(term, self.as_term_origin())
     }
 
     pub fn raise_exception<R>(&self, term: &Term) -> PrologResult<R>
@@ -199,7 +199,7 @@ impl<'a, T: ContextType> Context<'a, T> {
 
 pub trait ContextParent {
     fn reactivate(&self);
-    fn as_term_origin(&self) -> &dyn TermOrigin;
+    fn as_term_origin(&self) -> TermOrigin;
 }
 
 impl<'a, T: ContextType> ContextParent for Context<'a, T> {
@@ -209,21 +209,8 @@ impl<'a, T: ContextType> ContextParent for Context<'a, T> {
         }
     }
 
-    fn as_term_origin(&self) -> &dyn TermOrigin {
-        self
-    }
-}
-
-impl<'a, T: ContextType> TermOrigin for Context<'a, T> {
-    fn is_engine_active(&self) -> bool {
-        // unsafe justification: We have an active context, therefore
-        // SWI-Prolog should have been initialized, which makes this
-        // call safe.
-        is_engine_active(self.engine)
-    }
-
-    fn origin_engine_ptr(&self) -> PL_engine_t {
-        self.engine
+    fn as_term_origin(&self) -> TermOrigin {
+        unsafe { TermOrigin::new(self.engine_ptr()) }
     }
 }
 
@@ -355,7 +342,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         self.assert_activated();
         unsafe {
             let term = PL_new_term_ref();
-            Term::new(term, self)
+            Term::new(term, self.as_term_origin())
         }
     }
 
@@ -413,7 +400,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
 
         let exception = unsafe { PL_exception(0) };
         if exception != 0 {
-            let exception_term = unsafe { Term::new(exception, self) };
+            let exception_term = unsafe { Term::new(exception, self.as_term_origin()) };
             let return_term = self.new_term_ref();
             return_term.unify(exception_term).unwrap();
             Some(return_term)

@@ -1,5 +1,6 @@
 use super::atom::*;
 use super::context::*;
+use super::engine::*;
 use super::fli::*;
 use super::result::*;
 use std::convert::TryInto;
@@ -12,7 +13,7 @@ use swipl_macros::term;
 #[derive(Clone)]
 pub struct Term<'a> {
     term: term_t,
-    context: &'a dyn TermOrigin,
+    origin: TermOrigin<'a>,
 }
 
 impl<'a> Debug for Term<'a> {
@@ -22,8 +23,8 @@ impl<'a> Debug for Term<'a> {
 }
 
 impl<'a> Term<'a> {
-    pub unsafe fn new(term: term_t, context: &'a dyn TermOrigin) -> Self {
-        Term { term, context }
+    pub unsafe fn new(term: term_t, origin: TermOrigin<'a>) -> Self {
+        Term { term, origin }
     }
 
     pub fn term_ptr(&self) -> term_t {
@@ -43,7 +44,7 @@ impl<'a> Term<'a> {
     }
 
     pub fn assert_term_handling_possible(&self) {
-        if !self.context.is_engine_active() {
+        if !self.origin.is_engine_active() {
             panic!("term is not part of the active engine");
         }
     }
@@ -78,7 +79,7 @@ impl<'a> Term<'a> {
             return Err(PrologError::Exception);
         }
 
-        let arg = unsafe { Term::new(arg_ref, self.context) };
+        let arg = unsafe { Term::new(arg_ref, self.origin.clone()) };
         let mut result2 = Err(PrologError::Failure);
         if result != 0 {
             result2 = arg.unify(unifiable);
@@ -119,7 +120,7 @@ impl<'a> Term<'a> {
             return Err(PrologError::Exception);
         }
 
-        let arg = unsafe { Term::new(arg_ref, self.context) };
+        let arg = unsafe { Term::new(arg_ref, self.origin.clone()) };
         let mut result2 = Err(PrologError::Failure);
         if result != 0 {
             result2 = arg.get();
@@ -195,9 +196,32 @@ impl<'a> Term<'a> {
     }
 }
 
-pub trait TermOrigin {
-    fn origin_engine_ptr(&self) -> PL_engine_t;
-    fn is_engine_active(&self) -> bool;
+#[derive(Clone)]
+pub struct TermOrigin<'a> {
+    engine: PL_engine_t,
+    _lifetime: std::marker::PhantomData<&'a ()>,
+}
+
+impl<'a> TermOrigin<'a> {
+    pub unsafe fn new(engine: PL_engine_t) -> Self {
+        Self {
+            engine,
+            _lifetime: Default::default(),
+        }
+    }
+}
+
+unsafe impl<'a> Send for TermOrigin<'a> {}
+unsafe impl<'a> Sync for TermOrigin<'a> {}
+
+impl<'a> TermOrigin<'a> {
+    pub fn is_engine_active(&self) -> bool {
+        is_engine_active(self.engine)
+    }
+
+    pub fn origin_engine_ptr(&self) -> PL_engine_t {
+        self.engine
+    }
 }
 
 /// Trait for term unification.
@@ -283,7 +307,7 @@ macro_rules! term_putable {
 
 unifiable! {
     (self:Term<'a>, term) => {
-        if self.context.origin_engine_ptr() != term.context.origin_engine_ptr() {
+        if self.origin.origin_engine_ptr() != term.origin.origin_engine_ptr() {
             panic!("terms being unified are not part of the same engine");
         }
 
@@ -297,7 +321,7 @@ unifiable! {
 
 term_putable! {
     (self:Term<'a>, term) => {
-        if self.context.origin_engine_ptr() != term.context.origin_engine_ptr() {
+        if self.origin.origin_engine_ptr() != term.origin.origin_engine_ptr() {
             panic!("terms being unified are not part of the same engine");
         }
 

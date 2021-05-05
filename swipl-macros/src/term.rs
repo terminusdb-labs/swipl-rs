@@ -249,7 +249,7 @@ impl Functor {
                 top += arity + 1;
                 let terms_init = term_idents.iter().enumerate()
                     .map(|(ix, ident)| quote! {
-                        let #ident = unsafe {#crt::term::Term::new(#term_id_ident + #ix, &__swipl_frame)};
+                        let #ident = unsafe {#crt::term::Term::new(#term_id_ident + #ix, __swipl_frame.as_term_origin())};
                         #into.unify_arg(#ix+1, &#ident)?;
                     });
 
@@ -324,7 +324,7 @@ impl List {
                 // initialize terms
                 let terms_init = term_idents.iter().enumerate()
                     .map(|(ix, ident)| quote! {
-                        let #ident = unsafe {#crt::term::Term::new(#term_id_ident + #ix, &__swipl_frame)};
+                        let #ident = unsafe {#crt::term::Term::new(#term_id_ident + #ix, __swipl_frame.as_term_origin())};
                     });
 
                 // one extra for the term_id_ident ref
@@ -405,7 +405,7 @@ impl Tuple {
         // initialize terms
         let terms_init = term_idents.iter().enumerate().map(|(ix, ident)| {
             quote! {
-                let #ident = unsafe {#crt::term::Term::new(#term_id_ident + #ix, &__swipl_frame)};
+                let #ident = unsafe {#crt::term::Term::new(#term_id_ident + #ix, __swipl_frame.as_term_origin())};
             }
         });
 
