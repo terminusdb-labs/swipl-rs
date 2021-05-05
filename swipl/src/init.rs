@@ -42,47 +42,6 @@ pub fn assert_swipl_is_initialized() {
 static ARG0: &'static [u8] = b"rust-swipl\0"; // fake program name
 static ARG1: &'static [u8] = b"--quiet\0"; // suppress swipl banner printing
 
-/// Struct for activating the main engine.
-///
-/// It's only purpose is to provide a lifetime to the
-/// `EngineActivation` for the main engine, ensuring that the
-/// activation is only allowed to live as long as the
-/// `MainEngineActivator`.
-pub struct MainEngineActivator {
-    _x: std::marker::PhantomData<*mut ()>,
-}
-
-impl MainEngineActivator {
-    /// Create a new activator.
-    pub fn new() -> Self {
-        Self {
-            _x: Default::default(),
-        }
-    }
-
-    /// Initialize SWI-Prolog, returning an `EngineActivation` if SWI-Prolog was not yet initialized.
-    pub fn initialize(&self) -> Option<EngineActivation> {
-        initialize_swipl(self)
-    }
-
-    /// Reactivate the main engine.
-    ///
-    /// This is only available if the rust library was originally
-    /// responsible for initializing the SWI-Prolog environment, and
-    /// the main engine has since been deactivated. If initialization
-    /// happened external to the library, there is no safe way to get
-    /// hold of the main engine. This will result in a panic.
-    pub fn reactivate(&self) -> EngineActivation {
-        let initialized = INITIALIZATION_STATE.read().unwrap();
-
-        if let Some(engine) = initialized.as_ref() {
-            unsafe { std::mem::transmute(engine.activate()) }
-        } else {
-            panic!("swipl-rs cannot reactiate the main engine because SWI-Prolog was not initialized, or initialized externally.");
-        }
-    }
-}
-
 /// Initialize SWI-Prolog.
 ///
 /// This requires a borrow to a MainEngineActivator, whose lifetime will be used to
@@ -91,7 +50,7 @@ impl MainEngineActivator {
 /// do nothing, and None will be returned. Otherwise, An
 /// `EngineActivation` will be returned containing the main prolog
 /// engine.
-pub fn initialize_swipl(_activator: &MainEngineActivator) -> Option<EngineActivation> {
+pub fn initialize_swipl() -> Option<EngineActivation<'static>> {
     if is_swipl_initialized() {
         return None;
     }
@@ -121,10 +80,26 @@ pub fn initialize_swipl(_activator: &MainEngineActivator) -> Option<EngineActiva
 ///
 /// If SWI-Prolog was already initialized, this will do nothing.
 pub fn initialize_swipl_noengine() {
-    let activator = MainEngineActivator::new();
-    let activation = initialize_swipl(&activator);
+    let activation = initialize_swipl();
     // dropping the activation will deactivate the engine
     std::mem::drop(activation);
+}
+
+/// Reactivate the main engine.
+///
+/// This is only available if the rust library was originally
+/// responsible for initializing the SWI-Prolog environment, and
+/// the main engine has since been deactivated. If initialization
+/// happened external to the library, there is no safe way to get
+/// hold of the main engine. This will result in a panic.
+pub fn reactivate_swipl() -> EngineActivation<'static> {
+    let initialized = INITIALIZATION_STATE.read().unwrap();
+
+    if let Some(engine) = initialized.as_ref() {
+        unsafe { std::mem::transmute(engine.activate()) }
+    } else {
+        panic!("swipl-rs cannot reactiate the main engine because SWI-Prolog was not initialized, or initialized externally.");
+    }
 }
 
 /// Register a foreign predicate.
