@@ -802,6 +802,18 @@
 <span id="799">799</span>
 <span id="800">800</span>
 <span id="801">801</span>
+<span id="802">802</span>
+<span id="803">803</span>
+<span id="804">804</span>
+<span id="805">805</span>
+<span id="806">806</span>
+<span id="807">807</span>
+<span id="808">808</span>
+<span id="809">809</span>
+<span id="810">810</span>
+<span id="811">811</span>
+<span id="812">812</span>
+<span id="813">813</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Prolog contexts.</span>
 <span class="doccomment">//!</span>
@@ -882,13 +894,26 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">ContextType</span><span class="op">&gt;</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">new_activated</span>(
-        <span class="ident">parent</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">ContextParent</span><span class="op">&gt;</span>,
+    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">new_activated_without_parent</span>(
         <span class="ident">context</span>: <span class="ident">T</span>,
         <span class="ident">engine</span>: <span class="ident">PL_engine_t</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">Context</span> {
-            <span class="ident">parent</span>: <span class="ident">parent</span>,
+            <span class="ident">parent</span>: <span class="prelude-val">None</span>,
+            <span class="ident">context</span>,
+            <span class="ident">engine</span>,
+            <span class="ident">activated</span>: <span class="ident">Cell</span>::<span class="ident">new</span>(<span class="bool-val">true</span>),
+            <span class="ident">exception_handling</span>: <span class="ident">Cell</span>::<span class="ident">new</span>(<span class="bool-val">false</span>),
+        }
+    }
+
+    <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">new_activated</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span>, <span class="ident">T2</span>: <span class="ident">ContextType</span><span class="op">&gt;</span>(
+        <span class="ident">parent</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span>, <span class="ident">T2</span><span class="op">&gt;</span>,
+        <span class="ident">context</span>: <span class="ident">T</span>,
+        <span class="ident">engine</span>: <span class="ident">PL_engine_t</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+        <span class="ident">Context</span> {
+            <span class="ident">parent</span>: <span class="prelude-val">Some</span>(<span class="ident">parent</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">ContextParent</span>),
             <span class="ident">context</span>,
             <span class="ident">engine</span>,
             <span class="ident">activated</span>: <span class="ident">Cell</span>::<span class="ident">new</span>(<span class="bool-val">true</span>),
@@ -914,6 +939,10 @@
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">engine_ptr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PL_engine_t</span> {
         <span class="self">self</span>.<span class="ident">engine</span>
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_term_origin</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TermOrigin</span> {
+        <span class="kw">unsafe</span> { <span class="ident">TermOrigin</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">engine_ptr</span>()) }
     }
 
     <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">wrap_term_ref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">term</span>: <span class="ident">term_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Term</span> {
@@ -1002,9 +1031,8 @@
     }
 }
 
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">ContextParent</span> {
+<span class="kw">trait</span> <span class="ident">ContextParent</span> {
     <span class="kw">fn</span> <span class="ident">reactivate</span>(<span class="kw-2">&amp;</span><span class="self">self</span>);
-    <span class="kw">fn</span> <span class="ident">as_term_origin</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TermOrigin</span>;
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">ContextType</span><span class="op">&gt;</span> <span class="ident">ContextParent</span> <span class="kw">for</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> {
@@ -1012,10 +1040,6 @@
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">activated</span>.<span class="ident">replace</span>(<span class="bool-val">true</span>) {
             <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;context already active&quot;</span>);
         }
-    }
-
-    <span class="kw">fn</span> <span class="ident">as_term_origin</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TermOrigin</span> {
-        <span class="kw">unsafe</span> { <span class="ident">TermOrigin</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">engine_ptr</span>()) }
     }
 }
 
@@ -1038,27 +1062,27 @@
         <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">engine_ptr</span>();
         <span class="kw">let</span> <span class="ident">context</span> <span class="op">=</span> <span class="ident">ActivatedEngine</span> { <span class="ident">_activation</span>: <span class="self">self</span> };
 
-        <span class="kw">unsafe</span> { <span class="ident">Context</span>::<span class="ident">new_activated</span>(<span class="prelude-val">None</span>, <span class="ident">context</span>, <span class="ident">engine</span>) }
+        <span class="kw">unsafe</span> { <span class="ident">Context</span>::<span class="ident">new_activated_without_parent</span>(<span class="ident">context</span>, <span class="ident">engine</span>) }
     }
 }
 
 <span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">ContextType</span> <span class="kw">for</span> <span class="ident">ActivatedEngine</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {}
 
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">UnmanagedContext</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Unmanaged</span> {
     <span class="comment">// only here to prevent automatic construction</span>
     <span class="ident">_x</span>: (),
 }
-<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">ContextType</span> <span class="kw">for</span> <span class="ident">UnmanagedContext</span> {}
+<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">ContextType</span> <span class="kw">for</span> <span class="ident">Unmanaged</span> {}
 
 <span class="comment">// This is unsafe to call if we are not in a swipl environment, or if some other context is active. Furthermore, the lifetime will most definitely be wrong. This should be used by code that doesn&#39;t promiscuously spread this context. all further accesses should be through borrows.</span>
-<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">unmanaged_engine_context</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span>, <span class="ident">UnmanagedContext</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">unmanaged_engine_context</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span>, <span class="ident">Unmanaged</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">current</span> <span class="op">=</span> <span class="ident">current_engine_ptr</span>();
 
     <span class="kw">if</span> <span class="ident">current</span>.<span class="ident">is_null</span>() {
         <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;tried to create an unmanaged engine context, but no engine is active&quot;</span>);
     }
 
-    <span class="ident">Context</span>::<span class="ident">new_activated</span>(<span class="prelude-val">None</span>, <span class="ident">UnmanagedContext</span> { <span class="ident">_x</span>: () }, <span class="ident">current</span>)
+    <span class="ident">Context</span>::<span class="ident">new_activated_without_parent</span>(<span class="ident">Unmanaged</span> { <span class="ident">_x</span>: () }, <span class="ident">current</span>)
 }
 
 <span class="kw">enum</span> <span class="ident">FrameState</span> {
@@ -1110,7 +1134,7 @@
 }
 
 <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">trait</span> <span class="ident">FrameableContextType</span>: <span class="ident">ContextType</span> {}
-<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">FrameableContextType</span> <span class="kw">for</span> <span class="ident">UnmanagedContext</span> {}
+<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">FrameableContextType</span> <span class="kw">for</span> <span class="ident">Unmanaged</span> {}
 <span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">FrameableContextType</span> <span class="kw">for</span> <span class="ident">ActivatedEngine</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {}
 <span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">FrameableContextType</span> <span class="kw">for</span> <span class="ident">Frame</span> {}
 
@@ -1125,12 +1149,12 @@
         };
 
         <span class="self">self</span>.<span class="ident">activated</span>.<span class="ident">set</span>(<span class="bool-val">false</span>);
-        <span class="kw">unsafe</span> { <span class="ident">Context</span>::<span class="ident">new_activated</span>(<span class="prelude-val">Some</span>(<span class="self">self</span>), <span class="ident">frame</span>, <span class="self">self</span>.<span class="ident">engine</span>) }
+        <span class="kw">unsafe</span> { <span class="ident">Context</span>::<span class="ident">new_activated</span>(<span class="self">self</span>, <span class="ident">frame</span>, <span class="self">self</span>.<span class="ident">engine</span>) }
     }
 }
 
 <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">trait</span> <span class="ident">QueryableContextType</span>: <span class="ident">FrameableContextType</span> {}
-<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">QueryableContextType</span> <span class="kw">for</span> <span class="ident">UnmanagedContext</span> {}
+<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">QueryableContextType</span> <span class="kw">for</span> <span class="ident">Unmanaged</span> {}
 <span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">QueryableContextType</span> <span class="kw">for</span> <span class="ident">ActivatedEngine</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {}
 <span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">QueryableContextType</span> <span class="kw">for</span> <span class="ident">Frame</span> {}
 

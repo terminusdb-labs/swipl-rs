@@ -492,7 +492,7 @@
             <span class="kw">let</span> <span class="ident">query</span> <span class="op">=</span> <span class="ident">OpenPredicate</span> { <span class="ident">qid</span>, <span class="ident">closed</span>: <span class="bool-val">false</span> };
 
             <span class="ident">context</span>.<span class="ident">deactivate</span>();
-            <span class="ident">Context</span>::<span class="ident">new_activated</span>(<span class="prelude-val">Some</span>(<span class="ident">context</span>), <span class="ident">query</span>, <span class="ident">context</span>.<span class="ident">engine_ptr</span>())
+            <span class="ident">Context</span>::<span class="ident">new_activated</span>(<span class="ident">context</span>, <span class="ident">query</span>, <span class="ident">context</span>.<span class="ident">engine_ptr</span>())
         }
     }
 }
