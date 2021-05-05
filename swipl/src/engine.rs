@@ -35,6 +35,10 @@ unsafe impl Sync for Engine {}
 /// from. Furthermore, any one engine can have at most one activation
 /// in existence at any time, and each thread can have at most one
 /// engine activated on it.
+///
+/// EngineActivation does not implement Send or Sync. This means it's
+/// only allowed to be used from the thread that originally created
+/// it.
 #[derive(Debug)]
 pub struct EngineActivation<'a> {
     engine: &'a Engine,

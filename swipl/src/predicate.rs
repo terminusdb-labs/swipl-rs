@@ -20,6 +20,12 @@ pub struct Predicate {
     predicate: predicate_t,
 }
 
+// a `predicate_t` is a pointer which is normally not send or
+// sync. SWI-Prolog however guarantees that this pointer will remain
+// valid.
+unsafe impl Send for Predicate {}
+unsafe impl Sync for Predicate {}
+
 impl Predicate {
     /// Wrap a `predicate_t`, which is how the SWI-Prolog fli represents predicates.
     ///

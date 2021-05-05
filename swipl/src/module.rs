@@ -16,6 +16,12 @@ pub struct Module {
     module: module_t,
 }
 
+// a `module_t` is a pointer which is normally not send or
+// sync. SWI-Prolog however guarantees that this pointer will remain
+// valid.
+unsafe impl Send for Module {}
+unsafe impl Sync for Module {}
+
 impl Module {
     /// Wrap a `module_t`, which is how the SWI-Prolog fli represents modules.
     ///
