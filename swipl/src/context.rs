@@ -77,13 +77,26 @@ pub struct Context<'a, T: ContextType> {
 }
 
 impl<'a, T: ContextType> Context<'a, T> {
-    pub unsafe fn new_activated(
-        parent: Option<&'a dyn ContextParent>,
+    unsafe fn new_activated_without_parent(
         context: T,
         engine: PL_engine_t,
     ) -> Self {
         Context {
-            parent: parent,
+            parent: None,
+            context,
+            engine,
+            activated: Cell::new(true),
+            exception_handling: Cell::new(false),
+        }
+    }
+
+    pub unsafe fn new_activated<'b, T2: ContextType>(
+        parent: &'a Context<'b, T2>,
+        context: T,
+        engine: PL_engine_t,
+    ) -> Self {
+        Context {
+            parent: Some(parent as &dyn ContextParent),
             context,
             engine,
             activated: Cell::new(true),
@@ -109,6 +122,10 @@ impl<'a, T: ContextType> Context<'a, T> {
 
     pub fn engine_ptr(&self) -> PL_engine_t {
         self.engine
+    }
+
+    pub fn as_term_origin(&self) -> TermOrigin {
+        unsafe { TermOrigin::new(self.engine_ptr()) }
     }
 
     pub unsafe fn wrap_term_ref(&self, term: term_t) -> Term {
@@ -197,9 +214,8 @@ impl<'a, T: ContextType> Context<'a, T> {
     }
 }
 
-pub trait ContextParent {
+trait ContextParent {
     fn reactivate(&self);
-    fn as_term_origin(&self) -> TermOrigin;
 }
 
 impl<'a, T: ContextType> ContextParent for Context<'a, T> {
@@ -207,10 +223,6 @@ impl<'a, T: ContextType> ContextParent for Context<'a, T> {
         if self.activated.replace(true) {
             panic!("context already active");
         }
-    }
-
-    fn as_term_origin(&self) -> TermOrigin {
-        unsafe { TermOrigin::new(self.engine_ptr()) }
     }
 }
 
@@ -233,27 +245,27 @@ impl<'a> Into<Context<'a, ActivatedEngine<'a>>> for EngineActivation<'a> {
         let engine = self.engine_ptr();
         let context = ActivatedEngine { _activation: self };
 
-        unsafe { Context::new_activated(None, context, engine) }
+        unsafe { Context::new_activated_without_parent(context, engine) }
     }
 }
 
 unsafe impl<'a> ContextType for ActivatedEngine<'a> {}
 
-pub struct UnmanagedContext {
+pub struct Unmanaged {
     // only here to prevent automatic construction
     _x: (),
 }
-unsafe impl ContextType for UnmanagedContext {}
+unsafe impl ContextType for Unmanaged {}
 
 // This is unsafe to call if we are not in a swipl environment, or if some other context is active. Furthermore, the lifetime will most definitely be wrong. This should be used by code that doesn't promiscuously spread this context. all further accesses should be through borrows.
-pub unsafe fn unmanaged_engine_context() -> Context<'static, UnmanagedContext> {
+pub unsafe fn unmanaged_engine_context() -> Context<'static, Unmanaged> {
     let current = current_engine_ptr();
 
     if current.is_null() {
         panic!("tried to create an unmanaged engine context, but no engine is active");
     }
 
-    Context::new_activated(None, UnmanagedContext { _x: () }, current)
+    Context::new_activated_without_parent(Unmanaged { _x: () }, current)
 }
 
 enum FrameState {
@@ -305,7 +317,7 @@ impl<'a> Context<'a, Frame> {
 }
 
 pub unsafe trait FrameableContextType: ContextType {}
-unsafe impl FrameableContextType for UnmanagedContext {}
+unsafe impl FrameableContextType for Unmanaged {}
 unsafe impl<'a> FrameableContextType for ActivatedEngine<'a> {}
 unsafe impl FrameableContextType for Frame {}
 
@@ -320,12 +332,12 @@ impl<'a, C: FrameableContextType> Context<'a, C> {
         };
 
         self.activated.set(false);
-        unsafe { Context::new_activated(Some(self), frame, self.engine) }
+        unsafe { Context::new_activated(self, frame, self.engine) }
     }
 }
 
 pub unsafe trait QueryableContextType: FrameableContextType {}
-unsafe impl QueryableContextType for UnmanagedContext {}
+unsafe impl QueryableContextType for Unmanaged {}
 unsafe impl<'a> QueryableContextType for ActivatedEngine<'a> {}
 unsafe impl QueryableContextType for Frame {}
 

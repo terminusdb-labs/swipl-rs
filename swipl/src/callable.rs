@@ -232,7 +232,7 @@ impl<const N: usize> Callable<N> for CallablePredicate<N> {
             let query = OpenPredicate { qid, closed: false };
 
             context.deactivate();
-            Context::new_activated(Some(context), query, context.engine_ptr())
+            Context::new_activated(context, query, context.engine_ptr())
         }
     }
 }
