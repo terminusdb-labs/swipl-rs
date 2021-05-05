@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["PredicateWrapError",""]],"struct":[["CallablePredicate",""],["LazyCallablePredicate",""],["OpenPredicate",""]],"trait":[["Callable",""],["OpenCallable",""]]});
+initSidebarItems({"enum":[["PredicateWrapError",""]],"struct":[["CallablePredicate",""],["LazyCallablePredicate",""],["OpenPredicate",""]],"trait":[["Callable",""],["OpenCall",""]]});

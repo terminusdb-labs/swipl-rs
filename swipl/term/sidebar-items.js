@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["Nil",""],["Term",""],["TermOrigin",""]],"trait":[["TermGetable",""],["TermPutable",""],["Unifiable","Trait for term unification."]]});
+initSidebarItems({"struct":[["Nil",""],["Term",""]],"trait":[["TermGetable",""],["TermPutable",""],["Unifiable","Trait for term unification."]]});
