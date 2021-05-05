@@ -70,10 +70,8 @@
 <span id="67">67</span>
 <span id="68">68</span>
 <span id="69">69</span>
-<span id="70">70</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">atom</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">context</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">engine</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">fli</span>::<span class="kw-2">*</span>;
 
@@ -97,10 +95,11 @@
         <span class="self">self</span>.<span class="ident">module</span>
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_name</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">ActiveEnginePromise</span>, <span class="ident">F</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw">_</span>: <span class="kw-2">&amp;</span><span class="ident">P</span>, <span class="ident">func</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_name</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">func</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span>
     <span class="kw">where</span>
         <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">Atom</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span>,
     {
+        <span class="ident">assert_some_engine_is_active</span>();
         <span class="kw">let</span> <span class="ident">atom</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">Atom</span>::<span class="ident">wrap</span>(<span class="ident">PL_module_name</span>(<span class="self">self</span>.<span class="ident">module</span>)) };
 
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">func</span>(<span class="kw-2">&amp;</span><span class="ident">atom</span>);
@@ -110,36 +109,35 @@
         <span class="ident">result</span>
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">ActiveEnginePromise</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">promise</span>: <span class="kw-2">&amp;</span><span class="ident">P</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Atom</span> {
-        <span class="self">self</span>.<span class="ident">with_name</span>(<span class="ident">promise</span>, <span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="ident">n</span>.<span class="ident">clone</span>())
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Atom</span> {
+        <span class="self">self</span>.<span class="ident">with_name</span>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="ident">n</span>.<span class="ident">clone</span>())
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name_string</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">ActiveEnginePromise</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">promise</span>: <span class="kw-2">&amp;</span><span class="ident">P</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
-        <span class="self">self</span>.<span class="ident">with_name</span>(<span class="ident">promise</span>, <span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="ident">n</span>.<span class="ident">name</span>().<span class="ident">to_string</span>())
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name_string</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+        <span class="self">self</span>.<span class="ident">with_name</span>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="ident">n</span>.<span class="ident">name</span>().<span class="ident">to_string</span>())
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_name_string</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">ActiveEnginePromise</span>, <span class="ident">F</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">promise</span>: <span class="kw-2">&amp;</span><span class="ident">P</span>, <span class="ident">func</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_name_string</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">func</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span>
     <span class="kw">where</span>
         <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span>,
     {
-        <span class="self">self</span>.<span class="ident">with_name</span>(<span class="ident">promise</span>, <span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="ident">func</span>(<span class="ident">n</span>.<span class="ident">name</span>()))
+        <span class="self">self</span>.<span class="ident">with_name</span>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="ident">func</span>(<span class="ident">n</span>.<span class="ident">name</span>()))
     }
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">init</span>::<span class="kw-2">*</span>;
+    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">context</span>::<span class="kw-2">*</span>;
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">create_and_query_module</span>() {
-        <span class="ident">initialize_swipl_noengine</span>();
         <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine</span>::<span class="ident">new</span>();
         <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
         <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
 
         <span class="kw">let</span> <span class="ident">module</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_module</span>(<span class="string">&quot;foo&quot;</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="string">&quot;foo&quot;</span>, <span class="ident">module</span>.<span class="ident">name_string</span>(<span class="kw-2">&amp;</span><span class="ident">context</span>));
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="string">&quot;foo&quot;</span>, <span class="ident">module</span>.<span class="ident">name_string</span>());
     }
 }
 </pre></div>
