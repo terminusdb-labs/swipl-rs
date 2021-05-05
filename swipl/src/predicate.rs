@@ -16,6 +16,7 @@ use super::functor::*;
 use super::module::*;
 
 /// A wrapper for a prolog predicate.
+#[derive(Clone, Copy)]
 pub struct Predicate {
     predicate: predicate_t,
 }
@@ -39,7 +40,7 @@ impl Predicate {
     /// Create a new predicate from the given functor and module.
     ///
     /// This will panic if no prolog engine is active on this thread.
-    pub fn new(functor: &Functor, module: &Module) -> Self {
+    pub fn new(functor: Functor, module: Module) -> Self {
         assert_some_engine_is_active();
         let predicate = unsafe { PL_pred(functor.functor_ptr(), module.module_ptr()) };
 

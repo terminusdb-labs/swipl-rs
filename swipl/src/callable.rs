@@ -34,7 +34,7 @@ impl<const N: usize> LazyCallablePredicate<N> {
             let module_name = self.module.unwrap_or("");
             let module = Module::new(module_name);
 
-            loaded = Predicate::new(&functor, &module).predicate_ptr();
+            loaded = Predicate::new(functor, module).predicate_ptr();
 
             self.predicate
                 .store(loaded, std::sync::atomic::Ordering::Relaxed);
@@ -50,7 +50,7 @@ impl<const N: usize> Callable<N> for LazyCallablePredicate<N> {
     fn open<'a, C: ContextType>(
         self,
         context: &'a Context<C>,
-        module: Option<&Module>,
+        module: Option<Module>,
         args: [&Term; N],
     ) -> Context<'a, OpenPredicate> {
         self.as_callable().open(context, module, args)
@@ -63,7 +63,7 @@ impl<'a, const N: usize> Callable<N> for &'a LazyCallablePredicate<N> {
     fn open<'b, C: ContextType>(
         self,
         context: &'b Context<C>,
-        module: Option<&Module>,
+        module: Option<Module>,
         args: [&Term; N],
     ) -> Context<'b, OpenPredicate> {
         self.as_callable().open(context, module, args)
@@ -87,7 +87,7 @@ impl<const N: usize> CallablePredicate<N> {
         Self { predicate }
     }
 
-    pub fn new(predicate: &Predicate) -> Result<Self, PredicateWrapError> {
+    pub fn new(predicate: Predicate) -> Result<Self, PredicateWrapError> {
         let arity = predicate.arity();
         if arity as usize != N {
             Err(PredicateWrapError::WrongArity {
@@ -106,7 +106,7 @@ pub trait Callable<const N: usize> {
     fn open<'a, C: ContextType>(
         self,
         context: &'a Context<C>,
-        module: Option<&Module>,
+        module: Option<Module>,
         args: [&Term; N],
     ) -> Context<'a, Self::ContextType>;
 }
@@ -206,7 +206,7 @@ impl<const N: usize> Callable<N> for CallablePredicate<N> {
     fn open<'a, C: ContextType>(
         self,
         context: &'a Context<C>,
-        module: Option<&Module>,
+        module: Option<Module>,
         args: [&Term; N],
     ) -> Context<'a, Self::ContextType> {
         context.assert_activated();

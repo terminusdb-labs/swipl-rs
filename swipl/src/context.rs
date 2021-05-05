@@ -77,10 +77,7 @@ pub struct Context<'a, T: ContextType> {
 }
 
 impl<'a, T: ContextType> Context<'a, T> {
-    unsafe fn new_activated_without_parent(
-        context: T,
-        engine: PL_engine_t,
-    ) -> Self {
+    unsafe fn new_activated_without_parent(context: T, engine: PL_engine_t) -> Self {
         Context {
             parent: None,
             context,
@@ -381,7 +378,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
     pub fn open_with_module<C: Callable<N>, const N: usize>(
         &self,
         callable: C,
-        module: Option<&Module>,
+        module: Option<Module>,
         args: [&Term; N],
     ) -> Context<C::ContextType> {
         callable.open(self, module, args)
@@ -537,13 +534,13 @@ mod tests {
         let functor_is = Functor::new("is", 2);
         let functor_plus = Functor::new("+", 2);
         let module = Module::new("user");
-        let predicate = Predicate::new(&functor_is, &module);
-        let callable = CallablePredicate::new(&predicate).unwrap();
+        let predicate = Predicate::new(functor_is, module);
+        let callable = CallablePredicate::new(predicate).unwrap();
 
         let term1 = context.new_term_ref();
         let term2 = context.new_term_ref();
 
-        term2.unify(&functor_plus)?;
+        term2.unify(functor_plus)?;
         term2.unify_arg(1, 40_u64)?;
         term2.unify_arg(2, 2_u64)?;
 
@@ -568,13 +565,13 @@ mod tests {
         let functor_is = Functor::new("is", 2);
         let functor_plus = Functor::new("+", 2);
         let module = Module::new("user");
-        let predicate = Predicate::new(&functor_is, &module);
-        let callable = CallablePredicate::new(&predicate).unwrap();
+        let predicate = Predicate::new(functor_is, module);
+        let callable = CallablePredicate::new(predicate).unwrap();
 
         let term1 = context.new_term_ref();
         let term2 = context.new_term_ref();
 
-        assert!(term2.unify(&functor_plus).is_ok());
+        assert!(term2.unify(functor_plus).is_ok());
         assert!(term2.unify_arg(1, 40_u64).is_ok());
         assert!(term2.unify_arg(2, 2_u64).is_ok());
 
@@ -601,13 +598,13 @@ mod tests {
         let functor_is = Functor::new("is", 2);
         let functor_plus = Functor::new("+", 2);
         let module = Module::new("user");
-        let predicate = Predicate::new(&functor_is, &module);
-        let callable = CallablePredicate::new(&predicate).unwrap();
+        let predicate = Predicate::new(functor_is, module);
+        let callable = CallablePredicate::new(predicate).unwrap();
 
         let term1 = context.new_term_ref();
         let term2 = context.new_term_ref();
 
-        term2.unify(&functor_plus)?;
+        term2.unify(functor_plus)?;
         term2.unify_arg(1, 40_u64)?;
         term2.unify_arg(2, 2_u64)?;
 
@@ -635,13 +632,13 @@ mod tests {
         let functor_is = Functor::new("is", 2);
         let functor_plus = Functor::new("+", 2);
         let module = Module::new("user");
-        let predicate = Predicate::new(&functor_is, &module);
-        let callable = CallablePredicate::new(&predicate).unwrap();
+        let predicate = Predicate::new(functor_is, module);
+        let callable = CallablePredicate::new(predicate).unwrap();
 
         let term1 = context.new_term_ref();
         let term2 = context.new_term_ref();
 
-        term2.unify(&functor_plus)?;
+        term2.unify(functor_plus)?;
         term2.unify_arg(1, 40_u64)?;
         term2.unify_arg(2, 2_u64)?;
 
@@ -707,8 +704,8 @@ mod tests {
 
         let functor = Functor::new("true", 0);
         let module = Module::new("user");
-        let predicate = Predicate::new(&functor, &module);
-        let callable = CallablePredicate::new(&predicate).unwrap();
+        let predicate = Predicate::new(functor, module);
+        let callable = CallablePredicate::new(predicate).unwrap();
 
         let query = context.open(callable, []);
         assert!(!query.next_solution()?);
@@ -787,8 +784,8 @@ mod tests {
 
         let functor = Functor::new("unify_with_42", 1);
         let module = Module::new("user");
-        let predicate = Predicate::new(&functor, &module);
-        let callable = CallablePredicate::new(&predicate).unwrap();
+        let predicate = Predicate::new(functor, module);
+        let callable = CallablePredicate::new(predicate).unwrap();
 
         let query = context.open(callable, [&term]);
         assert!(!query.next_solution()?);
