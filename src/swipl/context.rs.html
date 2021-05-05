@@ -1047,6 +1047,55 @@
 <span id="1044">1044</span>
 <span id="1045">1045</span>
 <span id="1046">1046</span>
+<span id="1047">1047</span>
+<span id="1048">1048</span>
+<span id="1049">1049</span>
+<span id="1050">1050</span>
+<span id="1051">1051</span>
+<span id="1052">1052</span>
+<span id="1053">1053</span>
+<span id="1054">1054</span>
+<span id="1055">1055</span>
+<span id="1056">1056</span>
+<span id="1057">1057</span>
+<span id="1058">1058</span>
+<span id="1059">1059</span>
+<span id="1060">1060</span>
+<span id="1061">1061</span>
+<span id="1062">1062</span>
+<span id="1063">1063</span>
+<span id="1064">1064</span>
+<span id="1065">1065</span>
+<span id="1066">1066</span>
+<span id="1067">1067</span>
+<span id="1068">1068</span>
+<span id="1069">1069</span>
+<span id="1070">1070</span>
+<span id="1071">1071</span>
+<span id="1072">1072</span>
+<span id="1073">1073</span>
+<span id="1074">1074</span>
+<span id="1075">1075</span>
+<span id="1076">1076</span>
+<span id="1077">1077</span>
+<span id="1078">1078</span>
+<span id="1079">1079</span>
+<span id="1080">1080</span>
+<span id="1081">1081</span>
+<span id="1082">1082</span>
+<span id="1083">1083</span>
+<span id="1084">1084</span>
+<span id="1085">1085</span>
+<span id="1086">1086</span>
+<span id="1087">1087</span>
+<span id="1088">1088</span>
+<span id="1089">1089</span>
+<span id="1090">1090</span>
+<span id="1091">1091</span>
+<span id="1092">1092</span>
+<span id="1093">1093</span>
+<span id="1094">1094</span>
+<span id="1095">1095</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Prolog contexts.</span>
 <span class="doccomment">//!</span>
@@ -1056,9 +1105,9 @@
 <span class="doccomment">//! objects.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! Currently, there&#39;s four kind of states that we keep track of:</span>
-<span class="doccomment">//! - Activated - this is the state an engine will be in when we just</span>
-<span class="doccomment">//!   created it. If you&#39;re directly working with engines, this will be</span>
-<span class="doccomment">//!   your initial state.</span>
+<span class="doccomment">//! - ActivatedEngine - this is the state an engine will be in when we</span>
+<span class="doccomment">//!   just created it. If you&#39;re directly working with engines, this</span>
+<span class="doccomment">//!   will be your initial state.</span>
 <span class="doccomment">//! - Unmanaged - this is the state an engine will be in when prolog</span>
 <span class="doccomment">//!   is calling into the rust library, for example, when a foreign</span>
 <span class="doccomment">//!   predicate implemented in rust is being called.</span>
@@ -1365,12 +1414,12 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// Example:</span>
 <span class="doccomment">/// ```</span>
-<span class="doccomment">/// use swipl::prelude::*;</span>
+<span class="doccomment">/// # use swipl::prelude::*;</span>
 <span class="doccomment">/// let engine = Engine::new();</span>
 <span class="doccomment">/// let activation = engine.activate();</span>
 
-<span class="doccomment">/// // Note: context type annotation is is usually not necessary</span>
 <span class="doccomment">/// let context: Context&lt;ActivatedEngine&gt; = activation.into();</span>
+<span class="doccomment">/// // Note: Context&lt;_&gt; would also work as a type annotation</span>
 <span class="doccomment">/// ```</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ActivatedEngine</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="ident">_activation</span>: <span class="ident">EngineActivation</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
@@ -1406,15 +1455,11 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// Example:</span>
 <span class="doccomment">/// ```</span>
-<span class="doccomment">/// use swipl::prelude::*;</span>
-<span class="doccomment">/// // create an unmanaged engine for the example</span>
-<span class="doccomment">/// initialize_swipl_noengine();</span>
-<span class="doccomment">/// unsafe { swipl::fli::PL_thread_attach_engine(std::ptr::null_mut()); }</span>
-<span class="doccomment">///</span>
+<span class="doccomment">/// # use swipl::prelude::*;</span>
+<span class="doccomment">/// # initialize_swipl_noengine();</span>
+<span class="doccomment">/// # unsafe { swipl::fli::PL_thread_attach_engine(std::ptr::null_mut()); }</span>
 <span class="doccomment">/// let context = unsafe { unmanaged_engine_context() };</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// // cleanup</span>
-<span class="doccomment">/// unsafe { swipl::fli::PL_thread_destroy_engine(); }</span>
+<span class="doccomment">/// # unsafe { swipl::fli::PL_thread_destroy_engine(); }</span>
 <span class="doccomment">/// ```</span>
 <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">unmanaged_engine_context</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span>, <span class="ident">Unmanaged</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">current</span> <span class="op">=</span> <span class="ident">current_engine_ptr</span>();
@@ -1629,10 +1674,14 @@
     <span class="kw">fn</span> <span class="ident">read_term_from_atom</span>(<span class="ident">atom_term</span>, <span class="ident">result</span>, <span class="ident">options</span>);
     <span class="attribute">#[<span class="ident">module</span>(<span class="string">&quot;user&quot;</span>)]</span>
     <span class="attribute">#[<span class="ident">name</span>(<span class="string">&quot;call&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">open_call</span>(<span class="ident">term</span>);
+    <span class="kw">fn</span> <span class="ident">open_call</span>(<span class="ident">term</span>);
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">QueryableContextType</span><span class="op">&gt;</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Create a new Term reference in the current context.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The term ref takes on the lifetime of the Context reference,</span>
+    <span class="doccomment">/// ensuring that it cannot outlive the context that created it.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_term_ref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Term</span> {
         <span class="self">self</span>.<span class="ident">assert_activated</span>();
         <span class="kw">unsafe</span> {
@@ -1641,6 +1690,25 @@
         }
     }
 
+    <span class="doccomment">/// Open a query.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Example:</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// # use swipl::prelude::*;</span>
+    <span class="doccomment">/// # fn main() -&gt; PrologResult&lt;()&gt; {</span>
+    <span class="doccomment">/// #  let engine = Engine::new();</span>
+    <span class="doccomment">/// #  let activation = engine.activate();</span>
+    <span class="doccomment">/// #  let context: Context&lt;_&gt; = activation.into();</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">///    let query = context.open(pred!{format/2},</span>
+    <span class="doccomment">///                             [&amp;term!{context: &quot;hello, ~q~n&quot;}?,</span>
+    <span class="doccomment">///                              &amp;term!{context: [&quot;world&quot;]}?]);</span>
+    <span class="doccomment">///    query.next_solution()?;</span>
+    <span class="doccomment">///    query.cut();</span>
+    <span class="doccomment">/// #</span>
+    <span class="doccomment">/// #  Ok(())</span>
+    <span class="doccomment">/// # }</span>
+    <span class="doccomment">/// ```</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">open</span><span class="op">&lt;</span><span class="ident">C</span>: <span class="ident">Callable</span><span class="op">&lt;</span><span class="ident">N</span><span class="op">&gt;</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">callable</span>: <span class="ident">C</span>,
@@ -1649,6 +1717,23 @@
         <span class="ident">callable</span>.<span class="ident">open</span>(<span class="self">self</span>, <span class="prelude-val">None</span>, <span class="ident">args</span>)
     }
 
+    <span class="doccomment">/// Open a query, get a single result and cut.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Example:</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// # use swipl::prelude::*;</span>
+    <span class="doccomment">/// # fn main() -&gt; PrologResult&lt;()&gt; {</span>
+    <span class="doccomment">/// #  let engine = Engine::new();</span>
+    <span class="doccomment">/// #  let activation = engine.activate();</span>
+    <span class="doccomment">/// #  let context: Context&lt;_&gt; = activation.into();</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">///    context.call_once(pred!{format/2},</span>
+    <span class="doccomment">///                      [&amp;term!{context: &quot;hello, ~q~n&quot;}?,</span>
+    <span class="doccomment">///                      &amp;term!{context: [&quot;world&quot;]}?])?;</span>
+    <span class="doccomment">/// #</span>
+    <span class="doccomment">/// #  Ok(())</span>
+    <span class="doccomment">/// # }</span>
+    <span class="doccomment">/// ```</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">call_once</span><span class="op">&lt;</span><span class="ident">C</span>: <span class="ident">Callable</span><span class="op">&lt;</span><span class="ident">N</span><span class="op">&gt;</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">callable</span>: <span class="ident">C</span>,
@@ -1661,6 +1746,7 @@
         <span class="prelude-val">Ok</span>(())
     }
 
+    <span class="doccomment">/// Open a query, optionally passing in a context module.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">open_with_module</span><span class="op">&lt;</span><span class="ident">C</span>: <span class="ident">Callable</span><span class="op">&lt;</span><span class="ident">N</span><span class="op">&gt;</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">callable</span>: <span class="ident">C</span>,
@@ -1670,6 +1756,12 @@
         <span class="ident">callable</span>.<span class="ident">open</span>(<span class="self">self</span>, <span class="ident">module</span>, <span class="ident">args</span>)
     }
 
+    <span class="doccomment">/// Turn the given string into a prolog term.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This uses the prolog predicate `read_term_from_atom/3` for the</span>
+    <span class="doccomment">/// heavy lifting.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Consider using the `term!` macro instead.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">term_from_string</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PrologResult</span><span class="op">&lt;</span><span class="ident">Term</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">term</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">new_term_ref</span>();
         <span class="kw">let</span> <span class="ident">frame</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">open_frame</span>();
@@ -1686,24 +1778,16 @@
         <span class="prelude-val">Ok</span>(<span class="ident">term</span>)
     }
 
+    <span class="doccomment">/// Open a query for the given term using the `call/1` prolog predicate.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">open_call</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">t</span>: <span class="kw-2">&amp;</span><span class="ident">Term</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="kw">impl</span> <span class="ident">OpenCall</span><span class="op">&gt;</span> {
         <span class="ident">open_call</span>(<span class="self">self</span>, <span class="ident">t</span>)
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">exception</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Term</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">assert_activated</span>();
-
-        <span class="kw">let</span> <span class="ident">exception</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">PL_exception</span>(<span class="number">0</span>) };
-        <span class="kw">if</span> <span class="ident">exception</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
-            <span class="kw">let</span> <span class="ident">exception_term</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">Term</span>::<span class="ident">new</span>(<span class="ident">exception</span>, <span class="self">self</span>.<span class="ident">as_term_origin</span>()) };
-            <span class="kw">let</span> <span class="ident">return_term</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">new_term_ref</span>();
-            <span class="ident">return_term</span>.<span class="ident">unify</span>(<span class="ident">exception_term</span>).<span class="ident">unwrap</span>();
-            <span class="prelude-val">Some</span>(<span class="ident">return_term</span>)
-        } <span class="kw">else</span> {
-            <span class="prelude-val">None</span>
-        }
-    }
-
+    <span class="doccomment">/// Turn a result into a `PrologResult`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// For this to work, the `Err` component of the `Result` needs to</span>
+    <span class="doccomment">/// implement the trait `IntoPrologException`. This is currently</span>
+    <span class="doccomment">/// only the case for [std::io::Error].</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">try_or_die</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span>: <span class="ident">IntoPrologException</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">r</span>: <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PrologResult</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="ident">r</span> {
             <span class="prelude-val">Ok</span>(<span class="ident">ok</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">ok</span>),
@@ -1722,7 +1806,11 @@
     }
 }
 
+<span class="doccomment">/// Trait for turning errors into prolog exceptions</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">IntoPrologException</span> {
+    <span class="doccomment">/// Turns this error into a prolog exception using the given context.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The result is a `Term` containing the prolog exception.</span>
     <span class="kw">fn</span> <span class="ident">into_prolog_exception</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, <span class="ident">T</span>: <span class="ident">QueryableContextType</span><span class="op">&gt;</span>(
         <span class="self">self</span>,
         <span class="ident">context</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span>, <span class="ident">T</span><span class="op">&gt;</span>,
@@ -1739,6 +1827,16 @@
     }
 }
 
+<span class="doccomment">/// Call the given function, converting panics into prolog exceptions.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// If the inner function panics, an exception of the form</span>
+<span class="doccomment">/// `error(rust_error(panic(&quot;..the panic message..&quot;)))` will be</span>
+<span class="doccomment">/// raised, and this function will return</span>
+<span class="doccomment">/// `Err(PrologError::Exception)`. Otherwise, This function will</span>
+<span class="doccomment">/// return `Ok(())`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This is used by various macros to ensure that panics from user</span>
+<span class="doccomment">/// code do not propagate into prolog.</span>
 <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">prolog_catch_unwind</span><span class="op">&lt;</span><span class="ident">F</span>: <span class="ident">FnOnce</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span> <span class="op">+</span> <span class="ident">std</span>::<span class="ident">panic</span>::<span class="ident">UnwindSafe</span>, <span class="ident">R</span><span class="op">&gt;</span>(
     <span class="ident">f</span>: <span class="ident">F</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PrologResult</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> {
