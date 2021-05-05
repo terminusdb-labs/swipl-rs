@@ -158,10 +158,8 @@ unsafe impl<T: OpenCallable> FrameableContextType for T {}
 
 unsafe impl OpenCallable for OpenPredicate {
     fn next_solution<'a>(this: &Context<'a, Self>) -> PrologResult<bool> {
-        println!("lets next solution");
         this.assert_activated();
         let result = unsafe { PL_next_solution(this.context.qid) };
-        println!("result: {}", result);
         match result {
             -1 => {
                 let exception = unsafe { PL_exception(this.context.qid) };
