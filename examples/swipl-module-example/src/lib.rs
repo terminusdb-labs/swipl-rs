@@ -5,8 +5,8 @@ use std::io::{self, Write};
 use std::sync::Arc;
 
 predicates! {
-    semidet fn unify_with_foo(context, term) {
-        let atom = context.new_atom("foo");
+    semidet fn unify_with_foo(_context, term) {
+        let atom = Atom::new("foo");
         term.unify(&atom)
     }
 
@@ -16,7 +16,7 @@ predicates! {
         },
         call(v) => {
             let next = v.pop().unwrap();
-            let atom = context.new_atom(next);
+            let atom = Atom::new(next);
             term.unify(&atom)?;
 
             Ok(!v.is_empty())

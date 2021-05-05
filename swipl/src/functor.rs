@@ -1,6 +1,5 @@
 use super::atom::*;
 use super::consts::*;
-use super::context::*;
 use super::engine::*;
 use super::fli::*;
 use super::term::*;
@@ -117,28 +116,22 @@ impl<'a> Functorable<'a> {
         }
     }
 
-    pub unsafe fn as_functor_unsafe<'b>(&self) -> Functor {
+    pub fn as_functor(&self) -> Functor {
         Functor::new(&self.name, self.arity)
-    }
-
-    pub fn as_functor<'b, T: ContextType>(&self, context: &Context<'b, T>) -> Functor {
-        context.new_functor(&self.name, self.arity)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::init::*;
+    use crate::context::*;
 
     #[test]
     fn create_and_query_functor() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
-        let activation = engine.activate();
-        let context: Context<_> = activation.into();
+        let _activation = engine.activate();
 
-        let f = context.new_functor("moocows", 3);
+        let f = Functor::new("moocows", 3);
 
         assert_eq!("moocows", f.name_string());
         assert_eq!("moocows", f.name().name());
@@ -150,12 +143,11 @@ mod tests {
 
     #[test]
     fn unify_same_functor_twice_succeeds() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
-        let f = context.new_functor("moocows", 3);
+        let f = Functor::new("moocows", 3);
         let term = context.new_term_ref();
         assert!(term.unify(&f).is_ok());
         assert!(term.unify(&f).is_ok());
@@ -163,24 +155,22 @@ mod tests {
 
     #[test]
     fn unity_retrieve_same_functor() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
-        let f = context.new_functor("moocows", 3);
+        let f = Functor::new("moocows", 3);
         let term = context.new_term_ref();
         assert!(term.unify(&f).is_ok());
     }
 
     #[test]
     fn unify_different_functor_arity_fails() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
-        let f1 = context.new_functor("moocows", 3);
+        let f1 = Functor::new("moocows", 3);
         let term = context.new_term_ref();
         term.unify(&f1).unwrap();
         let f2: Functor = term.get().unwrap();
@@ -189,13 +179,12 @@ mod tests {
 
     #[test]
     fn unify_different_functor_name_fails() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
-        let f1 = context.new_functor("moocows", 3);
-        let f2 = context.new_functor("oinkpigs", 3);
+        let f1 = Functor::new("moocows", 3);
+        let f2 = Functor::new("oinkpigs", 3);
         let term = context.new_term_ref();
         assert!(term.unify(&f1).is_ok());
         assert!(!term.unify(&f2).is_ok());
@@ -204,22 +193,19 @@ mod tests {
     #[test]
     #[should_panic]
     fn functor_creation_with_too_high_arity_panics() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
-        let activation = engine.activate();
-        let context: Context<_> = activation.into();
+        let _activation = engine.activate();
 
-        let _f = context.new_functor("moocows", 1025);
+        let _f = Functor::new("moocows", 1025);
     }
 
     #[test]
     fn functor_arg_unify_and_get_succeeds() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
-        let f = context.new_functor("moocows", 2);
+        let f = Functor::new("moocows", 2);
         let term = context.new_term_ref();
         assert!(term.get_arg::<u64>(1).unwrap_err().is_failure());
         assert!(term.unify(f).is_ok());

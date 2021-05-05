@@ -1,13 +1,10 @@
 //! Prolog contexts.
 //!
 //!
-use super::atom::*;
 use super::callable::*;
 use super::engine::*;
 use super::fli::*;
-use super::functor::*;
 use super::module::*;
-use super::predicate::*;
 use super::result::*;
 use super::term::*;
 
@@ -340,40 +337,6 @@ impl<'a, C: FrameableContextType> Context<'a, C> {
     }
 }
 
-pub unsafe trait ActiveEnginePromise: Sized {
-    fn new_atom(&self, name: &str) -> Atom {
-        Atom::new(name)
-    }
-
-    fn new_functor<A: IntoAtom>(&self, name: A, arity: u16) -> Functor {
-        Functor::new(name, arity)
-    }
-
-    fn new_module<A: IntoAtom>(&self, name: A) -> Module {
-        Module::new(name)
-    }
-
-    fn new_predicate(&self, functor: &Functor, module: &Module) -> Predicate {
-        Predicate::new(functor, module)
-    }
-}
-
-unsafe impl<'a> ActiveEnginePromise for EngineActivation<'a> {}
-unsafe impl<'a, C: ContextType> ActiveEnginePromise for Context<'a, C> {}
-unsafe impl<'a> ActiveEnginePromise for &'a dyn TermOrigin {}
-
-pub struct UnsafeActiveEnginePromise {
-    _x: bool,
-}
-
-impl UnsafeActiveEnginePromise {
-    pub unsafe fn new() -> Self {
-        Self { _x: false }
-    }
-}
-
-unsafe impl ActiveEnginePromise for UnsafeActiveEnginePromise {}
-
 pub unsafe trait QueryableContextType: FrameableContextType {}
 unsafe impl QueryableContextType for UnmanagedContext {}
 unsafe impl<'a> QueryableContextType for ActivatedEngine<'a> {}
@@ -529,6 +492,9 @@ pub unsafe fn prolog_catch_unwind<F: FnOnce() -> R + std::panic::UnwindSafe, R>(
 mod tests {
     use super::*;
     use crate::predicates;
+    use crate::functor::*;
+    use crate::atom::*;
+    use crate::predicate::*;
 
     #[test]
     fn get_term_ref_on_fresh_engine() {
@@ -569,10 +535,10 @@ mod tests {
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
-        let functor_is = context.new_functor("is", 2);
-        let functor_plus = context.new_functor("+", 2);
-        let module = context.new_module("user");
-        let predicate = context.new_predicate(&functor_is, &module);
+        let functor_is = Functor::new("is", 2);
+        let functor_plus = Functor::new("+", 2);
+        let module = Module::new("user");
+        let predicate = Predicate::new(&functor_is, &module);
         let callable = CallablePredicate::new(&predicate).unwrap();
 
         let term1 = context.new_term_ref();
@@ -600,10 +566,10 @@ mod tests {
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
-        let functor_is = context.new_functor("is", 2);
-        let functor_plus = context.new_functor("+", 2);
-        let module = context.new_module("user");
-        let predicate = context.new_predicate(&functor_is, &module);
+        let functor_is = Functor::new("is", 2);
+        let functor_plus = Functor::new("+", 2);
+        let module = Module::new("user");
+        let predicate = Predicate::new(&functor_is, &module);
         let callable = CallablePredicate::new(&predicate).unwrap();
 
         let term1 = context.new_term_ref();
@@ -633,10 +599,10 @@ mod tests {
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
-        let functor_is = context.new_functor("is", 2);
-        let functor_plus = context.new_functor("+", 2);
-        let module = context.new_module("user");
-        let predicate = context.new_predicate(&functor_is, &module);
+        let functor_is = Functor::new("is", 2);
+        let functor_plus = Functor::new("+", 2);
+        let module = Module::new("user");
+        let predicate = Predicate::new(&functor_is, &module);
         let callable = CallablePredicate::new(&predicate).unwrap();
 
         let term1 = context.new_term_ref();
@@ -667,10 +633,10 @@ mod tests {
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
-        let functor_is = context.new_functor("is", 2);
-        let functor_plus = context.new_functor("+", 2);
-        let module = context.new_module("user");
-        let predicate = context.new_predicate(&functor_is, &module);
+        let functor_is = Functor::new("is", 2);
+        let functor_plus = Functor::new("+", 2);
+        let module = Module::new("user");
+        let predicate = Predicate::new(&functor_is, &module);
         let callable = CallablePredicate::new(&predicate).unwrap();
 
         let term1 = context.new_term_ref();
@@ -702,8 +668,8 @@ mod tests {
         let context: Context<_> = activation.into();
 
         let term = context.term_from_string("foo(bar(baz,quux))").unwrap();
-        let functor_foo = context.new_functor("foo", 1);
-        let functor_bar = context.new_functor("bar", 2);
+        let functor_foo = Functor::new("foo", 1);
+        let functor_bar = Functor::new("bar", 2);
 
         assert_eq!(functor_foo, term.get().unwrap());
         assert_eq!(functor_bar, term.get_arg(1).unwrap());
@@ -740,9 +706,9 @@ mod tests {
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
-        let functor = context.new_functor("true", 0);
-        let module = context.new_module("user");
-        let predicate = context.new_predicate(&functor, &module);
+        let functor = Functor::new("true", 0);
+        let module = Module::new("user");
+        let predicate = Predicate::new(&functor, &module);
         let callable = CallablePredicate::new(&predicate).unwrap();
 
         let query = context.open(callable, []);
@@ -820,9 +786,9 @@ mod tests {
         let context: Context<_> = activation.into();
         let term = context.new_term_ref();
 
-        let functor = context.new_functor("unify_with_42", 1);
-        let module = context.new_module("user");
-        let predicate = context.new_predicate(&functor, &module);
+        let functor = Functor::new("unify_with_42", 1);
+        let module = Module::new("user");
+        let predicate = Predicate::new(&functor, &module);
         let callable = CallablePredicate::new(&predicate).unwrap();
 
         let query = context.open(callable, [&term]);

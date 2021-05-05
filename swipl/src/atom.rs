@@ -401,10 +401,9 @@ mod tests {
     fn create_atom_and_retrieve_name() {
         initialize_swipl_noengine();
         let engine = Engine::new();
-        let activation = engine.activate();
-        let context: Context<_> = activation.into();
+        let _activation = engine.activate();
 
-        let atom = context.new_atom("the cow says moo");
+        let atom = Atom::new("the cow says moo");
         let name = atom.name();
 
         assert_eq!(name, "the cow says moo");
@@ -413,13 +412,12 @@ mod tests {
     fn create_and_compare_some_atoms() {
         initialize_swipl_noengine();
         let engine = Engine::new();
-        let activation = engine.activate();
-        let context: Context<_> = activation.into();
+        let _activation = engine.activate();
 
-        let a1 = context.new_atom("foo");
-        let a2 = context.new_atom("bar");
+        let a1 = Atom::new("foo");
+        let a2 = Atom::new("bar");
         assert!(a1 != a2);
-        let a3 = context.new_atom("foo");
+        let a3 = Atom::new("foo");
         assert_eq!(a1, a3);
     }
 
@@ -427,10 +425,9 @@ mod tests {
     fn clone_atom() {
         initialize_swipl_noengine();
         let engine = Engine::new();
-        let activation = engine.activate();
-        let context: Context<_> = activation.into();
+        let _activation = engine.activate();
 
-        let a1 = context.new_atom("foo");
+        let a1 = Atom::new("foo");
         let a2 = a1.clone();
 
         assert_eq!(a1, a2);
@@ -440,13 +437,12 @@ mod tests {
     fn create_atom_of_magic_length() {
         initialize_swipl_noengine();
         let engine = Engine::new();
-        let activation = engine.activate();
-        let context: Context<_> = activation.into();
+        let _activation = engine.activate();
 
         let len = std::mem::size_of::<usize>() - 1;
         let name = (0..len).map(|_| "a").collect::<String>();
 
-        let _atom = context.new_atom(&name);
+        let _atom = Atom::new(&name);
     }
 
     #[test]
@@ -456,8 +452,8 @@ mod tests {
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
-        let a1 = context.new_atom("foo");
-        let a2 = context.new_atom("bar");
+        let a1 = Atom::new("foo");
+        let a2 = Atom::new("bar");
 
         let term = context.new_term_ref();
 
@@ -473,8 +469,8 @@ mod tests {
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
-        let a1 = context.new_atom("foo");
-        let a2 = context.new_atom("bar");
+        let a1 = Atom::new("foo");
+        let a2 = Atom::new("bar");
 
         let term = context.new_term_ref();
 

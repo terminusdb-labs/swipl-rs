@@ -55,15 +55,13 @@ impl Module {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::context::*;
 
     #[test]
     fn create_and_query_module() {
         let engine = Engine::new();
-        let activation = engine.activate();
-        let context: Context<_> = activation.into();
+        let _activation = engine.activate();
 
-        let module = context.new_module("foo");
+        let module = Module::new("foo");
         assert_eq!("foo", module.name_string());
     }
 }

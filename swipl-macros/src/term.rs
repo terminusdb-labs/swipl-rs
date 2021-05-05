@@ -229,7 +229,7 @@ impl Functor {
 
         let functor_put = quote! {
             {
-                let functor = __swipl_frame.new_functor(#head_str, std::convert::TryInto::try_into(#arity).unwrap());
+                let functor = #crt::functor::Functor::new(#head_str, std::convert::TryInto::try_into(#arity).unwrap());
                 #into.unify(&functor)?;
             }
         };
@@ -430,7 +430,7 @@ impl Tuple {
             let cur_ident = __swipl_frame.new_term_ref();
             cur_ident.unify(&#into)?;
 
-            let comma_functor = __swipl_frame.new_functor(",", 2);
+            let comma_functor = #crt::functor::Functor::new(",", 2);
             cur_ident.unify(&comma_functor)?;
         };
 

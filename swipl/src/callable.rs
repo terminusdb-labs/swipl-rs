@@ -4,6 +4,8 @@ use crate::module::*;
 use crate::predicate::*;
 use crate::result::*;
 use crate::term::*;
+use crate::functor::*;
+use crate::engine::*;
 use std::convert::TryInto;
 use std::os::raw::c_void;
 use std::sync::atomic::{AtomicPtr, Ordering};
@@ -25,17 +27,14 @@ impl<const N: usize> LazyCallablePredicate<N> {
     }
 
     pub fn as_callable(&self) -> CallablePredicate<N> {
+        assert_some_engine_is_active();
         let mut loaded = self.predicate.load(Ordering::Relaxed);
         if loaded.is_null() {
-            // it really doesn't matter what engine this comes
-            // from, as predicates are process wide and live
-            // forever.
-            let context = unsafe { unmanaged_engine_context() };
-            let functor = context.new_functor(self.name, N as u16);
+            let functor = Functor::new(self.name, N as u16);
             let module_name = self.module.unwrap_or("");
-            let module = context.new_module(module_name);
+            let module = Module::new(module_name);
 
-            loaded = context.new_predicate(&functor, &module).predicate_ptr();
+            loaded = Predicate::new(&functor, &module).predicate_ptr();
 
             self.predicate
                 .store(loaded, std::sync::atomic::Ordering::Relaxed);
