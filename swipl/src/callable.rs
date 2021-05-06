@@ -87,18 +87,25 @@ pub enum PredicateWrapError {
     WrongArity { expected: u16, actual: u16 },
 }
 
+/// A prolog predicate which is ready to be called.
 #[derive(Clone, Copy)]
 pub struct CallablePredicate<const N: usize> {
     predicate: predicate_t,
 }
 
 impl<const N: usize> CallablePredicate<N> {
+    /// Wrap a `predicate_t` from the SWI-Prolog fli, not checking if arity matches.
     pub unsafe fn wrap(predicate: predicate_t) -> Self {
         // no check for arity or if the predicate even exists!
         Self { predicate }
     }
 
+    /// Wrap a [Predicate](crate::predicate::Predicate).
+    ///
+    ///This checks that the arity matches the const generic, and
+    /// panics otherwise.
     pub fn new(predicate: Predicate) -> Result<Self, PredicateWrapError> {
+        assert_some_engine_is_active();
         let arity = predicate.arity();
         if arity as usize != N {
             Err(PredicateWrapError::WrongArity {
@@ -119,6 +126,10 @@ impl<const N: usize> CallablePredicate<N> {
 /// trait, so that they may be used as prolog predicates without
 /// actually having to go through prolog. However, this is currently
 /// not yet implemented.
+///
+/// Through the const generic, this knows about the predicate arity at
+/// compile time. This allows `context.open(..)` to check at compile
+/// time that the arity matches.
 pub trait Callable<const N: usize> {
     type ContextType: OpenCall;
 
@@ -136,6 +147,12 @@ pub struct OpenQuery {
     closed: bool,
 }
 
+/// An open call.
+///
+/// A context that wraps an open call can be asked for the next
+/// solution, or close itself through cutting the query or
+/// discarding. All these functions are actually implemented here
+/// using the `OpenCall` trait.
 pub unsafe trait OpenCall: Sized {
     fn next_solution<'a>(this: &Context<'a, Self>) -> PrologResult<bool>;
     fn cut<'a>(this: Context<'a, Self>);
