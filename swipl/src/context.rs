@@ -203,32 +203,6 @@ impl<'a, T: ContextType> Context<'a, T> {
         Term::new(term, self.as_term_origin())
     }
 
-    /// Put the engine in an exceptional state.
-    ///
-    /// The given term will be copied and put into the exception
-    /// term. This function always returns
-    /// `Err(PrologError::Exception)`.
-    pub fn raise_exception<R>(&self, term: &Term) -> PrologResult<R>
-    where
-        T: FrameableContextType,
-    {
-        self.assert_activated();
-        if term.is_var() {
-            let frame = self.open_frame();
-            let err = term! {frame: error(rust_error(raise_exception_called_with_variable), _)}?;
-            unsafe {
-                PL_raise_exception(err.term_ptr());
-                PL_reset_term_refs(err.term_ptr());
-            }
-        } else {
-            unsafe {
-                PL_raise_exception(term.term_ptr());
-            }
-        }
-
-        Err(PrologError::Exception)
-    }
-
     /// Returns true if the underlying engine is in an exceptional state.
     pub fn has_exception(&self) -> bool {
         self.assert_activated();
@@ -286,6 +260,24 @@ impl<'a, T: ContextType> Context<'a, T> {
             None => f(None),
             Some(e) => unsafe { e.with_cleared_exception(self, |e| f(Some(e))) },
         })
+    }
+
+    /// Put the engine in an exceptional state.
+    ///
+    /// The given term will be copied and put into the exception
+    /// term. This function always returns
+    /// `Err(PrologError::Exception)`.
+    pub fn raise_exception<R>(&self, term: &Term) -> PrologResult<R> {
+        self.assert_activated();
+        if term.is_var() {
+            panic!("tried to raise a var as an exception");
+        } else {
+            unsafe {
+                PL_raise_exception(term.term_ptr());
+            }
+        }
+
+        Err(PrologError::Exception)
     }
 }
 
