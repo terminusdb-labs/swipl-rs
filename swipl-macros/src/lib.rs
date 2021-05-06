@@ -263,21 +263,33 @@ pub fn term(stream: TokenStream) -> TokenStream {
     term::term_macro(stream).into()
 }
 
+/// Define an arc blob.
+///
+/// See the [swipl::blob](https://terminusdb-labs.github.io/swipl-rs/swipl/blob/index.html) module documentation for more details.
 #[proc_macro_attribute]
 pub fn arc_blob(attr: TokenStream, item: TokenStream) -> TokenStream {
     blob::arc_blob_macro(attr, item)
 }
 
+/// Define a wrapped arc blob.
+///
+/// See the [swipl::blob](https://terminusdb-labs.github.io/swipl-rs/swipl/blob/index.html) module documentation for more details.
 #[proc_macro]
 pub fn wrapped_arc_blob(item: TokenStream) -> TokenStream {
     blob::wrapped_arc_blob_macro(item)
 }
 
+/// Define a clone blob.
+///
+/// See the [swipl::blob](https://terminusdb-labs.github.io/swipl-rs/swipl/blob/index.html) module documentation for more details.
 #[proc_macro_attribute]
 pub fn clone_blob(attr: TokenStream, item: TokenStream) -> TokenStream {
     blob::clone_blob_macro(attr, item)
 }
 
+/// Define a wrapped clone blob.
+///
+/// See the [swipl::blob](https://terminusdb-labs.github.io/swipl-rs/swipl/blob/index.html) module documentation for more details.
 #[proc_macro]
 pub fn wrapped_clone_blob(item: TokenStream) -> TokenStream {
     blob::wrapped_clone_blob_macro(item)

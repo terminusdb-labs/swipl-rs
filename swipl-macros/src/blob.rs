@@ -49,7 +49,7 @@ pub fn arc_blob_macro(
     let result = quote! {
         #item_def
 
-        impl ArcBlobInfo for #item_name {
+        impl ArcBlobBase for #item_name {
             fn blob_name() -> &'static str {
                 #name_lit
             }
@@ -188,7 +188,7 @@ pub fn wrapped_arc_blob_macro(item: proc_macro::TokenStream) -> proc_macro::Toke
         }
 
 
-        impl WrappedArcBlobInfo for #item_name {
+        impl WrappedArcBlobBase for #item_name {
             type Inner = #inner_type_name;
 
             fn blob_name() -> &'static str {
@@ -352,7 +352,7 @@ pub fn clone_blob_macro(
     let result = quote! {
         #item_def
 
-        impl CloneBlobInfo for #item_name {
+        impl CloneBlobBase for #item_name {
             fn blob_name() -> &'static str {
                 #name_lit
             }
