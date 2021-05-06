@@ -1,3 +1,34 @@
+//! Prolog terms.
+//!
+//! In prolog, all data is a term. Terms are things like atoms or
+//! numbers, or compound structures like functors, lists,
+//! dictionaries, or tuples. Even prolog code itself is a term.
+//!
+//! Interaction with SWI-Prolog terms happens through so-called term
+//! references. These term references live on the prolog stack, and
+//! they contain a term.
+//!
+//! If we have a term reference, we can get data from it, and put data
+//! into it. Furthermore, we can unify terms with eachother, or we can
+//! unify a term with user data.
+//!
+//! As term references live on a stack, they aren't valid
+//! forever. They're only valid as long as the frame in which they are
+//! created is still around.
+//!
+//! swipl-rs has been written to make working with terms easy. First,
+//! through lifetimes, it is always ensured that you can only work
+//! with terms that are still in scope. As soon as a frame goes out of
+//! context, trying to use a term that was created by that frame will
+//! result in a compile error.
+//!
+//! Second, getting data into and out of terms can all be done through
+//! a unified interface on `Term`. This interface is extendable with
+//! your own types that you wish to get into or out of prolog.
+//!
+//! Third, swipl-rs supports construction of complex terms through the
+//! [term!](crate::prelude::term!) macro. Consider using this macro when
+//! you have to produce deeply nested types.
 use super::atom::*;
 use super::context::*;
 use super::engine::*;
@@ -10,6 +41,7 @@ use std::os::raw::c_char;
 
 use swipl_macros::term;
 
+/// A term reference.
 #[derive(Clone)]
 pub struct Term<'a> {
     term: term_t,
@@ -27,10 +59,12 @@ impl<'a> Term<'a> {
         Term { term, origin }
     }
 
+    /// Return the underying `term_t` from the SWI-Prolog fli.
     pub fn term_ptr(&self) -> term_t {
         self.term
     }
 
+    /// Returns true if this term reference holds a variable.
     pub fn is_var(&self) -> bool {
         self.assert_term_handling_possible();
         unsafe { PL_is_variable(self.term) != 0 }
@@ -43,12 +77,23 @@ impl<'a> Term<'a> {
         PL_reset_term_refs(self.term);
     }
 
+    /// Assert that the engine where this term was originally created is the active engine on this thread.
     pub fn assert_term_handling_possible(&self) {
         if !self.origin.is_engine_active() {
             panic!("term is not part of the active engine");
         }
     }
 
+    /// Unify this term with some unifiable data.
+    ///
+    /// [Unifiable] is a trait that has been implemented for many data
+    /// types.
+    ///
+    /// This will return an `Err(PrologError::Exception)` if during
+    /// unification, an error was raised somewhere in the SWI-Prolog
+    /// fli. If unification is not possible, an
+    /// `Err(PrologError::Failure)` will be returned. Otherwise the
+    /// result is an `Ok(())`.
     pub fn unify<U: Unifiable>(&self, unifiable: U) -> PrologResult<()> {
         let result = unifiable.unify(self);
 
@@ -65,6 +110,17 @@ impl<'a> Term<'a> {
         }
     }
 
+    /// Unify the nth arg of the term with some unifiable data. This
+    /// assumes that the given term contains a functor.
+    ///
+    /// The argument position is 1-indexed. Therefore, the first
+    /// argument is argument 1.
+    ///
+    /// This will return an `Err(PrologError::Exception)` if during
+    /// unification, an error was raised somewhere in the SWI-Prolog
+    /// fli. If unification is not possible (which may be because this
+    /// term does not hold a functor), an `Err(PrologError::Failure)`
+    /// will be returned. Otherwise the result is an `Ok(())`.
     pub fn unify_arg<U: Unifiable>(&self, index: usize, unifiable: U) -> PrologResult<()> {
         if index == 0 {
             panic!("unify_arg was given index 0, but index starts at 1");
@@ -90,6 +146,17 @@ impl<'a> Term<'a> {
         result2
     }
 
+    /// Retrieve data from the term reference.
+    ///
+    /// Any data type for which [TermGetable] has been implemented may
+    /// be retrieved in this way.
+    ///
+    /// This will return an `Err(PrologError::Exception)` if during
+    /// getting, an error was raised somewhere in the SWI-Prolog
+    /// fli. If getting is not possible (because the term holds a
+    /// variable, or an incompatible data type), an
+    /// `Err(PrologError::Failure)` will be returned. Otherwise the
+    /// result is an `Ok(data)`, with the requested data in it.
     pub fn get<G: TermGetable>(&self) -> PrologResult<G> {
         let opt = G::get(self);
 
@@ -106,6 +173,18 @@ impl<'a> Term<'a> {
         }
     }
 
+    /// Retrieve data from the nth position of the given term. This
+    /// assumes that the given term contains a functor.
+    ///
+    /// The argument position is 1-indexed. Therefore, the first
+    /// argument is argument 1.
+    ///
+    /// This will return an `Err(PrologError::Exception)` if during
+    /// getting, an error was raised somewhere in the SWI-Prolog
+    /// fli. If getting is not possible (because the term holds a
+    /// variable, or an incompatible data type), an
+    /// `Err(PrologError::Failure)` will be returned. Otherwise the
+    /// result is an `Ok(data)`, with the requested data in it.
     pub fn get_arg<G: TermGetable>(&self, index: usize) -> PrologResult<G> {
         if index == 0 {
             panic!("unify_arg was given index 0, but index starts at 1");
@@ -131,6 +210,10 @@ impl<'a> Term<'a> {
         result2
     }
 
+    /// Retrieve a &str from this term, and call the given function with it.
+    ///
+    /// This allows you to extract a string from a prolog string with
+    /// as few copies as possible.
     pub fn get_str<R, F>(&self, func: F) -> PrologResult<R>
     where
         F: Fn(Option<&str>) -> R,
@@ -165,6 +248,10 @@ impl<'a> Term<'a> {
         Ok(func(arg))
     }
 
+    /// Retrieve an atom from this term, and call the given function with a borrow to it.
+    ///
+    /// We skip reference-counting for this atom which may be slightly
+    /// faster in some scenarios.
     pub fn get_atom<R, F>(&self, func: F) -> PrologResult<R>
     where
         F: Fn(Option<&Atom>) -> R,
@@ -173,25 +260,79 @@ impl<'a> Term<'a> {
         unsafe { get_atom(self, func) }
     }
 
-    pub fn get_atomable<R, F>(&self, func: F) -> PrologResult<R>
+    /// Retrieve an atom from this term, and call the given function with a borrow to it.
+    ///
+    /// We skip reference-counting for this atom which may be slightly
+    /// faster in some scenarios.
+    pub fn get_atom_name<R, F>(&self, func: F) -> PrologResult<R>
     where
-        F: Fn(Option<&Atomable>) -> R,
+        F: Fn(Option<&str>) -> R,
     {
         self.assert_term_handling_possible();
-        get_atomable(self, func)
+        let mut ptr = std::ptr::null_mut();
+        let mut len = 0;
+        let result = unsafe {
+            PL_get_nchars(
+                self.term,
+                &mut len,
+                &mut ptr,
+                (CVT_ATOM | REP_UTF8).try_into().unwrap(),
+            )
+        };
+
+        if unsafe { PL_exception(0) != 0 } {
+            return Err(PrologError::Exception);
+        }
+
+        let arg = if result == 0 {
+            None
+        } else {
+            let swipl_string_ref =
+                unsafe { std::slice::from_raw_parts(ptr as *const u8, len as usize) };
+
+            let swipl_string = std::str::from_utf8(swipl_string_ref).unwrap();
+
+            Some(swipl_string)
+        };
+
+        Ok(func(arg))
     }
 
-    pub fn put<T: TermPutable + ?Sized>(&self, val: &T) -> PrologResult<()> {
+    /// Put data into the term reference using a borrow.
+    ///
+    /// Any data type for which [TermPutable] has been implemented may
+    /// be put into a term ref in this way.
+    ///
+    /// This is a nonlogical operation. The term reference will
+    /// replace its content in a way that does not play nicely with
+    /// backtracking.
+    ///
+    /// This will return an `Err(PrologException)` if during putting,
+    /// an error was raised somewhere in the SWI-Prolog
+    /// fli. Otherwise, the result is `Ok(())`.
+    pub fn put<T: TermPutable + ?Sized>(&self, val: &T) -> NonFailingPrologResult<()> {
         val.put(self);
 
         if unsafe { PL_exception(0) != 0 } {
-            Err(PrologError::Exception)
+            Err(PrologException)
         } else {
             Ok(())
         }
     }
 
-    pub fn put_val<T: TermPutable>(&self, val: T) -> PrologResult<()> {
+    /// Put data into the term reference using a copyable value.
+    ///
+    /// Any data type for which [TermPutable] has been implemented may
+    /// be put into a term ref in this way.
+    ///
+    /// This is a nonlogical operation. The term reference will
+    /// replace its content in a way that does not play nicely with
+    /// backtracking.
+    ///
+    /// This will return an `Err(PrologException)` if during putting,
+    /// an error was raised somewhere in the SWI-Prolog
+    /// fli. Otherwise, the result is `Ok(())`.
+    pub fn put_val<T: TermPutable>(&self, val: T) -> NonFailingPrologResult<()> {
         self.put(&val)
     }
 }
@@ -235,8 +376,12 @@ impl<'a> TermOrigin<'a> {
 /// behavior. Therefore, care must be taken to ensure that `unify` is
 /// actually safe.
 ///
-/// The macro `unifiable` provides a way to safely implement this trait.
+/// The macro [unifiable!] provides a way to safely implement this
+/// trait by doing the precondition checks for you.
 pub unsafe trait Unifiable {
+    /// Unify this data with the given term reference.
+    ///
+    /// You'd generally not use this directly, but rather, go through [Term::unify].
     fn unify(&self, term: &Term) -> bool;
 }
 
@@ -246,14 +391,69 @@ unsafe impl<T: Unifiable> Unifiable for &T {
     }
 }
 
+/// Trait for getting data from a term reference.
+///
+/// This is marked unsafe because in order to do term getting, we
+/// must be sure that
+/// - the term is created on the engine which is currently active
+/// - the given context is a context for this engine
+///
+/// Not checking those preconditions results in undefined
+/// behavior. Therefore, care must be taken to ensure that `get` is
+/// actually safe.
+///
+/// The macro [term_getable!] provides a way to safely implement this
+/// trait by doing the precondition checks for you.
 pub unsafe trait TermGetable: Sized {
+    /// Get data from a term reference.
+    ///
+    /// You'd generally not use this directly, but rather, go through [Term::get].
     fn get(term: &Term) -> Option<Self>;
 }
 
+/// Trait for putting data into a term reference.
+///
+/// Unlike unification, putting data into a term replaces the term
+/// entirely. This is a non-logical operation that doesn't play nice
+/// with backtracking. You're generally better off using unification.
+///
+/// This is marked unsafe because in order to do term putting, we
+/// must be sure that
+/// - the term is created on the engine which is currently active
+/// - the given context is a context for this engine
+///
+/// Not checking those preconditions results in undefined
+/// behavior. Therefore, care must be taken to ensure that `put` is
+/// actually safe.
+///
+/// The macro [term_putable!] provides a way to safely implement this
+/// trait by doing the precondition checks for you.
 pub unsafe trait TermPutable {
+    /// Put data into the term reference.
+    ///
+    /// You'd generally not use this directly, but rather, go through [Term::put].
     fn put(&self, term: &Term);
 }
 
+/// Easily implement [Unifiable].
+///
+/// Example:
+/// ```
+/// # use swipl::prelude::*;
+/// struct Foo {num: u64}
+///
+/// unifiable!{
+///     (self:Foo, term) => {
+///         // Body needs to return a bool indicating success or failure.
+///         // Failure may also be an exception. The wrapper will check for this.
+///         attempt(term.unify(self.num)).unwrap_or(false)
+///     }
+/// }
+///
+/// fn do_something(term: &Term) -> PrologResult<()> {
+///     term.unify(Foo{num:42})
+/// }
+/// ```
 #[macro_export]
 macro_rules! unifiable {
     (($self_:ident : $t:ty, $term_: ident) => $b: block) => {
@@ -271,6 +471,28 @@ macro_rules! unifiable {
     }
 }
 
+/// Easily implement [TermGetable].
+///
+/// Example:
+/// ```
+/// # use swipl::prelude::*;
+/// struct Foo {num: u64}
+///
+/// term_getable!{
+///     (Foo, term) => {
+///         // Body needs to return an Option indicating success or failure.
+///         // Failure may also be an exception. The wrapper will check for this.
+///         let num: u64 = attempt_opt(term.get()).unwrap_or(None)?;
+///         Some(Foo { num })
+///     }
+/// }
+///
+/// fn do_something(term: &Term) -> PrologResult<()> {
+///     let foo: Foo = term.get()?;
+///     println!("foo is {}", foo.num);
+///     Ok(())
+/// }
+/// ```
 #[macro_export]
 macro_rules! term_getable {
     (($t:ty, $term_: ident) => $b: block) => {
@@ -288,6 +510,25 @@ macro_rules! term_getable {
     };
 }
 
+/// Easily implement [TermPutable].
+///
+/// Example:
+/// ```
+/// # use swipl::prelude::*;
+/// struct Foo {num: u64}
+///
+/// term_putable!{
+///     (self:Foo, term) => {
+///         // body returns nothing, but underlying code may raise an exception on the prolog engine.
+///         term.put(&self.num).unwrap_or(());
+///     }
+/// }
+///
+/// fn do_something(term: &Term) -> PrologResult<()> {
+///     term.put(&Foo{num:42})?;
+///     Ok(())
+/// }
+/// ```
 #[macro_export]
 macro_rules! term_putable {
     (($self_:ident : $t:ty, $term_: ident) => $b: block) => {
@@ -560,6 +801,7 @@ term_putable! {
     }
 }
 
+/// Unit struct representing an empty list in SWI-Prolog.
 pub struct Nil;
 unifiable! {
     (self:Nil, term) => {

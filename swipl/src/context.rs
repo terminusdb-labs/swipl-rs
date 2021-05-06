@@ -965,13 +965,13 @@ mod tests {
 
         let query = context.open_call(&term);
         assert!(query.next_solution()?);
-        term_x.get_atomable(|a| assert_eq!("a", a.unwrap().name()))?;
+        term_x.get_atom_name(|a| assert_eq!("a", a.unwrap()))?;
 
         assert!(query.next_solution()?);
-        term_x.get_atomable(|a| assert_eq!("b", a.unwrap().name()))?;
+        term_x.get_atom_name(|a| assert_eq!("b", a.unwrap()))?;
 
         assert!(!query.next_solution()?);
-        term_x.get_atomable(|a| assert_eq!("c", a.unwrap().name()))?;
+        term_x.get_atom_name(|a| assert_eq!("c", a.unwrap()))?;
 
         assert!(query.next_solution().unwrap_err().is_failure());
 

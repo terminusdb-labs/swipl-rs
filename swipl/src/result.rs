@@ -53,7 +53,7 @@ impl From<PrologException> for PrologError {
 /// The main result type that most interface functions return.
 pub type PrologResult<R> = Result<R, PrologError>;
 /// Result type for operations that cannot fail, but can throw an exception.
-pub type NonfailingPrologResult<R> = Result<R, PrologException>;
+pub type NonFailingPrologResult<R> = Result<R, PrologException>;
 /// Result type for expressing failure as a boolean instead of an Err.
 pub type BoolPrologResult = Result<bool, PrologException>;
 /// result type for expressing failure as an Option type instead of an Err.

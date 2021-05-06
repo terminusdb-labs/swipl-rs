@@ -368,7 +368,7 @@ where
 
 term_getable! {
     (Atomable<'static>, term) => {
-        match term.get_atomable(|a|a.map(|a|a.owned())) {
+        match get_atomable(term, |a|a.map(|a|a.owned())) {
             Ok(r) => r,
             // ignore error - it'll be picked up in the wrapper
             Err(_) => None
@@ -536,7 +536,7 @@ mod tests {
         let a1 = "foo".as_atom();
         let term = context.new_term_ref();
         term.unify(&a1).unwrap();
-        term.get_atomable(|a2| assert_eq!("foo", a2.unwrap().name()))
+        term.get_atom_name(|a2| assert_eq!("foo", a2.unwrap()))
             .unwrap();
     }
 

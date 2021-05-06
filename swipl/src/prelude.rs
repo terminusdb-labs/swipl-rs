@@ -14,5 +14,6 @@ pub use crate::term::*;
 pub use crate::text::*;
 
 pub use crate::{
-    arc_blob, clone_blob, pred, predicates, prolog, term, wrapped_arc_blob, wrapped_clone_blob,
+    arc_blob, clone_blob, pred, predicates, prolog, term, term_getable, term_putable, unifiable,
+    wrapped_arc_blob, wrapped_clone_blob,
 };
