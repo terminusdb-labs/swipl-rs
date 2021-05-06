@@ -6,6 +6,20 @@ definitions and blob types (exposing the `swipl-macros` crate).
 
 [Documentation](https://terminusdb-labs.github.io/swipl-rs/swipl/)
 
+## Using swipl-rs
+add the following line under your dependencies in your Cargo.toml file:
+```
+swipl = "0.3"
+```
+
+Then import swipl in your code using
+```
+use swipl::prelude::*;
+```
+
+See the [examples](https://github.com/terminusdb-labs/swipl-rs/tree/master/examples) in this repository and the documentation for more
+guidance.
+
 ## Building SWI-Prolog foreign libraries
 In order to use this library to build something that SWI-Prolog can
 use, you have to set your `crate-type` to `cdylib`, and provide a main
