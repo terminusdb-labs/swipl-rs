@@ -590,6 +590,12 @@
 <span id="587">587</span>
 <span id="588">588</span>
 <span id="589">589</span>
+<span id="590">590</span>
+<span id="591">591</span>
+<span id="592">592</span>
+<span id="593">593</span>
+<span id="594">594</span>
+<span id="595">595</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">kw</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">util</span>::<span class="kw-2">*</span>;
@@ -661,15 +667,17 @@
         }
 
         <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> #<span class="ident">blob_compare</span>(<span class="ident">a</span>: #<span class="ident">crt</span>::<span class="ident">fli</span>::<span class="ident">atom_t</span>, <span class="ident">b</span>: #<span class="ident">crt</span>::<span class="ident">fli</span>::<span class="ident">atom_t</span>)<span class="op">-</span><span class="op">&gt;</span><span class="ident">std</span>::<span class="ident">os</span>::<span class="ident">raw</span>::<span class="ident">c_int</span> {
-            <span class="kw">let</span> <span class="ident">a_val</span> <span class="op">=</span> #<span class="ident">crt</span>::<span class="ident">fli</span>::<span class="ident">PL_blob_data</span>(<span class="ident">a</span>,
-                                                <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>(),
-                                                <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>())
-                <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> #<span class="ident">item_name</span>;
-            <span class="kw">let</span> <span class="ident">b_val</span> <span class="op">=</span> #<span class="ident">crt</span>::<span class="ident">fli</span>::<span class="ident">PL_blob_data</span>(<span class="ident">b</span>,
-                                                <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>(),
-                                                <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>())
-                <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> #<span class="ident">item_name</span>;
-            <span class="kw">match</span> #<span class="ident">crt</span>::<span class="ident">context</span>::<span class="ident">prolog_catch_unwind</span>(<span class="op">|</span><span class="op">|</span>#<span class="ident">crt</span>::<span class="ident">blob</span>::<span class="ident">ArcBlobImpl</span>::<span class="ident">compare</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">a_val</span>, <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">b_val</span>)) {
+            <span class="kw">match</span> #<span class="ident">crt</span>::<span class="ident">context</span>::<span class="ident">prolog_catch_unwind</span>(<span class="op">|</span><span class="op">|</span>{
+                <span class="kw">let</span> <span class="ident">a_val</span> <span class="op">=</span> #<span class="ident">crt</span>::<span class="ident">fli</span>::<span class="ident">PL_blob_data</span>(<span class="ident">a</span>,
+                                                    <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>(),
+                                                    <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>())
+                    <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> #<span class="ident">item_name</span>;
+                <span class="kw">let</span> <span class="ident">b_val</span> <span class="op">=</span> #<span class="ident">crt</span>::<span class="ident">fli</span>::<span class="ident">PL_blob_data</span>(<span class="ident">b</span>,
+                                                    <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>(),
+                                                    <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>())
+                    <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> #<span class="ident">item_name</span>;
+                #<span class="ident">crt</span>::<span class="ident">blob</span>::<span class="ident">ArcBlobImpl</span>::<span class="ident">compare</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">a_val</span>, <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">b_val</span>)
+            }) {
                 <span class="prelude-val">Ok</span>(<span class="ident">std</span>::<span class="ident">cmp</span>::<span class="ident">Ordering</span>::<span class="ident">Less</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="op">-</span><span class="number">1</span>,
                 <span class="prelude-val">Ok</span>(<span class="ident">std</span>::<span class="ident">cmp</span>::<span class="ident">Ordering</span>::<span class="ident">Equal</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">0</span>,
                 <span class="prelude-val">Ok</span>(<span class="ident">std</span>::<span class="ident">cmp</span>::<span class="ident">Ordering</span>::<span class="ident">Greater</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">1</span>,
@@ -681,11 +689,11 @@
                                          <span class="ident">a</span>: #<span class="ident">crt</span>::<span class="ident">fli</span>::<span class="ident">atom_t</span>,
                                          <span class="ident">_flags</span>: <span class="ident">std</span>::<span class="ident">os</span>::<span class="ident">raw</span>::<span class="ident">c_int</span>)
                                          <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std</span>::<span class="ident">os</span>::<span class="ident">raw</span>::<span class="ident">c_int</span> {
-            <span class="kw">let</span> <span class="ident">a_val</span> <span class="op">=</span> #<span class="ident">crt</span>::<span class="ident">fli</span>::<span class="ident">PL_blob_data</span>(<span class="ident">a</span>,
-                                                <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>(),
-                                                <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>())
-                <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> #<span class="ident">item_name</span>;
             <span class="kw">match</span> #<span class="ident">crt</span>::<span class="ident">context</span>::<span class="ident">prolog_catch_unwind</span>(<span class="op">|</span><span class="op">|</span> {
+                <span class="kw">let</span> <span class="ident">a_val</span> <span class="op">=</span> #<span class="ident">crt</span>::<span class="ident">fli</span>::<span class="ident">PL_blob_data</span>(<span class="ident">a</span>,
+                                                    <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>(),
+                                                    <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>())
+                    <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> #<span class="ident">item_name</span>;
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stream</span> <span class="op">=</span> #<span class="ident">crt</span>::<span class="ident">stream</span>::<span class="ident">PrologStream</span>::<span class="ident">wrap</span>(<span class="ident">s</span>);
                 #<span class="ident">crt</span>::<span class="ident">blob</span>::<span class="ident">ArcBlobImpl</span>::<span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">a_val</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">stream</span>)
             }) {
@@ -810,15 +818,17 @@
         }
 
         <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> #<span class="ident">blob_compare</span>(<span class="ident">a</span>: #<span class="ident">crt</span>::<span class="ident">fli</span>::<span class="ident">atom_t</span>, <span class="ident">b</span>: #<span class="ident">crt</span>::<span class="ident">fli</span>::<span class="ident">atom_t</span>)<span class="op">-</span><span class="op">&gt;</span><span class="ident">std</span>::<span class="ident">os</span>::<span class="ident">raw</span>::<span class="ident">c_int</span> {
-            <span class="kw">let</span> <span class="ident">a_val</span> <span class="op">=</span> #<span class="ident">crt</span>::<span class="ident">fli</span>::<span class="ident">PL_blob_data</span>(<span class="ident">a</span>,
-                                                <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>(),
-                                                <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>())
-                <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> #<span class="ident">inner_type_name</span>;
-            <span class="kw">let</span> <span class="ident">b_val</span> <span class="op">=</span> #<span class="ident">crt</span>::<span class="ident">fli</span>::<span class="ident">PL_blob_data</span>(<span class="ident">b</span>,
-                                                <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>(),
-                                                <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>())
-                <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> #<span class="ident">inner_type_name</span>;
-            <span class="kw">match</span> #<span class="ident">crt</span>::<span class="ident">context</span>::<span class="ident">prolog_catch_unwind</span>(<span class="op">|</span><span class="op">|</span><span class="op">&lt;</span>#<span class="ident">item_name</span> <span class="kw">as</span> #<span class="ident">crt</span>::<span class="ident">blob</span>::<span class="ident">WrappedArcBlobImpl</span><span class="op">&gt;</span>::<span class="ident">compare</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">a_val</span>, <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">b_val</span>)) {
+            <span class="kw">match</span> #<span class="ident">crt</span>::<span class="ident">context</span>::<span class="ident">prolog_catch_unwind</span>(<span class="op">|</span><span class="op">|</span>{
+                <span class="kw">let</span> <span class="ident">a_val</span> <span class="op">=</span> #<span class="ident">crt</span>::<span class="ident">fli</span>::<span class="ident">PL_blob_data</span>(<span class="ident">a</span>,
+                                                    <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>(),
+                                                    <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>())
+                    <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> #<span class="ident">inner_type_name</span>;
+                <span class="kw">let</span> <span class="ident">b_val</span> <span class="op">=</span> #<span class="ident">crt</span>::<span class="ident">fli</span>::<span class="ident">PL_blob_data</span>(<span class="ident">b</span>,
+                                                    <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>(),
+                                                    <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>())
+                    <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> #<span class="ident">inner_type_name</span>;
+                <span class="op">&lt;</span>#<span class="ident">item_name</span> <span class="kw">as</span> #<span class="ident">crt</span>::<span class="ident">blob</span>::<span class="ident">WrappedArcBlobImpl</span><span class="op">&gt;</span>::<span class="ident">compare</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">a_val</span>, <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">b_val</span>)
+            }) {
                 <span class="prelude-val">Ok</span>(<span class="ident">std</span>::<span class="ident">cmp</span>::<span class="ident">Ordering</span>::<span class="ident">Less</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="op">-</span><span class="number">1</span>,
                 <span class="prelude-val">Ok</span>(<span class="ident">std</span>::<span class="ident">cmp</span>::<span class="ident">Ordering</span>::<span class="ident">Equal</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">0</span>,
                 <span class="prelude-val">Ok</span>(<span class="ident">std</span>::<span class="ident">cmp</span>::<span class="ident">Ordering</span>::<span class="ident">Greater</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">1</span>,
@@ -830,11 +840,11 @@
                                          <span class="ident">a</span>: #<span class="ident">crt</span>::<span class="ident">fli</span>::<span class="ident">atom_t</span>,
                                          <span class="ident">_flags</span>: <span class="ident">std</span>::<span class="ident">os</span>::<span class="ident">raw</span>::<span class="ident">c_int</span>)
                                          <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std</span>::<span class="ident">os</span>::<span class="ident">raw</span>::<span class="ident">c_int</span> {
-            <span class="kw">let</span> <span class="ident">a_val</span> <span class="op">=</span> #<span class="ident">crt</span>::<span class="ident">fli</span>::<span class="ident">PL_blob_data</span>(<span class="ident">a</span>,
-                                                <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>(),
-                                                <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>())
-                <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> #<span class="ident">inner_type_name</span>;
             <span class="kw">match</span> #<span class="ident">crt</span>::<span class="ident">context</span>::<span class="ident">prolog_catch_unwind</span>(<span class="op">|</span><span class="op">|</span> {
+                <span class="kw">let</span> <span class="ident">a_val</span> <span class="op">=</span> #<span class="ident">crt</span>::<span class="ident">fli</span>::<span class="ident">PL_blob_data</span>(<span class="ident">a</span>,
+                                                    <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>(),
+                                                    <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>())
+                    <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> #<span class="ident">inner_type_name</span>;
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stream</span> <span class="op">=</span> #<span class="ident">crt</span>::<span class="ident">stream</span>::<span class="ident">PrologStream</span>::<span class="ident">wrap</span>(<span class="ident">s</span>);
                 <span class="op">&lt;</span>#<span class="ident">item_name</span> <span class="kw">as</span> #<span class="ident">crt</span>::<span class="ident">blob</span>::<span class="ident">WrappedArcBlobImpl</span><span class="op">&gt;</span>::<span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">a_val</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">stream</span>)
             }) {
@@ -960,15 +970,17 @@
         }
 
         <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> #<span class="ident">blob_compare</span>(<span class="ident">a</span>: #<span class="ident">crt</span>::<span class="ident">fli</span>::<span class="ident">atom_t</span>, <span class="ident">b</span>: #<span class="ident">crt</span>::<span class="ident">fli</span>::<span class="ident">atom_t</span>)<span class="op">-</span><span class="op">&gt;</span><span class="ident">std</span>::<span class="ident">os</span>::<span class="ident">raw</span>::<span class="ident">c_int</span> {
-            <span class="kw">let</span> <span class="ident">a_val</span> <span class="op">=</span> #<span class="ident">crt</span>::<span class="ident">fli</span>::<span class="ident">PL_blob_data</span>(<span class="ident">a</span>,
-                                                <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>(),
-                                                <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>())
-                <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> #<span class="ident">item_name</span>;
-            <span class="kw">let</span> <span class="ident">b_val</span> <span class="op">=</span> #<span class="ident">crt</span>::<span class="ident">fli</span>::<span class="ident">PL_blob_data</span>(<span class="ident">b</span>,
-                                                <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>(),
-                                                <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>())
-                <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> #<span class="ident">item_name</span>;
-            <span class="kw">match</span> #<span class="ident">crt</span>::<span class="ident">context</span>::<span class="ident">prolog_catch_unwind</span>(<span class="op">|</span><span class="op">|</span>#<span class="ident">crt</span>::<span class="ident">blob</span>::<span class="ident">CloneBlobImpl</span>::<span class="ident">compare</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">a_val</span>, <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">b_val</span>)) {
+            <span class="kw">match</span> #<span class="ident">crt</span>::<span class="ident">context</span>::<span class="ident">prolog_catch_unwind</span>(<span class="op">|</span><span class="op">|</span> {
+                <span class="kw">let</span> <span class="ident">a_val</span> <span class="op">=</span> #<span class="ident">crt</span>::<span class="ident">fli</span>::<span class="ident">PL_blob_data</span>(<span class="ident">a</span>,
+                                                    <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>(),
+                                                    <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>())
+                    <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> #<span class="ident">item_name</span>;
+                <span class="kw">let</span> <span class="ident">b_val</span> <span class="op">=</span> #<span class="ident">crt</span>::<span class="ident">fli</span>::<span class="ident">PL_blob_data</span>(<span class="ident">b</span>,
+                                                    <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>(),
+                                                    <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>())
+                    <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> #<span class="ident">item_name</span>;
+                #<span class="ident">crt</span>::<span class="ident">blob</span>::<span class="ident">CloneBlobImpl</span>::<span class="ident">compare</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">a_val</span>, <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">b_val</span>)
+            }) {
                 <span class="prelude-val">Ok</span>(<span class="ident">std</span>::<span class="ident">cmp</span>::<span class="ident">Ordering</span>::<span class="ident">Less</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="op">-</span><span class="number">1</span>,
                 <span class="prelude-val">Ok</span>(<span class="ident">std</span>::<span class="ident">cmp</span>::<span class="ident">Ordering</span>::<span class="ident">Equal</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">0</span>,
                 <span class="prelude-val">Ok</span>(<span class="ident">std</span>::<span class="ident">cmp</span>::<span class="ident">Ordering</span>::<span class="ident">Greater</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">1</span>,
@@ -980,11 +992,11 @@
                                          <span class="ident">a</span>: #<span class="ident">crt</span>::<span class="ident">fli</span>::<span class="ident">atom_t</span>,
                                          <span class="ident">_flags</span>: <span class="ident">std</span>::<span class="ident">os</span>::<span class="ident">raw</span>::<span class="ident">c_int</span>)
                                          <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std</span>::<span class="ident">os</span>::<span class="ident">raw</span>::<span class="ident">c_int</span> {
-            <span class="kw">let</span> <span class="ident">a_val</span> <span class="op">=</span> #<span class="ident">crt</span>::<span class="ident">fli</span>::<span class="ident">PL_blob_data</span>(<span class="ident">a</span>,
-                                                <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>(),
-                                                <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>())
-                <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> #<span class="ident">item_name</span>;
             <span class="kw">match</span> #<span class="ident">crt</span>::<span class="ident">context</span>::<span class="ident">prolog_catch_unwind</span>(<span class="op">|</span><span class="op">|</span>{
+                <span class="kw">let</span> <span class="ident">a_val</span> <span class="op">=</span> #<span class="ident">crt</span>::<span class="ident">fli</span>::<span class="ident">PL_blob_data</span>(<span class="ident">a</span>,
+                                                    <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>(),
+                                                    <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>())
+                    <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> #<span class="ident">item_name</span>;
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stream</span> <span class="op">=</span> #<span class="ident">crt</span>::<span class="ident">stream</span>::<span class="ident">PrologStream</span>::<span class="ident">wrap</span>(<span class="ident">s</span>);
                 #<span class="ident">crt</span>::<span class="ident">blob</span>::<span class="ident">CloneBlobImpl</span>::<span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">a_val</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">stream</span>)
             }) {
