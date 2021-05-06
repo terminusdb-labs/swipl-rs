@@ -37,17 +37,29 @@
 <span id="34">34</span>
 <span id="35">35</span>
 <span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
 </pre><div class="example-wrap"><pre class="rust ">
+<span class="doccomment">//! Prolog streams.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! This exists mostly to support blob description writers. In the</span>
+<span class="doccomment">//! future this will include more proper stream support.</span>
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>::{<span class="self">self</span>, <span class="ident">Write</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">os</span>::<span class="ident">raw</span>::<span class="ident">c_void</span>;
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">fli</span>;
 
+<span class="doccomment">/// A stream from prolog.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PrologStream</span> {
     <span class="ident">stream</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">fli</span>::<span class="ident">IOSTREAM</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">PrologStream</span> {
+    <span class="doccomment">/// Wrap the underlying fli object.</span>
     <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">wrap</span>(<span class="ident">stream</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">fli</span>::<span class="ident">IOSTREAM</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="self">Self</span> { <span class="ident">stream</span> }
     }

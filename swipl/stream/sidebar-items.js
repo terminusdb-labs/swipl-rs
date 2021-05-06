@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["PrologStream",""]]});
+initSidebarItems({"struct":[["PrologStream","A stream from prolog."]]});

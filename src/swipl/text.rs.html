@@ -38,13 +38,33 @@
 <span id="35">35</span>
 <span id="36">36</span>
 <span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
 </pre><div class="example-wrap"><pre class="rust ">
+<span class="doccomment">//! Support for easy text extraction from prolog.</span>
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">fli</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">term</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">term_getable</span>;
 
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">os</span>::<span class="ident">raw</span>::<span class="ident">c_char</span>;
 
+<span class="doccomment">/// A wrapper around an owned string for which [TermGetable](crate::term::TermGetable)</span>
+<span class="doccomment">/// has been implemented.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This can be used to extract text both from atoms and from</span>
+<span class="doccomment">/// strings. This is useful for contexts where we wish to accept</span>
+<span class="doccomment">/// either one as an argument.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `PrologText` can be derefed to an `&amp;String`, which means it&#39;s</span>
+<span class="doccomment">/// automatically usable in most contexts that require one of those.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PrologText</span>(<span class="ident">String</span>);
 
 <span class="kw">impl</span> <span class="ident">std</span>::<span class="ident">ops</span>::<span class="ident">Deref</span> <span class="kw">for</span> <span class="ident">PrologText</span> {

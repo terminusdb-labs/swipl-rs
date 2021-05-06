@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["PrologText",""]]});
+initSidebarItems({"struct":[["PrologText","A wrapper around an owned string for which TermGetable has been implemented."]]});
