@@ -1,4 +1,4 @@
-//! Support for calling into prolog.
+//! Support for calling into prolog or prolog-like code.
 use crate::context::*;
 use crate::engine::*;
 use crate::fli::*;
@@ -153,25 +153,64 @@ pub struct OpenQuery {
 /// solution, or close itself through cutting the query or
 /// discarding. All these functions are actually implemented here
 /// using the `OpenCall` trait.
+///
+/// This context type is the only type where new terms are not allowed
+/// to be created, nor is it allowed to start new queries directly
+/// from this context. This is because SWI-Prolog really doesn't like
+/// it if the prolog stack changes between solutions. It is still
+/// possible however to open a new frame and do all that stuff in the
+/// new frame. You'll need to close the frame before continuing with
+/// solution retrieval.
 pub unsafe trait OpenCall: Sized {
+    /// Retrieve the next solution.
+    ///
+    /// If solution retrieval led to a failure or an error, this is
+    /// returned in the `Err` part of the `PrologResult`. Otherwise,
+    /// `Ok(true)` is returned if there are more solutions, and
+    /// `Ok(false)` is returned when this is the last solution.
     fn next_solution<'a>(this: &Context<'a, Self>) -> PrologResult<bool>;
+
+    /// Cut the query, keeping all data it has created.
+    ///
+    /// Any unifications the query did to terms from parent contexts
+    /// will be retained.
     fn cut<'a>(this: Context<'a, Self>);
+
+    /// Discard the query, discarding all data it has created.
+    ///
+    /// Any unifications the query did to terms from parent contexts
+    /// will be discarded.
     fn discard<'a>(this: Context<'a, Self>);
 }
 
 impl<'a, C: OpenCall> Context<'a, C> {
+    /// Retrieve the next solution.
+    ///
+    /// If solution retrieval led to a failure or an error, this is
+    /// returned in the `Err` part of the `PrologResult`. Otherwise,
+    /// `Ok(true)` is returned if there are more solutions, and
+    /// `Ok(false)` is returned when this is the last solution.
     pub fn next_solution(&self) -> PrologResult<bool> {
         C::next_solution(self)
     }
 
+    /// Cut the query, keeping all data it has created.
+    ///
+    /// Any unifications the query did to terms from parent contexts
+    /// will be retained.
     pub fn cut(self) {
         C::cut(self)
     }
 
+    /// Discard the query, discarding all data it has created.
+    ///
+    /// Any unifications the query did to terms from parent contexts
+    /// will be discarded.
     pub fn discard(self) {
         C::discard(self)
     }
 
+    /// Retrieve one result, and then cut.
     pub fn once(self) -> PrologResult<()> {
         self.next_solution()?;
         self.cut();
@@ -179,6 +218,9 @@ impl<'a, C: OpenCall> Context<'a, C> {
         Ok(())
     }
 
+    /// Retrieve one result, ignoring failures, and then cut.
+    ///
+    /// Exceptions will still be returned as such.
     pub fn ignore(self) -> PrologResult<()> {
         if let Err(PrologError::Exception) = self.next_solution() {
             Err(PrologError::Exception)
