@@ -1,13 +1,19 @@
+//! Prolog streams.
+//!
+//! This exists mostly to support blob description writers. In the
+//! future this will include more proper stream support.
 use std::io::{self, Write};
 use std::os::raw::c_void;
 
 use crate::fli;
 
+/// A stream from prolog.
 pub struct PrologStream {
     stream: *mut fli::IOSTREAM,
 }
 
 impl PrologStream {
+    /// Wrap the underlying fli object.
     pub unsafe fn wrap(stream: *mut fli::IOSTREAM) -> Self {
         Self { stream }
     }

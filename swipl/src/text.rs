@@ -1,9 +1,19 @@
+//! Support for easy text extraction from prolog.
 use crate::fli;
 use crate::term::*;
 use crate::term_getable;
 
 use std::os::raw::c_char;
 
+/// A wrapper around an owned string for which [TermGetable](crate::term::TermGetable)
+/// has been implemented.
+///
+/// This can be used to extract text both from atoms and from
+/// strings. This is useful for contexts where we wish to accept
+/// either one as an argument.
+///
+/// `PrologText` can be derefed to an `&String`, which means it's
+/// automatically usable in most contexts that require one of those.
 pub struct PrologText(String);
 
 impl std::ops::Deref for PrologText {
