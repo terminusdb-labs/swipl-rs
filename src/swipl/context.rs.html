@@ -1093,14 +1093,6 @@
 <span id="1090">1090</span>
 <span id="1091">1091</span>
 <span id="1092">1092</span>
-<span id="1093">1093</span>
-<span id="1094">1094</span>
-<span id="1095">1095</span>
-<span id="1096">1096</span>
-<span id="1097">1097</span>
-<span id="1098">1098</span>
-<span id="1099">1099</span>
-<span id="1100">1100</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Prolog contexts.</span>
 <span class="doccomment">//!</span>
@@ -1307,32 +1299,6 @@
         <span class="ident">Term</span>::<span class="ident">new</span>(<span class="ident">term</span>, <span class="self">self</span>.<span class="ident">as_term_origin</span>())
     }
 
-    <span class="doccomment">/// Put the engine in an exceptional state.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The given term will be copied and put into the exception</span>
-    <span class="doccomment">/// term. This function always returns</span>
-    <span class="doccomment">/// `Err(PrologError::Exception)`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">raise_exception</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">term</span>: <span class="kw-2">&amp;</span><span class="ident">Term</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PrologResult</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">T</span>: <span class="ident">FrameableContextType</span>,
-    {
-        <span class="self">self</span>.<span class="ident">assert_activated</span>();
-        <span class="kw">if</span> <span class="ident">term</span>.<span class="ident">is_var</span>() {
-            <span class="kw">let</span> <span class="ident">frame</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">open_frame</span>();
-            <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="macro">term</span><span class="macro">!</span> {<span class="ident">frame</span>: <span class="ident">error</span>(<span class="ident">rust_error</span>(<span class="ident">raise_exception_called_with_variable</span>), <span class="kw">_</span>)}<span class="question-mark">?</span>;
-            <span class="kw">unsafe</span> {
-                <span class="ident">PL_raise_exception</span>(<span class="ident">err</span>.<span class="ident">term_ptr</span>());
-                <span class="ident">PL_reset_term_refs</span>(<span class="ident">err</span>.<span class="ident">term_ptr</span>());
-            }
-        } <span class="kw">else</span> {
-            <span class="kw">unsafe</span> {
-                <span class="ident">PL_raise_exception</span>(<span class="ident">term</span>.<span class="ident">term_ptr</span>());
-            }
-        }
-
-        <span class="prelude-val">Err</span>(<span class="ident">PrologError</span>::<span class="ident">Exception</span>)
-    }
-
     <span class="doccomment">/// Returns true if the underlying engine is in an exceptional state.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">has_exception</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="self">self</span>.<span class="ident">assert_activated</span>();
@@ -1390,6 +1356,24 @@
             <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>(<span class="prelude-val">None</span>),
             <span class="prelude-val">Some</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">unsafe</span> { <span class="ident">e</span>.<span class="ident">with_cleared_exception</span>(<span class="self">self</span>, <span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">f</span>(<span class="prelude-val">Some</span>(<span class="ident">e</span>))) },
         })
+    }
+
+    <span class="doccomment">/// Put the engine in an exceptional state.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The given term will be copied and put into the exception</span>
+    <span class="doccomment">/// term. This function always returns</span>
+    <span class="doccomment">/// `Err(PrologError::Exception)`.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">raise_exception</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">term</span>: <span class="kw-2">&amp;</span><span class="ident">Term</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PrologResult</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">assert_activated</span>();
+        <span class="kw">if</span> <span class="ident">term</span>.<span class="ident">is_var</span>() {
+            <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;tried to raise a var as an exception&quot;</span>);
+        } <span class="kw">else</span> {
+            <span class="kw">unsafe</span> {
+                <span class="ident">PL_raise_exception</span>(<span class="ident">term</span>.<span class="ident">term_ptr</span>());
+            }
+        }
+
+        <span class="prelude-val">Err</span>(<span class="ident">PrologError</span>::<span class="ident">Exception</span>)
     }
 }
 
