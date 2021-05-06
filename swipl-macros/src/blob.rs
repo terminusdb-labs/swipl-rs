@@ -68,15 +68,17 @@ pub fn arc_blob_macro(
         }
 
         unsafe extern "C" fn #blob_compare(a: #crt::fli::atom_t, b: #crt::fli::atom_t)->std::os::raw::c_int {
-            let a_val = #crt::fli::PL_blob_data(a,
-                                                std::ptr::null_mut(),
-                                                std::ptr::null_mut())
-                as *const #item_name;
-            let b_val = #crt::fli::PL_blob_data(b,
-                                                std::ptr::null_mut(),
-                                                std::ptr::null_mut())
-                as *const #item_name;
-            match #crt::context::prolog_catch_unwind(||#crt::blob::ArcBlobImpl::compare(&*a_val, &*b_val)) {
+            match #crt::context::prolog_catch_unwind(||{
+                let a_val = #crt::fli::PL_blob_data(a,
+                                                    std::ptr::null_mut(),
+                                                    std::ptr::null_mut())
+                    as *const #item_name;
+                let b_val = #crt::fli::PL_blob_data(b,
+                                                    std::ptr::null_mut(),
+                                                    std::ptr::null_mut())
+                    as *const #item_name;
+                #crt::blob::ArcBlobImpl::compare(&*a_val, &*b_val)
+            }) {
                 Ok(std::cmp::Ordering::Less) => -1,
                 Ok(std::cmp::Ordering::Equal) => 0,
                 Ok(std::cmp::Ordering::Greater) => 1,
@@ -88,11 +90,11 @@ pub fn arc_blob_macro(
                                          a: #crt::fli::atom_t,
                                          _flags: std::os::raw::c_int)
                                          -> std::os::raw::c_int {
-            let a_val = #crt::fli::PL_blob_data(a,
-                                                std::ptr::null_mut(),
-                                                std::ptr::null_mut())
-                as *const #item_name;
             match #crt::context::prolog_catch_unwind(|| {
+                let a_val = #crt::fli::PL_blob_data(a,
+                                                    std::ptr::null_mut(),
+                                                    std::ptr::null_mut())
+                    as *const #item_name;
                 let mut stream = #crt::stream::PrologStream::wrap(s);
                 #crt::blob::ArcBlobImpl::write(&*a_val, &mut stream)
             }) {
@@ -217,15 +219,17 @@ pub fn wrapped_arc_blob_macro(item: proc_macro::TokenStream) -> proc_macro::Toke
         }
 
         unsafe extern "C" fn #blob_compare(a: #crt::fli::atom_t, b: #crt::fli::atom_t)->std::os::raw::c_int {
-            let a_val = #crt::fli::PL_blob_data(a,
-                                                std::ptr::null_mut(),
-                                                std::ptr::null_mut())
-                as *const #inner_type_name;
-            let b_val = #crt::fli::PL_blob_data(b,
-                                                std::ptr::null_mut(),
-                                                std::ptr::null_mut())
-                as *const #inner_type_name;
-            match #crt::context::prolog_catch_unwind(||<#item_name as #crt::blob::WrappedArcBlobImpl>::compare(&*a_val, &*b_val)) {
+            match #crt::context::prolog_catch_unwind(||{
+                let a_val = #crt::fli::PL_blob_data(a,
+                                                    std::ptr::null_mut(),
+                                                    std::ptr::null_mut())
+                    as *const #inner_type_name;
+                let b_val = #crt::fli::PL_blob_data(b,
+                                                    std::ptr::null_mut(),
+                                                    std::ptr::null_mut())
+                    as *const #inner_type_name;
+                <#item_name as #crt::blob::WrappedArcBlobImpl>::compare(&*a_val, &*b_val)
+            }) {
                 Ok(std::cmp::Ordering::Less) => -1,
                 Ok(std::cmp::Ordering::Equal) => 0,
                 Ok(std::cmp::Ordering::Greater) => 1,
@@ -237,11 +241,11 @@ pub fn wrapped_arc_blob_macro(item: proc_macro::TokenStream) -> proc_macro::Toke
                                          a: #crt::fli::atom_t,
                                          _flags: std::os::raw::c_int)
                                          -> std::os::raw::c_int {
-            let a_val = #crt::fli::PL_blob_data(a,
-                                                std::ptr::null_mut(),
-                                                std::ptr::null_mut())
-                as *const #inner_type_name;
             match #crt::context::prolog_catch_unwind(|| {
+                let a_val = #crt::fli::PL_blob_data(a,
+                                                    std::ptr::null_mut(),
+                                                    std::ptr::null_mut())
+                    as *const #inner_type_name;
                 let mut stream = #crt::stream::PrologStream::wrap(s);
                 <#item_name as #crt::blob::WrappedArcBlobImpl>::write(&*a_val, &mut stream)
             }) {
@@ -367,15 +371,17 @@ pub fn clone_blob_macro(
         }
 
         unsafe extern "C" fn #blob_compare(a: #crt::fli::atom_t, b: #crt::fli::atom_t)->std::os::raw::c_int {
-            let a_val = #crt::fli::PL_blob_data(a,
-                                                std::ptr::null_mut(),
-                                                std::ptr::null_mut())
-                as *const #item_name;
-            let b_val = #crt::fli::PL_blob_data(b,
-                                                std::ptr::null_mut(),
-                                                std::ptr::null_mut())
-                as *const #item_name;
-            match #crt::context::prolog_catch_unwind(||#crt::blob::CloneBlobImpl::compare(&*a_val, &*b_val)) {
+            match #crt::context::prolog_catch_unwind(|| {
+                let a_val = #crt::fli::PL_blob_data(a,
+                                                    std::ptr::null_mut(),
+                                                    std::ptr::null_mut())
+                    as *const #item_name;
+                let b_val = #crt::fli::PL_blob_data(b,
+                                                    std::ptr::null_mut(),
+                                                    std::ptr::null_mut())
+                    as *const #item_name;
+                #crt::blob::CloneBlobImpl::compare(&*a_val, &*b_val)
+            }) {
                 Ok(std::cmp::Ordering::Less) => -1,
                 Ok(std::cmp::Ordering::Equal) => 0,
                 Ok(std::cmp::Ordering::Greater) => 1,
@@ -387,11 +393,11 @@ pub fn clone_blob_macro(
                                          a: #crt::fli::atom_t,
                                          _flags: std::os::raw::c_int)
                                          -> std::os::raw::c_int {
-            let a_val = #crt::fli::PL_blob_data(a,
-                                                std::ptr::null_mut(),
-                                                std::ptr::null_mut())
-                as *const #item_name;
             match #crt::context::prolog_catch_unwind(||{
+                let a_val = #crt::fli::PL_blob_data(a,
+                                                    std::ptr::null_mut(),
+                                                    std::ptr::null_mut())
+                    as *const #item_name;
                 let mut stream = #crt::stream::PrologStream::wrap(s);
                 #crt::blob::CloneBlobImpl::write(&*a_val, &mut stream)
             }) {
