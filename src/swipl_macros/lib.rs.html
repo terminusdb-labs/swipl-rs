@@ -285,8 +285,22 @@
 <span id="282">282</span>
 <span id="283">283</span>
 <span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! swipl-macros provides procedural macros for the swipl crate.</span>
+<span class="attribute">#![<span class="ident">doc</span>(<span class="ident">html_root_url</span> <span class="op">=</span> <span class="string">&quot;https://terminusdb-labs.github.io/swipl-rs/swipl_macros/&quot;</span>)]</span>
 
 <span class="kw">mod</span> <span class="ident">kw</span>;
 <span class="kw">mod</span> <span class="ident">util</span>;
@@ -551,21 +565,33 @@
     <span class="ident">term</span>::<span class="ident">term_macro</span>(<span class="ident">stream</span>).<span class="ident">into</span>()
 }
 
+<span class="doccomment">/// Define an arc blob.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// See the [swipl::blob](https://terminusdb-labs.github.io/swipl-rs/swipl/blob/index.html) module documentation for more details.</span>
 <span class="attribute">#[<span class="ident">proc_macro_attribute</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">arc_blob</span>(<span class="ident">attr</span>: <span class="ident">TokenStream</span>, <span class="ident">item</span>: <span class="ident">TokenStream</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TokenStream</span> {
     <span class="ident">blob</span>::<span class="ident">arc_blob_macro</span>(<span class="ident">attr</span>, <span class="ident">item</span>)
 }
 
+<span class="doccomment">/// Define a wrapped arc blob.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// See the [swipl::blob](https://terminusdb-labs.github.io/swipl-rs/swipl/blob/index.html) module documentation for more details.</span>
 <span class="attribute">#[<span class="ident">proc_macro</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">wrapped_arc_blob</span>(<span class="ident">item</span>: <span class="ident">TokenStream</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TokenStream</span> {
     <span class="ident">blob</span>::<span class="ident">wrapped_arc_blob_macro</span>(<span class="ident">item</span>)
 }
 
+<span class="doccomment">/// Define a clone blob.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// See the [swipl::blob](https://terminusdb-labs.github.io/swipl-rs/swipl/blob/index.html) module documentation for more details.</span>
 <span class="attribute">#[<span class="ident">proc_macro_attribute</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">clone_blob</span>(<span class="ident">attr</span>: <span class="ident">TokenStream</span>, <span class="ident">item</span>: <span class="ident">TokenStream</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TokenStream</span> {
     <span class="ident">blob</span>::<span class="ident">clone_blob_macro</span>(<span class="ident">attr</span>, <span class="ident">item</span>)
 }
 
+<span class="doccomment">/// Define a wrapped clone blob.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// See the [swipl::blob](https://terminusdb-labs.github.io/swipl-rs/swipl/blob/index.html) module documentation for more details.</span>
 <span class="attribute">#[<span class="ident">proc_macro</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">wrapped_clone_blob</span>(<span class="ident">item</span>: <span class="ident">TokenStream</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TokenStream</span> {
     <span class="ident">blob</span>::<span class="ident">wrapped_clone_blob_macro</span>(<span class="ident">item</span>)

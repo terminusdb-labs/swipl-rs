@@ -642,7 +642,7 @@
     <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="macro">quote</span><span class="macro">!</span> {
         #<span class="ident">item_def</span>
 
-        <span class="kw">impl</span> <span class="ident">ArcBlobInfo</span> <span class="kw">for</span> #<span class="ident">item_name</span> {
+        <span class="kw">impl</span> <span class="ident">ArcBlobBase</span> <span class="kw">for</span> #<span class="ident">item_name</span> {
             <span class="kw">fn</span> <span class="ident">blob_name</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
                 #<span class="ident">name_lit</span>
             }
@@ -781,7 +781,7 @@
         }
 
 
-        <span class="kw">impl</span> <span class="ident">WrappedArcBlobInfo</span> <span class="kw">for</span> #<span class="ident">item_name</span> {
+        <span class="kw">impl</span> <span class="ident">WrappedArcBlobBase</span> <span class="kw">for</span> #<span class="ident">item_name</span> {
             <span class="kw">type</span> <span class="ident">Inner</span> <span class="op">=</span> #<span class="ident">inner_type_name</span>;
 
             <span class="kw">fn</span> <span class="ident">blob_name</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
@@ -945,7 +945,7 @@
     <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="macro">quote</span><span class="macro">!</span> {
         #<span class="ident">item_def</span>
 
-        <span class="kw">impl</span> <span class="ident">CloneBlobInfo</span> <span class="kw">for</span> #<span class="ident">item_name</span> {
+        <span class="kw">impl</span> <span class="ident">CloneBlobBase</span> <span class="kw">for</span> #<span class="ident">item_name</span> {
             <span class="kw">fn</span> <span class="ident">blob_name</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
                 #<span class="ident">name_lit</span>
             }
