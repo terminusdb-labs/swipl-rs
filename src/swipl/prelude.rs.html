@@ -19,6 +19,7 @@
 <span id="16">16</span>
 <span id="17">17</span>
 <span id="18">18</span>
+<span id="19">19</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Module which re-exports all public symbols in this crate, for easy importing.</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">atom</span>::<span class="kw-2">*</span>;
@@ -36,7 +37,8 @@
 <span class="kw">pub</span> <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">text</span>::<span class="kw-2">*</span>;
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="kw">crate</span>::{
-    <span class="ident">arc_blob</span>, <span class="ident">clone_blob</span>, <span class="ident">pred</span>, <span class="ident">predicates</span>, <span class="ident">prolog</span>, <span class="ident">term</span>, <span class="ident">wrapped_arc_blob</span>, <span class="ident">wrapped_clone_blob</span>,
+    <span class="ident">arc_blob</span>, <span class="ident">clone_blob</span>, <span class="ident">pred</span>, <span class="ident">predicates</span>, <span class="ident">prolog</span>, <span class="ident">term</span>, <span class="ident">term_getable</span>, <span class="ident">term_putable</span>, <span class="ident">unifiable</span>,
+    <span class="ident">wrapped_arc_blob</span>, <span class="ident">wrapped_clone_blob</span>,
 };
 </pre></div>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl"></div>
