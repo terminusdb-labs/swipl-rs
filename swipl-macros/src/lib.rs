@@ -1,4 +1,5 @@
 //! swipl-macros provides procedural macros for the swipl crate.
+#![doc(html_root_url = "https://terminusdb-labs.github.io/swipl-rs/swipl_macros/")]
 
 mod kw;
 mod util;

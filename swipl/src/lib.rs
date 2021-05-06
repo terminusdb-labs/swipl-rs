@@ -7,6 +7,7 @@
 //! ```
 //! use swipl::prelude::*;
 //! ```
+#![doc(html_root_url = "https://terminusdb-labs.github.io/swipl-rs/swipl/")]
 
 pub mod consts;
 pub mod fli;

@@ -1,4 +1,6 @@
 //! A helper crate to retrieve information about the installed swipl environment.
+#![doc(html_root_url = "https://terminusdb-labs.github.io/swipl-rs/swipl_info/")]
+
 use std::env;
 use std::process::Command;
 
