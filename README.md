@@ -6,6 +6,21 @@ Rust bindings to SWI-Prolog.
 
 [Documentation](https://terminusdb-labs.github.io/swipl-rs/)
 
+## Using swipl-rs
+add the following line under your dependencies in your Cargo.toml file:
+```
+swipl = "0.3"
+```
+
+Then import swipl in your code using
+```
+use swipl::prelude::*;
+```
+
+See the [examples](https://github.com/terminusdb-labs/swipl-rs/tree/master/examples) in this repository and the documentation for more
+guidance.
+
+
 ## Overview
 This repository is a workspace for a handful of crates:
 - cargo-swipl: a cargo utility for working with swipl crates. In particular, this allows running of unit tests in crates that depend on swipl-sys.
