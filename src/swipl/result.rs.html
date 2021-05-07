@@ -126,6 +126,13 @@
 <span id="123">123</span>
 <span id="124">124</span>
 <span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Prolog results.</span>
 <span class="doccomment">//!</span>
@@ -251,6 +258,13 @@
         <span class="bool-val">true</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(()),
         <span class="bool-val">false</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">PrologError</span>::<span class="ident">Failure</span>),
     }
+}
+
+<span class="doccomment">/// Return a failure.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This is a shorthand for `Err(PrologError::Failure)`.</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fail</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PrologResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="prelude-val">Err</span>(<span class="ident">PrologError</span>::<span class="ident">Failure</span>)
 }
 </pre></div>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl"></div>
