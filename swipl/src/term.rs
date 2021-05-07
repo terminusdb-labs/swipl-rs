@@ -801,6 +801,38 @@ term_putable! {
     }
 }
 
+unifiable! {
+    (self: Vec<u8>, term) => {
+        let result = unsafe { PL_unify_string_nchars(term.term_ptr(), self.len() as size_t, self.as_ptr() as *const i8) };
+
+        result != 0
+    }
+}
+
+term_getable! {
+    (Vec<u8>, term) => {
+        let mut string_ptr = std::ptr::null_mut();
+        let mut len = 0;
+        let result = unsafe { PL_get_string(term.term_ptr(), &mut string_ptr, &mut len) };
+        if result == 0 {
+            return None;
+        }
+
+        let slice = unsafe { std::slice::from_raw_parts(string_ptr as *const u8, len as usize) };
+        let mut result: Vec<u8> = Vec::with_capacity(len as usize);
+        result.extend_from_slice(slice);
+
+        Some(result)
+    }
+}
+
+term_putable! {
+    (self: Vec<u8>, term) => {
+        unsafe { PL_put_string_nchars(term.term_ptr(), self.len() as size_t, self.as_ptr() as *const i8) };
+    }
+
+}
+
 /// Unit struct representing an empty list in SWI-Prolog.
 pub struct Nil;
 unifiable! {
@@ -953,7 +985,6 @@ mod tests {
 
     #[test]
     fn unify_some_terms_with_failure() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
@@ -967,7 +998,6 @@ mod tests {
 
     #[test]
     fn unify_twice_different_failure() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
@@ -979,7 +1009,6 @@ mod tests {
 
     #[test]
     fn unify_twice_different_with_rewind_success() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
@@ -993,7 +1022,6 @@ mod tests {
 
     #[test]
     fn unify_and_get_bools() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
@@ -1009,7 +1037,6 @@ mod tests {
 
     #[test]
     fn unify_and_get_u64s() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
@@ -1028,7 +1055,6 @@ mod tests {
 
     #[test]
     fn put_and_get_u64s() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
@@ -1041,7 +1067,6 @@ mod tests {
 
     #[test]
     fn unify_and_get_string_refs() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
@@ -1056,7 +1081,6 @@ mod tests {
 
     #[test]
     fn unify_and_get_strings() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
@@ -1069,7 +1093,6 @@ mod tests {
 
     #[test]
     fn unify_and_get_different_types_fails() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
@@ -1081,7 +1104,6 @@ mod tests {
 
     #[test]
     fn unify_list() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
@@ -1097,7 +1119,6 @@ mod tests {
 
     #[test]
     fn unify_term_list() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
@@ -1116,7 +1137,6 @@ mod tests {
 
     #[test]
     fn create_nested_functor_term() -> PrologResult<()> {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
@@ -1131,7 +1151,6 @@ mod tests {
 
     #[test]
     fn throw_error() -> PrologResult<()> {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
@@ -1141,5 +1160,21 @@ mod tests {
         assert!(context.has_exception());
 
         Ok(())
+    }
+
+    #[test]
+    fn work_with_binary_data_strings() -> PrologResult<()> {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let binary_data = vec![42, 0, 5];
+        let term = context.new_term_ref();
+        term.put(&binary_data)?;
+        let retrieved: Vec<u8> = term.get()?;
+
+        assert_eq!(binary_data, retrieved);
+
+        term.unify(&binary_data)
     }
 }
