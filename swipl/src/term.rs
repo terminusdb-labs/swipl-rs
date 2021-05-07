@@ -802,7 +802,7 @@ term_putable! {
 }
 
 unifiable! {
-    (self: Vec<u8>, term) => {
+    (self: &[u8], term) => {
         let result = unsafe { PL_unify_string_nchars(term.term_ptr(), self.len() as size_t, self.as_ptr() as *const i8) };
 
         result != 0
@@ -827,7 +827,7 @@ term_getable! {
 }
 
 term_putable! {
-    (self: Vec<u8>, term) => {
+    (self: [u8], term) => {
         unsafe { PL_put_string_nchars(term.term_ptr(), self.len() as size_t, self.as_ptr() as *const i8) };
     }
 
@@ -1168,11 +1168,11 @@ mod tests {
 
         let binary_data = vec![42, 0, 5];
         let term = context.new_term_ref();
-        term.put(&binary_data)?;
+        term.put(binary_data.as_slice())?;
         let retrieved: Vec<u8> = term.get()?;
 
         assert_eq!(binary_data, retrieved);
 
-        term.unify(&binary_data)
+        term.unify(binary_data.as_slice())
     }
 }
