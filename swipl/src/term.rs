@@ -966,12 +966,10 @@ unsafe impl<T: TermGetable> TermGetable for Vec<T> {
 mod tests {
     use crate::context::*;
     use crate::engine::*;
-    use crate::init::*;
     use crate::result::*;
 
     #[test]
     fn unify_some_terms_with_success() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();

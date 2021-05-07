@@ -401,7 +401,6 @@ mod tests {
     use crate::context::*;
     #[test]
     fn create_atom_and_retrieve_name() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let _activation = engine.activate();
 
@@ -412,7 +411,6 @@ mod tests {
     }
     #[test]
     fn create_and_compare_some_atoms() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let _activation = engine.activate();
 
@@ -425,7 +423,6 @@ mod tests {
 
     #[test]
     fn clone_atom() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let _activation = engine.activate();
 
@@ -437,7 +434,6 @@ mod tests {
 
     #[test]
     fn create_atom_of_magic_length() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let _activation = engine.activate();
 
@@ -449,7 +445,6 @@ mod tests {
 
     #[test]
     fn unify_atoms() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
@@ -466,7 +461,6 @@ mod tests {
 
     #[test]
     fn unify_atoms_from_string() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();

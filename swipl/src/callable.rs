@@ -321,7 +321,6 @@ mod tests {
     use crate::prelude::*;
     #[test]
     fn call_prolog_inline() -> PrologResult<()> {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();

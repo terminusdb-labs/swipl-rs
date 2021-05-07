@@ -210,14 +210,12 @@ mod tests {
     use super::*;
     #[test]
     fn create_and_activate_engine() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let _activation = engine.activate();
     }
 
     #[test]
     fn activate_deactivate_reactivate_engine() {
-        initialize_swipl_noengine();
         let engine = Engine::new();
         let activation = engine.activate();
         std::mem::drop(activation);
@@ -226,7 +224,6 @@ mod tests {
 
     #[test]
     fn switch_between_engines() {
-        initialize_swipl_noengine();
         let engine1 = Engine::new();
         let engine2 = Engine::new();
         let activation1 = engine1.activate();
