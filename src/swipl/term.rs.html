@@ -1179,8 +1179,6 @@
 <span id="1176">1176</span>
 <span id="1177">1177</span>
 <span id="1178">1178</span>
-<span id="1179">1179</span>
-<span id="1180">1180</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Prolog terms.</span>
 <span class="doccomment">//!</span>
@@ -2150,12 +2148,10 @@
 <span class="kw">mod</span> <span class="ident">tests</span> {
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">context</span>::<span class="kw-2">*</span>;
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">engine</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">init</span>::<span class="kw-2">*</span>;
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">result</span>::<span class="kw-2">*</span>;
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">unify_some_terms_with_success</span>() {
-        <span class="ident">initialize_swipl_noengine</span>();
         <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine</span>::<span class="ident">new</span>();
         <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
         <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();

@@ -551,12 +551,6 @@
 <span id="548">548</span>
 <span id="549">549</span>
 <span id="550">550</span>
-<span id="551">551</span>
-<span id="552">552</span>
-<span id="553">553</span>
-<span id="554">554</span>
-<span id="555">555</span>
-<span id="556">556</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Prolog atoms.</span>
 <span class="doccomment">//!</span>
@@ -961,7 +955,6 @@
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">context</span>::<span class="kw-2">*</span>;
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">create_atom_and_retrieve_name</span>() {
-        <span class="ident">initialize_swipl_noengine</span>();
         <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine</span>::<span class="ident">new</span>();
         <span class="kw">let</span> <span class="ident">_activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
 
@@ -972,7 +965,6 @@
     }
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">create_and_compare_some_atoms</span>() {
-        <span class="ident">initialize_swipl_noengine</span>();
         <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine</span>::<span class="ident">new</span>();
         <span class="kw">let</span> <span class="ident">_activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
 
@@ -985,7 +977,6 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">clone_atom</span>() {
-        <span class="ident">initialize_swipl_noengine</span>();
         <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine</span>::<span class="ident">new</span>();
         <span class="kw">let</span> <span class="ident">_activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
 
@@ -997,7 +988,6 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">create_atom_of_magic_length</span>() {
-        <span class="ident">initialize_swipl_noengine</span>();
         <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine</span>::<span class="ident">new</span>();
         <span class="kw">let</span> <span class="ident">_activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
 
@@ -1009,7 +999,6 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">unify_atoms</span>() {
-        <span class="ident">initialize_swipl_noengine</span>();
         <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine</span>::<span class="ident">new</span>();
         <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
         <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
@@ -1026,7 +1015,6 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">unify_atoms_from_string</span>() {
-        <span class="ident">initialize_swipl_noengine</span>();
         <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine</span>::<span class="ident">new</span>();
         <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
         <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();

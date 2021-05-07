@@ -234,9 +234,6 @@
 <span id="231">231</span>
 <span id="232">232</span>
 <span id="233">233</span>
-<span id="234">234</span>
-<span id="235">235</span>
-<span id="236">236</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Prolog engines.</span>
 <span class="doccomment">//!</span>
@@ -450,14 +447,12 @@
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">create_and_activate_engine</span>() {
-        <span class="ident">initialize_swipl_noengine</span>();
         <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine</span>::<span class="ident">new</span>();
         <span class="kw">let</span> <span class="ident">_activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">activate_deactivate_reactivate_engine</span>() {
-        <span class="ident">initialize_swipl_noengine</span>();
         <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine</span>::<span class="ident">new</span>();
         <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
         <span class="ident">std</span>::<span class="ident">mem</span>::<span class="ident">drop</span>(<span class="ident">activation</span>);
@@ -466,7 +461,6 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">switch_between_engines</span>() {
-        <span class="ident">initialize_swipl_noengine</span>();
         <span class="kw">let</span> <span class="ident">engine1</span> <span class="op">=</span> <span class="ident">Engine</span>::<span class="ident">new</span>();
         <span class="kw">let</span> <span class="ident">engine2</span> <span class="op">=</span> <span class="ident">Engine</span>::<span class="ident">new</span>();
         <span class="kw">let</span> <span class="ident">activation1</span> <span class="op">=</span> <span class="ident">engine1</span>.<span class="ident">activate</span>();
