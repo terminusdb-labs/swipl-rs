@@ -119,7 +119,7 @@ unifiable! {
 }
 
 term_getable! {
-    (Functor, term) => {
+    (Functor, "functor", term) => {
         let mut functor = 0;
         let result = unsafe { PL_get_functor(term.term_ptr(), &mut functor) };
 

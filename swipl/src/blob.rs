@@ -536,6 +536,10 @@ unsafe impl<T: ArcBlob> TermGetable for Arc<T> {
         let blob_definition = T::get_blob_definition();
         unsafe { get_arc_from_term(term, blob_definition) }
     }
+
+    fn name() -> &'static str {
+        T::blob_name()
+    }
 }
 
 unsafe impl<T: ArcBlob> TermPutable for Arc<T> {

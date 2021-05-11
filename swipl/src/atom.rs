@@ -181,7 +181,7 @@ where
 }
 
 term_getable! {
-    (Atom, term) => {
+    (Atom, "atom", term) => {
         match term.get_atom(|a| a.map(|a|a.clone())) {
             Ok(r) => r,
             // ignore this error - it'll be picked up again by the wrapper
@@ -367,7 +367,7 @@ where
 }
 
 term_getable! {
-    (Atomable<'static>, term) => {
+    (Atomable<'static>, "atom", term) => {
         match get_atomable(term, |a|a.map(|a|a.owned())) {
             Ok(r) => r,
             // ignore error - it'll be picked up in the wrapper

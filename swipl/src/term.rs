@@ -173,6 +173,53 @@ impl<'a> Term<'a> {
         }
     }
 
+    /// Retrieve data from the term reference, or raise exception if
+    /// this is impossible.
+    ///
+    /// Any data type for which [TermGetable] has been implemented may
+    /// be retrieved in this way.
+    ///
+    /// In addition to the situations where `get()` would raise an
+    /// exception, this will raise an `error(instantiation_error, _)`
+    /// when called on an unbound term, and `error(type_error(<type
+    /// name>, <term>), _)` when retrieving the value from the term
+    /// was not possible, which is always assumed to be due to a type
+    /// incompatibility.
+    ///
+    /// Therefore, the only way this function will error is with an
+    /// exception. It will never return a failure.
+    pub fn get_ex<G: TermGetable>(&self) -> PrologResult<G> {
+        if self.is_var() {
+            let context = unsafe { unmanaged_engine_context() };
+            let reset_term = context.new_term_ref();
+            let exception_term = term! {context: error(instantiation_error, _)};
+            let result = exception_term.and_then(|t| context.raise_exception(&t));
+            unsafe { reset_term.reset() };
+
+            return result;
+        }
+        let opt = G::get(self);
+
+        // get functions may throw an exception, either directly or
+        // through some inner function. It's too much hassle to have
+        // each function check for themselves and return the
+        // appropriate thing, so we just do it all here.
+        if unsafe { PL_exception(0) != 0 } {
+            Err(PrologError::Exception)
+        } else if opt.is_none() {
+            let context = unsafe { unmanaged_engine_context() };
+            let reset_term = context.new_term_ref();
+            let type_name = Atomable::from(G::name());
+            let exception_term = term! {context: error(type_error(#type_name, #self), _)};
+            let result = exception_term.and_then(|t| context.raise_exception(&t));
+            unsafe { reset_term.reset() };
+
+            result
+        } else {
+            Ok(opt.unwrap())
+        }
+    }
+
     /// Retrieve data from the nth position of the given term. This
     /// assumes that the given term contains a functor.
     ///
@@ -409,6 +456,9 @@ pub unsafe trait TermGetable: Sized {
     ///
     /// You'd generally not use this directly, but rather, go through [Term::get].
     fn get(term: &Term) -> Option<Self>;
+
+    /// Get the name of this data type for use in exception reporting.
+    fn name() -> &'static str;
 }
 
 /// Trait for putting data into a term reference.
@@ -505,6 +555,28 @@ macro_rules! term_getable {
                 $term_.assert_term_handling_possible();
 
                 $b
+            }
+
+            fn name() -> &'static str {
+                stringify!($t)
+            }
+        }
+    };
+
+    (($t:ty, $name: tt, $term_: ident) => $b: block) => {
+        // unsafe justification: this macro inserts an assert in front
+        // of the term get body, to ensure that we are given a term
+        // that matches the given context, and that the currently
+        // activated engine is one for which this term was created.
+        unsafe impl<'a> TermGetable for $t {
+            fn get($term_: &Term) -> Option<Self> {
+                $term_.assert_term_handling_possible();
+
+                $b
+            }
+
+            fn name() -> &'static str {
+                $name
             }
         }
     };
@@ -641,7 +713,7 @@ unifiable! {
 }
 
 term_getable! {
-    (u64, term) => {
+    (u64, "integer", term) => {
         if unsafe { PL_is_integer(term.term) == 0 } {
             return None;
         }
@@ -694,7 +766,7 @@ unifiable! {
 }
 
 term_getable! {
-    (i64, term) => {
+    (i64, "integer", term) => {
         let mut out = 0;
         let result = unsafe { PL_get_int64(term.term, &mut out) };
         if result == 0 {
@@ -721,7 +793,7 @@ unifiable! {
 }
 
 term_getable! {
-    (f64, term) => {
+    (f64, "float", term) => {
         let mut out = 0.0;
         let result = unsafe { PL_get_float(term.term, &mut out) };
         if result == 0 {
@@ -768,7 +840,7 @@ unifiable! {
 }
 
 term_getable! {
-    (String, term) => {
+    (String, "string", term) => {
         match term.get_str(|s|s.map(|s|s.to_owned())) {
             Ok(r) => r,
             // ignore error - it'll be picked up by the wrapper
@@ -810,7 +882,7 @@ unifiable! {
 }
 
 term_getable! {
-    (Vec<u8>, term) => {
+    (Vec<u8>, "string", term) => {
         let mut string_ptr = std::ptr::null_mut();
         let mut len = 0;
         let result = unsafe { PL_get_string(term.term_ptr(), &mut string_ptr, &mut len) };
@@ -844,7 +916,7 @@ unifiable! {
 }
 
 term_getable! {
-    (Nil, term) => {
+    (Nil, "list", term) => {
         let result = unsafe { PL_get_nil(term.term_ptr()) };
 
         match result != 0 {
@@ -959,6 +1031,10 @@ unsafe impl<T: TermGetable> TermGetable for Vec<T> {
             true => Some(result),
             false => None,
         }
+    }
+
+    fn name() -> &'static str {
+        "list"
     }
 }
 

@@ -302,6 +302,10 @@ pub fn wrapped_arc_blob_macro(item: proc_macro::TokenStream) -> proc_macro::Toke
                 let arc_opt = unsafe { #crt::blob::get_arc_from_term(term, blob_definition) };
                 arc_opt.map(|a|Self(a))
             }
+
+            fn name() -> &'static str {
+                Self::blob_name()
+            }
         }
 
         unsafe impl #crt::term::TermPutable for #item_name {
@@ -453,6 +457,10 @@ pub fn clone_blob_macro(
                 let blob_definition = Self::get_blob_definition();
                 let cloned_opt = unsafe { #crt::blob::get_cloned_from_term(term, blob_definition) };
                 cloned_opt
+            }
+
+            fn name() -> &'static str {
+                Self::blob_name()
             }
         }
 

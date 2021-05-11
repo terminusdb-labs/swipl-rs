@@ -24,7 +24,7 @@ impl std::ops::Deref for PrologText {
 }
 
 term_getable! {
-    (PrologText, term) => {
+    (PrologText, "text", term) => {
         let mut len: usize = 0;
         let mut s: *mut c_char = std::ptr::null_mut();
         let flags = fli::CVT_ATOM|fli::CVT_STRING|fli::BUF_DISCARDABLE|fli::REP_UTF8;
