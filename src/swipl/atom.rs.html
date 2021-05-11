@@ -735,7 +735,7 @@
 }
 
 <span class="macro">term_getable</span><span class="macro">!</span> {
-    (<span class="ident">Atom</span>, <span class="ident">term</span>) <span class="op">=</span><span class="op">&gt;</span> {
+    (<span class="ident">Atom</span>, <span class="string">&quot;atom&quot;</span>, <span class="ident">term</span>) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="ident">term</span>.<span class="ident">get_atom</span>(<span class="op">|</span><span class="ident">a</span><span class="op">|</span> <span class="ident">a</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">a</span><span class="op">|</span><span class="ident">a</span>.<span class="ident">clone</span>())) {
             <span class="prelude-val">Ok</span>(<span class="ident">r</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">r</span>,
             <span class="comment">// ignore this error - it&#39;ll be picked up again by the wrapper</span>
@@ -921,7 +921,7 @@
 }
 
 <span class="macro">term_getable</span><span class="macro">!</span> {
-    (<span class="ident">Atomable</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span>, <span class="ident">term</span>) <span class="op">=</span><span class="op">&gt;</span> {
+    (<span class="ident">Atomable</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span>, <span class="string">&quot;atom&quot;</span>, <span class="ident">term</span>) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="ident">get_atomable</span>(<span class="ident">term</span>, <span class="op">|</span><span class="ident">a</span><span class="op">|</span><span class="ident">a</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">a</span><span class="op">|</span><span class="ident">a</span>.<span class="ident">owned</span>())) {
             <span class="prelude-val">Ok</span>(<span class="ident">r</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">r</span>,
             <span class="comment">// ignore error - it&#39;ll be picked up in the wrapper</span>

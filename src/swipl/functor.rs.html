@@ -365,7 +365,7 @@
 }
 
 <span class="macro">term_getable</span><span class="macro">!</span> {
-    (<span class="ident">Functor</span>, <span class="ident">term</span>) <span class="op">=</span><span class="op">&gt;</span> {
+    (<span class="ident">Functor</span>, <span class="string">&quot;functor&quot;</span>, <span class="ident">term</span>) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">functor</span> <span class="op">=</span> <span class="number">0</span>;
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">PL_get_functor</span>(<span class="ident">term</span>.<span class="ident">term_ptr</span>(), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">functor</span>) };
 

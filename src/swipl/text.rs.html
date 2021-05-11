@@ -75,7 +75,7 @@
 }
 
 <span class="macro">term_getable</span><span class="macro">!</span> {
-    (<span class="ident">PrologText</span>, <span class="ident">term</span>) <span class="op">=</span><span class="op">&gt;</span> {
+    (<span class="ident">PrologText</span>, <span class="string">&quot;text&quot;</span>, <span class="ident">term</span>) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">len</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">0</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> <span class="op">=</span> <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">fli</span>::<span class="ident">CVT_ATOM</span><span class="op">|</span><span class="ident">fli</span>::<span class="ident">CVT_STRING</span><span class="op">|</span><span class="ident">fli</span>::<span class="ident">BUF_DISCARDABLE</span><span class="op">|</span><span class="ident">fli</span>::<span class="ident">REP_UTF8</span>;
