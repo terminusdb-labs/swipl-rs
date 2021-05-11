@@ -3,7 +3,6 @@
 //! This exists mostly to support blob description writers. In the
 //! future this will include more proper stream support.
 use std::io::{self, Write};
-use std::os::raw::c_void;
 
 use crate::fli;
 
@@ -21,15 +20,19 @@ impl PrologStream {
 
 impl Write for PrologStream {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        let count = unsafe {
-            fli::Sfwrite(
-                buf.as_ptr() as *const c_void,
-                1,
-                buf.len() as fli::size_t,
-                self.stream,
-            )
-        };
-        Ok(count as usize)
+        // We have to do the really stupid thing here of copying the
+        // entire buffer just to add a zero byte at the end.  Would be
+        // nice if there was a way to print to a prolog stream
+        // specifying a length, but alas there is not.  There is
+        // Sfwrite, but it just dumbly copies bytes without checking
+        // encoding, so if encoding is multi-byte (as is the case in
+        // DWIM), it messes up.
+        let mut write_buf = Vec::with_capacity(buf.len() + 1);
+        write_buf.extend_from_slice(buf);
+        write_buf.push(0);
+        unsafe { fli::Sfputs(write_buf.as_ptr() as *const i8, self.stream) };
+
+        Ok(buf.len())
     }
 
     fn flush(&mut self) -> io::Result<()> {
