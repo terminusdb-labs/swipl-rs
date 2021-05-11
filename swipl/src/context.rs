@@ -702,6 +702,33 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
             }
         }
     }
+
+    /// Turn a result into a `PrologResult`.
+    ///
+    /// For this to work, the `Err` component of the `Result` needs to
+    /// implement the trait [Error](std::error::Error).
+    pub fn try_or_die_generic<R, E: std::error::Error>(&self, r: Result<R, E>) -> PrologResult<R> {
+        match r {
+            Ok(ok) => Ok(ok),
+            Err(e) => {
+                let reset_term = self.new_term_ref();
+                let msg = format!("{}", e);
+
+                // TODO: term macro doesn't like self, which is
+                // probably only a problem for things inside this
+                // crate but still should probably be resolved.
+                let self_ = self;
+                let exception_term = term! {self_: error(rust_error(#msg))}?;
+                let result = self.raise_exception(&exception_term);
+
+                unsafe {
+                    reset_term.reset();
+                }
+
+                result
+            }
+        }
+    }
 }
 
 /// Trait for turning errors into prolog exceptions
