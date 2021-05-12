@@ -18,14 +18,10 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        dmg: [yes, no]
+        dmg: [no]
         include:
-          - os: ubuntu-latest
-          - os: macos-latest
-            dmg: no
           - os: macos-latest
             dmg: yes
-          - os: windows-latest
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
