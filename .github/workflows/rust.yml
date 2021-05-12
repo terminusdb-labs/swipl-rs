@@ -41,6 +41,8 @@ jobs:
     - name: Install SWI Prolog on MacOS from dmg
       if: ${{ matrix.os == 'macos-latest' && matrix.dmg == 'dmg' }}
       run: bash .ci/install_swipl_dmg.sh
+    - name: Print information with swipl-info
+      run: cargo run --bin print_swipl_info
     - name: Install cargo-swipl
       run: cargo install --path ./cargo-swipl
     - name: Run tests on posix
