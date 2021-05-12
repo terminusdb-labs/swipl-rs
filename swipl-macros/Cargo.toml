@@ -6,6 +6,7 @@ edition = "2018"
 license = "Apache-2.0/MIT"
 description = "Macro crate for swipl-rs"
 repository = "https://github.com/terminusdb-labs/swipl-rs/"
+documentation = "https://terminusdb-labs.github.io/swipl-rs/swipl_macros/"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

@@ -6,6 +6,7 @@ edition = "2018"
 license = "Apache-2.0/MIT"
 description = "Helper crate for retrieving information about the installed version of SWI-Prolog"
 repository = "https://github.com/terminusdb-labs/swipl-rs/"
+documentation = "https://terminusdb-labs.github.io/swipl-rs/swipl_info/"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
