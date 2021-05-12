@@ -23,12 +23,6 @@ jobs:
         include:
           - os: macos-latest
             dmg: dmg
-            env:
-              SWIPL: /Applications/SWI-Prolog.app/Contents/MacOS/swipl
-          - os: windows-latest
-            env:
-              SWIPL: C:\Program Files\swipl\bin\swipl.exe
-              LIBCLANG_PATH: C:\Program Files\LLVM\bin\
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
@@ -47,9 +41,32 @@ jobs:
     - name: Install SWI Prolog on MacOS from dmg
       if: ${{ matrix.os == 'macos-latest' && matrix.dmg == 'dmg' }}
       run: bash .ci/install_swipl_dmg.sh
-    - name: Print information with swipl-info
+    - name: Print information with swipl-info on posix
+      if: ${{ matrix.os != 'windows-latest' && matrix.dmg == 'no_dmg' }}
+      run: cargo run --bin print_swipl_info
+    - name: Print information with swipl-info on windows
+      if: ${{ matrix.os == 'windows-latest' }}
+      env: 
+        SWIPL: C:\Program Files\swipl\bin\swipl.exe
+      run: cargo run --bin print_swipl_info
+    - name: Print information with swipl-info on osx with dmg
+      if: ${{ matrix.dmg == 'dmg' }}
+      env: 
+        SWIPL: /Applications/SWI-Prolog.app/Contents/MacOS/swipl
       run: cargo run --bin print_swipl_info
     - name: Install cargo-swipl
       run: cargo install --path ./cargo-swipl
-    - name: Run tests
+    - name: Run tests on posix
+      if: ${{ matrix.os != 'windows-latest' && matrix.dmg == 'no_dmg' }}
+      run: cargo swipl test
+    - name: Run tests on windows
+      if: ${{ matrix.os == 'windows-latest' }}
+      env: 
+        SWIPL: C:\Program Files\swipl\bin\swipl.exe
+        LIBCLANG_PATH: C:\Program Files\LLVM\bin\
+      run: cargo swipl test
+    - name: Run tests on osx with dmg
+      if: ${{ matrix.dmg == 'dmg' }}
+      env: 
+        SWIPL: /Applications/SWI-Prolog.app/Contents/MacOS/swipl
       run: cargo swipl test
