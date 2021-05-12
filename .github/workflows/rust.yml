@@ -17,14 +17,8 @@ jobs:
   build:
     strategy:
       matrix:
-        axes:
-          - axis:
-              type: label-expression
-              name: dmg
-              values:
-                - no
-                - yes
         os: [ubuntu-latest, macos-latest, windows-latest]
+        dmg: [yes, no]
         include:
           - os: ubuntu-latest
           - os: macos-latest
