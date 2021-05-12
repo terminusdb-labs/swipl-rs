@@ -19,7 +19,8 @@ jobs:
       matrix:
         axes:
           - axis:
-              type: dmg
+              type: label-expression
+              name: dmg
               values:
                 - no
                 - yes
