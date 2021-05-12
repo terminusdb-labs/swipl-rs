@@ -6,22 +6,16 @@ use swipl_info::*;
 fn subcmd(subcommand: &ArgMatches, cmd: &str) {
     let info = get_swipl_info();
 
-    let library_location = if cfg!(target_os = "windows") {
-        format!("{}/bin", info.swi_home)
-    } else {
-        format!("{}/{}", info.swi_home, info.pack_so_dir)
-    };
-
     let cargo = env::var("CARGO").unwrap_or("cargo".to_owned());
     let mut command = Command::new(cargo);
 
     if cfg!(target_os = "windows") {
         let path = env::var("PATH").unwrap_or("".to_owned());
-        let path = format!("{};{}", library_location, path);
+        let path = format!("{};{}", info.lib_dir, path);
         command.env("PATH", path);
     } else {
         let ld_library_path = env::var("LD_LIBRARY_PATH").unwrap_or("".to_owned());
-        let ld_library_path = format!("{}:{}", library_location, ld_library_path);
+        let ld_library_path = format!("{}:{}", info.lib_dir, ld_library_path);
         command.env("LD_LIBRARY_PATH", ld_library_path);
     }
 
