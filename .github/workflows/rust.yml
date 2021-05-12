@@ -18,11 +18,9 @@ jobs:
     strategy:
       matrix:
         axes:
-          axis:
-            name: dmg
-            values:
-              - no
-              - yes
+          dmg:
+            - no
+            - yes
         os: [ubuntu-latest, macos-latest, windows-latest]
         include:
           - os: ubuntu-latest
