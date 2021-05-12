@@ -19,6 +19,8 @@ fn subcmd(subcommand: &ArgMatches, cmd: &str) {
         command.env("LD_LIBRARY_PATH", ld_library_path);
     }
 
+    command.env("SWI_HOME_DIR", info.swi_home);
+
     command.arg(cmd);
     if let Some(m) = subcommand.values_of("cmd") {
         let args: Vec<_> = m.collect();
