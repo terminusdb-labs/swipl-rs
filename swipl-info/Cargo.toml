@@ -1,6 +1,6 @@
 [package]
 name = "swipl-info"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["Matthijs van Otterdijk <matthijs@terminusdb.com>"]
 edition = "2018"
 license = "Apache-2.0/MIT"
