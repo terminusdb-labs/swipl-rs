@@ -16,8 +16,13 @@ env:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+        dmg: [no_dmg]
+        include:
+          - os: macos-latest
+            dmg: dmg
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
@@ -30,9 +35,12 @@ jobs:
     - name: Install LLVM and SWI Prolog on Windows
       if: ${{ matrix.os == 'windows-latest' }}
       run: choco install llvm swi-prolog
-    - name: Install SWI Prolog on MacOS
-      if: ${{ matrix.os == 'macos-latest' }}
+    - name: Install SWI Prolog on MacOS from brew
+      if: ${{ matrix.os == 'macos-latest' && matrix.dmg == 'no_dmg' }}
       run: brew install swi-prolog
+    - name: Install SWI Prolog on MacOS from dmg
+      if: ${{ matrix.os == 'macos-latest' && matrix.dmg == 'dmg' }}
+      run: bash .ci/install_swipl_dmg.sh
     - name: Install cargo-swipl
       run: cargo install --path ./cargo-swipl
     - name: Run tests on posix
