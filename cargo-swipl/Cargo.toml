@@ -12,3 +12,7 @@ repository = "https://github.com/terminusdb-labs/swipl-rs/"
 [dependencies]
 clap = "2.33.3"
 swipl-info = {path="../swipl-info", version="0.3.1"}
+syn = {version="1.0", features=["parsing","full"]}
+cargo_metadata = "0.13"
+swipl-macros-parse = {path="../swipl-macros-parse", version="0.1"}
+tempfile = "3.2"

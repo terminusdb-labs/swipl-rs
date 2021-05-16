@@ -18,3 +18,4 @@ quote = "1.0"
 syn = {version="1.0", features=["parsing","full"]}
 proc-macro2 = "1.0"
 proc-macro-crate = "0.1"
+swipl-macros-parse = {path="../swipl-macros-parse", version="0.1"}

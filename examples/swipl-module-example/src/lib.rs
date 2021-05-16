@@ -1,10 +1,12 @@
+use swipl;
+use swipl::prelude;
 use swipl::prelude::*;
 
 use std::cmp::Ordering;
 use std::io::{self, Write};
 use std::sync::Arc;
 
-predicates! {
+prelude::predicates! {
     semidet fn unify_with_foo(_context, term) {
         let atom = Atom::new("foo");
         term.unify(&atom)

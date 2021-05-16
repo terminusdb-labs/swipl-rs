@@ -1,3 +1,6 @@
+mod module;
+use module::*;
+
 use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 use std::env;
 use std::process::Command;
@@ -50,6 +53,13 @@ fn main() {
                 .setting(AppSettings::AllowLeadingHyphen)
                 .about("run tests with swi-prolog added to the load path")
                 .arg(Arg::from_usage("<cmd>... 'commands to run'").required(false)),
+        )
+        .subcommand(
+            SubCommand::with_name("module")
+                .setting(AppSettings::TrailingVarArg)
+                .setting(AppSettings::AllowLeadingHyphen)
+                .about("do module stuff")
+                .arg(Arg::from_usage("<cmd>... 'commands to run'").required(false)),
         );
 
     // Drop extra `swipl` argument provided by `cargo`.
@@ -69,6 +79,8 @@ fn main() {
         subcmd(matches, "test");
     } else if let Some(matches) = matches.subcommand_matches("run") {
         subcmd(matches, "run");
+    } else if let Some(matches) = matches.subcommand_matches("module") {
+        module_subcommand(matches)
     } else {
         panic!("unknown subcommand");
     }

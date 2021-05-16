@@ -1,79 +1,22 @@
-use crate::kw;
+use swipl_macros_parse::predicate::*;
+
 use crate::util::*;
 
 use proc_macro;
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
-use syn::parse::{Nothing, Parse, ParseStream, Result};
-use syn::punctuated::Punctuated;
 use syn::{
-    braced, parenthesized, parse_macro_input, Attribute, Block, Ident, LitStr, Token, Visibility,
+    parse_macro_input, Ident, LitStr, Visibility,
 };
 
 pub fn predicates_macro(stream: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let definitions = parse_macro_input!(stream as ForeignPredicateDefinitionBlock);
 
-    let gen = definitions.generate();
+    let gen = generate_definitions(&definitions);
 
     gen.into()
 }
 
-struct AttributedForeignPredicateDefinition {
-    visibility: Visibility,
-    predicate_name: Option<LitStr>,
-    predicate_module: Option<LitStr>,
-    _doc: Option<Attribute>,
-    predicate: ForeignPredicateDefinition,
-}
-
-impl AttributedForeignPredicateDefinition {
-    fn generate(&self) -> TokenStream {
-        // what to generate?
-        // - a function that returns an appropriate version of QueryResult for the specified determinism, with the given body
-        // - an extern "C" trampoline, that calls this guy after converting its arguments and making a context
-        // - a register function
-        // - TODO a documented frontend for calling from rust as if this is a query
-        let def = self.predicate.generate_definition();
-        let (trampoline_name, trampoline) = self.predicate.generate_trampoline();
-        let registration = self.predicate.generate_registration(
-            &trampoline_name,
-            &self.visibility,
-            self.predicate_name.as_ref(),
-            self.predicate_module.as_ref(),
-        );
-
-        quote! {#def #trampoline #registration}
-    }
-}
-
-impl Parse for AttributedForeignPredicateDefinition {
-    fn parse(input: ParseStream) -> Result<Self> {
-        let attrs: Vec<Attribute> = input.call(Attribute::parse_outer)?;
-        let mut doc = None;
-        let mut predicate_name = None;
-        let mut predicate_module = None;
-        for attr in attrs {
-            if attr.path.is_ident("doc") {
-                doc = Some(attr);
-            } else if attr.path.is_ident("name") {
-                predicate_name = Some(attr.parse_args()?);
-            } else if attr.path.is_ident("module") {
-                predicate_module = Some(attr.parse_args()?);
-            }
-        }
-
-        let visibility = input.parse()?;
-        let predicate = input.parse()?;
-
-        Ok(Self {
-            visibility,
-            predicate_name,
-            predicate_module,
-            _doc: doc,
-            predicate,
-        })
-    }
-}
 
 trait ForeignPredicateDefinitionImpl {
     fn generate_definition(&self) -> TokenStream;
@@ -86,11 +29,6 @@ trait ForeignPredicateDefinitionImpl {
         module: Option<&LitStr>,
     ) -> TokenStream;
     fn generate_frontend(&self) -> TokenStream;
-}
-
-enum ForeignPredicateDefinition {
-    Semidet(SemidetForeignPredicateDefinition),
-    Nondet(NondetForeignPredicateDefinition),
 }
 
 impl ForeignPredicateDefinitionImpl for ForeignPredicateDefinition {
@@ -123,53 +61,6 @@ impl ForeignPredicateDefinitionImpl for ForeignPredicateDefinition {
 
     fn generate_frontend(&self) -> TokenStream {
         todo!();
-    }
-}
-
-impl Parse for ForeignPredicateDefinition {
-    fn parse(input: ParseStream) -> Result<Self> {
-        if input.peek(kw::semidet) {
-            Ok(Self::Semidet(input.parse()?))
-        } else if input.peek(kw::nondet) {
-            Ok(Self::Nondet(input.parse()?))
-        } else {
-            Err(input.error("expected determinism specifier (det, semidet or nondet)"))
-        }
-    }
-}
-
-struct SemidetForeignPredicateDefinition {
-    predicate_rust_name: Ident,
-    params: Vec<Ident>,
-    body: Block,
-}
-
-impl Parse for SemidetForeignPredicateDefinition {
-    fn parse(input: ParseStream) -> Result<Self> {
-        input.parse::<kw::semidet>()?;
-
-        input.parse::<Token![fn]>()?;
-        let name: Ident = input.parse()?;
-        let params_stream;
-        parenthesized!(params_stream in input);
-        let params_punct: Punctuated<Ident, Token![,]> =
-            params_stream.parse_terminated(Ident::parse)?;
-        let span = params_stream.span();
-        let params: Vec<_> = params_punct.into_iter().collect();
-        if params.len() == 0 {
-            return Err(syn::Error::new(
-                span,
-                "need at least one argument for query context",
-            ));
-        }
-
-        let body = input.parse()?;
-
-        Ok(Self {
-            predicate_rust_name: name,
-            params,
-            body,
-        })
     }
 }
 
@@ -283,67 +174,6 @@ impl ForeignPredicateDefinitionImpl for SemidetForeignPredicateDefinition {
 
     fn generate_frontend(&self) -> TokenStream {
         todo!();
-    }
-}
-
-struct NondetForeignPredicateDefinition {
-    predicate_rust_name: Ident,
-    params: Vec<Ident>,
-    data_name: Ident,
-    data_type: syn::Path,
-    setup_body: Block,
-    call_body: Block,
-}
-
-impl Parse for NondetForeignPredicateDefinition {
-    fn parse(input: ParseStream) -> Result<Self> {
-        input.parse::<kw::nondet>()?;
-
-        input.parse::<Token![fn]>()?;
-        let name: Ident = input.parse()?;
-
-        input.parse::<syn::token::Lt>()?;
-        let data_type = input.parse::<syn::Path>()?;
-        input.parse::<syn::token::Gt>()?;
-
-        let params_stream;
-        parenthesized!(params_stream in input);
-
-        let params_punct: Punctuated<Ident, Token![,]> =
-            params_stream.parse_terminated(Ident::parse)?;
-        let span = params_stream.span();
-        let params: Vec<_> = params_punct.into_iter().collect();
-        if params.len() == 0 {
-            return Err(syn::Error::new(
-                span,
-                "need at least one argument for query context",
-            ));
-        }
-
-        let blocks;
-        braced!(blocks in input);
-
-        blocks.parse::<kw::setup>()?;
-        blocks.parse::<Token![=>]>()?;
-        let setup_body = blocks.parse()?;
-
-        blocks.parse::<Token![,]>()?;
-
-        blocks.parse::<kw::call>()?;
-        let call_params_stream;
-        parenthesized!(call_params_stream in blocks);
-        let data_name = call_params_stream.parse::<Ident>()?;
-        blocks.parse::<Token![=>]>()?;
-        let call_body = blocks.parse()?;
-
-        Ok(Self {
-            predicate_rust_name: name,
-            params,
-            data_name,
-            data_type,
-            setup_body,
-            call_body,
-        })
     }
 }
 
@@ -533,25 +363,28 @@ impl ForeignPredicateDefinitionImpl for NondetForeignPredicateDefinition {
     }
 }
 
-struct ForeignPredicateDefinitionBlock {
-    definitions: Vec<AttributedForeignPredicateDefinition>,
+fn generate_definition(definition: &AttributedForeignPredicateDefinition) -> TokenStream {
+    // what to generate?
+    // - a function that returns an appropriate version of QueryResult for the specified determinism, with the given body
+    // - an extern "C" trampoline, that calls this guy after converting its arguments and making a context
+    // - a register function
+    // - TODO a documented frontend for calling from rust as if this is a query
+    let def = definition.predicate.generate_definition();
+    let (trampoline_name, trampoline) = definition.predicate.generate_trampoline();
+    let registration = definition.predicate.generate_registration(
+        &trampoline_name,
+        &definition.visibility,
+        definition.predicate_name.as_ref(),
+        definition.predicate_module.as_ref(),
+    );
+
+    quote! {#def #trampoline #registration}
 }
 
-impl Parse for ForeignPredicateDefinitionBlock {
-    fn parse(input: ParseStream) -> Result<Self> {
-        let punct: Punctuated<AttributedForeignPredicateDefinition, Nothing> =
-            input.parse_terminated(AttributedForeignPredicateDefinition::parse)?;
-        let definitions = punct.into_iter().collect();
-        Ok(Self { definitions })
-    }
-}
-
-impl ForeignPredicateDefinitionBlock {
-    fn generate(&self) -> TokenStream {
-        let code = self
-            .definitions
-            .iter()
-            .map(|definition| definition.generate());
-        quote! {#(#code)*}
-    }
+fn generate_definitions(block: &ForeignPredicateDefinitionBlock) -> TokenStream {
+    let code = block
+        .definitions
+        .iter()
+        .map(|definition| generate_definition(definition));
+    quote! {#(#code)*}
 }

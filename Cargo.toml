@@ -3,6 +3,7 @@
 members = [
         "swipl-info",
         "swipl-fli",
+        "swipl-macros-parse",
         "swipl-macros",
         "swipl",
         "cargo-swipl",
