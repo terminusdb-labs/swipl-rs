@@ -718,7 +718,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
                 // probably only a problem for things inside this
                 // crate but still should probably be resolved.
                 let self_ = self;
-                let exception_term = term! {self_: error(rust_error(#msg))}?;
+                let exception_term = term! {self_: error(rust_error(#msg), _)}?;
                 let result = self.raise_exception(&exception_term);
 
                 unsafe {
@@ -748,7 +748,7 @@ impl IntoPrologException for std::io::Error {
         context: &'a Context<'b, T>,
     ) -> PrologResult<Term<'a>> {
         let msg = format!("{}", self);
-        term! {context: error(rust_io_error(#msg))}
+        term! {context: error(rust_io_error(#msg), _)}
     }
 }
 
