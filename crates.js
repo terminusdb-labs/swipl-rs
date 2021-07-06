@@ -1,0 +1,1 @@
+window.ALL_CRATES = ["print_swipl_info","swipl","swipl_fli","swipl_info","swipl_macros"];
