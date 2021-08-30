@@ -1,7 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/work/swipl-rs/swipl-rs/target/debug/build/swipl-fli-6d786cfca20b05e8/out/bindings.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>bindings.rs - source</title><link rel="stylesheet" type="text/css" href="../../../../../../../../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../../../../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../../../../../../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../../../../../../../../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../../../../../../../../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../../../../../../../../../../storage.js"></script><script src="../../../../../../../../../../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../../../../../../../../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../../../../../../../../../../favicon.svg">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/work/swipl-rs/swipl-rs/target/debug/build/swipl-fli-0bc517ca7d7332d6/out/bindings.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>bindings.rs - source</title><link rel="stylesheet" type="text/css" href="../../../../../../../../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../../../../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../../../../../../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../../../../../../../../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../../../../../../../../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../../../../../../../../../../storage.js"></script><script src="../../../../../../../../../../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../../../../../../../../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../../../../../../../../../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../../../../../../../../../../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../../../../../../../../../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../../../../../../../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../../../../../../../../../../swipl_fli/index.html'><div class='logo-container rust-logo'><img src='../../../../../../../../../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../../../../../../../../../../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
-                <a id="settings-menu" href="../../../../../../../../../../../../settings.html"><img src="../../../../../../../../../../../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
+<link rel="alternate icon" type="image/png" href="../../../../../../../../../../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../../../../../../../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../../../../../../../../../../swipl_fli/index.html'><div class='logo-container rust-logo'><img src='../../../../../../../../../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img src="../../../../../../../../../../../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../../../../../../../../../../settings.html" title="settings"><img src="../../../../../../../../../../../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -7459,37 +7458,21 @@
 <span id="7456">7456</span>
 <span id="7457">7457</span>
 <span id="7458">7458</span>
-<span id="7459">7459</span>
-<span id="7460">7460</span>
-<span id="7461">7461</span>
-<span id="7462">7462</span>
-<span id="7463">7463</span>
-<span id="7464">7464</span>
-<span id="7465">7465</span>
-<span id="7466">7466</span>
-<span id="7467">7467</span>
-<span id="7468">7468</span>
-<span id="7469">7469</span>
-<span id="7470">7470</span>
-<span id="7471">7471</span>
-<span id="7472">7472</span>
-<span id="7473">7473</span>
-</pre><div class="example-wrap"><pre class="rust ">
-<span class="comment">/* automatically generated by rust-bindgen 0.56.0 */</span>
+</pre><pre class="rust">
+<span class="comment">/* automatically generated by rust-bindgen 0.59.1 */</span>
 
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Eq</span>, <span class="ident">Hash</span>, <span class="ident">Ord</span>, <span class="ident">PartialEq</span>, <span class="ident">PartialOrd</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">__BindgenBitfieldUnit</span><span class="op">&lt;</span><span class="ident">Storage</span>, <span class="ident">Align</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">__BindgenBitfieldUnit</span><span class="op">&lt;</span><span class="ident">Storage</span><span class="op">&gt;</span> {
     <span class="ident">storage</span>: <span class="ident">Storage</span>,
-    <span class="ident">align</span>: [<span class="ident">Align</span>; <span class="number">0</span>],
 }
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Storage</span>, <span class="ident">Align</span><span class="op">&gt;</span> <span class="ident">__BindgenBitfieldUnit</span><span class="op">&lt;</span><span class="ident">Storage</span>, <span class="ident">Align</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Storage</span><span class="op">&gt;</span> <span class="ident">__BindgenBitfieldUnit</span><span class="op">&lt;</span><span class="ident">Storage</span><span class="op">&gt;</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">storage</span>: <span class="ident">Storage</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">Self</span> { <span class="ident">storage</span>, <span class="ident">align</span>: [] }
+        <span class="self">Self</span> { <span class="ident">storage</span> }
     }
 }
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Storage</span>, <span class="ident">Align</span><span class="op">&gt;</span> <span class="ident">__BindgenBitfieldUnit</span><span class="op">&lt;</span><span class="ident">Storage</span>, <span class="ident">Align</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Storage</span><span class="op">&gt;</span> <span class="ident">__BindgenBitfieldUnit</span><span class="op">&lt;</span><span class="ident">Storage</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">Storage</span>: <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span> <span class="op">+</span> <span class="ident">AsMut</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>,
 {
@@ -8245,7 +8228,6 @@
 <span class="kw">pub</span> <span class="ident">union</span> <span class="ident">__mbstate_t__bindgen_ty_1</span> {
     <span class="kw">pub</span> <span class="ident">__wch</span>: <span class="ident">::std::os::raw::c_uint</span>,
     <span class="kw">pub</span> <span class="ident">__wchb</span>: [<span class="ident">::std::os::raw::c_char</span>; <span class="number">4usize</span>],
-    <span class="ident">_bindgen_union_align</span>: <span class="ident">u32</span>,
 }
 <span class="attribute">#[<span class="ident">test</span>]</span>
 <span class="kw">fn</span> <span class="ident">bindgen_test_layout___mbstate_t__bindgen_ty_1</span>() {
@@ -10049,7 +10031,8 @@
     <span class="kw">pub</span> <span class="ident">tee</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">io_stream</span>,
     <span class="kw">pub</span> <span class="ident">upstream</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">io_stream</span>,
     <span class="kw">pub</span> <span class="ident">downstream</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">io_stream</span>,
-    <span class="kw">pub</span> <span class="ident">_bitfield_1</span>: <span class="ident">__BindgenBitfieldUnit</span><span class="op">&lt;</span>[<span class="ident">u8</span>; <span class="number">1usize</span>], <span class="ident">u8</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">_bitfield_align_1</span>: [<span class="ident">u8</span>; <span class="number">0</span>],
+    <span class="kw">pub</span> <span class="ident">_bitfield_1</span>: <span class="ident">__BindgenBitfieldUnit</span><span class="op">&lt;</span>[<span class="ident">u8</span>; <span class="number">1usize</span>]<span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">io_errno</span>: <span class="ident">::std::os::raw::c_int</span>,
     <span class="kw">pub</span> <span class="ident">message</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">::std::os::raw::c_char</span>,
     <span class="kw">pub</span> <span class="ident">exception</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">::std::os::raw::c_void</span>,
@@ -10387,9 +10370,8 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_bitfield_1</span>(
         <span class="ident">newline</span>: <span class="ident">::std::os::raw::c_uint</span>,
         <span class="ident">erased</span>: <span class="ident">::std::os::raw::c_uint</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">__BindgenBitfieldUnit</span><span class="op">&lt;</span>[<span class="ident">u8</span>; <span class="number">1usize</span>], <span class="ident">u8</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">__bindgen_bitfield_unit</span>: <span class="ident">__BindgenBitfieldUnit</span><span class="op">&lt;</span>[<span class="ident">u8</span>; <span class="number">1usize</span>], <span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span>
-            <span class="ident">Default::default</span>();
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">__BindgenBitfieldUnit</span><span class="op">&lt;</span>[<span class="ident">u8</span>; <span class="number">1usize</span>]<span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">__bindgen_bitfield_unit</span>: <span class="ident">__BindgenBitfieldUnit</span><span class="op">&lt;</span>[<span class="ident">u8</span>; <span class="number">1usize</span>]<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Default::default</span>();
         <span class="ident">__bindgen_bitfield_unit</span>.<span class="ident">set</span>(<span class="number">0usize</span>, <span class="number">2u8</span>, {
             <span class="kw">let</span> <span class="ident">newline</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">::std::mem::transmute</span>(<span class="ident">newline</span>) };
             <span class="ident">newline</span> <span class="kw">as</span> <span class="ident">u64</span>
@@ -11448,7 +11430,6 @@
 <span class="kw">pub</span> <span class="ident">union</span> <span class="ident">__pthread_cond_s__bindgen_ty_1</span> {
     <span class="kw">pub</span> <span class="ident">__wseq</span>: <span class="ident">::std::os::raw::c_ulonglong</span>,
     <span class="kw">pub</span> <span class="ident">__wseq32</span>: <span class="ident">__pthread_cond_s__bindgen_ty_1__bindgen_ty_1</span>,
-    <span class="ident">_bindgen_union_align</span>: <span class="ident">u64</span>,
 }
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
@@ -11543,7 +11524,6 @@
 <span class="kw">pub</span> <span class="ident">union</span> <span class="ident">__pthread_cond_s__bindgen_ty_2</span> {
     <span class="kw">pub</span> <span class="ident">__g1_start</span>: <span class="ident">::std::os::raw::c_ulonglong</span>,
     <span class="kw">pub</span> <span class="ident">__g1_start32</span>: <span class="ident">__pthread_cond_s__bindgen_ty_2__bindgen_ty_1</span>,
-    <span class="ident">_bindgen_union_align</span>: <span class="ident">u64</span>,
 }
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
@@ -11704,7 +11684,6 @@
 <span class="kw">pub</span> <span class="ident">union</span> <span class="ident">pthread_mutexattr_t</span> {
     <span class="kw">pub</span> <span class="ident">__size</span>: [<span class="ident">::std::os::raw::c_char</span>; <span class="number">4usize</span>],
     <span class="kw">pub</span> <span class="ident">__align</span>: <span class="ident">::std::os::raw::c_int</span>,
-    <span class="ident">_bindgen_union_align</span>: <span class="ident">u32</span>,
 }
 <span class="attribute">#[<span class="ident">test</span>]</span>
 <span class="kw">fn</span> <span class="ident">bindgen_test_layout_pthread_mutexattr_t</span>() {
@@ -11744,7 +11723,6 @@
 <span class="kw">pub</span> <span class="ident">union</span> <span class="ident">pthread_condattr_t</span> {
     <span class="kw">pub</span> <span class="ident">__size</span>: [<span class="ident">::std::os::raw::c_char</span>; <span class="number">4usize</span>],
     <span class="kw">pub</span> <span class="ident">__align</span>: <span class="ident">::std::os::raw::c_int</span>,
-    <span class="ident">_bindgen_union_align</span>: <span class="ident">u32</span>,
 }
 <span class="attribute">#[<span class="ident">test</span>]</span>
 <span class="kw">fn</span> <span class="ident">bindgen_test_layout_pthread_condattr_t</span>() {
@@ -11786,7 +11764,6 @@
 <span class="kw">pub</span> <span class="ident">union</span> <span class="ident">pthread_attr_t</span> {
     <span class="kw">pub</span> <span class="ident">__size</span>: [<span class="ident">::std::os::raw::c_char</span>; <span class="number">56usize</span>],
     <span class="kw">pub</span> <span class="ident">__align</span>: <span class="ident">::std::os::raw::c_long</span>,
-    <span class="ident">_bindgen_union_align</span>: [<span class="ident">u64</span>; <span class="number">7usize</span>],
 }
 <span class="attribute">#[<span class="ident">test</span>]</span>
 <span class="kw">fn</span> <span class="ident">bindgen_test_layout_pthread_attr_t</span>() {
@@ -11827,7 +11804,6 @@
     <span class="kw">pub</span> <span class="ident">__data</span>: <span class="ident">__pthread_mutex_s</span>,
     <span class="kw">pub</span> <span class="ident">__size</span>: [<span class="ident">::std::os::raw::c_char</span>; <span class="number">40usize</span>],
     <span class="kw">pub</span> <span class="ident">__align</span>: <span class="ident">::std::os::raw::c_long</span>,
-    <span class="ident">_bindgen_union_align</span>: [<span class="ident">u64</span>; <span class="number">5usize</span>],
 }
 <span class="attribute">#[<span class="ident">test</span>]</span>
 <span class="kw">fn</span> <span class="ident">bindgen_test_layout_pthread_mutex_t</span>() {
@@ -11878,7 +11854,6 @@
     <span class="kw">pub</span> <span class="ident">__data</span>: <span class="ident">__pthread_cond_s</span>,
     <span class="kw">pub</span> <span class="ident">__size</span>: [<span class="ident">::std::os::raw::c_char</span>; <span class="number">48usize</span>],
     <span class="kw">pub</span> <span class="ident">__align</span>: <span class="ident">::std::os::raw::c_longlong</span>,
-    <span class="ident">_bindgen_union_align</span>: [<span class="ident">u64</span>; <span class="number">6usize</span>],
 }
 <span class="attribute">#[<span class="ident">test</span>]</span>
 <span class="kw">fn</span> <span class="ident">bindgen_test_layout_pthread_cond_t</span>() {
@@ -11929,7 +11904,6 @@
     <span class="kw">pub</span> <span class="ident">__data</span>: <span class="ident">__pthread_rwlock_arch_t</span>,
     <span class="kw">pub</span> <span class="ident">__size</span>: [<span class="ident">::std::os::raw::c_char</span>; <span class="number">56usize</span>],
     <span class="kw">pub</span> <span class="ident">__align</span>: <span class="ident">::std::os::raw::c_long</span>,
-    <span class="ident">_bindgen_union_align</span>: [<span class="ident">u64</span>; <span class="number">7usize</span>],
 }
 <span class="attribute">#[<span class="ident">test</span>]</span>
 <span class="kw">fn</span> <span class="ident">bindgen_test_layout_pthread_rwlock_t</span>() {
@@ -11979,7 +11953,6 @@
 <span class="kw">pub</span> <span class="ident">union</span> <span class="ident">pthread_rwlockattr_t</span> {
     <span class="kw">pub</span> <span class="ident">__size</span>: [<span class="ident">::std::os::raw::c_char</span>; <span class="number">8usize</span>],
     <span class="kw">pub</span> <span class="ident">__align</span>: <span class="ident">::std::os::raw::c_long</span>,
-    <span class="ident">_bindgen_union_align</span>: <span class="ident">u64</span>,
 }
 <span class="attribute">#[<span class="ident">test</span>]</span>
 <span class="kw">fn</span> <span class="ident">bindgen_test_layout_pthread_rwlockattr_t</span>() {
@@ -12020,7 +11993,6 @@
 <span class="kw">pub</span> <span class="ident">union</span> <span class="ident">pthread_barrier_t</span> {
     <span class="kw">pub</span> <span class="ident">__size</span>: [<span class="ident">::std::os::raw::c_char</span>; <span class="number">32usize</span>],
     <span class="kw">pub</span> <span class="ident">__align</span>: <span class="ident">::std::os::raw::c_long</span>,
-    <span class="ident">_bindgen_union_align</span>: [<span class="ident">u64</span>; <span class="number">4usize</span>],
 }
 <span class="attribute">#[<span class="ident">test</span>]</span>
 <span class="kw">fn</span> <span class="ident">bindgen_test_layout_pthread_barrier_t</span>() {
@@ -12060,7 +12032,6 @@
 <span class="kw">pub</span> <span class="ident">union</span> <span class="ident">pthread_barrierattr_t</span> {
     <span class="kw">pub</span> <span class="ident">__size</span>: [<span class="ident">::std::os::raw::c_char</span>; <span class="number">4usize</span>],
     <span class="kw">pub</span> <span class="ident">__align</span>: <span class="ident">::std::os::raw::c_int</span>,
-    <span class="ident">_bindgen_union_align</span>: <span class="ident">u32</span>,
 }
 <span class="attribute">#[<span class="ident">test</span>]</span>
 <span class="kw">fn</span> <span class="ident">bindgen_test_layout_pthread_barrierattr_t</span>() {
@@ -12698,7 +12669,6 @@
     <span class="kw">pub</span> <span class="ident">s</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">::std::os::raw::c_char</span>,
     <span class="kw">pub</span> <span class="ident">a</span>: <span class="ident">atom_t</span>,
     <span class="kw">pub</span> <span class="ident">t</span>: <span class="ident">term_value_t__bindgen_ty_1</span>,
-    <span class="ident">_bindgen_union_align</span>: [<span class="ident">u64</span>; <span class="number">2usize</span>],
 }
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
@@ -14705,7 +14675,6 @@
 <span class="kw">pub</span> <span class="ident">union</span> <span class="ident">xpceref_t__bindgen_ty_1</span> {
     <span class="kw">pub</span> <span class="ident">i</span>: <span class="ident">usize</span>,
     <span class="kw">pub</span> <span class="ident">a</span>: <span class="ident">atom_t</span>,
-    <span class="ident">_bindgen_union_align</span>: <span class="ident">u64</span>,
 }
 <span class="attribute">#[<span class="ident">test</span>]</span>
 <span class="kw">fn</span> <span class="ident">bindgen_test_layout_xpceref_t__bindgen_ty_1</span>() {
@@ -14949,5 +14918,4 @@
     <span class="kw">pub</span> <span class="ident">_address</span>: <span class="ident">u8</span>,
 }
 </pre></div>
-</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../../../../../../../../../../../" data-current-crate="swipl_fli" data-search-index-js="../../../../../../../../../../../../search-index.js" data-search-js="../../../../../../../../../../../../search.js"></div>
-    <script src="../../../../../../../../../../../../main.js"></script><script src="../../../../../../../../../../../../source-script.js"></script><script src="../../../../../../../../../../../../source-files.js"></script></body></html>
+</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../../../../../../../../../../../" data-current-crate="swipl_fli" data-search-index-js="../../../../../../../../../../../../search-index.js" data-search-js="../../../../../../../../../../../../search.js"></div><script src="../../../../../../../../../../../../main.js"></script><script src="../../../../../../../../../../../../source-script.js"></script><script src="../../../../../../../../../../../../source-files.js"></script></body></html>
