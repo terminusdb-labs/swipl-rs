@@ -38,7 +38,7 @@ impl<const N: usize> LazyCallablePredicate<N> {
     /// what it previously looked up. Otherwise, it'll do the lookup.
     pub fn as_callable(&self) -> CallablePredicate<N> {
         assert_some_engine_is_active();
-        let mut loaded = self.predicate.load(Ordering::Relaxed);
+        let mut loaded: predicate_t = self.predicate.load(Ordering::Relaxed) as predicate_t;
         if loaded.is_null() {
             let functor = Functor::new(self.name, N as u16);
             let module_name = self.module.unwrap_or("");
@@ -47,7 +47,8 @@ impl<const N: usize> LazyCallablePredicate<N> {
             loaded = Predicate::new(functor, module).predicate_ptr();
 
             self.predicate
-                .store(loaded, std::sync::atomic::Ordering::Relaxed);
+                .store(loaded as *mut c_void,
+                       std::sync::atomic::Ordering::Relaxed);
         }
 
         unsafe { CallablePredicate::wrap(loaded) }

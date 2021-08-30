@@ -206,7 +206,7 @@ impl ForeignPredicateDefinitionImpl for SemidetForeignPredicateDefinition {
                 unsafe extern "C" fn #trampoline_name(
                     term: #crt::fli::term_t,
                     arity: std::os::raw::c_int,
-                    _control: *mut std::os::raw::c_void
+                    _control: #crt::fli::control_t
                 ) -> isize {
                     let result = #crt::context::prolog_catch_unwind(|| {
                         if #known_arity as usize != arity as usize {
@@ -403,7 +403,7 @@ impl ForeignPredicateDefinitionImpl for NondetForeignPredicateDefinition {
                 unsafe extern "C" fn #trampoline_name(
                     term: #crt::fli::term_t,
                     arity: std::os::raw::c_int,
-                    control: *mut std::os::raw::c_void
+                    control: #crt::fli::control_t
                 ) -> isize {
                     // first, assert that the data type is send and unpin
                     #trampoline_type_check::<#data_type>();

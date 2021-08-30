@@ -11,5 +11,5 @@ documentation = "https://terminusdb-labs.github.io/swipl-rs/swipl_fli/"
 
 [dependencies]
 [build-dependencies]
-bindgen = "0.56.0"
+bindgen = "0.59.0"
 swipl-info = {path = "../swipl-info", version = "0.3.1"}

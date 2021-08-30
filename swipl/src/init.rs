@@ -14,7 +14,7 @@ use crate::fli::*;
 use lazy_static::*;
 use std::convert::TryInto;
 use std::ffi::CString;
-use std::os::raw::{c_int, c_void};
+use std::os::raw::c_int;
 use std::sync::{Arc, RwLock};
 
 lazy_static! {
@@ -112,7 +112,7 @@ pub unsafe fn register_foreign_in_module(
     arity: u16,
     deterministic: bool,
     meta: Option<&str>,
-    function_ptr: unsafe extern "C" fn(terms: term_t, arity: c_int, control: *mut c_void) -> isize,
+    function_ptr: unsafe extern "C" fn(terms: term_t, arity: c_int, control: control_t) -> isize,
 ) -> bool {
     if meta.is_some() && meta.unwrap().len() != arity as usize {
         panic!("supplied a meta argument that is not of equal length to the arity");
