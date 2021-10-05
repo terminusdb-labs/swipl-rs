@@ -83,6 +83,18 @@ impl Engine {
         }
     }
 
+    /// Create a new prolog engine with a saved state. SWI-Prolog must not have
+    /// been initialized already to do so.
+    pub fn with_state(state: &'static [u8]) -> Engine {
+        if !is_swipl_initialized() {
+            // This panicks here as there is no way to create an engine with a saved state after initialization,
+            // and otherwise the user may get errors invisibly.
+            panic!("SWI-Prolog must not have been initialized already to create an engine with a saved state.");
+        }
+        initialize_swipl_with_state_noengine(state);
+        Engine::new()
+    }
+
     pub(crate) unsafe fn from_current() -> Engine {
         Engine {
             engine_ptr: current_engine_ptr(),

@@ -15,6 +15,7 @@ use lazy_static::*;
 use std::convert::TryInto;
 use std::ffi::CString;
 use std::os::raw::c_int;
+use std::sync::RwLockWriteGuard;
 use std::sync::{Arc, RwLock};
 
 lazy_static! {
@@ -56,12 +57,55 @@ pub fn initialize_swipl() -> Option<EngineActivation<'static>> {
     }
 
     // lock the rest of this initialization function to prevent concurrent initializers. Ideally this should happen in swipl itself, but unfortunately, it doesn't.
-    let mut initialized = INITIALIZATION_STATE.write().unwrap();
+    let initialized = INITIALIZATION_STATE.write().unwrap();
     // There's actually a slight chance that initialization happened just now by some other thread. So check again.
     if initialized.is_some() {
         return None;
     }
 
+    initialize_internal(initialized)
+}
+
+/// Initialize SWI-Prolog with a given saved state.
+///
+/// After initializing, the default 'main' engine is active on the
+/// calling thread.  If SWI-Prolog was already initialized, this will
+/// do nothing, and None will be returned. Otherwise, An
+/// `EngineActivation` will be returned containing the main prolog
+/// engine.
+pub fn initialize_swipl_with_state(state: &'static [u8]) -> Option<EngineActivation<'static>> {
+    if is_swipl_initialized() {
+        return None;
+    }
+
+    // lock the rest of this initialization function to prevent concurrent initializers. Ideally this should happen in swipl itself, but unfortunately, it doesn't.
+    let initialized = INITIALIZATION_STATE.write().unwrap();
+    // There's actually a slight chance that initialization happened just now by some other thread. So check again.
+    if initialized.is_some() {
+        return None;
+    }
+
+    // SAFETY: Our slice is valid, thus its pointer and length are valid.
+    // Also, the 'static lifetime ensures that the invariant for
+    // PL_set_resource_db_mem is upheld:
+    // > This implies that the data must remain accessible during the lifetime
+    // > of the process if open_resource/3 is used. Future versions may provide
+    // > a function to detach the resource database and cause open_resource/3
+    // > to raise an exception.
+    // - SWIPL FLI docs (footnote 208)
+    // https://www.swi-prolog.org/pldoc/doc_for?object=c(%27PL_set_resource_db_mem%27)
+    let result = unsafe { PL_set_resource_db_mem(state.as_ptr(), state.len() as size_t) };
+
+    if result != TRUE as i32 {
+        return None;
+    }
+
+    initialize_internal(initialized)
+}
+
+fn initialize_internal(
+    mut initialized: RwLockWriteGuard<Option<Engine>>,
+) -> Option<EngineActivation<'static>> {
     // TOOD we just pick "rust-swipl" as a fake program name here. This seems to work fine. But what we should really do is pass along the actual argv[0].
     let mut args: [*mut i8; 3] = [
         ARG0.as_ptr() as *mut i8,
@@ -81,6 +125,15 @@ pub fn initialize_swipl() -> Option<EngineActivation<'static>> {
 /// If SWI-Prolog was already initialized, this will do nothing.
 pub fn initialize_swipl_noengine() {
     let activation = initialize_swipl();
+    // dropping the activation will deactivate the engine
+    std::mem::drop(activation);
+}
+
+/// Initialize SWI-Prolog with a saved state and immediately deactivate the main thread engine.
+///
+/// If SWI-Prolog was already initialized, this will do nothing.
+pub fn initialize_swipl_with_state_noengine(state: &'static [u8]) {
+    let activation = initialize_swipl_with_state(state);
     // dropping the activation will deactivate the engine
     std::mem::drop(activation);
 }
