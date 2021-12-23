@@ -944,24 +944,24 @@ where
 
         let frame = context.open_frame();
         let list = frame.new_term_ref();
+
         if list.unify(term).is_err() {
             return false;
         }
-        let mut success = true;
 
         for t in self.iter() {
             // create a new frame to ensure we don't just keep putting head and tail refs on the stack.
             let frame2 = frame.open_frame();
             let head = frame2.new_term_ref();
             let tail = frame2.new_term_ref();
-            success =
-                unsafe { PL_unify_list(list.term_ptr(), head.term_ptr(), tail.term_ptr()) != 0 };
 
-            if !success {
-                break;
+            // if list unification fails, or head can not be unified with current term,
+            // return false early.
+            // note: || is short-circuiting OR
+            if unsafe { PL_unify_list(list.term_ptr(), head.term_ptr(), tail.term_ptr()) == 0 }
+                || head.unify(t).is_err() {
+                return false;
             }
-
-            success = head.unify(t).is_ok();
 
             // reset term - should really be a method on term
             unsafe { PL_put_variable(list.term_ptr()) };
@@ -973,10 +973,8 @@ where
             frame2.close();
         }
 
-        if success {
-            success = unsafe { PL_unify_nil(list.term_ptr()) != 0 };
-            frame.close();
-        }
+        let success = unsafe { PL_unify_nil(list.term_ptr()) != 0 };
+        frame.close();
 
         success
     }
