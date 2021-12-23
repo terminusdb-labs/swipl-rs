@@ -56,8 +56,6 @@ impl<const N: usize> LazyCallablePredicate<N> {
 }
 
 impl<const N: usize> Callable<N> for LazyCallablePredicate<N> {
-    type ContextType = OpenQuery;
-
     fn open<'a, C: ContextType>(
         self,
         context: &'a Context<C>,
@@ -69,8 +67,6 @@ impl<const N: usize> Callable<N> for LazyCallablePredicate<N> {
 }
 
 impl<'a, const N: usize> Callable<N> for &'a LazyCallablePredicate<N> {
-    type ContextType = OpenQuery;
-
     fn open<'b, C: ContextType>(
         self,
         context: &'b Context<C>,
@@ -132,28 +128,19 @@ impl<const N: usize> CallablePredicate<N> {
 /// compile time. This allows `context.open(..)` to check at compile
 /// time that the arity matches.
 pub trait Callable<const N: usize> {
-    type ContextType: OpenCall;
-
     fn open<'a, C: ContextType>(
         self,
         context: &'a Context<C>,
         module: Option<Module>,
         args: [&Term; N],
-    ) -> Context<'a, Self::ContextType>;
+    ) -> Context<'a, OpenQuery>;
 }
 
 /// An open query.
-pub struct OpenQuery {
-    qid: qid_t,
-    closed: bool,
-}
-
-/// An open call.
 ///
 /// A context that wraps an open call can be asked for the next
 /// solution, or close itself through cutting the query or
-/// discarding. All these functions are actually implemented here
-/// using the `OpenCall` trait.
+/// discarding.
 ///
 /// This context type is the only type where new terms are not allowed
 /// to be created, nor is it allowed to start new queries directly
@@ -162,29 +149,12 @@ pub struct OpenQuery {
 /// possible however to open a new frame and do all that stuff in the
 /// new frame. You'll need to close the frame before continuing with
 /// solution retrieval.
-pub unsafe trait OpenCall: Sized {
-    /// Retrieve the next solution.
-    ///
-    /// If solution retrieval led to a failure or an error, this is
-    /// returned in the `Err` part of the `PrologResult`. Otherwise,
-    /// `Ok(true)` is returned if there are more solutions, and
-    /// `Ok(false)` is returned when this is the last solution.
-    fn next_solution<'a>(this: &Context<'a, Self>) -> PrologResult<bool>;
-
-    /// Cut the query, keeping all data it has created.
-    ///
-    /// Any unifications the query did to terms from parent contexts
-    /// will be retained.
-    fn cut<'a>(this: Context<'a, Self>);
-
-    /// Discard the query, discarding all data it has created.
-    ///
-    /// Any unifications the query did to terms from parent contexts
-    /// will be discarded.
-    fn discard<'a>(this: Context<'a, Self>);
+pub struct OpenQuery {
+    qid: qid_t,
+    closed: bool,
 }
 
-impl<'a, C: OpenCall> Context<'a, C> {
+impl<'a> Context<'a, OpenQuery> {
     /// Retrieve the next solution.
     ///
     /// If solution retrieval led to a failure or an error, this is
@@ -192,23 +162,45 @@ impl<'a, C: OpenCall> Context<'a, C> {
     /// `Ok(true)` is returned if there are more solutions, and
     /// `Ok(false)` is returned when this is the last solution.
     pub fn next_solution(&self) -> PrologResult<bool> {
-        C::next_solution(self)
+        self.assert_activated();
+        let result = unsafe { PL_next_solution(self.context.qid) };
+        match result {
+            -1 => {
+                let exception = unsafe { PL_exception(self.context.qid) };
+                // rethrow this exception but as the special 0 exception which remains alive
+                unsafe { PL_raise_exception(exception) };
+
+                Err(PrologError::Exception)
+            }
+            0 => Err(PrologError::Failure),
+            1 => Ok(true),
+            2 => Ok(false),
+            _ => panic!("unknown query result type {}", result),
+        }
     }
 
     /// Cut the query, keeping all data it has created.
     ///
     /// Any unifications the query did to terms from parent contexts
     /// will be retained.
-    pub fn cut(self) {
-        C::cut(self)
+    pub fn cut(mut self) {
+        self.assert_activated();
+        // TODO handle exceptions
+
+        unsafe { PL_cut_query(self.context.qid) };
+        self.context.closed = true;
     }
 
     /// Discard the query, discarding all data it has created.
     ///
     /// Any unifications the query did to terms from parent contexts
     /// will be discarded.
-    pub fn discard(self) {
-        C::discard(self)
+    pub fn discard(mut self) {
+        self.assert_activated();
+        // TODO handle exceptions
+
+        unsafe { PL_close_query(self.context.qid) };
+        self.context.closed = true;
     }
 
     /// Retrieve one result, and then cut.
@@ -233,44 +225,8 @@ impl<'a, C: OpenCall> Context<'a, C> {
     }
 }
 
-unsafe impl<T: OpenCall> ContextType for T {}
-unsafe impl<T: OpenCall> FrameableContextType for T {}
-
-unsafe impl OpenCall for OpenQuery {
-    fn next_solution<'a>(this: &Context<'a, Self>) -> PrologResult<bool> {
-        this.assert_activated();
-        let result = unsafe { PL_next_solution(this.context.qid) };
-        match result {
-            -1 => {
-                let exception = unsafe { PL_exception(this.context.qid) };
-                // rethrow this exception but as the special 0 exception which remains alive
-                unsafe { PL_raise_exception(exception) };
-
-                Err(PrologError::Exception)
-            }
-            0 => Err(PrologError::Failure),
-            1 => Ok(true),
-            2 => Ok(false),
-            _ => panic!("unknown query result type {}", result),
-        }
-    }
-
-    fn cut<'a>(mut this: Context<'a, Self>) {
-        this.assert_activated();
-        // TODO handle exceptions
-
-        unsafe { PL_cut_query(this.context.qid) };
-        this.context.closed = true;
-    }
-
-    fn discard<'a>(mut this: Context<'a, Self>) {
-        this.assert_activated();
-        // TODO handle exceptions
-
-        unsafe { PL_close_query(this.context.qid) };
-        this.context.closed = true;
-    }
-}
+unsafe impl ContextType for OpenQuery {}
+unsafe impl FrameableContextType for OpenQuery {}
 
 impl Drop for OpenQuery {
     fn drop(&mut self) {
@@ -281,14 +237,12 @@ impl Drop for OpenQuery {
 }
 
 impl<const N: usize> Callable<N> for CallablePredicate<N> {
-    type ContextType = OpenQuery;
-
-    fn open<'a, C: ContextType>(
+    fn open<'a,C: ContextType>(
         self,
         context: &'a Context<C>,
         module: Option<Module>,
         args: [&Term; N],
-    ) -> Context<'a, Self::ContextType> {
+    ) -> Context<'a, OpenQuery> {
         context.assert_activated();
         context.assert_no_exception();
         let module_context = module

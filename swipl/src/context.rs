@@ -15,7 +15,7 @@
 //! - Framed - In any context, you can create a prolog frame. A prolog
 //!   frame allows you to rewind the state of all prolog terms to their
 //!   state at the time of frame creation.
-//! - OpenCall - While calling into prolog, this is the context you'll
+//! - OpenQuery - While calling into prolog, this is the context you'll
 //!   be in as you're walking through the solutions. This is a special
 //!   context where a lot of the normal features are disabled.
 //!
@@ -25,7 +25,7 @@
 //! inactive. Once the created context is dropped, the original
 //! context will become active again.
 //!
-//! With the exception of the OpenCall context, all contexts let you
+//! With the exception of the OpenQuery context, all contexts let you
 //! create new term refs, which are handles to data on the prolog
 //! stack. These term refs can only be created while the context is
 //! active. However, they can be manipulated as long as the context
@@ -33,12 +33,12 @@
 //! though, the Term will become invalid and trying to do anything
 //! with it will result in a compile error.
 //!
-//! The OpenCall context is special in that no new terms are allowed
+//! The OpenQuery context is special in that no new terms are allowed
 //! to be created, nor are you allowed to open another query. It is
 //! however possible to create a new frame in this context, which
 //! would once again put you in a state where these things are
 //! possible. Of course, you'll have to drop this frame before you're
-//! able to manipulate the OpenCall context again (such as retrieving
+//! able to manipulate the OpenQuery context again (such as retrieving
 //! the next solution from the query).
 //!
 //! Various operations may cause the underlying engine to go into an
@@ -611,7 +611,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         &self,
         callable: C,
         args: [&Term; N],
-    ) -> Context<C::ContextType> {
+    ) -> Context<OpenQuery> {
         callable.open(self, None, args)
     }
 
@@ -650,7 +650,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         callable: C,
         module: Option<Module>,
         args: [&Term; N],
-    ) -> Context<C::ContextType> {
+    ) -> Context<OpenQuery> {
         callable.open(self, module, args)
     }
 
@@ -677,7 +677,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
     }
 
     /// Open a query for the given term using the `call/1` prolog predicate.
-    pub fn open_call(&'a self, t: &Term<'a>) -> Context<'a, impl OpenCall> {
+    pub fn open_call(&'a self, t: &Term<'a>) -> Context<'a, OpenQuery> {
         open_call(self, t)
     }
 
