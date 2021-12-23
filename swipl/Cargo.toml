@@ -15,3 +15,7 @@ swipl-fli = {path = "../swipl-fli", version="0.3.2"}
 swipl-macros = {path = "../swipl-macros", version="0.3.3"}
 lazy_static = "1.4.0"
 thiserror = "1.0"
+tokio = {version="1.15", optional=true}
+
+[features]
+async = ["tokio"]
