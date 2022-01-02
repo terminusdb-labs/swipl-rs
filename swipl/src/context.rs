@@ -62,7 +62,7 @@ use std::cell::Cell;
 use swipl_macros::{prolog, term};
 
 pub(crate) unsafe fn with_cleared_exception<R>(f: impl FnOnce() -> R) -> R {
-    let error_term_ref = PL_exception(0);
+    let error_term_ref = pl_default_exception();
     if error_term_ref != 0 {
         let backup_term_ref = PL_new_term_ref();
         assert!(PL_unify(backup_term_ref, error_term_ref) != 0);
@@ -207,7 +207,7 @@ impl<'a, T: ContextType> Context<'a, T> {
     pub fn has_exception(&self) -> bool {
         self.assert_activated();
 
-        unsafe { PL_exception(0) != 0 }
+        unsafe { pl_default_exception() != 0 }
     }
 
     /// Clear the current exception if there is any.
@@ -232,7 +232,7 @@ impl<'a, T: ContextType> Context<'a, T> {
             panic!("re-entered exception handler");
         }
 
-        let exception = unsafe { PL_exception(0) };
+        let exception = unsafe { pl_default_exception() };
         let arg = match exception == 0 {
             true => None,
             false => {

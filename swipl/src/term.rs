@@ -101,7 +101,7 @@ impl<'a> Term<'a> {
         // through some inner function. It's too much hassle to have
         // each function check for themselves and return the
         // appropriate thing, so we just do it all here.
-        if unsafe { PL_exception(0) != 0 } {
+        if unsafe { pl_default_exception() != 0 } {
             Err(PrologError::Exception)
         } else if result {
             Ok(())
@@ -131,7 +131,7 @@ impl<'a> Term<'a> {
         let arg_ref = unsafe { PL_new_term_ref() };
 
         let result = unsafe { PL_get_arg(index.try_into().unwrap(), self.term, arg_ref) };
-        if unsafe { PL_exception(0) != 0 } {
+        if unsafe { pl_default_exception() != 0 } {
             return Err(PrologError::Exception);
         }
 
@@ -164,7 +164,7 @@ impl<'a> Term<'a> {
         // through some inner function. It's too much hassle to have
         // each function check for themselves and return the
         // appropriate thing, so we just do it all here.
-        if unsafe { PL_exception(0) != 0 } {
+        if unsafe { pl_default_exception() != 0 } {
             Err(PrologError::Exception)
         } else if opt.is_none() {
             Err(PrologError::Failure)
@@ -204,7 +204,7 @@ impl<'a> Term<'a> {
         // through some inner function. It's too much hassle to have
         // each function check for themselves and return the
         // appropriate thing, so we just do it all here.
-        if unsafe { PL_exception(0) != 0 } {
+        if unsafe { pl_default_exception() != 0 } {
             Err(PrologError::Exception)
         } else if opt.is_none() {
             let context = unsafe { unmanaged_engine_context() };
@@ -242,7 +242,7 @@ impl<'a> Term<'a> {
         let arg_ref = unsafe { PL_new_term_ref() };
 
         let result = unsafe { PL_get_arg(index.try_into().unwrap(), self.term, arg_ref) };
-        if unsafe { PL_exception(0) != 0 } {
+        if unsafe { pl_default_exception() != 0 } {
             return Err(PrologError::Exception);
         }
 
@@ -277,7 +277,7 @@ impl<'a> Term<'a> {
             )
         };
 
-        if unsafe { PL_exception(0) != 0 } {
+        if unsafe { pl_default_exception() != 0 } {
             return Err(PrologError::Exception);
         }
 
@@ -327,7 +327,7 @@ impl<'a> Term<'a> {
             )
         };
 
-        if unsafe { PL_exception(0) != 0 } {
+        if unsafe { pl_default_exception() != 0 } {
             return Err(PrologError::Exception);
         }
 
@@ -360,7 +360,7 @@ impl<'a> Term<'a> {
     pub fn put<T: TermPutable + ?Sized>(&self, val: &T) -> NonFailingPrologResult<()> {
         val.put(self);
 
-        if unsafe { PL_exception(0) != 0 } {
+        if unsafe { pl_default_exception() != 0 } {
             Err(PrologException)
         } else {
             Ok(())
@@ -687,7 +687,7 @@ unifiable! {
         // compatibility functions work.
         unsafe {with_cleared_exception(|| {
             let result = PL_unify_uint64(term.term, *self);
-            let error_term_ref = PL_exception(0);
+            let error_term_ref = pl_default_exception();
             if error_term_ref != 0 {
                 let ctx = unmanaged_engine_context();
                 let error_term = ctx.new_term_ref();
@@ -723,7 +723,7 @@ term_getable! {
         unsafe {with_cleared_exception(|| {
             let mut out = 0;
             let result = PL_cvt_i_uint64(term.term, &mut out);
-            let error_term_ref = PL_exception(0);
+            let error_term_ref = pl_default_exception();
             if error_term_ref != 0 {
                 let ctx = unmanaged_engine_context();
                 let error_term = ctx.new_term_ref();
