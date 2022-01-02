@@ -9,7 +9,7 @@ use std::process::Command;
 #[derive(Debug)]
 pub struct SwiplInfo {
     /// The SWI-Prolog version as an integer
-    pub version: u64,
+    pub version: u32,
     /// The main directory where SWI-Prolog is located
     pub swi_home: String,
     /// The directory subpath where dynamic libraries live
@@ -59,7 +59,7 @@ pub fn get_swipl_info() -> SwiplInfo {
         );
     }
 
-    let version: u64 = String::from_utf8_lossy(&output.stdout).parse().unwrap();
+    let version: u32 = String::from_utf8_lossy(&output.stdout).parse().unwrap();
 
     let build_env_command: &str;
     if version >= 80504 {
