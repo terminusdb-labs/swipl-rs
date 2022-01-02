@@ -41,9 +41,36 @@ pub fn get_swipl_info() -> SwiplInfo {
     // appropriately.
     let swipl_path = env::var("SWIPL").unwrap_or_else(|_| "swipl".to_string());
 
+    // let's first retrieve a version number
     let output = Command::new(&swipl_path)
         .arg("-g")
-        .arg("use_module(library(prolog_pack)), prolog_pack:build_environment(Env), memberchk('SWIHOME'=Swihome, Env), memberchk('PACKSODIR'=Packsodir, Env), memberchk('CFLAGS'=Cflags, Env), memberchk('LDSOFLAGS'=Ldflags, Env), format('~s~n~s~n~s~n~s~n', [Swihome, Packsodir, Cflags, Ldflags])")
+        .arg("current_prolog_flag(version, Version), writeq(Version)")
+        .arg("-g")
+        .arg("halt")
+        .output()
+        .unwrap();
+
+    if !output.status.success() {
+        panic!(
+            "Error retrieving version number using swipl: {:?}",
+            output
+        );
+    }
+
+    let version: u64 = String::from_utf8_lossy(&output.stdout).parse().unwrap();
+
+    let build_env_command: &str;
+    if version >= 80500 {
+        // build_environment predicate moved and is now called somewhat differently
+        build_env_command = "use_module(library(build/tools)), build_tools:build_environment(Env, []), memberchk('SWIHOME'=Swihome, Env), memberchk('PACKSODIR'=Packsodir, Env), memberchk('CFLAGS'=Cflags, Env), memberchk('LDSOFLAGS'=Ldflags, Env), format('~s~n~s~n~s~n~s~n', [Swihome, Packsodir, Cflags, Ldflags])";
+    }
+    else {
+        build_env_command = "use_module(library(prolog_pack)), prolog_pack:build_environment(Env), memberchk('SWIHOME'=Swihome, Env), memberchk('PACKSODIR'=Packsodir, Env), memberchk('CFLAGS'=Cflags, Env), memberchk('LDSOFLAGS'=Ldflags, Env), format('~s~n~s~n~s~n~s~n', [Swihome, Packsodir, Cflags, Ldflags])";
+    }
+
+    let output = Command::new(&swipl_path)
+        .arg("-g")
+        .arg(build_env_command)
         .arg("-g")
         .arg("halt")
         .output()
