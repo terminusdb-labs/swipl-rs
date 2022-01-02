@@ -1,6 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl/src/context.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>context.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings"></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
-<link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../swipl/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img src="../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img src="../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl&#x2F;src&#x2F;context.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>context.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../swipl/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -1119,8 +1117,7 @@
 <span id="1117">1117</span>
 <span id="1118">1118</span>
 <span id="1119">1119</span>
-</pre><pre class="rust">
-<span class="doccomment">//! Prolog contexts.</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Prolog contexts.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! As you interact with SWI-Prolog, the underlying prolog engine</span>
 <span class="doccomment">//! moves into different states, where different things are</span>
@@ -1172,19 +1169,19 @@
 <span class="doccomment">//! into prolog (if you&#39;re implementing a foreign predicate), which</span>
 <span class="doccomment">//! will then raise this exception in prolog, or to clear the</span>
 <span class="doccomment">//! exception.</span>
-<span class="kw">use</span> <span class="kw">super</span><span class="ident">::callable</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="kw">super</span><span class="ident">::engine</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="kw">super</span><span class="ident">::fli</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="kw">super</span><span class="ident">::module</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="kw">super</span><span class="ident">::result</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="kw">super</span><span class="ident">::term</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::callable</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::engine</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::fli</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::module</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::result</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::term</span>::<span class="kw-2">*</span>;
 
 <span class="kw">use</span> <span class="ident">std::cell::Cell</span>;
 
 <span class="kw">use</span> <span class="ident">swipl_macros</span>::{<span class="ident">prolog</span>, <span class="ident">term</span>};
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">with_cleared_exception</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">f</span>: <span class="kw">impl</span> <span class="ident">FnOnce</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span> {
-    <span class="kw">let</span> <span class="ident">error_term_ref</span> <span class="op">=</span> <span class="ident">PL_exception</span>(<span class="number">0</span>);
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">with_cleared_exception</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">f</span>: <span class="kw">impl</span> <span class="ident">FnOnce</span>() -&gt; <span class="ident">R</span>) -&gt; <span class="ident">R</span> {
+    <span class="kw">let</span> <span class="ident">error_term_ref</span> <span class="op">=</span> <span class="ident">pl_default_exception</span>();
     <span class="kw">if</span> <span class="ident">error_term_ref</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
         <span class="kw">let</span> <span class="ident">backup_term_ref</span> <span class="op">=</span> <span class="ident">PL_new_term_ref</span>();
         <span class="macro">assert!</span>(<span class="ident">PL_unify</span>(<span class="ident">backup_term_ref</span>, <span class="ident">error_term_ref</span>) <span class="op">!</span><span class="op">=</span> <span class="number">0</span>);
@@ -1224,8 +1221,8 @@
     <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">with_cleared_exception</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span>, <span class="ident">C</span>: <span class="ident">ContextType</span>, <span class="ident">R</span><span class="op">&gt;</span>(
         <span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="self">self</span>,
         <span class="ident">ctx</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>,
-        <span class="ident">f</span>: <span class="kw">impl</span> <span class="ident">FnOnce</span>(<span class="kw-2">&amp;</span><span class="ident">Term</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span> {
+        <span class="ident">f</span>: <span class="kw">impl</span> <span class="ident">FnOnce</span>(<span class="kw-2">&amp;</span><span class="ident">Term</span>) -&gt; <span class="ident">R</span>,
+    ) -&gt; <span class="ident">R</span> {
         <span class="ident">ctx</span>.<span class="ident">assert_activated</span>();
         <span class="kw">let</span> <span class="ident">backup_term_ref</span> <span class="op">=</span> <span class="ident">PL_new_term_ref</span>();
         <span class="macro">assert!</span>(<span class="ident">PL_unify</span>(<span class="ident">backup_term_ref</span>, <span class="self">self</span>.<span class="number">0</span>.<span class="ident">term_ptr</span>()) <span class="op">!</span><span class="op">=</span> <span class="number">0</span>);
@@ -1245,7 +1242,7 @@
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">std::ops::Deref</span> <span class="kw">for</span> <span class="ident">ExceptionTerm</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="kw">type</span> <span class="ident">Target</span> <span class="op">=</span> <span class="ident">Term</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>;
-    <span class="kw">fn</span> <span class="ident">deref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">Term</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">deref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">Term</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>
     }
 }
@@ -1262,7 +1259,7 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">ContextType</span><span class="op">&gt;</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">new_activated_without_parent</span>(<span class="ident">context</span>: <span class="ident">T</span>, <span class="ident">engine</span>: <span class="ident">PL_engine_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">new_activated_without_parent</span>(<span class="ident">context</span>: <span class="ident">T</span>, <span class="ident">engine</span>: <span class="ident">PL_engine_t</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">Context</span> {
             <span class="ident">parent</span>: <span class="prelude-val">None</span>,
             <span class="ident">context</span>,
@@ -1276,7 +1273,7 @@
         <span class="ident">parent</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span>, <span class="ident">T2</span><span class="op">&gt;</span>,
         <span class="ident">context</span>: <span class="ident">T</span>,
         <span class="ident">engine</span>: <span class="ident">PL_engine_t</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    ) -&gt; <span class="self">Self</span> {
         <span class="ident">Context</span> {
             <span class="ident">parent</span>: <span class="prelude-val">Some</span>(<span class="ident">parent</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">ContextParent</span>),
             <span class="ident">context</span>,
@@ -1305,12 +1302,12 @@
     }
 
     <span class="doccomment">/// Returns the underlying engine pointer.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">engine_ptr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PL_engine_t</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">engine_ptr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">PL_engine_t</span> {
         <span class="self">self</span>.<span class="ident">engine</span>
     }
 
     <span class="doccomment">/// Return the engine pointer as a `TermOrigin`, which is used in the construction of a `Term` in unsafe code.</span>
-    <span class="kw">fn</span> <span class="ident">as_term_origin</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TermOrigin</span> {
+    <span class="kw">fn</span> <span class="ident">as_term_origin</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">TermOrigin</span> {
         <span class="kw">unsafe</span> { <span class="ident">TermOrigin::new</span>(<span class="self">self</span>.<span class="ident">engine_ptr</span>()) }
     }
 
@@ -1320,23 +1317,23 @@
     <span class="doccomment">/// given term_t is indeed from this context. The caller will have</span>
     <span class="doccomment">/// to ensure that the term lives at least as long as this</span>
     <span class="doccomment">/// context.</span>
-    <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">wrap_term_ref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">term</span>: <span class="ident">term_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Term</span> {
+    <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">wrap_term_ref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">term</span>: <span class="ident">term_t</span>) -&gt; <span class="ident">Term</span> {
         <span class="self">self</span>.<span class="ident">assert_activated</span>();
         <span class="ident">Term::new</span>(<span class="ident">term</span>, <span class="self">self</span>.<span class="ident">as_term_origin</span>())
     }
 
     <span class="doccomment">/// Returns true if the underlying engine is in an exceptional state.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">has_exception</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">has_exception</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
         <span class="self">self</span>.<span class="ident">assert_activated</span>();
 
-        <span class="kw">unsafe</span> { <span class="ident">PL_exception</span>(<span class="number">0</span>) <span class="op">!</span><span class="op">=</span> <span class="number">0</span> }
+        <span class="kw">unsafe</span> { <span class="ident">pl_default_exception</span>() <span class="op">!</span><span class="op">=</span> <span class="number">0</span> }
     }
 
     <span class="doccomment">/// Clear the current exception if there is any.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">clear_exception</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) {
         <span class="self">self</span>.<span class="ident">with_uncleared_exception</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">e</span> {
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> (),
-            <span class="prelude-val">Some</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">e</span>.<span class="ident">clear_exception</span>(),
+            <span class="prelude-val">None</span> =&gt; (),
+            <span class="prelude-val">Some</span>(<span class="ident">e</span>) =&gt; <span class="ident">e</span>.<span class="ident">clear_exception</span>(),
         })
     }
 
@@ -1347,17 +1344,17 @@
     <span class="doccomment">/// get, put or unify with the given term will result in a panic.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_uncleared_exception</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span>, <span class="ident">R</span><span class="op">&gt;</span>(
         <span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="self">self</span>,
-        <span class="ident">f</span>: <span class="kw">impl</span> <span class="ident">FnOnce</span>(<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ExceptionTerm</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span><span class="op">&gt;</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span> {
+        <span class="ident">f</span>: <span class="kw">impl</span> <span class="ident">FnOnce</span>(<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ExceptionTerm</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span><span class="op">&gt;</span><span class="op">&gt;</span>) -&gt; <span class="ident">R</span>,
+    ) -&gt; <span class="ident">R</span> {
         <span class="self">self</span>.<span class="ident">assert_activated</span>();
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">exception_handling</span>.<span class="ident">replace</span>(<span class="bool-val">true</span>) {
             <span class="macro">panic!</span>(<span class="string">&quot;re-entered exception handler&quot;</span>);
         }
 
-        <span class="kw">let</span> <span class="ident">exception</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">PL_exception</span>(<span class="number">0</span>) };
-        <span class="kw">let</span> <span class="ident">arg</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">exception</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
-            <span class="bool-val">true</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
-            <span class="bool-val">false</span> <span class="op">=</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">exception</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">pl_default_exception</span>() };
+        <span class="kw">let</span> <span class="ident">arg</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">exception</span> <span class="op">==</span> <span class="number">0</span> {
+            <span class="bool-val">true</span> =&gt; <span class="prelude-val">None</span>,
+            <span class="bool-val">false</span> =&gt; {
                 <span class="kw">let</span> <span class="ident">term</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="self">self</span>.<span class="ident">wrap_term_ref</span>(<span class="ident">exception</span>) };
                 <span class="prelude-val">Some</span>(<span class="ident">ExceptionTerm</span>(<span class="ident">term</span>))
             }
@@ -1377,10 +1374,10 @@
     <span class="doccomment">/// normal safe functions for doing so. When the function returns,</span>
     <span class="doccomment">/// the engine will go back into an exceptional state with the</span>
     <span class="doccomment">/// original exception term.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_exception</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="self">self</span>, <span class="ident">f</span>: <span class="kw">impl</span> <span class="ident">FnOnce</span>(<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Term</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_exception</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="self">self</span>, <span class="ident">f</span>: <span class="kw">impl</span> <span class="ident">FnOnce</span>(<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Term</span><span class="op">&gt;</span>) -&gt; <span class="ident">R</span>) -&gt; <span class="ident">R</span> {
         <span class="self">self</span>.<span class="ident">with_uncleared_exception</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">e</span> {
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>(<span class="prelude-val">None</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">unsafe</span> { <span class="ident">e</span>.<span class="ident">with_cleared_exception</span>(<span class="self">self</span>, <span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">f</span>(<span class="prelude-val">Some</span>(<span class="ident">e</span>))) },
+            <span class="prelude-val">None</span> =&gt; <span class="ident">f</span>(<span class="prelude-val">None</span>),
+            <span class="prelude-val">Some</span>(<span class="ident">e</span>) =&gt; <span class="kw">unsafe</span> { <span class="ident">e</span>.<span class="ident">with_cleared_exception</span>(<span class="self">self</span>, <span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">f</span>(<span class="prelude-val">Some</span>(<span class="ident">e</span>))) },
         })
     }
 
@@ -1389,7 +1386,7 @@
     <span class="doccomment">/// The given term will be copied and put into the exception</span>
     <span class="doccomment">/// term. This function always returns</span>
     <span class="doccomment">/// `Err(PrologError::Exception)`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">raise_exception</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">term</span>: <span class="kw-2">&amp;</span><span class="ident">Term</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PrologResult</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">raise_exception</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">term</span>: <span class="kw-2">&amp;</span><span class="ident">Term</span>) -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">assert_activated</span>();
         <span class="kw">if</span> <span class="ident">term</span>.<span class="ident">is_var</span>() {
             <span class="macro">panic!</span>(<span class="string">&quot;tried to raise a var as an exception&quot;</span>);
@@ -1446,7 +1443,7 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">ActivatedEngine</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">EngineActivation</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">into</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">ActivatedEngine</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">into</span>(<span class="self">self</span>) -&gt; <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">ActivatedEngine</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">engine_ptr</span>();
         <span class="kw">let</span> <span class="ident">context</span> <span class="op">=</span> <span class="ident">ActivatedEngine</span> { <span class="ident">_activation</span>: <span class="self">self</span> };
 
@@ -1481,7 +1478,7 @@
 <span class="doccomment">/// let context = unsafe { unmanaged_engine_context() };</span>
 <span class="doccomment">/// # unsafe { swipl::fli::PL_thread_destroy_engine(); }</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">unmanaged_engine_context</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span>, <span class="ident">Unmanaged</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">unmanaged_engine_context</span>() -&gt; <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span>, <span class="ident">Unmanaged</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">current</span> <span class="op">=</span> <span class="ident">current_engine_ptr</span>();
 
     <span class="kw">if</span> <span class="ident">current</span>.<span class="ident">is_null</span>() {
@@ -1601,7 +1598,7 @@
 <span class="kw">impl</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">Frame</span> {
     <span class="kw">fn</span> <span class="ident">drop</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
         <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">state</span> {
-            <span class="ident">FrameState::Active</span> <span class="op">=</span><span class="op">&gt;</span>
+            <span class="ident">FrameState::Active</span> =&gt;
             <span class="comment">// unsafe justification: all instantiations of Frame happen in</span>
             <span class="comment">// this module.  This module only instantiates the frame as</span>
             <span class="comment">// part of the context mechanism. No &#39;free&#39; Frames are ever</span>
@@ -1610,7 +1607,7 @@
             <span class="comment">// remaining. It&#39;ll also ensure that the engine of the</span>
             <span class="comment">// frame is active while dropping.</span>
             <span class="kw">unsafe</span> { <span class="ident">PL_discard_foreign_frame</span>(<span class="self">self</span>.<span class="ident">fid</span>) }
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {}
+            <span class="kw">_</span> =&gt; {}
         }
     }
 }
@@ -1647,7 +1644,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// This returns a new context which is to be used for further</span>
     <span class="doccomment">/// manipulation of this frame.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">rewind</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Frame</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">rewind</span>(<span class="self">self</span>) -&gt; <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Frame</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">assert_activated</span>();
         <span class="comment">// unsafe justification: We just checked that this frame right here is currently the active context. Therefore it can be rewinded.</span>
         <span class="kw">unsafe</span> { <span class="ident">PL_rewind_foreign_frame</span>(<span class="self">self</span>.<span class="ident">context</span>.<span class="ident">fid</span>) };
@@ -1669,7 +1666,7 @@
     <span class="doccomment">/// will become inactive, until the new context is dropped. This</span>
     <span class="doccomment">/// may happen implicitely, when it goes out of scope, or</span>
     <span class="doccomment">/// explicitely, by calling `close()` or `discard()` on it.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">open_frame</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="ident">Frame</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">open_frame</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Context</span><span class="op">&lt;</span><span class="ident">Frame</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">assert_activated</span>();
         <span class="kw">let</span> <span class="ident">fid</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">PL_open_foreign_frame</span>() };
 
@@ -1702,7 +1699,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// The term ref takes on the lifetime of the Context reference,</span>
     <span class="doccomment">/// ensuring that it cannot outlive the context that created it.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_term_ref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Term</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_term_ref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Term</span> {
         <span class="self">self</span>.<span class="ident">assert_activated</span>();
         <span class="kw">unsafe</span> {
             <span class="kw">let</span> <span class="ident">term</span> <span class="op">=</span> <span class="ident">PL_new_term_ref</span>();
@@ -1733,7 +1730,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">callable</span>: <span class="ident">C</span>,
         <span class="ident">args</span>: [<span class="kw-2">&amp;</span><span class="ident">Term</span>; <span class="ident">N</span>],
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="ident">C::ContextType</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="ident">Context</span><span class="op">&lt;</span><span class="ident">C::ContextType</span><span class="op">&gt;</span> {
         <span class="ident">callable</span>.<span class="ident">open</span>(<span class="self">self</span>, <span class="prelude-val">None</span>, <span class="ident">args</span>)
     }
 
@@ -1758,7 +1755,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">callable</span>: <span class="ident">C</span>,
         <span class="ident">args</span>: [<span class="kw-2">&amp;</span><span class="ident">Term</span>; <span class="ident">N</span>],
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PrologResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    ) -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">query</span> <span class="op">=</span> <span class="ident">callable</span>.<span class="ident">open</span>(<span class="self">self</span>, <span class="prelude-val">None</span>, <span class="ident">args</span>);
         <span class="ident">query</span>.<span class="ident">next_solution</span>()<span class="question-mark">?</span>;
         <span class="ident">query</span>.<span class="ident">cut</span>();
@@ -1772,7 +1769,7 @@
         <span class="ident">callable</span>: <span class="ident">C</span>,
         <span class="ident">module</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Module</span><span class="op">&gt;</span>,
         <span class="ident">args</span>: [<span class="kw-2">&amp;</span><span class="ident">Term</span>; <span class="ident">N</span>],
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="ident">C::ContextType</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="ident">Context</span><span class="op">&lt;</span><span class="ident">C::ContextType</span><span class="op">&gt;</span> {
         <span class="ident">callable</span>.<span class="ident">open</span>(<span class="self">self</span>, <span class="ident">module</span>, <span class="ident">args</span>)
     }
 
@@ -1782,7 +1779,7 @@
     <span class="doccomment">/// heavy lifting.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// Consider using the `term!` macro instead.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">term_from_string</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PrologResult</span><span class="op">&lt;</span><span class="ident">Term</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">term_from_string</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span><span class="ident">Term</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">term</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">new_term_ref</span>();
         <span class="kw">let</span> <span class="ident">frame</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">open_frame</span>();
 
@@ -1799,7 +1796,7 @@
     }
 
     <span class="doccomment">/// Open a query for the given term using the `call/1` prolog predicate.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">open_call</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">t</span>: <span class="kw-2">&amp;</span><span class="ident">Term</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="kw">impl</span> <span class="ident">OpenCall</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">open_call</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">t</span>: <span class="kw-2">&amp;</span><span class="ident">Term</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>) -&gt; <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="kw">impl</span> <span class="ident">OpenCall</span><span class="op">&gt;</span> {
         <span class="ident">open_call</span>(<span class="self">self</span>, <span class="ident">t</span>)
     }
 
@@ -1808,10 +1805,10 @@
     <span class="doccomment">/// For this to work, the `Err` component of the `Result` needs to</span>
     <span class="doccomment">/// implement the trait `IntoPrologException`. This is currently</span>
     <span class="doccomment">/// only the case for [std::io::Error].</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">try_or_die</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span>: <span class="ident">IntoPrologException</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">r</span>: <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PrologResult</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">try_or_die</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span>: <span class="ident">IntoPrologException</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">r</span>: <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span><span class="op">&gt;</span>) -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="ident">r</span> {
-            <span class="prelude-val">Ok</span>(<span class="ident">ok</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">ok</span>),
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Ok</span>(<span class="ident">ok</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="ident">ok</span>),
+            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; {
                 <span class="kw">let</span> <span class="ident">reset_term</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">new_term_ref</span>();
                 <span class="kw">let</span> <span class="ident">exception_term</span> <span class="op">=</span> <span class="ident">e</span>.<span class="ident">into_prolog_exception</span>(<span class="self">self</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">raise_exception</span>(<span class="kw-2">&amp;</span><span class="ident">exception_term</span>);
@@ -1829,10 +1826,10 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// For this to work, the `Err` component of the `Result` needs to</span>
     <span class="doccomment">/// implement the trait [Error](std::error::Error).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">try_or_die_generic</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span>: <span class="ident">std::error::Error</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">r</span>: <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PrologResult</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">try_or_die_generic</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span>: <span class="ident">std::error::Error</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">r</span>: <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span><span class="op">&gt;</span>) -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="ident">r</span> {
-            <span class="prelude-val">Ok</span>(<span class="ident">ok</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">ok</span>),
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Ok</span>(<span class="ident">ok</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="ident">ok</span>),
+            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; {
                 <span class="kw">let</span> <span class="ident">reset_term</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">new_term_ref</span>();
                 <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>);
 
@@ -1861,14 +1858,14 @@
     <span class="kw">fn</span> <span class="ident">into_prolog_exception</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, <span class="ident">T</span>: <span class="ident">QueryableContextType</span><span class="op">&gt;</span>(
         <span class="self">self</span>,
         <span class="ident">context</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span>, <span class="ident">T</span><span class="op">&gt;</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PrologResult</span><span class="op">&lt;</span><span class="ident">Term</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+    ) -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span><span class="ident">Term</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 }
 
 <span class="kw">impl</span> <span class="ident">IntoPrologException</span> <span class="kw">for</span> <span class="ident">std::io::Error</span> {
     <span class="kw">fn</span> <span class="ident">into_prolog_exception</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, <span class="ident">T</span>: <span class="ident">QueryableContextType</span><span class="op">&gt;</span>(
         <span class="self">self</span>,
         <span class="ident">context</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span>, <span class="ident">T</span><span class="op">&gt;</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PrologResult</span><span class="op">&lt;</span><span class="ident">Term</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span><span class="ident">Term</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="self">self</span>);
         <span class="macro">term!</span> {<span class="ident">context</span>: <span class="ident">error</span>(<span class="ident">rust_io_error</span>(#<span class="ident">msg</span>), <span class="kw">_</span>)}
     }
@@ -1884,26 +1881,26 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// This is used by various macros to ensure that panics from user</span>
 <span class="doccomment">/// code do not propagate into prolog.</span>
-<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">prolog_catch_unwind</span><span class="op">&lt;</span><span class="ident">F</span>: <span class="ident">FnOnce</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span> <span class="op">+</span> <span class="ident">std::panic::UnwindSafe</span>, <span class="ident">R</span><span class="op">&gt;</span>(
+<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">prolog_catch_unwind</span><span class="op">&lt;</span><span class="ident">F</span>: <span class="ident">FnOnce</span>() -&gt; <span class="ident">R</span> <span class="op">+</span> <span class="ident">std::panic::UnwindSafe</span>, <span class="ident">R</span><span class="op">&gt;</span>(
     <span class="ident">f</span>: <span class="ident">F</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PrologResult</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> {
+) -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">std::panic::catch_unwind</span>(<span class="ident">f</span>);
     <span class="kw">match</span> <span class="ident">result</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">result</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">result</span>),
-        <span class="prelude-val">Err</span>(<span class="ident">panic</span>) <span class="op">=</span><span class="op">&gt;</span> {
+        <span class="prelude-val">Ok</span>(<span class="ident">result</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="ident">result</span>),
+        <span class="prelude-val">Err</span>(<span class="ident">panic</span>) =&gt; {
             <span class="kw">let</span> <span class="ident">context</span> <span class="op">=</span> <span class="ident">unmanaged_engine_context</span>();
             <span class="kw">let</span> <span class="ident">panic_term</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_term_ref</span>();
             <span class="kw">let</span> <span class="ident">error_term</span> <span class="op">=</span> <span class="macro">term!</span> {<span class="ident">context</span>: <span class="ident">error</span>(<span class="ident">rust_error</span>(<span class="ident">panic</span>(#<span class="kw-2">&amp;</span><span class="ident">panic_term</span>)), <span class="kw">_</span>)}<span class="question-mark">?</span>;
 
             <span class="kw">match</span> <span class="ident">panic</span>.<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>() {
-                <span class="prelude-val">Some</span>(<span class="ident">panic_msg</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="prelude-val">Some</span>(<span class="ident">panic_msg</span>) =&gt; {
                     <span class="ident">panic_term</span>.<span class="ident">unify</span>(<span class="ident">panic_msg</span>).<span class="ident">unwrap</span>();
                 }
-                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">panic</span>.<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>() {
-                    <span class="prelude-val">Some</span>(<span class="ident">panic_msg</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="prelude-val">None</span> =&gt; <span class="kw">match</span> <span class="ident">panic</span>.<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>() {
+                    <span class="prelude-val">Some</span>(<span class="ident">panic_msg</span>) =&gt; {
                         <span class="ident">panic_term</span>.<span class="ident">unify</span>(<span class="ident">panic_msg</span>.<span class="ident">as_str</span>()).<span class="ident">unwrap</span>();
                     }
-                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="prelude-val">None</span> =&gt; {
                         <span class="ident">panic_term</span>.<span class="ident">unify</span>(<span class="string">&quot;unknown panic type&quot;</span>).<span class="ident">unwrap</span>();
                     }
                 },
@@ -1918,10 +1915,10 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::atom</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::functor</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::predicate</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::predicates</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::atom</span>::<span class="kw-2">*</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::functor</span>::<span class="kw-2">*</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::predicate</span>::<span class="kw-2">*</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::predicates</span>;
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">get_term_ref_on_fresh_engine</span>() {
@@ -1957,7 +1954,7 @@
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">query_det</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PrologResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">query_det</span>() -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
         <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
         <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
@@ -1988,7 +1985,7 @@
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">query_auto_discard</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PrologResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">query_auto_discard</span>() -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
         <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
         <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
@@ -2021,7 +2018,7 @@
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">query_manual_discard</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PrologResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">query_manual_discard</span>() -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
         <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
         <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
@@ -2055,7 +2052,7 @@
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">query_cut</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PrologResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">query_cut</span>() -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
         <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
         <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
@@ -2103,7 +2100,7 @@
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">open_call_nondet</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PrologResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">open_call_nondet</span>() -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
         <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
         <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
@@ -2128,7 +2125,7 @@
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">open_query_with_0_arg_predicate</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PrologResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">open_query_with_0_arg_predicate</span>() -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
         <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
         <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
@@ -2145,7 +2142,7 @@
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">freeze_exception_is_delayed_until_next_query</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PrologResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">freeze_exception_is_delayed_until_next_query</span>() -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
         <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
         <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
@@ -2204,7 +2201,7 @@
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">register_foreign_predicate</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PrologResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">register_foreign_predicate</span>() -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
         <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
 
@@ -2239,5 +2236,7 @@
         <span class="macro">assert_eq!</span>(<span class="number">4</span>, <span class="ident">term</span>.<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>());
     }
 }
-</pre></div>
-</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script></body></html>
+</code></pre></div>
+</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
+    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script>
+</body></html>
