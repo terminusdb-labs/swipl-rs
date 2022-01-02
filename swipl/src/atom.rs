@@ -161,7 +161,7 @@ where
     let mut atom = 0;
     let result = unsafe { PL_get_atom(term.term_ptr(), &mut atom) };
 
-    if unsafe { PL_exception(0) != 0 } {
+    if unsafe { pl_default_exception() != 0 } {
         return Err(PrologError::Exception);
     }
 
@@ -343,7 +343,7 @@ where
         )
     };
 
-    if unsafe { PL_exception(0) != 0 } {
+    if unsafe { pl_default_exception() != 0 } {
         return Err(PrologError::Exception);
     }
 
