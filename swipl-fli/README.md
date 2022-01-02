@@ -1,4 +1,4 @@
-# swipl-sys - low-level bindings for SWI-Prolog's foreign language interface
+# swipl-fli - low-level bindings for SWI-Prolog's foreign language interface
 This crate provides low-level bindings for SWI-Prolog's foreign language interface. The bindings are generated using [bindgen](https://rust-lang.github.io/rust-bindgen/). SWI-Prolog's header files and shared library are discovered by using the `swipl` binary found either on `PATH` or in the `SWIPL` environment variable.
 
 [Documentation](https://terminusdb-labs.github.io/swipl-rs/swipl_fli/)

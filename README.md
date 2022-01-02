@@ -23,7 +23,7 @@ guidance.
 
 ## Overview
 This repository is a workspace for a handful of crates:
-- cargo-swipl: a cargo utility for working with swipl crates. In particular, this allows running of unit tests in crates that depend on swipl-sys.
+- cargo-swipl: a cargo utility for working with swipl crates. In particular, this allows running of unit tests in crates that depend on swipl-fli.
 - swipl-info: a small utility crate that extracts information about the currently active version of swi-prolog.
 - swipl-fli: low-level bindings to SWI-Prolog, generated through bindgen, in a build environment as discovered by swipl-info.
 - swipl-macros: procedural macros for generating bindings to prolog predicates, and glue code for defining native prolog predicates.
