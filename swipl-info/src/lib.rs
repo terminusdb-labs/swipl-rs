@@ -60,7 +60,7 @@ pub fn get_swipl_info() -> SwiplInfo {
     let version: u64 = String::from_utf8_lossy(&output.stdout).parse().unwrap();
 
     let build_env_command: &str;
-    if version >= 80500 {
+    if version >= 80504 {
         // build_environment predicate moved and is now called somewhat differently
         build_env_command = "use_module(library(build/tools)), build_tools:build_environment(Env, []), memberchk('SWIHOME'=Swihome, Env), memberchk('PACKSODIR'=Packsodir, Env), memberchk('CFLAGS'=Cflags, Env), memberchk('LDSOFLAGS'=Ldflags, Env), format('~s~n~s~n~s~n~s~n', [Swihome, Packsodir, Cflags, Ldflags])";
     }
