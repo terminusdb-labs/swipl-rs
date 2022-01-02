@@ -1250,6 +1250,18 @@
 <span id="1250">1250</span>
 <span id="1251">1251</span>
 <span id="1252">1252</span>
+<span id="1253">1253</span>
+<span id="1254">1254</span>
+<span id="1255">1255</span>
+<span id="1256">1256</span>
+<span id="1257">1257</span>
+<span id="1258">1258</span>
+<span id="1259">1259</span>
+<span id="1260">1260</span>
+<span id="1261">1261</span>
+<span id="1262">1262</span>
+<span id="1263">1263</span>
+<span id="1264">1264</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Prolog terms.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! In prolog, all data is a term. Terms are things like atoms or</span>
@@ -2500,6 +2512,18 @@
         <span class="macro">assert_eq!</span>(<span class="ident">binary_data</span>, <span class="ident">retrieved</span>);
 
         <span class="ident">term</span>.<span class="ident">unify</span>(<span class="ident">binary_data</span>.<span class="ident">as_slice</span>())
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">unify_list_should_fail_for_early_unmatched_value</span>() {
+        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
+        <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
+        <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
+
+        <span class="kw">let</span> <span class="ident">term</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_term_ref</span>();
+        <span class="ident">term</span>.<span class="ident">unify</span>([<span class="number">1u64</span>, <span class="number">2u64</span>, <span class="number">3u64</span>].<span class="ident">as_slice</span>()).<span class="ident">unwrap</span>();
+
+        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">attempt</span>(<span class="ident">term</span>.<span class="ident">unify</span>([<span class="number">2u64</span>, <span class="number">2u64</span>, <span class="number">3u64</span>].<span class="ident">as_slice</span>())).<span class="ident">unwrap</span>());
     }
 }
 </code></pre></div>
