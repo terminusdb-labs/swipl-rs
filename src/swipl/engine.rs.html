@@ -231,6 +231,18 @@
 <span id="231">231</span>
 <span id="232">232</span>
 <span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Prolog engines.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! A single process can run multiple prolog engines. Prolog engines</span>
@@ -314,6 +326,18 @@
             <span class="ident">engine_ptr</span>,
             <span class="ident">active</span>: <span class="ident">atomic::AtomicBool::new</span>(<span class="bool-val">false</span>),
         }
+    }
+
+    <span class="doccomment">/// Create a new prolog engine with a saved state. SWI-Prolog must not have</span>
+    <span class="doccomment">/// been initialized already to do so.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_state</span>(<span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [<span class="ident">u8</span>]) -&gt; <span class="ident">Engine</span> {
+        <span class="kw">if</span> <span class="op">!</span><span class="ident">is_swipl_initialized</span>() {
+            <span class="comment">// This panicks here as there is no way to create an engine with a saved state after initialization,</span>
+            <span class="comment">// and otherwise the user may get errors invisibly.</span>
+            <span class="macro">panic!</span>(<span class="string">&quot;SWI-Prolog must not have been initialized already to create an engine with a saved state.&quot;</span>);
+        }
+        <span class="ident">initialize_swipl_with_state_noengine</span>(<span class="ident">state</span>);
+        <span class="ident">Engine::new</span>()
     }
 
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">from_current</span>() -&gt; <span class="ident">Engine</span> {
