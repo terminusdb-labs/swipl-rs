@@ -1249,4 +1249,16 @@ mod tests {
 
         term.unify(binary_data.as_slice())
     }
+
+    #[test]
+    fn unify_list_should_fail_for_early_unmatched_value() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term = context.new_term_ref();
+        term.unify([1u64, 2u64, 3u64].as_slice()).unwrap();
+
+        assert!(!attempt(term.unify([2u64, 2u64, 3u64].as_slice())).unwrap());
+    }
 }
