@@ -1250,8 +1250,6 @@
 <span id="1250">1250</span>
 <span id="1251">1251</span>
 <span id="1252">1252</span>
-<span id="1253">1253</span>
-<span id="1254">1254</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Prolog terms.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! In prolog, all data is a term. Terms are things like atoms or</span>
@@ -2198,24 +2196,24 @@
 
         <span class="kw">let</span> <span class="ident">frame</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">open_frame</span>();
         <span class="kw">let</span> <span class="ident">list</span> <span class="op">=</span> <span class="ident">frame</span>.<span class="ident">new_term_ref</span>();
+
         <span class="kw">if</span> <span class="ident">list</span>.<span class="ident">unify</span>(<span class="ident">term</span>).<span class="ident">is_err</span>() {
             <span class="kw">return</span> <span class="bool-val">false</span>;
         }
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">success</span> <span class="op">=</span> <span class="bool-val">true</span>;
 
         <span class="kw">for</span> <span class="ident">t</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">iter</span>() {
             <span class="comment">// create a new frame to ensure we don&#39;t just keep putting head and tail refs on the stack.</span>
             <span class="kw">let</span> <span class="ident">frame2</span> <span class="op">=</span> <span class="ident">frame</span>.<span class="ident">open_frame</span>();
             <span class="kw">let</span> <span class="ident">head</span> <span class="op">=</span> <span class="ident">frame2</span>.<span class="ident">new_term_ref</span>();
             <span class="kw">let</span> <span class="ident">tail</span> <span class="op">=</span> <span class="ident">frame2</span>.<span class="ident">new_term_ref</span>();
-            <span class="ident">success</span> <span class="op">=</span>
-                <span class="kw">unsafe</span> { <span class="ident">PL_unify_list</span>(<span class="ident">list</span>.<span class="ident">term_ptr</span>(), <span class="ident">head</span>.<span class="ident">term_ptr</span>(), <span class="ident">tail</span>.<span class="ident">term_ptr</span>()) <span class="op">!</span><span class="op">=</span> <span class="number">0</span> };
 
-            <span class="kw">if</span> <span class="op">!</span><span class="ident">success</span> {
-                <span class="kw">break</span>;
+            <span class="comment">// if list unification fails, or head can not be unified with current term,</span>
+            <span class="comment">// return false early.</span>
+            <span class="comment">// note: || is short-circuiting OR</span>
+            <span class="kw">if</span> <span class="kw">unsafe</span> { <span class="ident">PL_unify_list</span>(<span class="ident">list</span>.<span class="ident">term_ptr</span>(), <span class="ident">head</span>.<span class="ident">term_ptr</span>(), <span class="ident">tail</span>.<span class="ident">term_ptr</span>()) <span class="op">==</span> <span class="number">0</span> }
+                <span class="op">|</span><span class="op">|</span> <span class="ident">head</span>.<span class="ident">unify</span>(<span class="ident">t</span>).<span class="ident">is_err</span>() {
+                <span class="kw">return</span> <span class="bool-val">false</span>;
             }
-
-            <span class="ident">success</span> <span class="op">=</span> <span class="ident">head</span>.<span class="ident">unify</span>(<span class="ident">t</span>).<span class="ident">is_ok</span>();
 
             <span class="comment">// reset term - should really be a method on term</span>
             <span class="kw">unsafe</span> { <span class="ident">PL_put_variable</span>(<span class="ident">list</span>.<span class="ident">term_ptr</span>()) };
@@ -2227,10 +2225,8 @@
             <span class="ident">frame2</span>.<span class="ident">close</span>();
         }
 
-        <span class="kw">if</span> <span class="ident">success</span> {
-            <span class="ident">success</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">PL_unify_nil</span>(<span class="ident">list</span>.<span class="ident">term_ptr</span>()) <span class="op">!</span><span class="op">=</span> <span class="number">0</span> };
-            <span class="ident">frame</span>.<span class="ident">close</span>();
-        }
+        <span class="kw">let</span> <span class="ident">success</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">PL_unify_nil</span>(<span class="ident">list</span>.<span class="ident">term_ptr</span>()) <span class="op">!</span><span class="op">=</span> <span class="number">0</span> };
+        <span class="ident">frame</span>.<span class="ident">close</span>();
 
         <span class="ident">success</span>
     }
