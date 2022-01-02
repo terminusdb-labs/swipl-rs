@@ -137,7 +137,7 @@
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SwiplInfo</span> {
     <span class="doccomment">/// The SWI-Prolog version as an integer</span>
-    <span class="kw">pub</span> <span class="ident">version</span>: <span class="ident">u64</span>,
+    <span class="kw">pub</span> <span class="ident">version</span>: <span class="ident">u32</span>,
     <span class="doccomment">/// The main directory where SWI-Prolog is located</span>
     <span class="kw">pub</span> <span class="ident">swi_home</span>: <span class="ident">String</span>,
     <span class="doccomment">/// The directory subpath where dynamic libraries live</span>
@@ -187,7 +187,7 @@
         );
     }
 
-    <span class="kw">let</span> <span class="ident">version</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="ident">String::from_utf8_lossy</span>(<span class="kw-2">&amp;</span><span class="ident">output</span>.<span class="ident">stdout</span>).<span class="ident">parse</span>().<span class="ident">unwrap</span>();
+    <span class="kw">let</span> <span class="ident">version</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="ident">String::from_utf8_lossy</span>(<span class="kw-2">&amp;</span><span class="ident">output</span>.<span class="ident">stdout</span>).<span class="ident">parse</span>().<span class="ident">unwrap</span>();
 
     <span class="kw">let</span> <span class="ident">build_env_command</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>;
     <span class="kw">if</span> <span class="ident">version</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">80504</span> {
