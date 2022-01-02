@@ -8,6 +8,8 @@ use std::process::Command;
 /// Struct containing information about a SWI-Prolog installation
 #[derive(Debug)]
 pub struct SwiplInfo {
+    /// The SWI-Prolog version as an integer
+    pub version: u64,
     /// The main directory where SWI-Prolog is located
     pub swi_home: String,
     /// The directory subpath where dynamic libraries live
@@ -113,6 +115,7 @@ pub fn get_swipl_info() -> SwiplInfo {
     let header_dir = format!("{}/include", swi_home);
 
     SwiplInfo {
+        version,
         swi_home,
         pack_so_dir,
         cflags,
