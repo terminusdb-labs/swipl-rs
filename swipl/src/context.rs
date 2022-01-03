@@ -81,7 +81,7 @@ pub(crate) unsafe fn with_cleared_exception<R>(f: impl FnOnce() -> R) -> R {
 ///
 /// The exception term lives in a special place on the prolog stack
 /// where frame rewinds have no effect.
-pub struct ExceptionTerm<'a>(Term<'a>);
+pub struct ExceptionTerm<'a>(pub(crate) Term<'a>);
 
 impl<'a> ExceptionTerm<'a> {
     /// Clear the exception, so that the engine is no longer in an
@@ -99,15 +99,17 @@ impl<'a> ExceptionTerm<'a> {
     /// we still have a handle to it through self. The caller will
     /// have to ensure that the function that is passed in will not
     /// use this exception term.
-    unsafe fn with_cleared_exception<'b, C: ContextType, R>(
+    ///
+    /// Furthermore, the caller needs to ensure that the context that
+    /// is passed in is actually the active context.
+    pub(crate) unsafe fn with_cleared_exception<'b, R>(
         &'b self,
-        ctx: &'b Context<C>,
+        ctx: TermOrigin,
         f: impl FnOnce(&Term) -> R,
     ) -> R {
-        ctx.assert_activated();
         let backup_term_ref = PL_new_term_ref();
         assert!(PL_unify(backup_term_ref, self.0.term_ptr()) != 0);
-        let backup_term = Term::new(backup_term_ref, ctx.as_term_origin());
+        let backup_term = Term::new(backup_term_ref, ctx);
         PL_clear_exception();
 
         // should we handle panics?
@@ -258,7 +260,7 @@ impl<'a, T: ContextType> Context<'a, T> {
     pub fn with_exception<'b, R>(&'b self, f: impl FnOnce(Option<&Term>) -> R) -> R {
         self.with_uncleared_exception(|e| match e {
             None => f(None),
-            Some(e) => unsafe { e.with_cleared_exception(self, |e| f(Some(e))) },
+            Some(e) => unsafe { e.with_cleared_exception(self.as_term_origin(), |e| f(Some(e))) },
         })
     }
 

@@ -21,7 +21,7 @@ use crate::init::*;
 /// engine back into an inactive state.
 #[derive(Debug)]
 pub struct Engine {
-    engine_ptr: PL_engine_t,
+    pub(crate) engine_ptr: PL_engine_t,
     active: atomic::AtomicBool,
 }
 
@@ -139,6 +139,38 @@ impl Engine {
         EngineActivation {
             engine: self,
             _x: Default::default(),
+        }
+    }
+
+    /// Activate the engine without taking the inner activation status into account.
+    ///
+    /// This is used by async code to activate and deactivate the
+    /// engine whenever a future is entered.
+    #[allow(unused)]
+    pub(crate) fn unchecked_activate(&self) {
+        if Self::some_engine_active() {
+            panic!("tried to activate engine on a thread that already has an active engine");
+        }
+
+        let result = unsafe { PL_set_engine(self.engine_ptr, std::ptr::null_mut()) };
+        match result as u32 {
+            PL_ENGINE_SET => {}
+            PL_ENGINE_INUSE => panic!("engine already activated"),
+            PL_ENGINE_INVAL => panic!("engine handle not recognized by swipl"),
+            _ => panic!("unknown result from PL_set_engine"),
+        }
+    }
+
+    #[allow(unused)]
+    pub(crate) fn unchecked_deactivate(&self) {
+        if !self.is_active() {
+            panic!("tried to deactivate engine on a thread where it is not active");
+        }
+
+        let result = unsafe { PL_set_engine(std::ptr::null_mut(), std::ptr::null_mut()) };
+        match result as u32 {
+            PL_ENGINE_SET => {}
+            _ => panic!("unexpected result from PL_set_engine: {}", result),
         }
     }
 

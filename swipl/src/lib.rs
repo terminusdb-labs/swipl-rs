@@ -26,6 +26,9 @@ pub mod stream;
 pub mod term;
 pub mod text;
 
+#[cfg(feature = "async")]
+pub mod asynch;
+
 pub mod prelude;
 
 pub use swipl_macros::{

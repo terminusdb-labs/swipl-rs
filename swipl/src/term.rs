@@ -959,7 +959,8 @@ where
             // return false early.
             // note: || is short-circuiting OR
             if unsafe { PL_unify_list(list.term_ptr(), head.term_ptr(), tail.term_ptr()) == 0 }
-                || head.unify(t).is_err() {
+                || head.unify(t).is_err()
+            {
                 return false;
             }
 
