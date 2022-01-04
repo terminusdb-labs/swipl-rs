@@ -7,6 +7,7 @@ use crate::term::*;
 
 use async_trait::async_trait;
 use futures::future::CatchUnwind;
+use futures::FutureExt;
 use std::cell::Cell;
 use std::future::Future;
 use std::marker::PhantomData;
@@ -32,6 +33,14 @@ pub struct AsyncActivatedEngine {
     _x: PhantomData<()>,
 }
 
+impl AsyncActivatedEngine {
+    pub(crate) fn new() -> Self {
+        Self {
+            _x: PhantomData::default(),
+        }
+    }
+}
+
 unsafe impl AsyncContextType for AsyncActivatedEngine {}
 
 pub struct AsyncContext<'a, T: AsyncContextType> {
@@ -43,7 +52,7 @@ pub struct AsyncContext<'a, T: AsyncContextType> {
 }
 
 impl<'a, T: AsyncContextType> AsyncContext<'a, T> {
-    unsafe fn new_activated_without_parent(context: T, engine: PL_engine_t) -> Self {
+    pub(crate) unsafe fn new_activated_without_parent(context: T, engine: PL_engine_t) -> Self {
         AsyncContext {
             parent: None,
             context,
@@ -278,9 +287,18 @@ impl<'a, T: QueryableAsyncContextType> AsyncContext<'a, T> {
     }
 }
 
-struct EngineActivationFuture<'a, T, F: Future<Output = T> + Send + UnwindSafe> {
+pub struct EngineActivationFuture<'a, T, F: Future<Output = T> + Send + UnwindSafe> {
     engine: &'a Engine,
     inner: Option<CatchUnwind<F>>,
+}
+
+impl<'a, T, F: Future<Output = T> + Send + UnwindSafe> EngineActivationFuture<'a, T, F> {
+    pub(crate) fn new(engine: &'a Engine, inner: F) -> Self {
+        Self {
+            engine,
+            inner: Some(inner.catch_unwind()),
+        }
+    }
 }
 
 impl<'a, T, F: Future<Output = T> + Send + UnwindSafe> Future for EngineActivationFuture<'a, T, F> {

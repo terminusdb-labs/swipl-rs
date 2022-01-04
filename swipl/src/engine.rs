@@ -11,8 +11,14 @@
 //! engines, unless you're spawning extra threads.
 use std::sync::atomic;
 
+#[cfg(feature = "async")]
+use crate::asynch::*;
 use crate::fli::*;
 use crate::init::*;
+#[cfg(feature = "async")]
+use std::future::Future;
+#[cfg(feature = "async")]
+use std::panic::UnwindSafe;
 
 /// A Prolog engine.
 ///
@@ -214,6 +220,53 @@ impl Engine {
             PL_ENGINE_INVAL => panic!("engine handle not recognized by swipl"),
             _ => panic!("unknown result from PL_set_engine"),
         }
+    }
+
+    /// Activate this engine with a future. The future is constructed
+    /// using the function that is passed in. This function allows the
+    /// creation of a future that depends on a context, which will be
+    /// provided by this method. The future will be wrapped in another
+    /// future which will ensure that all polls happen with the engine
+    /// activated, deactivating the engine when poll returns.
+    ///
+    /// This will panic if an engine is already active on this
+    /// thread. Otherwise, it'll return an `EngineActivationFuture`
+    /// which will activate the engine every time it is polled.
+    ///
+    /// The engine will be deactivated when this future is
+    /// dropped. After that it can be used again.
+    #[cfg(feature = "async")]
+    pub fn activate_async<
+        T,
+        F: Future<Output = T> + Send + UnwindSafe,
+        Func: FnOnce(AsyncContext<AsyncActivatedEngine>) -> F,
+    >(
+        &self,
+        future_generator: Func,
+    ) -> EngineActivationFuture<T, F> {
+        if Self::some_engine_active() {
+            panic!("tried to activate engine on a thread that already has an active engine");
+        }
+
+        if self
+            .active
+            .compare_exchange(
+                false,
+                true,
+                atomic::Ordering::Relaxed,
+                atomic::Ordering::Relaxed,
+            )
+            .is_err()
+        {
+            panic!("engine already activated");
+        }
+
+        let context = unsafe {
+            AsyncContext::new_activated_without_parent(AsyncActivatedEngine::new(), self.engine_ptr)
+        };
+        let future = future_generator(context);
+
+        EngineActivationFuture::new(self, future)
     }
 }
 
