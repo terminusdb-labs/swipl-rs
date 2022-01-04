@@ -142,6 +142,11 @@ impl Engine {
         }
     }
 
+    #[allow(unused)]
+    pub(crate) unsafe fn set_deactivated(&self) {
+        self.active.store(false, atomic::Ordering::Relaxed);
+    }
+
     /// Activate the engine without taking the inner activation status into account.
     ///
     /// This is used by async code to activate and deactivate the

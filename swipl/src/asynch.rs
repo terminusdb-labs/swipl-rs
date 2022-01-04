@@ -192,6 +192,88 @@ impl<'a, T: AsyncContextType> Drop for AsyncContext<'a, T> {
     }
 }
 
+impl<'a> AsyncContext<'a, Frame> {
+    /// Close the frame.
+    ///
+    /// After closing, any terms created in the context of this frame
+    /// will no longer be usable. Any data created and put in terms
+    /// that are still in scope will be retained.
+    pub fn close(mut self) {
+        // unsafe justification: reasons for safety are the same as in a normal drop. Also, since we just set framestate to discarded, the drop won't try to subsequently close this same frame.
+        unsafe { self.context.close(); }
+    }
+
+    /// Discard the frame.
+    ///
+    /// This will destroy the frame. Any terms created in the context
+    /// of this frame will no longer be usable. Furthermore, any term
+    /// manipulation that happened since opening this frame will be
+    /// undone. This is equivalent to a rewind followed by a close.
+    pub fn discard(self) {
+        // would happen automatically but might as well be explicit
+        std::mem::drop(self)
+    }
+
+    /// Rewind the frame.
+    ///
+    /// This will rewind the frame. Any terms created in the context
+    /// of this frame will no longer be usable. Furthermore, any term
+    /// manipulation that happened since opening this frame will be
+    /// undone.
+    ///
+    /// This returns a new context which is to be used for further
+    /// manipulation of this frame.
+    pub fn rewind(mut self) -> AsyncContext<'a, Frame> {
+        self.assert_activated();
+        // unsafe justification: We just checked that this frame right here is currently the active context. Therefore it can be rewinded.
+        unsafe { self.context.rewind(); }
+
+        self
+    }
+}
+
+/// A trait marker for context types for which it is safe to open frames.
+pub unsafe trait FrameableAsyncContextType: AsyncContextType {}
+unsafe impl FrameableAsyncContextType for AsyncActivatedEngine {}
+
+unsafe impl AsyncContextType for Frame {}
+unsafe impl FrameableAsyncContextType for Frame {}
+
+impl<'a, C: FrameableAsyncContextType> AsyncContext<'a, C> {
+    /// Open a new frame.
+    ///
+    /// This returns a new context for the frame. The current context
+    /// will become inactive, until the new context is dropped. This
+    /// may happen implicitely, when it goes out of scope, or
+    /// explicitely, by calling `close()` or `discard()` on it.
+    pub fn open_frame(&self) -> AsyncContext<Frame> {
+        self.assert_activated();
+        let frame = unsafe {Frame::open()};
+
+        self.activated.set(false);
+        unsafe { AsyncContext::new_activated(self, frame, self.engine) }
+    }
+}
+
+/// A trait marker for context types for hich it is safe to open queries and create new term refs.
+pub unsafe trait QueryableAsyncContextType: FrameableAsyncContextType {}
+unsafe impl QueryableAsyncContextType for AsyncActivatedEngine {}
+unsafe impl QueryableAsyncContextType for Frame {}
+
+impl<'a, T: QueryableAsyncContextType> AsyncContext<'a, T> {
+    /// Create a new Term reference in the current context.
+    ///
+    /// The term ref takes on the lifetime of the Context reference,
+    /// ensuring that it cannot outlive the context that created it.
+    pub fn new_term_ref(&self) -> Term {
+        self.assert_activated();
+        unsafe {
+            let term = PL_new_term_ref();
+            Term::new(term, self.as_term_origin())
+        }
+    }
+}
+
 struct EngineActivationFuture<'a, T, F: Future<Output = T> + Send + UnwindSafe> {
     engine: &'a Engine,
     inner: Option<CatchUnwind<F>>,
@@ -254,6 +336,10 @@ impl<'a, T, F: Future<Output = T> + Send + UnwindSafe> Drop for EngineActivation
 
             if let Err(e) = result {
                 resume_unwind(e);
+            }
+
+            unsafe {
+                self.engine.set_deactivated();
             }
         }
     }

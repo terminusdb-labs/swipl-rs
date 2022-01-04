@@ -371,6 +371,7 @@ pub unsafe fn unmanaged_engine_context() -> Context<'static, Unmanaged> {
     Context::new_activated_without_parent(Unmanaged { _x: () }, current)
 }
 
+#[derive(PartialEq,Eq)]
 enum FrameState {
     Active,
     Closed,
@@ -476,6 +477,30 @@ pub struct Frame {
     state: FrameState,
 }
 
+impl Frame {
+    pub(crate) unsafe fn open() -> Frame {
+        let fid = PL_open_foreign_frame();
+
+        Frame {
+            fid,
+            state: FrameState::Active,
+        }
+    }
+
+    pub(crate) unsafe fn close(&mut self) {
+        if self.state == FrameState::Active {
+            self.state = FrameState::Closed;
+            PL_close_foreign_frame(self.fid);
+        }
+    }
+
+    pub(crate) unsafe fn rewind(&mut self) {
+        if self.state == FrameState::Active {
+            PL_rewind_foreign_frame(self.fid);
+        }
+    }
+}
+
 unsafe impl ContextType for Frame {}
 
 impl Drop for Frame {
@@ -502,9 +527,8 @@ impl<'a> Context<'a, Frame> {
     /// will no longer be usable. Any data created and put in terms
     /// that are still in scope will be retained.
     pub fn close(mut self) {
-        self.context.state = FrameState::Closed;
-        // unsafe justification: reasons for safety are the same as in a normal drop. Also, since we just set framestate to discarded, the drop won't try to subsequently close this same frame.
-        unsafe { PL_close_foreign_frame(self.context.fid) };
+        // unsafe justification: reasons for safety are the same as in a normal drop. Also, since we just set framestate to closed, the drop won't try to subsequently close this same frame.
+        unsafe { self.context.close() };
     }
 
     /// Discard the frame.
@@ -527,10 +551,10 @@ impl<'a> Context<'a, Frame> {
     ///
     /// This returns a new context which is to be used for further
     /// manipulation of this frame.
-    pub fn rewind(self) -> Context<'a, Frame> {
+    pub fn rewind(mut self) -> Context<'a, Frame> {
         self.assert_activated();
         // unsafe justification: We just checked that this frame right here is currently the active context. Therefore it can be rewinded.
-        unsafe { PL_rewind_foreign_frame(self.context.fid) };
+        unsafe { self.context.rewind(); }
 
         self
     }
@@ -551,12 +575,7 @@ impl<'a, C: FrameableContextType> Context<'a, C> {
     /// explicitely, by calling `close()` or `discard()` on it.
     pub fn open_frame(&self) -> Context<Frame> {
         self.assert_activated();
-        let fid = unsafe { PL_open_foreign_frame() };
-
-        let frame = Frame {
-            fid,
-            state: FrameState::Active,
-        };
+        let frame = unsafe {Frame::open()};
 
         self.activated.set(false);
         unsafe { Context::new_activated(self, frame, self.engine) }
@@ -571,10 +590,10 @@ unsafe impl QueryableContextType for Frame {}
 
 prolog! {
     #[module("user")]
-    fn read_term_from_atom(atom_term, result, options);
+    pub(crate) fn read_term_from_atom(atom_term, result, options);
     #[module("user")]
     #[name("call")]
-    fn open_call(term);
+    pub(crate) fn open_call(term);
 }
 
 impl<'a, T: QueryableContextType> Context<'a, T> {
