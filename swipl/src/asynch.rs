@@ -200,7 +200,9 @@ impl<'a> AsyncContext<'a, Frame> {
     /// that are still in scope will be retained.
     pub fn close(mut self) {
         // unsafe justification: reasons for safety are the same as in a normal drop. Also, since we just set framestate to discarded, the drop won't try to subsequently close this same frame.
-        unsafe { self.context.close(); }
+        unsafe {
+            self.context.close();
+        }
     }
 
     /// Discard the frame.
@@ -226,7 +228,9 @@ impl<'a> AsyncContext<'a, Frame> {
     pub fn rewind(mut self) -> AsyncContext<'a, Frame> {
         self.assert_activated();
         // unsafe justification: We just checked that this frame right here is currently the active context. Therefore it can be rewinded.
-        unsafe { self.context.rewind(); }
+        unsafe {
+            self.context.rewind();
+        }
 
         self
     }
@@ -248,7 +252,7 @@ impl<'a, C: FrameableAsyncContextType> AsyncContext<'a, C> {
     /// explicitely, by calling `close()` or `discard()` on it.
     pub fn open_frame(&self) -> AsyncContext<Frame> {
         self.assert_activated();
-        let frame = unsafe {Frame::open()};
+        let frame = unsafe { Frame::open() };
 
         self.activated.set(false);
         unsafe { AsyncContext::new_activated(self, frame, self.engine) }

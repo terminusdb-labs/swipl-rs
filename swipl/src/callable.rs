@@ -270,6 +270,33 @@ impl<const N: usize> Callable<N> for CallablePredicate<N> {
     }
 }
 
+pub struct CallSpec<'a, C: Callable<N>, const N: usize> {
+    callable: C,
+    module: Option<Module>,
+    args: [&'a Term<'a>; N],
+}
+
+impl<'a, C: Callable<N>, const N: usize> CallSpec<'a, C, N> {
+    pub fn new(callable: C, args: [&'a Term<'a>; N]) -> Self {
+        Self::new_in_module(callable, None, args)
+    }
+
+    pub fn new_in_module(callable: C, module: Option<Module>, args: [&'a Term<'a>; N]) -> Self {
+        Self {
+            callable,
+            module,
+            args,
+        }
+    }
+
+    pub fn open<'b, CType: ContextType>(
+        self,
+        context: &'b Context<CType>,
+    ) -> Context<'b, OpenQuery> {
+        self.callable.open(context, self.module, self.args)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
@@ -280,8 +307,8 @@ mod tests {
         let context: Context<_> = activation.into();
 
         let term = term! {context: flurps(flargh)}?;
-        context.call_once(pred!(writeq / 1), [&term]).unwrap();
-        context.call_once(pred!(nl / 0), []).unwrap();
+        context.call_pred_once(pred!(writeq / 1), [&term]).unwrap();
+        context.call_pred_once(pred!(nl / 0), []).unwrap();
 
         Ok(())
     }

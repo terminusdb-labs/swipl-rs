@@ -371,7 +371,7 @@ pub unsafe fn unmanaged_engine_context() -> Context<'static, Unmanaged> {
     Context::new_activated_without_parent(Unmanaged { _x: () }, current)
 }
 
-#[derive(PartialEq,Eq)]
+#[derive(PartialEq, Eq)]
 enum FrameState {
     Active,
     Closed,
@@ -554,7 +554,9 @@ impl<'a> Context<'a, Frame> {
     pub fn rewind(mut self) -> Context<'a, Frame> {
         self.assert_activated();
         // unsafe justification: We just checked that this frame right here is currently the active context. Therefore it can be rewinded.
-        unsafe { self.context.rewind(); }
+        unsafe {
+            self.context.rewind();
+        }
 
         self
     }
@@ -575,7 +577,7 @@ impl<'a, C: FrameableContextType> Context<'a, C> {
     /// explicitely, by calling `close()` or `discard()` on it.
     pub fn open_frame(&self) -> Context<Frame> {
         self.assert_activated();
-        let frame = unsafe {Frame::open()};
+        let frame = unsafe { Frame::open() };
 
         self.activated.set(false);
         unsafe { Context::new_activated(self, frame, self.engine) }
@@ -619,21 +621,25 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
     /// #  let activation = engine.activate();
     /// #  let context: Context<_> = activation.into();
     ///
-    ///    let query = context.open(pred!{format/2},
-    ///                             [&term!{context: "hello, ~q~n"}?,
-    ///                              &term!{context: ["world"]}?]);
+    ///    let query = context.open_pred(pred!{format/2},
+    ///                                  [&term!{context: "hello, ~q~n"}?,
+    ///                                  &term!{context: ["world"]}?]);
     ///    query.next_solution()?;
     ///    query.cut();
     /// #
     /// #  Ok(())
     /// # }
     /// ```
-    pub fn open<C: Callable<N>, const N: usize>(
+    pub fn open_pred<C: Callable<N>, const N: usize>(
         &self,
         callable: C,
         args: [&Term; N],
     ) -> Context<OpenQuery> {
-        callable.open(self, None, args)
+        self.open(CallSpec::new(callable, args))
+    }
+
+    pub fn open<C: Callable<N>, const N: usize>(&self, call: CallSpec<C, N>) -> Context<OpenQuery> {
+        call.open(self)
     }
 
     /// Open a query, get a single result and cut.
@@ -646,33 +652,30 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
     /// #  let activation = engine.activate();
     /// #  let context: Context<_> = activation.into();
     ///
-    ///    context.call_once(pred!{format/2},
-    ///                      [&term!{context: "hello, ~q~n"}?,
-    ///                      &term!{context: ["world"]}?])?;
+    ///    context.call_pred_once(pred!{format/2},
+    ///                           [&term!{context: "hello, ~q~n"}?,
+    ///                           &term!{context: ["world"]}?])?;
     /// #
     /// #  Ok(())
     /// # }
     /// ```
-    pub fn call_once<C: Callable<N>, const N: usize>(
+    pub fn call_pred_once<C: Callable<N>, const N: usize>(
         &self,
         callable: C,
         args: [&Term; N],
     ) -> PrologResult<()> {
-        let query = callable.open(self, None, args);
+        self.call_once(CallSpec::new(callable, args))
+    }
+
+    pub fn call_once<C: Callable<N>, const N: usize>(
+        &self,
+        call: CallSpec<C, N>,
+    ) -> PrologResult<()> {
+        let query = call.open(self);
         query.next_solution()?;
         query.cut();
 
         Ok(())
-    }
-
-    /// Open a query, optionally passing in a context module.
-    pub fn open_with_module<C: Callable<N>, const N: usize>(
-        &self,
-        callable: C,
-        module: Option<Module>,
-        args: [&Term; N],
-    ) -> Context<OpenQuery> {
-        callable.open(self, module, args)
     }
 
     /// Turn the given string into a prolog term.
@@ -691,7 +694,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         assert!(arg1.unify(s).is_ok());
         assert!(arg3.unify(Nil).is_ok());
 
-        read_term_from_atom(&frame, &arg1, &term, &arg3).once()?;
+        frame.call_once(read_term_from_atom(&arg1, &term, &arg3))?;
         frame.close();
 
         Ok(term)
@@ -699,7 +702,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
 
     /// Open a query for the given term using the `call/1` prolog predicate.
     pub fn open_call(&'a self, t: &Term<'a>) -> Context<'a, OpenQuery> {
-        open_call(self, t)
+        self.open(open_call(t))
     }
 
     /// Turn a result into a `PrologResult`.
@@ -874,7 +877,7 @@ mod tests {
         term2.unify_arg(1, 40_u64)?;
         term2.unify_arg(2, 2_u64)?;
 
-        let query = context.open(callable, [&term1, &term2]);
+        let query = context.open_pred(callable, [&term1, &term2]);
         let next = query.next_solution()?;
 
         assert!(!next);
@@ -906,7 +909,7 @@ mod tests {
         assert!(term2.unify_arg(2, 2_u64).is_ok());
 
         {
-            let query = context.open(callable, [&term1, &term2]);
+            let query = context.open_pred(callable, [&term1, &term2]);
             let next = query.next_solution()?;
 
             assert!(!next);
@@ -939,7 +942,7 @@ mod tests {
         term2.unify_arg(2, 2_u64)?;
 
         {
-            let query = context.open(callable, [&term1, &term2]);
+            let query = context.open_pred(callable, [&term1, &term2]);
             let next = query.next_solution()?;
 
             assert!(!next);
@@ -973,7 +976,7 @@ mod tests {
         term2.unify_arg(2, 2_u64)?;
 
         {
-            let query = context.open(callable, [&term1, &term2]);
+            let query = context.open_pred(callable, [&term1, &term2]);
             let next = query.next_solution()?;
 
             assert!(!next);
@@ -1037,7 +1040,7 @@ mod tests {
         let predicate = Predicate::new(functor, module);
         let callable = CallablePredicate::new(predicate).unwrap();
 
-        let query = context.open(callable, []);
+        let query = context.open_pred(callable, []);
         assert!(!query.next_solution()?);
 
         Ok(())
@@ -1089,11 +1092,11 @@ mod tests {
         let term1 = context.new_term_ref();
         let term2 = context.new_term_ref();
 
-        let query = prolog_arithmetic(&context, &term1, &term2);
+        let query = context.open(prolog_arithmetic(&term1, &term2));
         assert!(query.next_solution().unwrap_err().is_exception());
         assert!(query.has_exception());
         query.discard();
-        let _query2 = prolog_arithmetic(&context, &term1, &term2);
+        let _query2 = context.open(prolog_arithmetic(&term1, &term2));
     }
 
     predicates! {
@@ -1117,7 +1120,7 @@ mod tests {
         let predicate = Predicate::new(functor, module);
         let callable = CallablePredicate::new(predicate).unwrap();
 
-        let query = context.open(callable, [&term]);
+        let query = context.open_pred(callable, [&term]);
         assert!(!query.next_solution()?);
         assert_eq!(42, term.get::<u64>().unwrap());
 
@@ -1133,7 +1136,7 @@ mod tests {
         let term = context.new_term_ref();
         let expr = context.term_from_string("2+2").unwrap();
 
-        let q = prolog_arithmetic(&context, &term, &expr);
+        let q = context.open(prolog_arithmetic(&term, &expr));
         assert!(q.next_solution().is_ok());
         assert_eq!(4, term.get::<u64>().unwrap());
     }
