@@ -19,7 +19,7 @@
 </pre><pre class="rust"><code><span class="doccomment">//! Re-export of the swipl-fli crate.</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">swipl_fli</span>::<span class="kw-2">*</span>;
 
-<span class="doccomment">/// Retrieve the defautl exception.</span>
+<span class="doccomment">/// Retrieve the default exception.</span>
 <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">pl_default_exception</span>() -&gt; <span class="ident">term_t</span> {
     <span class="comment">// So why this ugly transmute?</span>
     <span class="comment">// In swipl version 8.5.5, query handles change from being a</span>
