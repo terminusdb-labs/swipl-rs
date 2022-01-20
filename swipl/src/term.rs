@@ -34,6 +34,7 @@ use super::context::*;
 use super::engine::*;
 use super::fli::*;
 use super::result::*;
+use std::cmp::{Ordering, PartialOrd};
 use std::convert::TryInto;
 use std::fmt;
 use std::fmt::Debug;
@@ -381,6 +382,45 @@ impl<'a> Term<'a> {
     /// fli. Otherwise, the result is `Ok(())`.
     pub fn put_val<T: TermPutable>(&self, val: T) -> NonFailingPrologResult<()> {
         self.put(&val)
+    }
+}
+
+impl<'a> PartialEq for Term<'a> {
+    fn eq(&self, other: &Term) -> bool {
+        self.assert_term_handling_possible();
+        if self.origin.origin_engine_ptr() != other.origin.origin_engine_ptr() {
+            panic!("terms being compard are not part of the same engine");
+        }
+
+        let result = unsafe { PL_compare(self.term_ptr(), other.term_ptr()) };
+
+        result == 0
+    }
+}
+impl<'a> PartialOrd for Term<'a> {
+    fn partial_cmp(&self, other: &Term) -> Option<Ordering> {
+        self.assert_term_handling_possible();
+        if self.origin.origin_engine_ptr() != other.origin.origin_engine_ptr() {
+            panic!("terms being compard are not part of the same engine");
+        }
+
+        let result = unsafe { PL_compare(self.term_ptr(), other.term_ptr()) };
+
+        Some(if result < 0 {
+            Ordering::Less
+        } else if result == 0 {
+            Ordering::Equal
+        } else {
+            Ordering::Greater
+        })
+    }
+}
+
+impl<'a> Eq for Term<'a> {}
+
+impl<'a> Ord for Term<'a> {
+    fn cmp(&self, other: &Term) -> Ordering {
+        self.partial_cmp(other).unwrap()
     }
 }
 
@@ -1039,6 +1079,7 @@ unsafe impl<T: TermGetable> TermGetable for Vec<T> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::context::*;
     use crate::engine::*;
     use crate::result::*;
@@ -1261,5 +1302,55 @@ mod tests {
         term.unify([1u64, 2u64, 3u64].as_slice()).unwrap();
 
         assert!(!attempt(term.unify([2u64, 2u64, 3u64].as_slice())).unwrap());
+    }
+
+    #[test]
+    fn term_equality() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let [term1, term2, term3] = context.new_term_refs();
+        term1.unify(42_u64).unwrap();
+        term2.unify(42_u64).unwrap();
+        term3.unify(43_u64).unwrap();
+        assert_eq!(term1, term2);
+        assert_ne!(term1, term3);
+    }
+
+    #[test]
+    fn term_equality_different_context() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term1 = context.new_term_ref();
+        let frame = context.open_frame();
+        let [term2, term3] = frame.new_term_refs();
+
+        term1.unify(42_u64).unwrap();
+        term2.unify(42_u64).unwrap();
+        term3.unify(43_u64).unwrap();
+        assert_eq!(term1, term2);
+        assert_ne!(term1, term3);
+    }
+
+    #[test]
+    fn term_order() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let mut terms: [Term; 3] = context.new_term_refs();
+
+        terms[0].unify("foo").unwrap();
+        terms[1].unify("bar").unwrap();
+        terms[2].unify("baz").unwrap();
+
+        terms.sort();
+
+        assert_eq!("bar", terms[0].get::<String>().unwrap());
+        assert_eq!("baz", terms[1].get::<String>().unwrap());
+        assert_eq!("foo", terms[2].get::<String>().unwrap());
     }
 }
