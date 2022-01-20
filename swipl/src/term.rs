@@ -34,11 +34,11 @@ use super::context::*;
 use super::engine::*;
 use super::fli::*;
 use super::result::*;
+use std::cmp::{Ordering, PartialOrd};
 use std::convert::TryInto;
 use std::fmt;
 use std::fmt::Debug;
 use std::os::raw::c_char;
-use std::cmp::{PartialOrd, Ordering};
 
 use swipl_macros::term;
 
@@ -408,11 +408,9 @@ impl<'a> PartialOrd for Term<'a> {
 
         Some(if result < 0 {
             Ordering::Less
-        }
-        else if result == 0 {
+        } else if result == 0 {
             Ordering::Equal
-        }
-        else {
+        } else {
             Ordering::Greater
         })
     }
@@ -1081,6 +1079,7 @@ unsafe impl<T: TermGetable> TermGetable for Vec<T> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::context::*;
     use crate::engine::*;
     use crate::result::*;
@@ -1311,7 +1310,7 @@ mod tests {
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
-        let [term1,term2,term3] = context.new_term_refs();
+        let [term1, term2, term3] = context.new_term_refs();
         term1.unify(42_u64).unwrap();
         term2.unify(42_u64).unwrap();
         term3.unify(43_u64).unwrap();
@@ -1327,7 +1326,7 @@ mod tests {
 
         let term1 = context.new_term_ref();
         let frame = context.open_frame();
-        let [term2,term3] = frame.new_term_refs();
+        let [term2, term3] = frame.new_term_refs();
 
         term1.unify(42_u64).unwrap();
         term2.unify(42_u64).unwrap();
@@ -1342,7 +1341,7 @@ mod tests {
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
-        let mut terms = context.new_term_refs_vec(3);
+        let mut terms: [Term; 3] = context.new_term_refs();
 
         terms[0].unify("foo").unwrap();
         terms[1].unify("bar").unwrap();
