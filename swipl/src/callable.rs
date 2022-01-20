@@ -47,8 +47,7 @@ impl<const N: usize> LazyCallablePredicate<N> {
             loaded = Predicate::new(functor, module).predicate_ptr();
 
             self.predicate
-                .store(loaded as *mut c_void,
-                       std::sync::atomic::Ordering::Relaxed);
+                .store(loaded as *mut c_void, std::sync::atomic::Ordering::Relaxed);
         }
 
         unsafe { CallablePredicate::wrap(loaded) }

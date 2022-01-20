@@ -53,10 +53,7 @@ pub fn get_swipl_info() -> SwiplInfo {
         .unwrap();
 
     if !output.status.success() {
-        panic!(
-            "Error retrieving version number using swipl: {:?}",
-            output
-        );
+        panic!("Error retrieving version number using swipl: {:?}", output);
     }
 
     let version: u32 = String::from_utf8_lossy(&output.stdout).parse().unwrap();
@@ -65,8 +62,7 @@ pub fn get_swipl_info() -> SwiplInfo {
     if version >= 80504 {
         // build_environment predicate moved and is now called somewhat differently
         build_env_command = "use_module(library(build/tools)), build_tools:build_environment(Env, []), memberchk('SWIHOME'=Swihome, Env), memberchk('PACKSODIR'=Packsodir, Env), memberchk('CFLAGS'=Cflags, Env), memberchk('LDSOFLAGS'=Ldflags, Env), format('~s~n~s~n~s~n~s~n', [Swihome, Packsodir, Cflags, Ldflags])";
-    }
-    else {
+    } else {
         build_env_command = "use_module(library(prolog_pack)), prolog_pack:build_environment(Env), memberchk('SWIHOME'=Swihome, Env), memberchk('PACKSODIR'=Packsodir, Env), memberchk('CFLAGS'=Cflags, Env), memberchk('LDSOFLAGS'=Ldflags, Env), format('~s~n~s~n~s~n~s~n', [Swihome, Packsodir, Cflags, Ldflags])";
     }
 
