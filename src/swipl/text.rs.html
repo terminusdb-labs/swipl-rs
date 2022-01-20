@@ -45,6 +45,7 @@
 <span id="45">45</span>
 <span id="46">46</span>
 <span id="47">47</span>
+<span id="48">48</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Support for easy text extraction from prolog.</span>
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::fli</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::term</span>::<span class="kw-2">*</span>;
@@ -61,6 +62,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// `PrologText` can be derefed to an `&amp;String`, which means it&#39;s</span>
 <span class="doccomment">/// automatically usable in most contexts that require one of those.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PartialEq</span>,<span class="ident">Eq</span>,<span class="ident">PartialOrd</span>,<span class="ident">Ord</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PrologText</span>(<span class="ident">String</span>);
 
 <span class="kw">impl</span> <span class="ident">std::ops::Deref</span> <span class="kw">for</span> <span class="ident">PrologText</span> {
