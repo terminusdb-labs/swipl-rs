@@ -58,6 +58,7 @@ use super::result::*;
 use super::term::*;
 
 use std::cell::Cell;
+use std::mem::MaybeUninit;
 
 use swipl_macros::{prolog, term};
 
@@ -588,6 +589,53 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         }
     }
 
+    /// create an array of term references.
+    ///
+    /// The term refs all take on the lifetime of the Context
+    /// reference, ensuring that it cannot outlive the context that
+    /// created it.
+    pub fn new_term_refs<const N: usize>(&self) -> [Term; N] {
+        // TODO: this should be a compile time thing ideally
+        if N > i32::MAX as usize {
+            panic!("too many term refs requested: {}", N);
+        }
+
+        let mut term_ptr = unsafe { PL_new_term_refs(N as i32) };
+        let mut result: [MaybeUninit<Term>; N] = unsafe { MaybeUninit::uninit().assume_init() };
+        for i in 0..N {
+            let term = unsafe { Term::new(term_ptr, self.as_term_origin()) };
+            result[i].write(term);
+            term_ptr += 1;
+        }
+
+        // This is potentially rather dangerous, but seems to work.
+        let magic = result.as_ptr() as *const [Term; N];
+        std::mem::forget(result);
+
+        unsafe { magic.read() }
+    }
+
+    /// create a vec of term references.
+    ///
+    /// The term refs all take on the lifetime of the Context
+    /// reference, ensuring that it cannot outlive the context that
+    /// created it.
+    pub fn new_term_refs_vec(&self, count: usize) -> Vec<Term> {
+        if count > i32::MAX as usize {
+            panic!("too many term refs requested: {}", count);
+        }
+
+        let mut term_ptr = unsafe { PL_new_term_refs(count as i32) };
+        let mut result = Vec::with_capacity(count);
+        for _ in 0..count {
+            let term = unsafe { Term::new(term_ptr, self.as_term_origin()) };
+            result.push(term);
+            term_ptr += 1;
+        }
+
+        result
+    }
+
     /// Open a query.
     ///
     /// Example:
@@ -742,14 +790,71 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
     /// automatically thrown away. It is the caller's responsibility
     /// to clean up terms if this is required, for example by using a
     /// frame.
-    pub fn term_list_iter<'b>(&'b self, term: &Term) -> TermListIterator<'b, 'a, T> {
+    pub fn term_list_iter<'b>(&'b self, list: &Term) -> TermListIterator<'b, 'a, T> {
         self.assert_activated();
         let cur = self.new_term_ref();
-        cur.unify(term).expect("unifying terms should work");
+        cur.unify(list).expect("unifying terms should work");
         TermListIterator {
             context: self,
             cur: cur,
         }
+    }
+
+    /// Retrieve a term list as a fixed-size array.
+    ///
+    /// This is useful when a term contains a list whose supposed size
+    /// is known at compile time. If the actual list is larger than
+    /// this, only the first N elements are used. If the list is
+    /// smaller, the remaining terms in the array remain variables.
+    pub fn term_list_array<const N: usize>(&self, list: &Term) -> [Term; N] {
+        // allocate these terms inside the scope of this context
+        let terms = self.new_term_refs();
+
+        let frame = self.open_frame();
+        let terms_iter = terms.iter();
+        let list_iter = frame.term_list_iter(list);
+
+        for (term, elt) in terms_iter.zip(list_iter) {
+            term.unify(elt).unwrap();
+        }
+        frame.close();
+
+        terms
+    }
+
+    /// Retrieve a term list as a Vec.
+    ///
+    /// This will iterate over the given prolog list twice - once to
+    /// figure out its size, and then another time to actually
+    /// retrieve the elements. This is done so that we can allocate
+    /// the terms in a way that leaves no unused terms behind on the
+    /// stack (as would normally happen when iterating the list using
+    /// [term_list_iter](Context::term_list_iter)).
+    ///
+    /// If you know in advance what the size is going to be (or you
+    /// know a reasonable upper bound), consider using
+    /// [term_list_array](Context::term_list_array). If you just wish
+    /// to iterate over the elements, or don't care about garbage
+    /// terms being created, consider using
+    /// [term_list_iter](Context::term_list_iter).
+    pub fn term_list_vec(&self, list: &Term) -> Vec<Term> {
+        let frame = self.open_frame();
+        let count = frame.term_list_iter(list).count();
+        frame.discard();
+
+        // allocate these terms inside the scope of this context
+        let terms = self.new_term_refs_vec(count);
+
+        let frame = self.open_frame();
+        let terms_iter = terms.iter();
+        let list_iter = frame.term_list_iter(list);
+
+        for (term, elt) in terms_iter.zip(list_iter) {
+            term.unify(elt).unwrap();
+        }
+        frame.close();
+
+        terms
     }
 }
 
@@ -1211,5 +1316,61 @@ mod tests {
         }
 
         assert_eq!(5, count);
+    }
+
+    #[test]
+    fn term_list_to_array() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let list = context.term_from_string("[5, foo, \"bar\"]").unwrap();
+
+        let terms: [Term; 3] = context.term_list_array(&list);
+        assert_eq!(5, terms[0].get::<u64>().unwrap());
+        assert_eq!(Atom::new("foo"), terms[1].get::<Atom>().unwrap());
+        assert_eq!("bar", terms[2].get::<String>().unwrap());
+    }
+
+    #[test]
+    fn term_list_to_array_large() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let list = context.term_from_string("[5, foo, \"bar\"]").unwrap();
+
+        let terms: [Term; 4] = context.term_list_array(&list);
+        assert_eq!(5, terms[0].get::<u64>().unwrap());
+        assert_eq!(Atom::new("foo"), terms[1].get::<Atom>().unwrap());
+        assert_eq!("bar", terms[2].get::<String>().unwrap());
+        assert!(terms[3].is_var());
+    }
+
+    #[test]
+    fn term_list_to_array_small() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let list = context.term_from_string("[5, foo, \"bar\"]").unwrap();
+
+        let terms: [Term; 2] = context.term_list_array(&list);
+        assert_eq!(5, terms[0].get::<u64>().unwrap());
+        assert_eq!(Atom::new("foo"), terms[1].get::<Atom>().unwrap());
+    }
+
+    #[test]
+    fn term_list_to_vec() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let list = context.term_from_string("[5, foo, \"bar\"]").unwrap();
+        let terms = context.term_list_vec(&list);
+        assert_eq!(3, terms.len());
+        assert_eq!(5, terms[0].get::<u64>().unwrap());
+        assert_eq!(Atom::new("foo"), terms[1].get::<Atom>().unwrap());
+        assert_eq!("bar", terms[2].get::<String>().unwrap());
     }
 }
