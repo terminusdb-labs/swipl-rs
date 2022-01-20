@@ -729,6 +729,54 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
             }
         }
     }
+
+    /// Iterate over a term list.
+    ///
+    /// this returns a TermListIterator made out of the given
+    /// term. The TermListIterator will assume this is a cons cell,
+    /// and unify head and tail on each step of the iterator,
+    /// returning the head term and storing the tail term. If this
+    /// unification fails, the iterator stops.
+    ///
+    /// Note that the terms created by this iterator are not
+    /// automatically thrown away. It is the caller's responsibility
+    /// to clean up terms if this is required, for example by using a
+    /// frame.
+    pub fn term_list_iter<'b>(&'b self, term: &Term) -> TermListIterator<'b, 'a, T> {
+        self.assert_activated();
+        let cur = self.new_term_ref();
+        cur.unify(term).expect("unifying terms should work");
+        TermListIterator {
+            context: self,
+            cur: cur,
+        }
+    }
+}
+
+/// An iterator over a term list.
+///
+/// See [`Context::term_list_iter`] for more information.
+pub struct TermListIterator<'a, 'b, CT: QueryableContextType> {
+    context: &'a Context<'b, CT>,
+    cur: Term<'a>,
+}
+
+impl<'a, 'b, CT: QueryableContextType> Iterator for TermListIterator<'a, 'b, CT> {
+    type Item = Term<'a>;
+
+    fn next(&mut self) -> Option<Term<'a>> {
+        let head = self.context.new_term_ref();
+        let tail = self.context.new_term_ref();
+        let success =
+            unsafe { PL_get_list(self.cur.term_ptr(), head.term_ptr(), tail.term_ptr()) != 0 };
+
+        if success {
+            self.cur = tail;
+            Some(head)
+        } else {
+            None
+        }
+    }
 }
 
 /// Trait for turning errors into prolog exceptions
@@ -1115,5 +1163,53 @@ mod tests {
         let q = prolog_arithmetic(&context, &term, &expr);
         assert!(q.next_solution().is_ok());
         assert_eq!(4, term.get::<u64>().unwrap());
+    }
+
+    #[test]
+    fn iterate_over_term_list() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let list = context.term_from_string("[5, foo, \"bar\"]").unwrap();
+
+        let mut iter = context.term_list_iter(&list);
+        let first = iter.next().unwrap();
+        let second = iter.next().unwrap();
+        let third = iter.next().unwrap();
+        assert!(iter.next().is_none());
+
+        assert_eq!(5, first.get::<u64>().unwrap());
+        assert_eq!(Atom::new("foo"), second.get::<Atom>().unwrap());
+        assert_eq!("bar", third.get::<String>().unwrap());
+    }
+
+    #[test]
+    fn iterate_over_term_that_is_not_a_list() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let list = context.term_from_string("foo(bar, baz)").unwrap();
+
+        let mut iter = context.term_list_iter(&list);
+        assert!(iter.next().is_none());
+    }
+
+    #[test]
+    fn loop_over_term_list() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let list = context.term_from_string("[42, 42, 42, 42, 42]").unwrap();
+
+        let mut count = 0;
+        for term in context.term_list_iter(&list) {
+            count += 1;
+            assert_eq!(42, term.get::<u64>().unwrap());
+        }
+
+        assert_eq!(5, count);
     }
 }
