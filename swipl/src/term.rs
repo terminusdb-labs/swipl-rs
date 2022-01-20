@@ -1080,9 +1080,6 @@ unsafe impl<T: TermGetable> TermGetable for Vec<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::context::*;
-    use crate::engine::*;
-    use crate::result::*;
 
     #[test]
     fn unify_some_terms_with_success() {
