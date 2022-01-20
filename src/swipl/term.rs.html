@@ -1262,6 +1262,7 @@
 <span id="1262">1262</span>
 <span id="1263">1263</span>
 <span id="1264">1264</span>
+<span id="1265">1265</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Prolog terms.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! In prolog, all data is a term. Terms are things like atoms or</span>
@@ -2223,7 +2224,8 @@
             <span class="comment">// return false early.</span>
             <span class="comment">// note: || is short-circuiting OR</span>
             <span class="kw">if</span> <span class="kw">unsafe</span> { <span class="ident">PL_unify_list</span>(<span class="ident">list</span>.<span class="ident">term_ptr</span>(), <span class="ident">head</span>.<span class="ident">term_ptr</span>(), <span class="ident">tail</span>.<span class="ident">term_ptr</span>()) <span class="op">==</span> <span class="number">0</span> }
-                <span class="op">|</span><span class="op">|</span> <span class="ident">head</span>.<span class="ident">unify</span>(<span class="ident">t</span>).<span class="ident">is_err</span>() {
+                <span class="op">|</span><span class="op">|</span> <span class="ident">head</span>.<span class="ident">unify</span>(<span class="ident">t</span>).<span class="ident">is_err</span>()
+            {
                 <span class="kw">return</span> <span class="bool-val">false</span>;
             }
 

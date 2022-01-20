@@ -332,7 +332,6 @@
 <span id="332">332</span>
 <span id="333">333</span>
 <span id="334">334</span>
-<span id="335">335</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Support for calling into prolog or prolog-like code.</span>
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::context</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::engine</span>::<span class="kw-2">*</span>;
@@ -382,8 +381,7 @@
             <span class="ident">loaded</span> <span class="op">=</span> <span class="ident">Predicate::new</span>(<span class="ident">functor</span>, <span class="ident">module</span>).<span class="ident">predicate_ptr</span>();
 
             <span class="self">self</span>.<span class="ident">predicate</span>
-                .<span class="ident">store</span>(<span class="ident">loaded</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>,
-                       <span class="ident">std::sync::atomic::Ordering::Relaxed</span>);
+                .<span class="ident">store</span>(<span class="ident">loaded</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>, <span class="ident">std::sync::atomic::Ordering::Relaxed</span>);
         }
 
         <span class="kw">unsafe</span> { <span class="ident">CallablePredicate::wrap</span>(<span class="ident">loaded</span>) }
