@@ -189,7 +189,7 @@ impl<'a, T: ContextType> Context<'a, T> {
     }
 
     /// Return the engine pointer as a `TermOrigin`, which is used in the construction of a `Term` in unsafe code.
-    fn as_term_origin(&self) -> TermOrigin {
+    pub(crate) fn as_term_origin(&self) -> TermOrigin {
         unsafe { TermOrigin::new(self.engine_ptr()) }
     }
 
