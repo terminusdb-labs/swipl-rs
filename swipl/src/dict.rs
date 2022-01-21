@@ -82,26 +82,10 @@ unsafe impl<'a> TermPutable for DictBuilder<'a> {
 
 impl<'a> Term<'a> {
     pub fn get_dict_key<A:AsAtom>(&self, key: A, term: &Term) -> PrologResult<()> {
-        let mut stored_atom: Option<Atom> = None;
-        let key_atom = match key.as_atom_ptr() {
-            Some(a) => a,
-            None => {
-                // a lot of effort is being done here to prevent an
-                // unnecessary atom allocation in cases where we are
-                // querying using an atom, while still keeping the
-                // interface generic using AsAtom.
-                // Not sure if that's actually worth it.
-                let x = key.as_atom();
-                let result = x.atom_ptr();
-
-                stored_atom = Some(x);
-
-                result
-            }
-        };
+        let (key_atom, alloc) = key.as_atom_ptr();
 
         let result = unsafe { fli::PL_get_dict_key(key_atom, self.term_ptr(), term.term_ptr()) != 0 };
-        std::mem::drop(stored_atom); // purely to get rid of the never-read warning
+        std::mem::drop(alloc); // purely to get rid of the never-read warning
 
         if unsafe { fli::pl_default_exception() != 0 } {
             Err(PrologError::Exception)

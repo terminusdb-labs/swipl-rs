@@ -286,13 +286,16 @@ pub trait AsAtom {
     /// context where atoms are allowed to be created.
     fn as_atom(&self) -> Atom;
 
-    /// Turn the borrowed object into an `atom_t` if possible.
+    /// Turn the borrowed object into an `atom_t`, and returns an
+    /// allocation which will keep this `atom_t` valid as long as it
+    /// is not dropped.
     ///
     /// This allows code that takes an `AsAtom` to be a little bit
     /// smart about not cloning the underlying data, if the underlying
     /// data is already an atom.
-    fn as_atom_ptr(&self) -> Option<atom_t> {
-        None
+    fn as_atom_ptr(&self) -> (atom_t, Option<Atom>) {
+        let atom = self.as_atom();
+        (atom.atom_ptr(), Some(atom))
     }
 }
 
@@ -301,8 +304,8 @@ impl AsAtom for Atom {
         self.clone()
     }
 
-    fn as_atom_ptr(&self) -> Option<atom_t> {
-        Some(self.atom_ptr())
+    fn as_atom_ptr(&self) -> (atom_t, Option<Atom>) {
+        (self.atom_ptr(), None)
     }
 }
 
