@@ -133,6 +133,21 @@ unsafe impl<'a> TermPutable for DictBuilder<'a> {
     }
 }
 
+unsafe impl<'a> Unifiable for DictBuilder<'a> {
+    fn unify(&self, term: &Term) -> bool {
+        term.assert_term_handling_possible();
+        let context = unsafe { unmanaged_engine_context() };
+
+        let dict_term = context.new_term_ref();
+        self.put(&dict_term);
+
+        let result = unsafe { fli::PL_unify(dict_term.term_ptr(), term.term_ptr()) != 0 };
+        unsafe { dict_term.reset(); };
+
+        result
+    }
+}
+
 impl<'a> Term<'a> {
     pub fn get_dict_key<K:AsKey>(&self, key: K, term: &Term) -> PrologResult<()> {
         let (key_atom, alloc) = key.atom_ptr();
@@ -225,5 +240,30 @@ mod tests {
         context.call_once(pred!{term_string/2}, [&dict_term, &string_term]).unwrap();
         let string = string_term.get::<String>().unwrap();
         assert_eq!("foo{11:bar,42:foo}", string);
+    }
+
+    #[test]
+    fn unify_dicts() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let [dict1, dict2, dict3] = context.new_term_refs();
+
+        let dict1_builder = DictBuilder::new()
+            .tag("foo")
+            .entry("a", 42_u64)
+            .entry("b", 10_u64);
+        let dict2_builder = DictBuilder::new()
+            .tag("foo")
+            .entry("a", 42_u64)
+            .entry("c", 11_u64);
+
+        dict1.put(&dict1_builder).unwrap();
+        dict2.put(&dict1_builder).unwrap();
+        dict3.put(&dict2_builder).unwrap();
+
+        assert!(attempt(dict1.unify(&dict2)).unwrap());
+        assert!(!attempt(dict1.unify(&dict3)).unwrap());
     }
 }
