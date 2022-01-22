@@ -2,9 +2,62 @@ use std::collections::HashMap;
 use super::prelude::*;
 use super::fli;
 
+#[derive(PartialEq, Eq, Hash)]
+pub enum Key {
+    Int(u64),
+    Atom(Atom)
+}
+
+impl From<u64> for Key {
+    fn from(val: u64) -> Self {
+        Self::Int(val)
+    }
+}
+
+impl<A:IntoAtom> From<A> for Key {
+    fn from(val: A) -> Self {
+        Self::Atom(val.into_atom())
+    }
+}
+
+const INT_SHIFT:u8 = (std::mem::size_of::<fli::atom_t>() * 8 - 7) as u8;
+
+fn int_to_atom_t(val: u64) -> fli::atom_t {
+    if (val >> INT_SHIFT) != 0 {
+        panic!("val {} is too large to be converted to an atom_t", val);
+    }
+
+    (val << 7 | 0x3) as fli::atom_t
+}
+
+impl Key {
+    fn atom_ptr(&self) -> fli::atom_t {
+        match self {
+            Key::Int(i) => int_to_atom_t(*i),
+            Key::Atom(a) => a.atom_ptr()
+        }
+    }
+}
+
+pub trait AsKey {
+    fn atom_ptr(&self) -> (fli::atom_t, Option<Atom>);
+}
+
+impl<A:AsAtom> AsKey for A {
+    fn atom_ptr(&self) -> (fli::atom_t, Option<Atom>) {
+        self.as_atom_ptr()
+    }
+}
+
+impl AsKey for u64 {
+    fn atom_ptr(&self) -> (fli::atom_t, Option<Atom>) {
+        (int_to_atom_t(*self), None)
+    }
+}
+
 pub struct DictBuilder<'a> {
     tag: Option<Atom>,
-    entries: HashMap<Atom, Option<Box<dyn TermPutable+'a>>>
+    entries: HashMap<Key, Option<Box<dyn TermPutable+'a>>>
 }
 
 impl<'a> DictBuilder<'a> {
@@ -25,21 +78,21 @@ impl<'a> DictBuilder<'a> {
         self
     }
 
-    pub fn add_entry_key<A:IntoAtom>(&mut self, key: A) {
-        self.entries.insert(key.into_atom(), None);
+    pub fn add_entry_key<K:Into<Key>>(&mut self, key: K) {
+        self.entries.insert(key.into(), None);
     }
 
-    pub fn entry_key<A:IntoAtom>(mut self, key: A) -> Self {
+    pub fn entry_key<K:Into<Key>>(mut self, key: K) -> Self {
         self.add_entry_key(key);
 
         self
     }
 
-    pub fn add_entry<A:IntoAtom,P:TermPutable+'a>(&mut self, key: A, val: P) {
-        self.entries.insert(key.into_atom(), Some(Box::new(val)));
+    pub fn add_entry<K:Into<Key>,P:TermPutable+'a>(&mut self, key: K, val: P) {
+        self.entries.insert(key.into(), Some(Box::new(val)));
     }
 
-    pub fn entry<A:IntoAtom,P:TermPutable+'a>(mut self, key: A, val: P) -> Self {
+    pub fn entry<K:Into<Key>,P:TermPutable+'a>(mut self, key: K, val: P) -> Self {
         self.add_entry(key, val);
 
         self
@@ -81,8 +134,8 @@ unsafe impl<'a> TermPutable for DictBuilder<'a> {
 }
 
 impl<'a> Term<'a> {
-    pub fn get_dict_key<A:AsAtom>(&self, key: A, term: &Term) -> PrologResult<()> {
-        let (key_atom, alloc) = key.as_atom_ptr();
+    pub fn get_dict_key<K:AsKey>(&self, key: K, term: &Term) -> PrologResult<()> {
+        let (key_atom, alloc) = key.atom_ptr();
 
         let result = unsafe { fli::PL_get_dict_key(key_atom, self.term_ptr(), term.term_ptr()) != 0 };
         std::mem::drop(alloc); // purely to get rid of the never-read warning
@@ -123,8 +176,10 @@ mod tests {
         assert_eq!(42, val1.get::<u64>().unwrap());
         assert_eq!(10, val2.get::<u64>().unwrap());
 
-        context.call_once(pred!{writeq/1}, [&dict_term]).unwrap();
-        context.call_once(pred!{nl/0}, []).unwrap();
+        let string_term = context.new_term_ref();
+        context.call_once(pred!{term_string/2}, [&dict_term, &string_term]).unwrap();
+        let string = string_term.get::<String>().unwrap();
+        assert_eq!("foo{a:42,b:10}", string);
     }
 
     #[test]
@@ -142,5 +197,33 @@ mod tests {
         // TODO - documentation says this should actually be an
         // exception but this does not appear to be happening.
         assert!(result.is_failure());
+    }
+
+    #[test]
+    fn construct_dict_with_smallints() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let dict = DictBuilder::new()
+            .tag("foo")
+            .entry(42, atomable("foo"))
+            .entry(11, atomable("bar"));
+
+        let dict_term = context.new_term_ref();
+        let [val1, val2, val3] = context.new_term_refs();
+        dict_term.put(&dict).unwrap();
+
+        assert!(attempt(dict_term.get_dict_key(11, &val1)).unwrap());
+        assert!(attempt(dict_term.get_dict_key(42, &val2)).unwrap());
+        assert!(!attempt(dict_term.get_dict_key(50, &val3)).unwrap());
+
+        assert_eq!(Atom::new("bar"), val1.get().unwrap());
+        assert_eq!(Atom::new("foo"), val2.get().unwrap());
+
+        let string_term = context.new_term_ref();
+        context.call_once(pred!{term_string/2}, [&dict_term, &string_term]).unwrap();
+        let string = string_term.get::<String>().unwrap();
+        assert_eq!("foo{11:bar,42:foo}", string);
     }
 }
