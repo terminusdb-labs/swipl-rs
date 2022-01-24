@@ -108,8 +108,6 @@ impl AsKey for u64 {
 /// }
 /// ```
 
-
-
 pub struct DictBuilder<'a> {
     tag: DictTag<'a>,
     entries: HashMap<Key, Option<Box<dyn TermPutable + 'a>>>,
@@ -260,11 +258,43 @@ impl<'a> Term<'a> {
     /// Get the value of the given key in the dictionary contained in
     /// the dictionary contained in this term.
     ///
+    /// If the dictionary doesn't contain the key, or if the expected
+    /// type is different, this will fail. If the given term doesn't
+    /// contain a dictionary, this will always fail. Otherwise, the
+    /// value corresponding to the given key is returned.
+    pub fn get_dict_key<K: AsKey, G: TermGetable>(&self, key: K) -> PrologResult<G> {
+        self.assert_term_handling_possible();
+        let context = unsafe { unmanaged_engine_context() };
+        let (key_atom, alloc) = key.atom_ptr();
+        let term = context.new_term_ref();
+
+        let get_result =
+            unsafe { fli::PL_get_dict_key(key_atom, self.term_ptr(), term.term_ptr()) != 0 };
+        std::mem::drop(alloc); // purely to get rid of the never-read warning
+
+        let result = if unsafe { fli::pl_default_exception() != 0 } {
+            Err(PrologError::Exception)
+        } else if get_result {
+            term.get()
+        } else {
+            Err(PrologError::Failure)
+        };
+
+        unsafe {
+            term.reset();
+        }
+
+        result
+    }
+
+    /// Get the value of the given key in the dictionary contained in
+    /// the dictionary contained in this term.
+    ///
     /// If the dictionary doesn't contain the key, this will fail. If
     /// the given term doesn't contain a dictionary, this will always
     /// fail. Otherwise, the term argument will be overwritten with
     /// the value corresponding to the key.
-    pub fn get_dict_key<K: AsKey>(&self, key: K, term: &Term) -> PrologResult<()> {
+    pub fn get_dict_key_term<K: AsKey>(&self, key: K, term: &Term) -> PrologResult<()> {
         self.assert_term_handling_possible();
         if self.origin_engine_ptr() != term.origin_engine_ptr() {
             panic!("terms being unified are not part of the same engine");
@@ -441,9 +471,9 @@ mod tests {
         let [val1, val2, val3] = context.new_term_refs();
         dict_term.put(&dict).unwrap();
 
-        assert!(attempt(dict_term.get_dict_key("a", &val1)).unwrap());
-        assert!(attempt(dict_term.get_dict_key("b", &val2)).unwrap());
-        assert!(!attempt(dict_term.get_dict_key("c", &val3)).unwrap());
+        assert!(attempt(dict_term.get_dict_key_term("a", &val1)).unwrap());
+        assert!(attempt(dict_term.get_dict_key_term("b", &val2)).unwrap());
+        assert!(!attempt(dict_term.get_dict_key_term("c", &val3)).unwrap());
 
         assert_eq!(42, val1.get::<u64>().unwrap());
         assert_eq!(10, val2.get::<u64>().unwrap());
@@ -457,7 +487,7 @@ mod tests {
     }
 
     #[test]
-    fn get_dict_key_for_nondict() {
+    fn get_dict_key_term_for_nondict() {
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
@@ -467,9 +497,7 @@ mod tests {
 
         let query = context.new_term_ref();
 
-        let result = nondict.get_dict_key("a", &query).unwrap_err();
-        // TODO - documentation says this should actually be an
-        // exception but this does not appear to be happening.
+        let result = nondict.get_dict_key_term("a", &query).unwrap_err();
         assert!(result.is_failure());
     }
 
@@ -488,9 +516,9 @@ mod tests {
         let [val1, val2, val3] = context.new_term_refs();
         dict_term.put(&dict).unwrap();
 
-        assert!(attempt(dict_term.get_dict_key(11, &val1)).unwrap());
-        assert!(attempt(dict_term.get_dict_key(42, &val2)).unwrap());
-        assert!(!attempt(dict_term.get_dict_key(50, &val3)).unwrap());
+        assert!(attempt(dict_term.get_dict_key_term(11, &val1)).unwrap());
+        assert!(attempt(dict_term.get_dict_key_term(42, &val2)).unwrap());
+        assert!(!attempt(dict_term.get_dict_key_term(50, &val3)).unwrap());
 
         assert_eq!(Atom::new("bar"), val1.get().unwrap());
         assert_eq!(Atom::new("foo"), val2.get().unwrap());
@@ -630,5 +658,46 @@ mod tests {
         dict.get_dict_tag_term(&tag2).unwrap();
         assert_eq!(42_u64, tag2.get().unwrap());
         tag.unify(&tag2).unwrap();
+    }
+
+    #[test]
+    fn get_dict_key() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let dict = context.new_term_ref();
+        let builder = DictBuilder::new()
+            .entry("foo", 42_u64)
+            .entry("bar", "hello".to_owned());
+
+        dict.unify(&builder).unwrap();
+
+        assert_eq!(42_u64, dict.get_dict_key("foo").unwrap());
+        let hello_str: String = dict.get_dict_key("bar").unwrap();
+        assert_eq!("hello", hello_str);
+
+        // getting a dict key for the wrong type fails
+        assert!(attempt_opt(dict.get_dict_key::<_, String>("foo"))
+            .unwrap()
+            .is_none());
+        // getting a dict key that is not in there fails
+        assert!(attempt_opt(dict.get_dict_key::<_, bool>("moo"))
+            .unwrap()
+            .is_none());
+    }
+
+    #[test]
+    fn get_dict_key_for_nondict() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let nondict = context.new_term_ref();
+        nondict.put_val(42_u64).unwrap();
+
+        let result = nondict.get_dict_key::<_, String>("a").unwrap_err();
+
+        assert!(result.is_failure());
     }
 }
