@@ -71,6 +71,24 @@ impl<'a> Term<'a> {
         unsafe { PL_is_variable(self.term) != 0 }
     }
 
+    /// Returns true if this term reference holds an atom.
+    pub fn is_atom(&self) -> bool {
+        self.assert_term_handling_possible();
+        unsafe { PL_is_atom(self.term) != 0 }
+    }
+
+    /// Returns true if this term reference holds a string.
+    pub fn is_string(&self) -> bool {
+        self.assert_term_handling_possible();
+        unsafe { PL_is_string(self.term) != 0 }
+    }
+
+    /// Returns true if this term reference holds an integer.
+    pub fn is_integer(&self) -> bool {
+        self.assert_term_handling_possible();
+        unsafe { PL_is_integer(self.term) != 0 }
+    }
+
     /// Reset terms created after this term, including this term itself.
     /// Only safe to call when you're sure these terms aren't used afterwards.
     pub unsafe fn reset(&self) {

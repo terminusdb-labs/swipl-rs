@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use super::prelude::*;
 use super::fli;
 
-#[derive(PartialEq, Eq, Hash)]
+#[derive(PartialEq, Eq, Hash, Debug)]
 pub enum Key {
     Int(u64),
     Atom(Atom)
@@ -163,6 +163,97 @@ impl<'a> Term<'a> {
             Err(PrologError::Failure)
         }
     }
+
+    /// Returns true if this term reference holds a dictionary.
+    pub fn is_dict(&self) -> bool {
+        self.assert_term_handling_possible();
+        unsafe { fli::PL_is_dict(self.term_ptr()) != 0 }
+    }
+}
+
+impl<'a, T: QueryableContextType> Context<'a, T> {
+    /// Iterate over the entries in the dictionary referred to by this term.
+    ///
+    /// This will return key-value pairs, where the key is either an
+    /// atom or an integer, and the value is a term. The term will be
+    /// created in the current context. A consequence of this is that
+    /// the iterator will panic if this context is not active.
+    ///
+    /// Created terms will not be automatically unallocated when the
+    /// iterator moves on. It is the responsibility of the caller to
+    /// clear them if desired using either a frame or by resetting.
+    ///
+    /// If `dict_entries` is called on a term that does not contain a
+    /// dictionary, the iterator is still created but will not return
+    /// any elements.
+    pub fn dict_entries<'b>(&'b self, term: &Term<'b>) -> DictIterator<'a, 'b, T> {
+        self.assert_activated();
+        let count = match term.is_dict() {
+            false => None,
+            true => {
+                let functor: Functor = term.get().expect("Expected to be able to get a functor out of a dict term");
+                Some((functor.arity() as usize -1)/2)
+            }
+        };
+
+        DictIterator {
+            context: self,
+            term: term.clone(),
+            count,
+            index: 0
+        }
+    }
+}
+
+/// An iterator over the entries of a dict term.
+///
+/// See [dict_entries](Context::dict_entries) for more information.
+pub struct DictIterator<'a, 'b, T: QueryableContextType> {
+    context: &'a Context<'b, T>,
+    term: Term<'a>,
+    count: Option<usize>,
+    index: usize,
+}
+
+impl<'a, 'b, T:QueryableContextType> Iterator for DictIterator<'a, 'b, T> {
+    type Item = (Key, Term<'a>);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.count {
+            None => None,
+            Some(count) => {
+                if self.index < count {
+                    let [val_term, key_term] = self.context.new_term_refs();
+                    self.term.unify_arg(self.index*2+2, &val_term).expect("unify dict val arg failed");
+                    self.term.unify_arg(self.index*2+3, &key_term).expect("unify dict val arg failed");
+
+                    let key;
+                    if key_term.is_atom() {
+                        key = Key::Atom(key_term.get().unwrap());
+                    }
+                    else if key_term.is_integer() {
+                        key = Key::Int(key_term.get().unwrap());
+                    }
+                    else {
+                        panic!("Encountered term key that was neither an atom nor an integer");
+                    }
+
+                    // we don't need the key term after this, so no
+                    // point in letting it hang around on the stack.
+                    unsafe {
+                        key_term.reset();
+                    }
+
+                    self.index += 1;
+
+                    Some((key, val_term))
+                }
+                else {
+                    None
+                }
+            }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -265,5 +356,52 @@ mod tests {
 
         assert!(attempt(dict1.unify(&dict2)).unwrap());
         assert!(!attempt(dict1.unify(&dict3)).unwrap());
+    }
+
+    #[test]
+    fn iterate_dict() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let builder = DictBuilder::new()
+            .entry(8, atomable("foo"))
+            .entry(2, atomable("bar"))
+            .entry(7, atomable("baz"))
+            .entry(11, atomable("quux"));
+
+        let term = context.new_term_ref();
+        term.unify(&builder).unwrap();
+
+        let mut iter = context.dict_entries(&term);
+        let (key1, val1) = iter.next().unwrap();
+        let (key2, val2) = iter.next().unwrap();
+        let (key3, val3) = iter.next().unwrap();
+        let (key4, val4) = iter.next().unwrap();
+
+        assert!(iter.next().is_none());
+
+        assert_eq!(Key::Int(2), key1);
+        assert_eq!(Key::Int(7), key2);
+        assert_eq!(Key::Int(8), key3);
+        assert_eq!(Key::Int(11), key4);
+
+        assert_eq!(Atom::new("bar"), val1.get().unwrap());
+        assert_eq!(Atom::new("baz"), val2.get().unwrap());
+        assert_eq!(Atom::new("foo"), val3.get().unwrap());
+        assert_eq!(Atom::new("quux"), val4.get().unwrap());
+    }
+
+    #[test]
+    fn iterate_nondict_as_dict() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term = context.new_term_ref();
+        term.unify(42_u64).unwrap();
+
+        let mut iter = context.dict_entries(&term);
+        assert!(iter.next().is_none());
     }
 }
