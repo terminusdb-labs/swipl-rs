@@ -1,6 +1,6 @@
 [package]
 name = "cargo-swipl"
-version = "0.3.1"
+version = "0.3.2"
 authors = ["Matthijs van Otterdijk <matthijs@terminusdb.com>"]
 edition = "2018"
 license = "Apache-2.0/MIT"
@@ -11,4 +11,4 @@ repository = "https://github.com/terminusdb-labs/swipl-rs/"
 
 [dependencies]
 clap = "2.33.3"
-swipl-info = {path="../swipl-info", version="0.3.1"}
+swipl-info = {path="../swipl-info", version="0.3.2"}
