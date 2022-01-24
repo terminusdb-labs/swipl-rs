@@ -1,7 +1,12 @@
+//! Prolog dictionaries.
+//!
+//! SWI-Prolog has a very convenient dictionary implementation. This
+//! module allows one to create dictionaries, as well as extract them.
 use super::fli;
 use super::prelude::*;
 use std::collections::HashMap;
 
+/// A key in a prolog dictionary.
 #[derive(PartialEq, Eq, Hash, Debug)]
 pub enum Key {
     Int(u64),
@@ -45,7 +50,21 @@ impl Key {
     }
 }
 
+/// Trait for things that can behave as a key for the purpose of
+/// retrieving values from a prolog dictionary.
+///
+/// A prolog dictionary key can either be an atom or an integer. In
+/// addition, various things can be automatically converted to
+/// atoms. This trait provides an implementation which facilitates
+/// this.
 pub trait AsKey {
+    /// Returns the `atom_t` corresponding to this key, plus an allocation.
+    ///
+    /// As long as the allocation remains in scope, the atom_t can be
+    /// considered safe to use in unsafe code.
+    ///
+    /// This is used by dict querying code to efficiently get hold of
+    /// dictionary keys (which internally are always atom_t).
     fn atom_ptr(&self) -> (fli::atom_t, Option<Atom>);
 }
 
@@ -60,6 +79,36 @@ impl AsKey for u64 {
         (int_to_atom_t(*self), None)
     }
 }
+
+/// A builder for prolog dictionaries.
+///
+/// A dictionary can be constructed by first using the various builder
+/// functions on this type, and then either putting or unifying the
+/// builder with a term.
+///
+/// Example:
+/// ```
+/// # use swipl::prelude::*;
+/// fn build_example_dict(term: &Term) -> PrologResult<()> {
+///     let dict = DictBuilder::new()
+///         .tag("some_tag")
+///         .entry("foo", 42_u64)
+///         .entry("bar", "hello".to_owned());
+///
+///     term.put(&dict)?;
+///     Ok(())
+/// }
+/// ```
+///
+/// This will create a prolog dictionary which looks like this:
+/// ```prolog
+/// some_tag{
+///     foo: 42,
+///     bar: "hello"
+/// }
+/// ```
+
+
 
 pub struct DictBuilder<'a> {
     tag: DictTag<'a>,
@@ -103,6 +152,9 @@ impl<'a> DictBuilder<'a> {
     /// is implied to be a variable.
     ///
     /// If the entry already exists, this will overwrite it.
+    ///
+    /// The key can either be an atom (or something that can be turned
+    /// into an atom), or an integer.
     pub fn add_entry_key<K: Into<Key>>(&mut self, key: K) {
         self.entries.insert(key.into(), None);
     }
@@ -111,6 +163,9 @@ impl<'a> DictBuilder<'a> {
     /// is implied to be a variable.
     ///
     /// If the entry already exists, this will overwrite it.
+    ///
+    /// The key can either be an atom (or something that can be turned
+    /// into an atom), or an integer.
     pub fn entry_key<K: Into<Key>>(mut self, key: K) -> Self {
         self.add_entry_key(key);
 
@@ -120,6 +175,9 @@ impl<'a> DictBuilder<'a> {
     /// Add an entry with the given key and value to the dictionary.
     ///
     /// If the entry already exists, this will overwrite it.
+    ///
+    /// The key can either be an atom (or something that can be turned
+    /// into an atom), or an integer.
     pub fn add_entry<K: Into<Key>, P: TermPutable + 'a>(&mut self, key: K, val: P) {
         self.entries.insert(key.into(), Some(Box::new(val)));
     }
@@ -127,6 +185,9 @@ impl<'a> DictBuilder<'a> {
     /// Add an entry with the given key and value to the dictionary.
     ///
     /// If the entry already exists, this will overwrite it.
+    ///
+    /// The key can either be an atom (or something that can be turned
+    /// into an atom), or an integer.
     pub fn entry<K: Into<Key>, P: TermPutable + 'a>(mut self, key: K, val: P) -> Self {
         self.add_entry(key, val);
 
@@ -232,7 +293,7 @@ impl<'a> Term<'a> {
     /// If this is not a dictionary, this method will fail.
     ///
     /// If tag could be a non-atom term, consider using
-    /// [get_dict_tag_term](term::get_dict_tag_term) instead.
+    /// [get_dict_tag_term](Term::get_dict_tag_term) instead.
     pub fn get_dict_tag(&self) -> PrologResult<Option<Atom>> {
         self.assert_term_handling_possible();
 
