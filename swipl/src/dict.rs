@@ -8,6 +8,12 @@ pub enum Key {
     Atom(Atom),
 }
 
+enum DictTag<'a> {
+    Atom(Atom),
+    Term(Term<'a>),
+    Var
+}
+
 impl From<u64> for Key {
     fn from(val: u64) -> Self {
         Self::Int(val)
@@ -56,24 +62,34 @@ impl AsKey for u64 {
 }
 
 pub struct DictBuilder<'a> {
-    tag: Option<Atom>,
+    tag: DictTag<'a>,
     entries: HashMap<Key, Option<Box<dyn TermPutable + 'a>>>,
 }
 
 impl<'a> DictBuilder<'a> {
     pub fn new() -> Self {
         Self {
-            tag: None,
+            tag: DictTag::Var,
             entries: HashMap::new(),
         }
     }
 
     pub fn set_tag<A: IntoAtom>(&mut self, tag: A) {
-        self.tag = Some(tag.into_atom());
+        self.tag = DictTag::Atom(tag.into_atom());
     }
 
     pub fn tag<A: IntoAtom>(mut self, tag: A) -> Self {
         self.set_tag(tag);
+
+        self
+    }
+
+    pub fn set_tag_term(&mut self, term: Term<'a>) {
+        self.tag = DictTag::Term(term);
+    }
+
+    pub fn tag_term(mut self, term: Term<'a>) -> Self {
+        self.set_tag_term(term);
 
         self
     }
@@ -121,19 +137,22 @@ unsafe impl<'a> TermPutable for DictBuilder<'a> {
             }
         }
 
-        let tag = match &self.tag {
-            Some(t) => t.atom_ptr(),
-            None => 0,
+        match &self.tag {
+            DictTag::Atom(t) => t.put(&tag_term),
+            DictTag::Var => {},
+            DictTag::Term(t) => TermPutable::put(t, &tag_term)
         };
 
         unsafe {
             fli::PL_put_dict(
                 term.term_ptr(),
-                tag,
+                0,
                 len as fli::size_t,
                 key_atoms.as_ptr(),
                 value_terms,
             );
+
+            fli::PL_unify_arg(1, term.term_ptr(), tag_term.term_ptr());
 
             tag_term.reset();
         }
@@ -489,5 +508,22 @@ mod tests {
         term.unify(42_u64).unwrap();
 
         assert!(term.get_dict_tag().unwrap_err().is_failure());
+    }
+
+    #[test]
+    fn get_dict_tag_term() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let [dict, tag, tag2] = context.new_term_refs();
+        tag.unify(42_u64).unwrap();
+        let builder = DictBuilder::new().tag_term(tag.clone());
+
+        dict.unify(&builder).unwrap();
+
+        dict.get_dict_tag_term(&tag2).unwrap();
+        assert_eq!(42_u64, tag2.get().unwrap());
+        tag.unify(&tag2).unwrap();
     }
 }
