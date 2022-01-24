@@ -189,7 +189,7 @@ impl<'a, T: ContextType> Context<'a, T> {
     }
 
     /// Return the engine pointer as a `TermOrigin`, which is used in the construction of a `Term` in unsafe code.
-    fn as_term_origin(&self) -> TermOrigin {
+    pub(crate) fn as_term_origin(&self) -> TermOrigin {
         unsafe { TermOrigin::new(self.engine_ptr()) }
     }
 
@@ -608,7 +608,11 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
             term_ptr += 1;
         }
 
-        // This is potentially rather dangerous, but seems to work.
+        // It would be nicer if we could do a transmute here, as
+        // transmute ensures that the conversion converts between
+        // types of the same size, but it seems like this doesn't work
+        // yet with const generic arrays. We do a pointer cast
+        // instead.
         let magic = result.as_ptr() as *const [Term; N];
         std::mem::forget(result);
 

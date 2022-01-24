@@ -65,10 +65,32 @@ impl<'a> Term<'a> {
         self.term
     }
 
+    pub fn origin_engine_ptr(&self) -> PL_engine_t {
+        self.origin.origin_engine_ptr()
+    }
+
     /// Returns true if this term reference holds a variable.
     pub fn is_var(&self) -> bool {
         self.assert_term_handling_possible();
         unsafe { PL_is_variable(self.term) != 0 }
+    }
+
+    /// Returns true if this term reference holds an atom.
+    pub fn is_atom(&self) -> bool {
+        self.assert_term_handling_possible();
+        unsafe { PL_is_atom(self.term) != 0 }
+    }
+
+    /// Returns true if this term reference holds a string.
+    pub fn is_string(&self) -> bool {
+        self.assert_term_handling_possible();
+        unsafe { PL_is_string(self.term) != 0 }
+    }
+
+    /// Returns true if this term reference holds an integer.
+    pub fn is_integer(&self) -> bool {
+        self.assert_term_handling_possible();
+        unsafe { PL_is_integer(self.term) != 0 }
     }
 
     /// Reset terms created after this term, including this term itself.
