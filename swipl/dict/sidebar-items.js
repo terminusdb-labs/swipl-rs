@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Key","A key in a prolog dictionary."]],"struct":[["DictBuilder","A builder for prolog dictionaries."],["DictIterator","An iterator over the entries of a dict term."]],"trait":[["AsKey","Trait for things that can behave as a key for the purpose of retrieving values from a prolog dictionary."]]});
