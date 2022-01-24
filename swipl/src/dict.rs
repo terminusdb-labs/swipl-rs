@@ -1,11 +1,11 @@
-use std::collections::HashMap;
-use super::prelude::*;
 use super::fli;
+use super::prelude::*;
+use std::collections::HashMap;
 
 #[derive(PartialEq, Eq, Hash, Debug)]
 pub enum Key {
     Int(u64),
-    Atom(Atom)
+    Atom(Atom),
 }
 
 impl From<u64> for Key {
@@ -14,13 +14,13 @@ impl From<u64> for Key {
     }
 }
 
-impl<A:IntoAtom> From<A> for Key {
+impl<A: IntoAtom> From<A> for Key {
     fn from(val: A) -> Self {
         Self::Atom(val.into_atom())
     }
 }
 
-const INT_SHIFT:u8 = (std::mem::size_of::<fli::atom_t>() * 8 - 7) as u8;
+const INT_SHIFT: u8 = (std::mem::size_of::<fli::atom_t>() * 8 - 7) as u8;
 
 fn int_to_atom_t(val: u64) -> fli::atom_t {
     if (val >> INT_SHIFT) != 0 {
@@ -34,7 +34,7 @@ impl Key {
     fn atom_ptr(&self) -> fli::atom_t {
         match self {
             Key::Int(i) => int_to_atom_t(*i),
-            Key::Atom(a) => a.atom_ptr()
+            Key::Atom(a) => a.atom_ptr(),
         }
     }
 }
@@ -43,7 +43,7 @@ pub trait AsKey {
     fn atom_ptr(&self) -> (fli::atom_t, Option<Atom>);
 }
 
-impl<A:AsAtom> AsKey for A {
+impl<A: AsAtom> AsKey for A {
     fn atom_ptr(&self) -> (fli::atom_t, Option<Atom>) {
         self.as_atom_ptr()
     }
@@ -57,42 +57,42 @@ impl AsKey for u64 {
 
 pub struct DictBuilder<'a> {
     tag: Option<Atom>,
-    entries: HashMap<Key, Option<Box<dyn TermPutable+'a>>>
+    entries: HashMap<Key, Option<Box<dyn TermPutable + 'a>>>,
 }
 
 impl<'a> DictBuilder<'a> {
     pub fn new() -> Self {
         Self {
             tag: None,
-            entries: HashMap::new()
+            entries: HashMap::new(),
         }
     }
 
-    pub fn set_tag<A:IntoAtom>(&mut self, tag: A) {
+    pub fn set_tag<A: IntoAtom>(&mut self, tag: A) {
         self.tag = Some(tag.into_atom());
     }
 
-    pub fn tag<A:IntoAtom>(mut self, tag: A) -> Self {
+    pub fn tag<A: IntoAtom>(mut self, tag: A) -> Self {
         self.set_tag(tag);
 
         self
     }
 
-    pub fn add_entry_key<K:Into<Key>>(&mut self, key: K) {
+    pub fn add_entry_key<K: Into<Key>>(&mut self, key: K) {
         self.entries.insert(key.into(), None);
     }
 
-    pub fn entry_key<K:Into<Key>>(mut self, key: K) -> Self {
+    pub fn entry_key<K: Into<Key>>(mut self, key: K) -> Self {
         self.add_entry_key(key);
 
         self
     }
 
-    pub fn add_entry<K:Into<Key>,P:TermPutable+'a>(&mut self, key: K, val: P) {
+    pub fn add_entry<K: Into<Key>, P: TermPutable + 'a>(&mut self, key: K, val: P) {
         self.entries.insert(key.into(), Some(Box::new(val)));
     }
 
-    pub fn entry<K:Into<Key>,P:TermPutable+'a>(mut self, key: K, val: P) -> Self {
+    pub fn entry<K: Into<Key>, P: TermPutable + 'a>(mut self, key: K, val: P) -> Self {
         self.add_entry(key, val);
 
         self
@@ -115,18 +115,25 @@ unsafe impl<'a> TermPutable for DictBuilder<'a> {
             key_atoms.push(key.atom_ptr());
             if let Some(value) = value {
                 let term = unsafe { Term::new(value_term, context.as_term_origin()) };
-                term.put(&**value).expect("term put errored while building dict");
+                term.put(&**value)
+                    .expect("term put errored while building dict");
                 value_term += 1;
             }
         }
 
         let tag = match &self.tag {
             Some(t) => t.atom_ptr(),
-            None => 0
+            None => 0,
         };
 
         unsafe {
-            fli::PL_put_dict(term.term_ptr(), tag, len as fli::size_t, key_atoms.as_ptr(), value_terms);
+            fli::PL_put_dict(
+                term.term_ptr(),
+                tag,
+                len as fli::size_t,
+                key_atoms.as_ptr(),
+                value_terms,
+            );
 
             tag_term.reset();
         }
@@ -142,17 +149,24 @@ unsafe impl<'a> Unifiable for DictBuilder<'a> {
         self.put(&dict_term);
 
         let result = unsafe { fli::PL_unify(dict_term.term_ptr(), term.term_ptr()) != 0 };
-        unsafe { dict_term.reset(); };
+        unsafe {
+            dict_term.reset();
+        };
 
         result
     }
 }
 
 impl<'a> Term<'a> {
-    pub fn get_dict_key<K:AsKey>(&self, key: K, term: &Term) -> PrologResult<()> {
+    pub fn get_dict_key<K: AsKey>(&self, key: K, term: &Term) -> PrologResult<()> {
+        self.assert_term_handling_possible();
+        if self.origin_engine_ptr() != term.origin_engine_ptr() {
+            panic!("terms being unified are not part of the same engine");
+        }
         let (key_atom, alloc) = key.atom_ptr();
 
-        let result = unsafe { fli::PL_get_dict_key(key_atom, self.term_ptr(), term.term_ptr()) != 0 };
+        let result =
+            unsafe { fli::PL_get_dict_key(key_atom, self.term_ptr(), term.term_ptr()) != 0 };
         std::mem::drop(alloc); // purely to get rid of the never-read warning
 
         if unsafe { fli::pl_default_exception() != 0 } {
@@ -161,6 +175,31 @@ impl<'a> Term<'a> {
             Ok(())
         } else {
             Err(PrologError::Failure)
+        }
+    }
+
+    pub fn get_dict_tag(&self) -> PrologResult<Option<Atom>> {
+        self.assert_term_handling_possible();
+
+        if unsafe { fli::PL_is_dict(self.term_ptr()) == 0 } {
+            Err(PrologError::Failure)
+        } else if let Some(atom) = attempt_opt(self.get_arg(1))? {
+            Ok(Some(atom))
+        } else {
+            Ok(None)
+        }
+    }
+
+    pub fn get_dict_tag_term(&self, term: &Term) -> PrologResult<()> {
+        self.assert_term_handling_possible();
+        if self.origin_engine_ptr() != term.origin_engine_ptr() {
+            panic!("terms being unified are not part of the same engine");
+        }
+
+        if unsafe { fli::PL_is_dict(self.term_ptr()) == 0 } {
+            Err(PrologError::Failure)
+        } else {
+            self.unify_arg(1, term)
         }
     }
 
@@ -191,8 +230,10 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         let count = match term.is_dict() {
             false => None,
             true => {
-                let functor: Functor = term.get().expect("Expected to be able to get a functor out of a dict term");
-                Some((functor.arity() as usize -1)/2)
+                let functor: Functor = term
+                    .get()
+                    .expect("Expected to be able to get a functor out of a dict term");
+                Some((functor.arity() as usize - 1) / 2)
             }
         };
 
@@ -200,7 +241,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
             context: self,
             term: term.clone(),
             count,
-            index: 0
+            index: 0,
         }
     }
 }
@@ -215,7 +256,7 @@ pub struct DictIterator<'a, 'b, T: QueryableContextType> {
     index: usize,
 }
 
-impl<'a, 'b, T:QueryableContextType> Iterator for DictIterator<'a, 'b, T> {
+impl<'a, 'b, T: QueryableContextType> Iterator for DictIterator<'a, 'b, T> {
     type Item = (Key, Term<'a>);
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -224,17 +265,19 @@ impl<'a, 'b, T:QueryableContextType> Iterator for DictIterator<'a, 'b, T> {
             Some(count) => {
                 if self.index < count {
                     let [val_term, key_term] = self.context.new_term_refs();
-                    self.term.unify_arg(self.index*2+2, &val_term).expect("unify dict val arg failed");
-                    self.term.unify_arg(self.index*2+3, &key_term).expect("unify dict val arg failed");
+                    self.term
+                        .unify_arg(self.index * 2 + 2, &val_term)
+                        .expect("unify dict val arg failed");
+                    self.term
+                        .unify_arg(self.index * 2 + 3, &key_term)
+                        .expect("unify dict val arg failed");
 
                     let key;
                     if key_term.is_atom() {
                         key = Key::Atom(key_term.get().unwrap());
-                    }
-                    else if key_term.is_integer() {
+                    } else if key_term.is_integer() {
                         key = Key::Int(key_term.get().unwrap());
-                    }
-                    else {
+                    } else {
                         panic!("Encountered term key that was neither an atom nor an integer");
                     }
 
@@ -247,8 +290,7 @@ impl<'a, 'b, T:QueryableContextType> Iterator for DictIterator<'a, 'b, T> {
                     self.index += 1;
 
                     Some((key, val_term))
-                }
-                else {
+                } else {
                     None
                 }
             }
@@ -283,7 +325,9 @@ mod tests {
         assert_eq!(10, val2.get::<u64>().unwrap());
 
         let string_term = context.new_term_ref();
-        context.call_once(pred!{term_string/2}, [&dict_term, &string_term]).unwrap();
+        context
+            .call_once(pred! {term_string/2}, [&dict_term, &string_term])
+            .unwrap();
         let string = string_term.get::<String>().unwrap();
         assert_eq!("foo{a:42,b:10}", string);
     }
@@ -328,7 +372,9 @@ mod tests {
         assert_eq!(Atom::new("foo"), val2.get().unwrap());
 
         let string_term = context.new_term_ref();
-        context.call_once(pred!{term_string/2}, [&dict_term, &string_term]).unwrap();
+        context
+            .call_once(pred! {term_string/2}, [&dict_term, &string_term])
+            .unwrap();
         let string = string_term.get::<String>().unwrap();
         assert_eq!("foo{11:bar,42:foo}", string);
     }
@@ -403,5 +449,45 @@ mod tests {
 
         let mut iter = context.dict_entries(&term);
         assert!(iter.next().is_none());
+    }
+
+    #[test]
+    fn get_dict_tag_var() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let builder = DictBuilder::new();
+
+        let term = context.new_term_ref();
+        term.unify(&builder).unwrap();
+
+        assert!(term.get_dict_tag().unwrap().is_none());
+    }
+
+    #[test]
+    fn get_dict_tag_atom() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let builder = DictBuilder::new().tag("foo");
+
+        let term = context.new_term_ref();
+        term.unify(&builder).unwrap();
+
+        assert_eq!(Some(Atom::new("foo")), term.get_dict_tag().unwrap());
+    }
+
+    #[test]
+    fn get_nondict_tag() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term = context.new_term_ref();
+        term.unify(42_u64).unwrap();
+
+        assert!(term.get_dict_tag().unwrap_err().is_failure());
     }
 }

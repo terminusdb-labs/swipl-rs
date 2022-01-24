@@ -16,6 +16,7 @@ pub mod atom;
 pub mod blob;
 pub mod callable;
 pub mod context;
+pub mod dict;
 pub mod engine;
 pub mod functor;
 pub mod init;
@@ -25,7 +26,6 @@ pub mod result;
 pub mod stream;
 pub mod term;
 pub mod text;
-pub mod dict;
 
 pub mod prelude;
 

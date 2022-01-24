@@ -65,6 +65,10 @@ impl<'a> Term<'a> {
         self.term
     }
 
+    pub fn origin_engine_ptr(&self) -> PL_engine_t {
+        self.origin.origin_engine_ptr()
+    }
+
     /// Returns true if this term reference holds a variable.
     pub fn is_var(&self) -> bool {
         self.assert_term_handling_possible();
