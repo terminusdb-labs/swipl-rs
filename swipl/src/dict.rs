@@ -11,7 +11,7 @@ pub enum Key {
 enum DictTag<'a> {
     Atom(Atom),
     Term(Term<'a>),
-    Var
+    Var,
 }
 
 impl From<u64> for Key {
@@ -67,6 +67,7 @@ pub struct DictBuilder<'a> {
 }
 
 impl<'a> DictBuilder<'a> {
+    /// Create a new dictionary builder.
     pub fn new() -> Self {
         Self {
             tag: DictTag::Var,
@@ -74,40 +75,58 @@ impl<'a> DictBuilder<'a> {
         }
     }
 
+    /// Set the dictionary tag to the given atom.
     pub fn set_tag<A: IntoAtom>(&mut self, tag: A) {
         self.tag = DictTag::Atom(tag.into_atom());
     }
 
+    /// Set the dictionary tag to the given atom.
     pub fn tag<A: IntoAtom>(mut self, tag: A) -> Self {
         self.set_tag(tag);
 
         self
     }
 
+    /// Set the dictionary tag to the given term.
     pub fn set_tag_term(&mut self, term: Term<'a>) {
         self.tag = DictTag::Term(term);
     }
 
+    /// Set the dictionary tag to the given term.
     pub fn tag_term(mut self, term: Term<'a>) -> Self {
         self.set_tag_term(term);
 
         self
     }
 
+    /// add an entry with the given key to the dictionary. The value
+    /// is implied to be a variable.
+    ///
+    /// If the entry already exists, this will overwrite it.
     pub fn add_entry_key<K: Into<Key>>(&mut self, key: K) {
         self.entries.insert(key.into(), None);
     }
 
+    /// add an entry with the given key to the dictionary. The value
+    /// is implied to be a variable.
+    ///
+    /// If the entry already exists, this will overwrite it.
     pub fn entry_key<K: Into<Key>>(mut self, key: K) -> Self {
         self.add_entry_key(key);
 
         self
     }
 
+    /// Add an entry with the given key and value to the dictionary.
+    ///
+    /// If the entry already exists, this will overwrite it.
     pub fn add_entry<K: Into<Key>, P: TermPutable + 'a>(&mut self, key: K, val: P) {
         self.entries.insert(key.into(), Some(Box::new(val)));
     }
 
+    /// Add an entry with the given key and value to the dictionary.
+    ///
+    /// If the entry already exists, this will overwrite it.
     pub fn entry<K: Into<Key>, P: TermPutable + 'a>(mut self, key: K, val: P) -> Self {
         self.add_entry(key, val);
 
@@ -139,8 +158,8 @@ unsafe impl<'a> TermPutable for DictBuilder<'a> {
 
         match &self.tag {
             DictTag::Atom(t) => t.put(&tag_term),
-            DictTag::Var => {},
-            DictTag::Term(t) => TermPutable::put(t, &tag_term)
+            DictTag::Var => {}
+            DictTag::Term(t) => TermPutable::put(t, &tag_term),
         };
 
         unsafe {
@@ -177,6 +196,13 @@ unsafe impl<'a> Unifiable for DictBuilder<'a> {
 }
 
 impl<'a> Term<'a> {
+    /// Get the value of the given key in the dictionary contained in
+    /// the dictionary contained in this term.
+    ///
+    /// If the dictionary doesn't contain the key, this will fail. If
+    /// the given term doesn't contain a dictionary, this will always
+    /// fail. Otherwise, the term argument will be overwritten with
+    /// the value corresponding to the key.
     pub fn get_dict_key<K: AsKey>(&self, key: K, term: &Term) -> PrologResult<()> {
         self.assert_term_handling_possible();
         if self.origin_engine_ptr() != term.origin_engine_ptr() {
@@ -197,6 +223,16 @@ impl<'a> Term<'a> {
         }
     }
 
+    /// Get the tag of this dictionary.
+    ///
+    /// Tag is assumed to be an atom. If it isn't (because it is
+    /// either a variable or some other kind of term), None will be
+    /// returned. Otherwise Some(atom) will be returned.
+    ///
+    /// If this is not a dictionary, this method will fail.
+    ///
+    /// If tag could be a non-atom term, consider using
+    /// [get_dict_tag_term](term::get_dict_tag_term) instead.
     pub fn get_dict_tag(&self) -> PrologResult<Option<Atom>> {
         self.assert_term_handling_possible();
 
@@ -209,6 +245,14 @@ impl<'a> Term<'a> {
         }
     }
 
+    /// Get the tag of this dictionary and put it in the given term.
+    ///
+    /// Unlike [get_dict_tag](Term::get_dict_tag), this is able to
+    /// extract complex dictionary tags. Though uncommon, a dictionary
+    /// tag can actually be any valid prolog term. This method helps
+    /// in extracting that.
+    ///
+    /// If this is not a dictionary, this method will fail.
     pub fn get_dict_tag_term(&self, term: &Term) -> PrologResult<()> {
         self.assert_term_handling_possible();
         if self.origin_engine_ptr() != term.origin_engine_ptr() {
