@@ -12,6 +12,7 @@ pub use crate::result::*;
 pub use crate::stream::*;
 pub use crate::term::*;
 pub use crate::text::*;
+pub use crate::dict::*;
 
 pub use crate::{
     arc_blob, clone_blob, pred, predicates, prolog, term, term_getable, term_putable, unifiable,
