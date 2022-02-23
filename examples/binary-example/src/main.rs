@@ -6,8 +6,8 @@ fn main() -> PrologResult<()> {
 
     let term = term! {context: hello(world)}?;
 
-    context.call_once(pred!(writeq / 1), [&term])?;
-    context.call_once(pred!(nl / 0), [])?;
+    context.call_pred_once(pred!(writeq / 1), [&term])?;
+    context.call_pred_once(pred!(nl / 0), [])?;
 
     Ok(())
 }

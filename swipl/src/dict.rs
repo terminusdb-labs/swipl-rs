@@ -480,7 +480,7 @@ mod tests {
 
         let string_term = context.new_term_ref();
         context
-            .call_once(pred! {term_string/2}, [&dict_term, &string_term])
+            .call_pred_once(pred! {term_string/2}, [&dict_term, &string_term])
             .unwrap();
         let string = string_term.get::<String>().unwrap();
         assert_eq!("foo{a:42,b:10}", string);
@@ -525,7 +525,7 @@ mod tests {
 
         let string_term = context.new_term_ref();
         context
-            .call_once(pred! {term_string/2}, [&dict_term, &string_term])
+            .call_pred_once(pred! {term_string/2}, [&dict_term, &string_term])
             .unwrap();
         let string = string_term.get::<String>().unwrap();
         assert_eq!("foo{11:bar,42:foo}", string);
