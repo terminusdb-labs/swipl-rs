@@ -58,6 +58,7 @@ use super::result::*;
 use super::term::*;
 
 use std::cell::Cell;
+use std::mem::MaybeUninit;
 
 use swipl_macros::{prolog, term};
 
@@ -190,7 +191,7 @@ impl<'a, T: ContextType> Context<'a, T> {
     }
 
     /// Return the engine pointer as a `TermOrigin`, which is used in the construction of a `Term` in unsafe code.
-    fn as_term_origin(&self) -> TermOrigin {
+    pub(crate) fn as_term_origin(&self) -> TermOrigin {
         unsafe { TermOrigin::new(self.engine_ptr()) }
     }
 
@@ -611,6 +612,57 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         }
     }
 
+    /// create an array of term references.
+    ///
+    /// The term refs all take on the lifetime of the Context
+    /// reference, ensuring that it cannot outlive the context that
+    /// created it.
+    pub fn new_term_refs<const N: usize>(&self) -> [Term; N] {
+        // TODO: this should be a compile time thing ideally
+        if N > i32::MAX as usize {
+            panic!("too many term refs requested: {}", N);
+        }
+
+        let mut term_ptr = unsafe { PL_new_term_refs(N as i32) };
+        let mut result: [MaybeUninit<Term>; N] = unsafe { MaybeUninit::uninit().assume_init() };
+        for i in 0..N {
+            let term = unsafe { Term::new(term_ptr, self.as_term_origin()) };
+            result[i].write(term);
+            term_ptr += 1;
+        }
+
+        // It would be nicer if we could do a transmute here, as
+        // transmute ensures that the conversion converts between
+        // types of the same size, but it seems like this doesn't work
+        // yet with const generic arrays. We do a pointer cast
+        // instead.
+        let magic = result.as_ptr() as *const [Term; N];
+        std::mem::forget(result);
+
+        unsafe { magic.read() }
+    }
+
+    /// create a vec of term references.
+    ///
+    /// The term refs all take on the lifetime of the Context
+    /// reference, ensuring that it cannot outlive the context that
+    /// created it.
+    pub fn new_term_refs_vec(&self, count: usize) -> Vec<Term> {
+        if count > i32::MAX as usize {
+            panic!("too many term refs requested: {}", count);
+        }
+
+        let mut term_ptr = unsafe { PL_new_term_refs(count as i32) };
+        let mut result = Vec::with_capacity(count);
+        for _ in 0..count {
+            let term = unsafe { Term::new(term_ptr, self.as_term_origin()) };
+            result.push(term);
+            term_ptr += 1;
+        }
+
+        result
+    }
+
     /// Open a query.
     ///
     /// Example:
@@ -751,6 +803,205 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
 
                 result
             }
+        }
+    }
+
+    /// Iterate over a term list.
+    ///
+    /// this returns a TermListIterator made out of the given
+    /// term. The TermListIterator will assume this is a cons cell,
+    /// and unify head and tail on each step of the iterator,
+    /// returning the head term and storing the tail term. If this
+    /// unification fails, the iterator stops.
+    ///
+    /// Note that the terms created by this iterator are not
+    /// automatically thrown away. It is the caller's responsibility
+    /// to clean up terms if this is required, for example by using a
+    /// frame.
+    pub fn term_list_iter<'b>(&'b self, list: &Term) -> TermListIterator<'b, 'a, T> {
+        self.assert_activated();
+        let cur = self.new_term_ref();
+        cur.unify(list).expect("unifying terms should work");
+        TermListIterator {
+            context: self,
+            cur: cur,
+        }
+    }
+
+    /// Retrieve a term list as a fixed-size array.
+    ///
+    /// This is useful when a term contains a list whose supposed size
+    /// is known at compile time. If the actual list is larger than
+    /// this, only the first N elements are used. If the list is
+    /// smaller, the remaining terms in the array remain variables.
+    pub fn term_list_array<const N: usize>(&self, list: &Term) -> [Term; N] {
+        self.assert_activated();
+        // allocate these terms inside the scope of this context
+        let terms = self.new_term_refs();
+
+        let frame = self.open_frame();
+        let terms_iter = terms.iter();
+        let list_iter = frame.term_list_iter(list);
+
+        for (term, elt) in terms_iter.zip(list_iter) {
+            term.unify(elt).unwrap();
+        }
+        frame.close();
+
+        terms
+    }
+
+    /// Retrieve a term list as a Vec.
+    ///
+    /// This will iterate over the given prolog list twice - once to
+    /// figure out its size, and then another time to actually
+    /// retrieve the elements. This is done so that we can allocate
+    /// the terms in a way that leaves no unused terms behind on the
+    /// stack (as would normally happen when iterating the list using
+    /// [term_list_iter](Context::term_list_iter)).
+    ///
+    /// If you know in advance what the size is going to be (or you
+    /// know a reasonable upper bound), consider using
+    /// [term_list_array](Context::term_list_array). If you just wish
+    /// to iterate over the elements, or don't care about garbage
+    /// terms being created, consider using
+    /// [term_list_iter](Context::term_list_iter).
+    pub fn term_list_vec(&self, list: &Term) -> Vec<Term> {
+        self.assert_activated();
+        let frame = self.open_frame();
+        let count = frame.term_list_iter(list).count();
+        frame.discard();
+
+        // allocate these terms inside the scope of this context
+        let terms = self.new_term_refs_vec(count);
+
+        let frame = self.open_frame();
+        let terms_iter = terms.iter();
+        let list_iter = frame.term_list_iter(list);
+
+        for (term, elt) in terms_iter.zip(list_iter) {
+            term.unify(elt).unwrap();
+        }
+        frame.close();
+
+        terms
+    }
+
+    /// Retrieve compound terms as a fixed size array.
+    ///
+    /// This will ensure that the given term is indeed a compound with
+    /// arity N. If this is true, N terms will be allocated in this
+    /// context, unified with the argument terms of the compound, and
+    /// returned as an array. If not, this method will fail.
+    pub fn compound_terms<const N: usize>(&self, compound: &Term) -> PrologResult<[Term; N]> {
+        self.assert_activated();
+        if N > (i32::MAX - 1) as usize {
+            panic!("requested compound term array too large: {}", N);
+        }
+
+        let mut size = 0;
+        if unsafe {
+            PL_get_compound_name_arity(compound.term_ptr(), std::ptr::null_mut(), &mut size) != 1
+        } {
+            return Err(PrologError::Failure);
+        }
+        if (size as usize) != N {
+            return Err(PrologError::Failure);
+        }
+
+        let terms: [Term; N] = self.new_term_refs();
+        for i in 0..N {
+            unsafe {
+                assert!(PL_get_arg((i + 1) as i32, compound.term_ptr(), terms[i].term_ptr()) == 1);
+            }
+        }
+
+        Ok(terms)
+    }
+
+    /// Retrieve compound terms as a Vec.
+    ///
+    /// This will ensure that the given term is indeed a compound of
+    /// any arity. If this is true, arity terms will be allocated in
+    /// this context, unified with the argument terms of the compound,
+    /// and returned as a Vec. If not, this method will fail.
+    pub fn compound_terms_vec(&self, compound: &Term) -> PrologResult<Vec<Term>> {
+        self.assert_activated();
+
+        let mut size = 0;
+        if unsafe {
+            PL_get_compound_name_arity(compound.term_ptr(), std::ptr::null_mut(), &mut size) != 1
+        } {
+            return Err(PrologError::Failure);
+        }
+
+        let terms = self.new_term_refs_vec(size as usize);
+        for i in 0..(size as usize) {
+            unsafe {
+                assert!(PL_get_arg((i + 1) as i32, compound.term_ptr(), terms[i].term_ptr()) == 1);
+            }
+        }
+
+        Ok(terms)
+    }
+
+    /// Retrieve compound terms as a fixed size Vec.
+    ///
+    /// This will ensure that the given term is indeed a compound with
+    /// arity `count`. If this is true, `count` terms will be
+    /// allocated in this context, unified with the argument terms of
+    /// the compound, and returned as an array. If not, this method
+    /// will fail.
+    pub fn compound_terms_vec_sized(
+        &self,
+        compound: &Term,
+        count: usize,
+    ) -> PrologResult<Vec<Term>> {
+        self.assert_activated();
+
+        let mut size = 0;
+        if unsafe {
+            PL_get_compound_name_arity(compound.term_ptr(), std::ptr::null_mut(), &mut size) != 1
+        } {
+            return Err(PrologError::Failure);
+        }
+        if (size as usize) != count {
+            return Err(PrologError::Failure);
+        }
+
+        let terms = self.new_term_refs_vec(count);
+        for i in 0..count {
+            unsafe {
+                assert!(PL_get_arg((i + 1) as i32, compound.term_ptr(), terms[i].term_ptr()) == 1);
+            }
+        }
+
+        Ok(terms)
+    }
+}
+
+/// An iterator over a term list.
+///
+/// See [`Context::term_list_iter`] for more information.
+pub struct TermListIterator<'a, 'b, CT: QueryableContextType> {
+    context: &'a Context<'b, CT>,
+    cur: Term<'a>,
+}
+
+impl<'a, 'b, CT: QueryableContextType> Iterator for TermListIterator<'a, 'b, CT> {
+    type Item = Term<'a>;
+
+    fn next(&mut self) -> Option<Term<'a>> {
+        let head = self.context.new_term_ref();
+        let tail = self.context.new_term_ref();
+        let success =
+            unsafe { PL_get_list(self.cur.term_ptr(), head.term_ptr(), tail.term_ptr()) != 0 };
+
+        if success {
+            self.cur = tail;
+            Some(head)
+        } else {
+            None
         }
     }
 }
@@ -1139,5 +1390,183 @@ mod tests {
         let q = context.open(prolog_arithmetic(&term, &expr));
         assert!(q.next_solution().is_ok());
         assert_eq!(4, term.get::<u64>().unwrap());
+    }
+
+    #[test]
+    fn iterate_over_term_list() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let list = context.term_from_string("[5, foo, \"bar\"]").unwrap();
+
+        let mut iter = context.term_list_iter(&list);
+        let first = iter.next().unwrap();
+        let second = iter.next().unwrap();
+        let third = iter.next().unwrap();
+        assert!(iter.next().is_none());
+
+        assert_eq!(5, first.get::<u64>().unwrap());
+        assert_eq!(Atom::new("foo"), second.get::<Atom>().unwrap());
+        assert_eq!("bar", third.get::<String>().unwrap());
+    }
+
+    #[test]
+    fn iterate_over_term_that_is_not_a_list() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let list = context.term_from_string("foo(bar, baz)").unwrap();
+
+        let mut iter = context.term_list_iter(&list);
+        assert!(iter.next().is_none());
+    }
+
+    #[test]
+    fn loop_over_term_list() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let list = context.term_from_string("[42, 42, 42, 42, 42]").unwrap();
+
+        let mut count = 0;
+        for term in context.term_list_iter(&list) {
+            count += 1;
+            assert_eq!(42, term.get::<u64>().unwrap());
+        }
+
+        assert_eq!(5, count);
+    }
+
+    #[test]
+    fn term_list_to_array() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let list = context.term_from_string("[5, foo, \"bar\"]").unwrap();
+
+        let terms: [Term; 3] = context.term_list_array(&list);
+        assert_eq!(5, terms[0].get::<u64>().unwrap());
+        assert_eq!(Atom::new("foo"), terms[1].get::<Atom>().unwrap());
+        assert_eq!("bar", terms[2].get::<String>().unwrap());
+    }
+
+    #[test]
+    fn term_list_to_array_large() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let list = context.term_from_string("[5, foo, \"bar\"]").unwrap();
+
+        let terms: [Term; 4] = context.term_list_array(&list);
+        assert_eq!(5, terms[0].get::<u64>().unwrap());
+        assert_eq!(Atom::new("foo"), terms[1].get::<Atom>().unwrap());
+        assert_eq!("bar", terms[2].get::<String>().unwrap());
+        assert!(terms[3].is_var());
+    }
+
+    #[test]
+    fn term_list_to_array_small() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let list = context.term_from_string("[5, foo, \"bar\"]").unwrap();
+
+        let terms: [Term; 2] = context.term_list_array(&list);
+        assert_eq!(5, terms[0].get::<u64>().unwrap());
+        assert_eq!(Atom::new("foo"), terms[1].get::<Atom>().unwrap());
+    }
+
+    #[test]
+    fn term_list_to_vec() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let list = context.term_from_string("[5, foo, \"bar\"]").unwrap();
+        let terms = context.term_list_vec(&list);
+        assert_eq!(3, terms.len());
+        assert_eq!(5, terms[0].get::<u64>().unwrap());
+        assert_eq!(Atom::new("foo"), terms[1].get::<Atom>().unwrap());
+        assert_eq!("bar", terms[2].get::<String>().unwrap());
+    }
+
+    #[test]
+    fn term_compound_to_array() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let compound = context.term_from_string("moo(5, foo, \"bar\")").unwrap();
+        let terms: [Term; 3] = context.compound_terms(&compound).unwrap();
+        assert_eq!(5, terms[0].get::<u64>().unwrap());
+        assert_eq!(Atom::new("foo"), terms[1].get::<Atom>().unwrap());
+        assert_eq!("bar", terms[2].get::<String>().unwrap());
+    }
+
+    #[test]
+    fn term_compound_to_wrong_size_array() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let compound = context.term_from_string("moo(5, foo, \"bar\")").unwrap();
+        let terms: Option<[Term; 4]> = attempt_opt(context.compound_terms(&compound)).unwrap();
+        assert!(terms.is_none());
+    }
+
+    #[test]
+    fn term_compound_to_vec() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let compound = context.term_from_string("moo(5, foo, \"bar\")").unwrap();
+        let terms = context.compound_terms_vec(&compound).unwrap();
+        assert_eq!(3, terms.len());
+        assert_eq!(5, terms[0].get::<u64>().unwrap());
+        assert_eq!(Atom::new("foo"), terms[1].get::<Atom>().unwrap());
+        assert_eq!("bar", terms[2].get::<String>().unwrap());
+    }
+
+    #[test]
+    fn term_compound_to_sized_vec() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let compound = context.term_from_string("moo(5, foo, \"bar\")").unwrap();
+        let terms = context.compound_terms_vec_sized(&compound, 3).unwrap();
+        assert_eq!(3, terms.len());
+        assert_eq!(5, terms[0].get::<u64>().unwrap());
+        assert_eq!(Atom::new("foo"), terms[1].get::<Atom>().unwrap());
+        assert_eq!("bar", terms[2].get::<String>().unwrap());
+    }
+
+    #[test]
+    fn term_compound_to_wrong_size_vec() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let compound = context.term_from_string("moo(5, foo, \"bar\")").unwrap();
+        let terms = attempt_opt(context.compound_terms_vec_sized(&compound, 4)).unwrap();
+        assert!(terms.is_none());
+    }
+
+    #[test]
+    fn term_compound_not_a_compound() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let compound = context.term_from_string("\"moo\"").unwrap();
+        let terms: Option<[Term; 4]> = attempt_opt(context.compound_terms(&compound)).unwrap();
+        assert!(terms.is_none());
     }
 }

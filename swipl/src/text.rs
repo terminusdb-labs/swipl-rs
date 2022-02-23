@@ -14,6 +14,7 @@ use std::os::raw::c_char;
 ///
 /// `PrologText` can be derefed to an `&String`, which means it's
 /// automatically usable in most contexts that require one of those.
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub struct PrologText(String);
 
 impl std::ops::Deref for PrologText {

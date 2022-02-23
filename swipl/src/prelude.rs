@@ -3,6 +3,7 @@ pub use crate::atom::*;
 pub use crate::blob::*;
 pub use crate::callable::*;
 pub use crate::context::*;
+pub use crate::dict::*;
 pub use crate::engine::*;
 pub use crate::functor::*;
 pub use crate::init::*;
