@@ -556,6 +556,22 @@
 <span id="555">555</span>
 <span id="556">556</span>
 <span id="557">557</span>
+<span id="558">558</span>
+<span id="559">559</span>
+<span id="560">560</span>
+<span id="561">561</span>
+<span id="562">562</span>
+<span id="563">563</span>
+<span id="564">564</span>
+<span id="565">565</span>
+<span id="566">566</span>
+<span id="567">567</span>
+<span id="568">568</span>
+<span id="569">569</span>
+<span id="570">570</span>
+<span id="571">571</span>
+<span id="572">572</span>
+<span id="573">573</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::kw</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util</span>::<span class="kw-2">*</span>;
 
@@ -811,6 +827,10 @@
             <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;register_{}&quot;</span>, <span class="self">self</span>.<span class="ident">predicate_rust_name</span>),
             <span class="ident">Span::call_site</span>(),
         );
+        <span class="kw">let</span> <span class="ident">registration_in_module_name</span> <span class="op">=</span> <span class="ident">Ident::new</span>(
+            <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;register_{}_in_module&quot;</span>, <span class="self">self</span>.<span class="ident">predicate_rust_name</span>),
+            <span class="ident">Span::call_site</span>(),
+        );
         <span class="kw">let</span> <span class="ident">module_lit</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">module</span> {
             <span class="prelude-val">None</span> =&gt; <span class="macro">quote!</span> {<span class="prelude-val">None</span>},
             <span class="prelude-val">Some</span>(<span class="ident">m</span>) =&gt; <span class="macro">quote!</span> {<span class="prelude-val">Some</span>(#<span class="ident">m</span>)},
@@ -823,11 +843,11 @@
         <span class="kw">let</span> <span class="ident">arity</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">1</span>;
 
         <span class="macro">quote!</span> {
-            #<span class="ident">visibility</span> <span class="kw">fn</span> #<span class="ident">registration_name</span>() -&gt; <span class="ident">bool</span> {
+            #<span class="ident">visibility</span> <span class="kw">fn</span> #<span class="ident">registration_in_module_name</span>(<span class="ident">module</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) -&gt; <span class="ident">bool</span> {
                 <span class="comment">// unsafe justification: register_foreign_in_module is unsafe due to the possibility that someone registers a function that is not actually expecting to handle a prolog call, and is not set up right for it. But we&#39;re generating this code ourselves, so we should have taken care of all preconditions.</span>
                 <span class="kw">unsafe</span> {
                     #<span class="ident">crt::init::register_foreign_in_module</span>(
-                        #<span class="ident">module_lit</span>,
+                        <span class="ident">module</span>,
                         #<span class="ident">name_lit</span>,
                         <span class="ident">std::convert::TryInto</span>::<span class="op">&lt;</span><span class="ident">u16</span><span class="op">&gt;</span><span class="ident">::try_into</span>(#<span class="ident">arity</span>).<span class="ident">expect</span>(<span class="string">&quot;arity does not fit in an u16&quot;</span>),
                         <span class="bool-val">true</span>, <span class="comment">// deterministic</span>
@@ -835,6 +855,10 @@
                         #<span class="ident">trampoline_name</span>
                     )
                 }
+            }
+
+            #<span class="ident">visibility</span> <span class="kw">fn</span> #<span class="ident">registration_name</span>() -&gt; <span class="ident">bool</span> {
+                #<span class="ident">registration_in_module_name</span>(#<span class="ident">module_lit</span>)
             }
         }
     }
@@ -1062,6 +1086,10 @@
             <span class="prelude-val">None</span> =&gt; <span class="macro">quote!</span> {<span class="prelude-val">None</span>},
             <span class="prelude-val">Some</span>(<span class="ident">m</span>) =&gt; <span class="macro">quote!</span> {<span class="prelude-val">Some</span>(#<span class="ident">m</span>)},
         };
+        <span class="kw">let</span> <span class="ident">registration_in_module_name</span> <span class="op">=</span> <span class="ident">Ident::new</span>(
+            <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;register_{}_in_module&quot;</span>, <span class="self">self</span>.<span class="ident">predicate_rust_name</span>),
+            <span class="ident">Span::call_site</span>(),
+        );
         <span class="kw">let</span> <span class="ident">rust_name</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="self">self</span>.<span class="ident">predicate_rust_name</span>);
         <span class="kw">let</span> <span class="ident">name_lit</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">name</span> {
             <span class="prelude-val">None</span> =&gt; <span class="macro">quote!</span> {#<span class="ident">rust_name</span>},
@@ -1070,11 +1098,11 @@
         <span class="kw">let</span> <span class="ident">arity</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">1</span>;
 
         <span class="macro">quote!</span> {
-            #<span class="ident">visibility</span> <span class="kw">fn</span> #<span class="ident">registration_name</span>() -&gt; <span class="ident">bool</span> {
+            #<span class="ident">visibility</span> <span class="kw">fn</span> #<span class="ident">registration_in_module_name</span>(<span class="ident">module</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) -&gt; <span class="ident">bool</span> {
                 <span class="comment">// unsafe justification: register_foreign_in_module is unsafe due to the possibility that someone registers a function that is not actually expecting to handle a prolog call, and is not set up right for it. But we&#39;re generating this code ourselves, so we should have taken care of all preconditions.</span>
                 <span class="kw">unsafe</span> {
                     #<span class="ident">crt::init::register_foreign_in_module</span>(
-                        #<span class="ident">module_lit</span>,
+                        <span class="ident">module</span>,
                         #<span class="ident">name_lit</span>,
                         <span class="ident">std::convert::TryInto</span>::<span class="op">&lt;</span><span class="ident">u16</span><span class="op">&gt;</span><span class="ident">::try_into</span>(#<span class="ident">arity</span>).<span class="ident">expect</span>(<span class="string">&quot;arity does not fit in an u16&quot;</span>),
                         <span class="bool-val">false</span>, <span class="comment">// deterministic</span>
@@ -1082,6 +1110,10 @@
                         #<span class="ident">trampoline_name</span>
                     )
                 }
+            }
+
+            #<span class="ident">visibility</span> <span class="kw">fn</span> #<span class="ident">registration_name</span>() -&gt; <span class="ident">bool</span> {
+                #<span class="ident">registration_in_module_name</span>(#<span class="ident">module_lit</span>)
             }
         }
     }
