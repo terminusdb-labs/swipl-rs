@@ -253,6 +253,10 @@ impl ForeignPredicateDefinitionImpl for SemidetForeignPredicateDefinition {
             &format!("register_{}", self.predicate_rust_name),
             Span::call_site(),
         );
+        let registration_in_module_name = Ident::new(
+            &format!("register_{}_in_module", self.predicate_rust_name),
+            Span::call_site(),
+        );
         let module_lit = match module {
             None => quote! {None},
             Some(m) => quote! {Some(#m)},
@@ -265,11 +269,11 @@ impl ForeignPredicateDefinitionImpl for SemidetForeignPredicateDefinition {
         let arity = self.params.len() - 1;
 
         quote! {
-            #visibility fn #registration_name() -> bool {
+            #visibility fn #registration_in_module_name(module: Option<&str>) -> bool {
                 // unsafe justification: register_foreign_in_module is unsafe due to the possibility that someone registers a function that is not actually expecting to handle a prolog call, and is not set up right for it. But we're generating this code ourselves, so we should have taken care of all preconditions.
                 unsafe {
                     #crt::init::register_foreign_in_module(
-                        #module_lit,
+                        module,
                         #name_lit,
                         std::convert::TryInto::<u16>::try_into(#arity).expect("arity does not fit in an u16"),
                         true, // deterministic
@@ -277,6 +281,10 @@ impl ForeignPredicateDefinitionImpl for SemidetForeignPredicateDefinition {
                         #trampoline_name
                     )
                 }
+            }
+
+            #visibility fn #registration_name() -> bool {
+                #registration_in_module_name(#module_lit)
             }
         }
     }
@@ -504,6 +512,10 @@ impl ForeignPredicateDefinitionImpl for NondetForeignPredicateDefinition {
             None => quote! {None},
             Some(m) => quote! {Some(#m)},
         };
+        let registration_in_module_name = Ident::new(
+            &format!("register_{}_in_module", self.predicate_rust_name),
+            Span::call_site(),
+        );
         let rust_name = format!("{}", self.predicate_rust_name);
         let name_lit = match name {
             None => quote! {#rust_name},
@@ -512,11 +524,11 @@ impl ForeignPredicateDefinitionImpl for NondetForeignPredicateDefinition {
         let arity = self.params.len() - 1;
 
         quote! {
-            #visibility fn #registration_name() -> bool {
+            #visibility fn #registration_in_module_name(module: Option<&str>) -> bool {
                 // unsafe justification: register_foreign_in_module is unsafe due to the possibility that someone registers a function that is not actually expecting to handle a prolog call, and is not set up right for it. But we're generating this code ourselves, so we should have taken care of all preconditions.
                 unsafe {
                     #crt::init::register_foreign_in_module(
-                        #module_lit,
+                        module,
                         #name_lit,
                         std::convert::TryInto::<u16>::try_into(#arity).expect("arity does not fit in an u16"),
                         false, // deterministic
@@ -524,6 +536,10 @@ impl ForeignPredicateDefinitionImpl for NondetForeignPredicateDefinition {
                         #trampoline_name
                     )
                 }
+            }
+
+            #visibility fn #registration_name() -> bool {
+                #registration_in_module_name(#module_lit)
             }
         }
     }
