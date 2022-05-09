@@ -4,6 +4,7 @@
 mod kw;
 mod util;
 
+mod atom;
 mod blob;
 mod pred;
 mod predicate;
@@ -294,4 +295,15 @@ pub fn clone_blob(attr: TokenStream, item: TokenStream) -> TokenStream {
 #[proc_macro]
 pub fn wrapped_clone_blob(item: TokenStream) -> TokenStream {
     blob::wrapped_clone_blob_macro(item)
+}
+
+/// Create a static atom.
+///
+/// The atom will only actually be created on first invocation. Each
+/// subsequent invocation will reuse the earlier retrieved atom. This
+/// is convenient for code that uses the exact same atom on repeated
+/// invocations.
+#[proc_macro]
+pub fn atom(item: TokenStream) -> TokenStream {
+    atom::atom_macro(item)
 }

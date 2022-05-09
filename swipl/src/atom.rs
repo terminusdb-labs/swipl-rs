@@ -20,6 +20,7 @@ use super::term::*;
 use crate::{term_getable, term_putable, unifiable};
 use std::convert::TryInto;
 use std::os::raw::c_char;
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 /// A wrapper for a prolog atom.
 ///
@@ -121,6 +122,11 @@ impl Atom {
         let swipl_string = std::str::from_utf8(swipl_string_ref).unwrap();
 
         swipl_string
+    }
+
+    /// Increase the reference counter for this atom.
+    fn increment_refcount(&self) {
+        unsafe { PL_register_atom(self.atom) }
     }
 }
 
@@ -417,6 +423,63 @@ impl<'a> AsRef<str> for Atomable<'a> {
     }
 }
 
+/// A struct which provides a way to delay and cache atom creation.
+///
+/// This struct wraps a static string and uses it to construct a swipl
+/// atom on the first invocation of `as_atom`. Subsequent invocations
+/// will reuse the earlier constructed atom.
+///
+/// The purpose of this struct is to back the implementation of the
+/// `atom!` macro, but it's also usable on its own.
+pub struct LazyAtom {
+    s: &'static str,
+    a: AtomicUsize,
+}
+
+impl LazyAtom {
+    /// Create a new LazyAtom.
+    ///
+    /// This constructor is const, as all it does is set up the
+    /// struct. No actual calls into SWI-Prolog happen at this stage.
+    pub const fn new(s: &'static str) -> Self {
+        Self {
+            s,
+            a: AtomicUsize::new(0),
+        }
+    }
+
+    /// Create an atom, or return an earlier created atom.
+    ///
+    /// On first call, this will call swipl to create an
+    /// atom. Subsequent calls will reuse the atom that was retrieved
+    /// before.
+    pub fn as_atom(&self) -> Atom {
+        let ptr = self.a.load(Ordering::Relaxed);
+        if ptr == 0 {
+            // we've not yet allocated an atom. let's do it now.
+            let atom = Atom::new(self.s);
+
+            let swapped = self.a.swap(atom.atom_ptr() as atom_t, Ordering::Relaxed);
+            if swapped == 0 {
+                // nobody raced us to store this atom. This means
+                // we're the first ones here. We need to ensure that
+                // the atom refcount is incremented so that our
+                // reference here in static memory remains valid.
+
+                atom.increment_refcount();
+            }
+
+            atom
+        } else {
+            let atom = unsafe { Atom::wrap(ptr as atom_t) };
+
+            atom.increment_refcount();
+
+            atom
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -568,5 +631,40 @@ mod tests {
         let a2: Atomable = term.get().unwrap();
 
         assert_eq!("foo", a2.name());
+    }
+
+    #[test]
+    fn lazy_atom_to_atom() {
+        let engine = Engine::new();
+        let _activation = engine.activate();
+
+        let lazy = LazyAtom::new("moo");
+        let a1 = lazy.as_atom();
+        let a2 = lazy.as_atom();
+
+        assert_eq!(a1, a2);
+        let a3 = "moo".as_atom();
+        assert_eq!(a1, a3);
+    }
+
+    use swipl_macros::atom;
+    #[test]
+    fn inline_atom_through_macro_ident() {
+        let engine = Engine::new();
+        let _activation = engine.activate();
+
+        let a1 = atom!(foo);
+        let a2 = "foo".as_atom();
+        assert_eq!(a1, a2);
+    }
+
+    #[test]
+    fn inline_atom_through_macro_str() {
+        let engine = Engine::new();
+        let _activation = engine.activate();
+
+        let a1 = atom!("bar");
+        let a2 = "bar".as_atom();
+        assert_eq!(a1, a2);
     }
 }

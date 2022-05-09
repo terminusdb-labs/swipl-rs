@@ -30,5 +30,6 @@ pub mod text;
 pub mod prelude;
 
 pub use swipl_macros::{
-    arc_blob, clone_blob, pred, predicates, prolog, term, wrapped_arc_blob, wrapped_clone_blob,
+    arc_blob, atom, clone_blob, pred, predicates, prolog, term, wrapped_arc_blob,
+    wrapped_clone_blob,
 };

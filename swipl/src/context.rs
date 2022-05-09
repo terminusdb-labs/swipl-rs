@@ -488,7 +488,7 @@ impl Drop for Frame {
             // discarded if there's no inner frame still
             // remaining. It'll also ensure that the engine of the
             // frame is active while dropping.
-            unsafe { PL_discard_foreign_frame(self.fid) }
+            unsafe { PL_discard_foreign_frame(self.fid) },
             _ => {}
         }
     }
