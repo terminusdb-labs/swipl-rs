@@ -126,11 +126,11 @@
     <span class="ident">result</span>.<span class="ident">into</span>()
 }
 
-<span class="kw">struct</span> <span class="ident">Functor</span> {
-    <span class="ident">name</span>: <span class="ident">String</span>,
-    <span class="ident">name_span</span>: <span class="ident">Span</span>,
-    <span class="ident">arity</span>: <span class="ident">u16</span>,
-    <span class="ident">arity_span</span>: <span class="ident">Span</span>,
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">Functor</span> {
+    <span class="kw">pub</span> <span class="ident">name</span>: <span class="ident">String</span>,
+    <span class="kw">pub</span> <span class="ident">name_span</span>: <span class="ident">Span</span>,
+    <span class="kw">pub</span> <span class="ident">arity</span>: <span class="ident">u16</span>,
+    <span class="kw">pub</span> <span class="ident">arity_span</span>: <span class="ident">Span</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Parse</span> <span class="kw">for</span> <span class="ident">Functor</span> {
