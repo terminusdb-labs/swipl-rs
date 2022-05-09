@@ -19,11 +19,11 @@ pub fn functor_macro(stream: proc_macro::TokenStream) -> proc_macro::TokenStream
     result.into()
 }
 
-struct Functor {
-    name: String,
-    name_span: Span,
-    arity: u16,
-    arity_span: Span,
+pub(crate) struct Functor {
+    pub name: String,
+    pub name_span: Span,
+    pub arity: u16,
+    pub arity_span: Span,
 }
 
 impl Parse for Functor {
