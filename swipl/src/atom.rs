@@ -315,6 +315,16 @@ impl AsAtom for Atom {
     }
 }
 
+impl AsAtom for &Atom {
+    fn as_atom(&self) -> Atom {
+        (*self).clone()
+    }
+
+    fn as_atom_ptr(&self) -> (atom_t, Option<Atom>) {
+        (self.atom_ptr(), None)
+    }
+}
+
 impl<'a> AsAtom for Atomable<'a> {
     fn as_atom(&self) -> Atom {
         self.into_atom()
@@ -448,35 +458,43 @@ impl LazyAtom {
         }
     }
 
-    /// Create an atom, or return an earlier created atom.
-    ///
-    /// On first call, this will call swipl to create an
-    /// atom. Subsequent calls will reuse the atom that was retrieved
-    /// before.
-    pub fn as_atom(&self) -> Atom {
+    pub fn as_atom_t(&self) -> atom_t {
         let ptr = self.a.load(Ordering::Relaxed);
         if ptr == 0 {
             // we've not yet allocated an atom. let's do it now.
             let atom = Atom::new(self.s);
+            let atom_ptr = atom.atom_ptr();
 
-            let swapped = self.a.swap(atom.atom_ptr() as atom_t, Ordering::Relaxed);
+            let swapped = self.a.swap(atom_ptr, Ordering::Relaxed);
             if swapped == 0 {
                 // nobody raced us to store this atom. This means
                 // we're the first ones here. We need to ensure that
                 // the atom refcount is incremented so that our
                 // reference here in static memory remains valid.
 
-                atom.increment_refcount();
+                std::mem::forget(atom);
             }
 
-            atom
+            atom_ptr
         } else {
-            let atom = unsafe { Atom::wrap(ptr as atom_t) };
-
-            atom.increment_refcount();
-
-            atom
+            ptr
         }
+    }
+}
+
+impl AsAtom for LazyAtom {
+    fn as_atom(&self) -> Atom {
+        let ptr = self.as_atom_t();
+        let atom = unsafe { Atom::wrap(ptr) };
+
+        atom.increment_refcount();
+
+        atom
+    }
+
+    fn as_atom_ptr(&self) -> (atom_t, Option<Atom>) {
+        let ptr = self.as_atom_t();
+        (ptr, None)
     }
 }
 

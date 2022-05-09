@@ -12,7 +12,7 @@ pub fn atom_macro(stream: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let crt = crate_token();
     let result = quote! {
         { static atom: #crt::prelude::LazyAtom = #crt::prelude::LazyAtom::new(#atom_str);
-          atom.as_atom()
+          #crt::prelude::AsAtom::as_atom(&atom)
         }
     };
     result.into()

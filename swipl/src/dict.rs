@@ -262,7 +262,7 @@ impl<'a> Term<'a> {
     /// type is different, this will fail. If the given term doesn't
     /// contain a dictionary, this will always fail. Otherwise, the
     /// value corresponding to the given key is returned.
-    pub fn get_dict_key<K: AsKey, G: TermGetable>(&self, key: K) -> PrologResult<G> {
+    pub fn get_dict_key<K: AsKey, G: TermGetable>(&self, key: &K) -> PrologResult<G> {
         self.assert_term_handling_possible();
         let context = unsafe { unmanaged_engine_context() };
         let (key_atom, alloc) = key.atom_ptr();
@@ -294,7 +294,7 @@ impl<'a> Term<'a> {
     /// the given term doesn't contain a dictionary, this will always
     /// fail. Otherwise, the term argument will be overwritten with
     /// the value corresponding to the key.
-    pub fn get_dict_key_term<K: AsKey>(&self, key: K, term: &Term) -> PrologResult<()> {
+    pub fn get_dict_key_term<K: AsKey>(&self, key: &K, term: &Term) -> PrologResult<()> {
         self.assert_term_handling_possible();
         if self.origin_engine_ptr() != term.origin_engine_ptr() {
             panic!("terms being unified are not part of the same engine");
