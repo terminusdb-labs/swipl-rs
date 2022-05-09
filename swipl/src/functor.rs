@@ -13,6 +13,7 @@ use super::fli::*;
 use super::term::*;
 
 use std::convert::TryInto;
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 use crate::{term_getable, term_putable, unifiable};
 
@@ -139,6 +140,61 @@ term_putable! {
     }
 }
 
+/// A struct which provides a way to delay and cache functor creation.
+///
+/// This struct wraps a static string and an arity and uses it to
+/// construct a swipl functor on the first invocation of
+/// `as_functor`. Subsequent invocations will reuse the earlier
+/// constructed functor.
+///
+/// The purpose of this struct is to back the implementation of the
+/// `functor!` macro, but it's also usable on its own.
+pub struct LazyFunctor {
+    name: &'static str,
+    arity: u16,
+    f: AtomicUsize,
+}
+
+impl LazyFunctor {
+    /// Create a new LazyFunctor.
+    ///
+    /// This constructor is const, as all it does is set up the
+    /// struct. No actual calls into SWI-Prolog happen at this stage.
+    pub const fn new(name: &'static str, arity: u16) -> Self {
+        Self {
+            name,
+            arity,
+            f: AtomicUsize::new(0),
+        }
+    }
+
+    /// Create a functor, or return an earlier created functor.
+    ///
+    /// On first call, this will call swipl to create a
+    /// functor. Subsequent calls will reuse the functor that was
+    /// retrieved before.
+    pub fn as_functor(&self) -> Functor {
+        let ptr = self.f.load(Ordering::Relaxed);
+        if ptr == 0 {
+            // we've not yet allocated a functor. let's do it now.
+            let functor = Functor::new(self.name, self.arity);
+
+            self.f
+                .store(functor.functor_ptr() as atom_t, Ordering::Relaxed);
+            // Note that no special precautions have to be taken
+            // around refcounting and garbage collection. Unlike
+            // atoms, functors are not refcounted and are valid for
+            // the entire prolog session.
+
+            functor
+        } else {
+            let functor = unsafe { Functor::wrap(ptr as functor_t) };
+
+            functor
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -238,5 +294,75 @@ mod tests {
 
         assert!(!term.unify_arg(3, 24_u64).is_ok());
         assert!(term.get_arg::<u64>(3).unwrap_err().is_failure());
+    }
+
+    #[test]
+    fn lazy_functor_to_functor() {
+        let engine = Engine::new();
+        let _activation = engine.activate();
+
+        let lazy = LazyFunctor::new("foo", 1);
+        let f1 = lazy.as_functor();
+        let f2 = lazy.as_functor();
+        let f3 = Functor::new("foo", 1);
+
+        assert_eq!(f1, f2);
+        assert_eq!(f1, f3);
+    }
+
+    use swipl_macros::{atom, functor};
+    #[test]
+    fn inline_functor_through_macro_allstring() {
+        let engine = Engine::new();
+        let _activation = engine.activate();
+
+        let f = functor!("foo/3");
+
+        assert_eq!(atom!("foo"), f.name());
+        assert_eq!(3, f.arity());
+    }
+
+    #[test]
+    fn inline_functor_through_macro_string_comma() {
+        let engine = Engine::new();
+        let _activation = engine.activate();
+
+        let f = functor!("foo", 3);
+
+        assert_eq!(atom!("foo"), f.name());
+        assert_eq!(3, f.arity());
+    }
+
+    #[test]
+    fn inline_functor_through_macro_string_slash() {
+        let engine = Engine::new();
+        let _activation = engine.activate();
+
+        let f = functor!("foo" / 3);
+
+        assert_eq!(atom!("foo"), f.name());
+        assert_eq!(3, f.arity());
+    }
+
+    #[test]
+    fn inline_functor_through_macro_ident_comma() {
+        let engine = Engine::new();
+        let _activation = engine.activate();
+
+        let f = functor!(foo, 3);
+
+        assert_eq!(atom!("foo"), f.name());
+        assert_eq!(3, f.arity());
+    }
+
+    #[test]
+    fn inline_functor_through_macro_ident_slash() {
+        let engine = Engine::new();
+        let _activation = engine.activate();
+
+        let f = functor!(foo / 3);
+
+        assert_eq!(atom!("foo"), f.name());
+        assert_eq!(3, f.arity());
     }
 }

@@ -6,6 +6,7 @@ mod util;
 
 mod atom;
 mod blob;
+mod functor;
 mod pred;
 mod predicate;
 mod prolog;
@@ -306,4 +307,15 @@ pub fn wrapped_clone_blob(item: TokenStream) -> TokenStream {
 #[proc_macro]
 pub fn atom(item: TokenStream) -> TokenStream {
     atom::atom_macro(item)
+}
+
+/// Create a static functor.
+///
+/// The functor will only actually be created on first
+/// invocation. Each subsequent invocation will reuse the earlier
+/// retrieved functor. This is convenient for code that uses the exact
+/// same functor on repeated invocations.
+#[proc_macro]
+pub fn functor(item: TokenStream) -> TokenStream {
+    functor::functor_macro(item)
 }
