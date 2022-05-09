@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["Functor","A wrapper for a prolog functor."]]});
+initSidebarItems({"struct":[["Functor","A wrapper for a prolog functor."],["LazyFunctor","A struct which provides a way to delay and cache functor creation."]]});
