@@ -36,26 +36,48 @@ term_getable! {
     }
 }
 
+unsafe fn ensure_writable_prolog_stream(stream: *mut fli::IOSTREAM) -> io::Result<()> {
+    if (*stream).flags & fli::SIO_OUTPUT == 0 {
+        Err(io::Error::new(io::ErrorKind::BrokenPipe, "prolog stream is not writable"))
+    }
+    else {
+        Ok(())
+    }
+}
+
 unsafe fn write_to_prolog_stream(stream: *mut fli::IOSTREAM, buf: &[u8]) -> io::Result<usize> {
+    ensure_writable_prolog_stream(stream)?;
     let enc = (*stream).encoding;
+    let count;
     if enc == fli::IOENC_ENC_OCTET || enc == fli::IOENC_ENC_ANSI || enc == fli::IOENC_ENC_UTF8 {
         // in this case we can just write our buf directly.
-        println!("direct write!");
-        fli::Sfwrite(
+        //eprintln!("direct write! ({:?})", buf);
+        count = fli::Sfwrite(
             buf.as_ptr() as *const std::ffi::c_void,
-            buf.len() as fli::size_t,
             1,
+            buf.len() as fli::size_t,
             stream,
-        );
+        ) as usize;
     } else {
-        println!("indirect write!");
+        //eprintln!("indirect write! ({:?}", buf);
         let mut write_buf = Vec::with_capacity(buf.len() + 1);
         write_buf.extend_from_slice(buf);
         write_buf.push(0);
-        fli::Sfputs(write_buf.as_ptr() as *const i8, stream);
+        let result = fli::Sfputs(write_buf.as_ptr() as *const i8, stream);
+        if result == fli::EOF {
+            if fli::Sferror(stream) != 0 {
+                fli::Sclearerr(stream);
+                return Err(io::Error::new(io::ErrorKind::InvalidData, "Tried to write data that is out of range for the encoding of this stream"));
+            }
+            else {
+                return Err(io::Error::new(io::ErrorKind::UnexpectedEof, "unexpected eof"));
+            }
+        }
+
+        count = buf.len();
     }
 
-    Ok(buf.len())
+    Ok(count)
 }
 
 impl Write for WritablePrologStream {

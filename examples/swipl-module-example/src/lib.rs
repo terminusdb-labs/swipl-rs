@@ -107,12 +107,10 @@ predicates! {
         num_term.unify(wrapper.num)
     }
 
-    semidet fn stream_write_hello(_context, stream_term) {
+    semidet fn stream_write_hello(context, stream_term) {
         let mut stream: WritablePrologStream = stream_term.get()?;
 
-        write!(stream, "こんにちは!\n").unwrap();
-
-        Ok(())
+        context.try_or_die(write!(stream, "こんにちは! 🫡\n"))
     }
 }
 
