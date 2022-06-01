@@ -106,6 +106,14 @@ predicates! {
         let wrapper: MooMoo = moo_term.get()?;
         num_term.unify(wrapper.num)
     }
+
+    semidet fn stream_write_hello(_context, stream_term) {
+        let mut stream: WritablePrologStream = stream_term.get()?;
+
+        write!(stream, "こんにちは!\n").unwrap();
+
+        Ok(())
+    }
 }
 
 #[arc_blob("moo")]
@@ -153,4 +161,6 @@ pub extern "C" fn install() {
 
     register_unify_with_foo();
     register_unify_with_bar_baz();
+
+    register_stream_write_hello();
 }

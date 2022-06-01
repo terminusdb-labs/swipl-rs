@@ -7,3 +7,11 @@
 #![allow(improper_ctypes)]
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
+
+// we define some extra constants which inexplicably didn't make it into the header
+pub const SH_ERRORS: i32 = 0x01;
+pub const SH_ALIAS: i32 = 0x02;
+pub const SH_UNLOCKED: i32 = 0x04;
+pub const SH_OUTPUT: i32 = 0x08;
+pub const SH_INPUT: i32 = 0x10;
+pub const SH_NOPAIR: i32 = 0x20;
