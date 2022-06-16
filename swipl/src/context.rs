@@ -733,6 +733,14 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         open_call(self, t)
     }
 
+    pub fn call_term_once(&'a self, t: &Term<'a>) -> PrologResult<()> {
+        let open_call = self.open_call(t);
+        open_call.next_solution()?;
+        open_call.cut();
+
+        Ok(())
+    }
+
     /// Turn a result into a `PrologResult`.
     ///
     /// For this to work, the `Err` component of the `Result` needs to
