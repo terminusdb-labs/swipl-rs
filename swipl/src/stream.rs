@@ -24,6 +24,9 @@ pub struct WritablePrologStream {
     stream: *mut fli::IOSTREAM,
 }
 
+unsafe impl Send for WritablePrologStream {}
+unsafe impl Sync for WritablePrologStream {}
+
 term_getable! {
     (WritablePrologStream, term) => {
         let mut stream: *mut fli::IOSTREAM = std::ptr::null_mut();
@@ -113,5 +116,13 @@ impl Write for PrologStream {
             0 => Ok(()),
             _ => Err(io::Error::new(io::ErrorKind::Other, "prolog flush failed")),
         }
+    }
+}
+
+pub fn current_output() -> WritablePrologStream {
+    unsafe {
+        let current_output = *fli::_PL_streams().offset(4);
+
+        WritablePrologStream{stream:current_output}
     }
 }
