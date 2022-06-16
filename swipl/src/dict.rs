@@ -57,7 +57,7 @@ impl Key {
 /// addition, various things can be automatically converted to
 /// atoms. This trait provides an implementation which facilitates
 /// this.
-pub trait AsKey {
+pub trait IntoKey {
     /// Returns the `atom_t` corresponding to this key, plus an allocation.
     ///
     /// As long as the allocation remains in scope, the atom_t can be
@@ -65,18 +65,18 @@ pub trait AsKey {
     ///
     /// This is used by dict querying code to efficiently get hold of
     /// dictionary keys (which internally are always atom_t).
-    fn atom_ptr(&self) -> (fli::atom_t, Option<Atom>);
+    fn atom_ptr(self) -> (fli::atom_t, Option<Atom>);
 }
 
-impl<A: AsAtom> AsKey for A {
-    fn atom_ptr(&self) -> (fli::atom_t, Option<Atom>) {
+impl<'a, A: AsAtom + ?Sized> IntoKey for &'a A {
+    fn atom_ptr(self) -> (fli::atom_t, Option<Atom>) {
         self.as_atom_ptr()
     }
 }
 
-impl AsKey for u64 {
-    fn atom_ptr(&self) -> (fli::atom_t, Option<Atom>) {
-        (int_to_atom_t(*self), None)
+impl IntoKey for u64 {
+    fn atom_ptr(self) -> (fli::atom_t, Option<Atom>) {
+        (int_to_atom_t(self), None)
     }
 }
 
@@ -262,7 +262,7 @@ impl<'a> Term<'a> {
     /// type is different, this will fail. If the given term doesn't
     /// contain a dictionary, this will always fail. Otherwise, the
     /// value corresponding to the given key is returned.
-    pub fn get_dict_key<K: AsKey, G: TermGetable>(&self, key: &K) -> PrologResult<G> {
+    pub fn get_dict_key<K: IntoKey, G: TermGetable>(&self, key: K) -> PrologResult<G> {
         self.assert_term_handling_possible();
         let context = unsafe { unmanaged_engine_context() };
         let (key_atom, alloc) = key.atom_ptr();
@@ -294,7 +294,7 @@ impl<'a> Term<'a> {
     /// the given term doesn't contain a dictionary, this will always
     /// fail. Otherwise, the term argument will be overwritten with
     /// the value corresponding to the key.
-    pub fn get_dict_key_term<K: AsKey>(&self, key: &K, term: &Term) -> PrologResult<()> {
+    pub fn get_dict_key_term<K: IntoKey>(&self, key: K, term: &Term) -> PrologResult<()> {
         self.assert_term_handling_possible();
         if self.origin_engine_ptr() != term.origin_engine_ptr() {
             panic!("terms being unified are not part of the same engine");
