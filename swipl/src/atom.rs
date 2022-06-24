@@ -130,6 +130,12 @@ impl Atom {
     }
 }
 
+impl ToString for Atom {
+    fn to_string(&self) -> String {
+        self.name().to_owned()
+    }
+}
+
 impl Clone for Atom {
     fn clone(&self) -> Self {
         assert_some_engine_is_active();
