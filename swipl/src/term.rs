@@ -33,6 +33,7 @@ use super::atom::*;
 use super::context::*;
 use super::engine::*;
 use super::fli::*;
+use super::record::*;
 use super::result::*;
 use std::cmp::{Ordering, PartialOrd};
 use std::convert::TryInto;
@@ -404,6 +405,11 @@ impl<'a> Term<'a> {
     /// fli. Otherwise, the result is `Ok(())`.
     pub fn put_val<T: TermPutable>(&self, val: T) -> NonFailingPrologResult<()> {
         self.put(&val)
+    }
+
+    /// Return a record of the term.
+    pub fn record(&self) -> Record {
+        Record::from_term(self)
     }
 }
 

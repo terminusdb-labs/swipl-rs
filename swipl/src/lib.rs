@@ -22,6 +22,7 @@ pub mod functor;
 pub mod init;
 pub mod module;
 pub mod predicate;
+pub mod record;
 pub mod result;
 pub mod stream;
 pub mod term;
