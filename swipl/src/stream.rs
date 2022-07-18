@@ -32,6 +32,10 @@ term_getable! {
     (WritablePrologStream, term) => {
         let mut stream: *mut fli::IOSTREAM = std::ptr::null_mut();
         if unsafe { fli::PL_get_stream(term.term_ptr(), &mut stream, fli::SH_OUTPUT|fli::SH_UNLOCKED|fli::SH_NOPAIR) } != 0 {
+            unsafe {
+                // getting a stream also acquires it, so lets free it right away
+                fli::PL_release_stream(stream);
+            }
             Some(WritablePrologStream{stream})
         }
         else {
