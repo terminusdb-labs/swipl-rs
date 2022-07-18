@@ -12,6 +12,7 @@
 //! This module provides functions and types for interacting with
 //! prolog atoms.
 
+use super::context::*;
 use super::engine::*;
 use super::fli::*;
 use super::init::*;
@@ -87,41 +88,24 @@ impl Atom {
     /// Retrieve the name of this atom, that is, the string with which it was created.
     ///
     /// This will panic if no prolog engine is active on this thread.
-    pub fn name(&self) -> &str {
+    pub fn name(&self) -> String {
+        // NOTE: This code is terrible. There should be no reason to
+        // go through term to get a string out, except that's the only
+        // way SWI-Prolog exposes auto-conversion to UTF8.
         assert_some_engine_is_active();
-        // TODO we're just assuming that what we get out of prolog is
-        // utf-8. but it's not. On windows, a different encoding is
-        // used and it is unclear to me if they convert to utf8 just
-        // for this call. But they probably don't. Need to check.
 
-        // TODO also the garbage collection is pretty
-        // unclear. Documentation says that PL_atom_chars returns a
-        // string not changed by prolog, valid until the atom is
-        // garbage collected. assuming the nchars version is the same,
-        // and assuming that documentation is right, it should be fine
-        // to refer to this string for the entire lifetime of this
-        // atom ref. However, whether this is actually the case
-        // remains to be seen. Since different operating systems have
-        // a different internal structure for atoms, it would follow
-        // that on some platforms, this may in fact not be a pointer
-        // into the atom string directly, but a copy onto the ring
-        // buffer.
+        let name;
+        unsafe {
+            let temp_term_ref = PL_new_term_ref();
+            let unsafe_engine = unmanaged_engine_context();
+            let temp_term = Term::new(temp_term_ref, unsafe_engine.as_term_origin());
+            temp_term.put(self).unwrap();
 
-        // As a potential portable solution, we may have to unify with
-        // a term first, and then extract the string from the term
-        // directly. There are far better string extraction functions
-        // for that case, which allow explicit specification of the
-        // string format as utf-8.
+            name = temp_term.get_atom_name(|name| name.unwrap().to_string());
+            temp_term.reset();
+        }
 
-        let mut size = 0;
-        let ptr = unsafe { PL_atom_nchars(self.atom, &mut size) };
-
-        let swipl_string_ref =
-            unsafe { std::slice::from_raw_parts(ptr as *const u8, size as usize) };
-
-        let swipl_string = std::str::from_utf8(swipl_string_ref).unwrap();
-
-        swipl_string
+        name.unwrap()
     }
 
     /// Increase the reference counter for this atom.
@@ -513,7 +497,6 @@ impl AsAtom for LazyAtom {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::context::*;
     #[test]
     fn create_atom_and_retrieve_name() {
         let engine = Engine::new();
