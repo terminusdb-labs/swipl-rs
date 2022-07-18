@@ -4,6 +4,7 @@
 //! future this will include more proper stream support.
 use std::io::{self, Write};
 
+use crate::engine::*;
 use crate::term::*;
 use crate::{fli, term_getable};
 
@@ -41,15 +42,18 @@ term_getable! {
 
 unsafe fn ensure_writable_prolog_stream(stream: *mut fli::IOSTREAM) -> io::Result<()> {
     if (*stream).flags & fli::SIO_OUTPUT == 0 {
-        Err(io::Error::new(io::ErrorKind::BrokenPipe, "prolog stream is not writable"))
-    }
-    else {
+        Err(io::Error::new(
+            io::ErrorKind::BrokenPipe,
+            "prolog stream is not writable",
+        ))
+    } else {
         Ok(())
     }
 }
 
 unsafe fn write_to_prolog_stream(stream: *mut fli::IOSTREAM, buf: &[u8]) -> io::Result<usize> {
     ensure_writable_prolog_stream(stream)?;
+
     let enc = (*stream).encoding;
     let count;
     if enc == fli::IOENC_ENC_OCTET || enc == fli::IOENC_ENC_ANSI || enc == fli::IOENC_ENC_UTF8 {
@@ -70,10 +74,15 @@ unsafe fn write_to_prolog_stream(stream: *mut fli::IOSTREAM, buf: &[u8]) -> io::
         if result == fli::EOF {
             if fli::Sferror(stream) != 0 {
                 fli::Sclearerr(stream);
-                return Err(io::Error::new(io::ErrorKind::InvalidData, "Tried to write data that is out of range for the encoding of this stream"));
-            }
-            else {
-                return Err(io::Error::new(io::ErrorKind::UnexpectedEof, "unexpected eof"));
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "Tried to write data that is out of range for the encoding of this stream",
+                ));
+            } else {
+                return Err(io::Error::new(
+                    io::ErrorKind::UnexpectedEof,
+                    "unexpected eof",
+                ));
             }
         }
 
@@ -85,6 +94,7 @@ unsafe fn write_to_prolog_stream(stream: *mut fli::IOSTREAM, buf: &[u8]) -> io::
 
 impl Write for WritablePrologStream {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        assert_some_engine_is_active();
         unsafe { fli::PL_acquire_stream(self.stream) };
 
         let result = unsafe { write_to_prolog_stream(self.stream, buf) };
@@ -95,6 +105,7 @@ impl Write for WritablePrologStream {
     }
 
     fn flush(&mut self) -> io::Result<()> {
+        assert_some_engine_is_active();
         unsafe { fli::PL_acquire_stream(self.stream) };
         let result = unsafe { fli::Sflush(self.stream) };
         unsafe { fli::PL_release_stream(self.stream) };
@@ -107,10 +118,12 @@ impl Write for WritablePrologStream {
 
 impl Write for PrologStream {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        assert_some_engine_is_active();
         unsafe { write_to_prolog_stream(self.stream, buf) }
     }
 
     fn flush(&mut self) -> io::Result<()> {
+        assert_some_engine_is_active();
         let result = unsafe { fli::Sflush(self.stream) };
         match result {
             0 => Ok(()),
@@ -120,9 +133,12 @@ impl Write for PrologStream {
 }
 
 pub fn current_output() -> WritablePrologStream {
+    assert_some_engine_is_active();
     unsafe {
         let current_output = *fli::_PL_streams().offset(4);
 
-        WritablePrologStream{stream:current_output}
+        WritablePrologStream {
+            stream: current_output,
+        }
     }
 }
