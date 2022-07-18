@@ -373,7 +373,7 @@ where
             term.term_ptr(),
             &mut len,
             &mut ptr,
-            (CVT_ATOM | REP_UTF8).try_into().unwrap(),
+            (CVT_ATOM | REP_UTF8 | BUF_DISCARDABLE).try_into().unwrap(),
         )
     };
 

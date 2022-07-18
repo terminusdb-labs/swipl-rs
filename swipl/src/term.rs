@@ -297,7 +297,9 @@ impl<'a> Term<'a> {
                 self.term,
                 &mut len,
                 &mut ptr,
-                (CVT_STRING | REP_UTF8).try_into().unwrap(),
+                (CVT_STRING | REP_UTF8 | BUF_DISCARDABLE)
+                    .try_into()
+                    .unwrap(),
             )
         };
 
@@ -347,7 +349,7 @@ impl<'a> Term<'a> {
                 self.term,
                 &mut len,
                 &mut ptr,
-                (CVT_ATOM | REP_UTF8).try_into().unwrap(),
+                (CVT_ATOM | REP_UTF8 | BUF_DISCARDABLE).try_into().unwrap(),
             )
         };
 
