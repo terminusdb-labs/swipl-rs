@@ -174,7 +174,7 @@ impl Parse for SemidetForeignPredicateDefinition {
 }
 
 fn semidet_definition_name<N: std::fmt::Display>(name: &N) -> Ident {
-    Ident::new(&format!("__{}_definition", name), Span::call_site())
+    Ident::new(&format!("{}", name), Span::call_site())
 }
 
 impl ForeignPredicateDefinitionImpl for SemidetForeignPredicateDefinition {
