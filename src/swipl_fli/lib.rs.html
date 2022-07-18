@@ -12,6 +12,47 @@
 <span id="7">7</span>
 <span id="8">8</span>
 <span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Generated low-level bindings to the SWI-Prolog fli.</span>
 <span class="attribute">#![<span class="ident">doc</span>(<span class="ident">html_root_url</span> <span class="op">=</span> <span class="string">&quot;https://terminusdb-labs.github.io/swipl-rs/swipl_fli/&quot;</span>)]</span>
 <span class="attribute">#![<span class="ident">allow</span>(<span class="ident">non_upper_case_globals</span>)]</span>
@@ -21,6 +62,47 @@
 <span class="attribute">#![<span class="ident">allow</span>(<span class="ident">improper_ctypes</span>)]</span>
 
 <span class="macro">include!</span>(<span class="macro">concat!</span>(<span class="macro">env!</span>(<span class="string">&quot;OUT_DIR&quot;</span>), <span class="string">&quot;/bindings.rs&quot;</span>));
+
+<span class="comment">// we define some extra constants which inexplicably didn&#39;t make it into the header</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SH_ERRORS</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="number">0x01</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SH_ALIAS</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="number">0x02</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SH_UNLOCKED</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="number">0x04</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SH_OUTPUT</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="number">0x08</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SH_INPUT</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="number">0x10</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SH_NOPAIR</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="number">0x20</span>;
+
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIO_FBUF</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">0</span>; <span class="comment">/* full buffering */</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIO_LBUF</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">1</span>; <span class="comment">/* line buffering */</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIO_NBUF</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">2</span>; <span class="comment">/* no buffering */</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIO_FEOF</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">3</span>; <span class="comment">/* end-of-file */</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIO_FERR</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">4</span>; <span class="comment">/* error ocurred */</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIO_USERBUF</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">5</span>; <span class="comment">/* buffer is from user */</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIO_INPUT</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>; <span class="comment">/* input stream */</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIO_OUTPUT</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">7</span>; <span class="comment">/* output stream */</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIO_NOLINENO</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">8</span>; <span class="comment">/* line no. info is void */</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIO_NOLINEPOS</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">9</span>; <span class="comment">/* line pos is void */</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIO_STATIC</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">10</span>; <span class="comment">/* Stream in static memory */</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIO_RECORDPOS</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">11</span>; <span class="comment">/* Maintain position */</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIO_FILE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">12</span>; <span class="comment">/* Stream refers to an OS file */</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIO_NOERROR</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">13</span>; <span class="comment">/* Ignore write errors */</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIO_NOFEOF</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">14</span>; <span class="comment">/* don&#39;t set SIO_FEOF flag */</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIO_TEXT</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">15</span>; <span class="comment">/* text-mode operation */</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIO_FEOF2</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">16</span>; <span class="comment">/* attempt to read past eof */</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIO_FEOF2ERR</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">17</span>; <span class="comment">/* Sfpasteof() */</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIO_NOCLOSE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">18</span>; <span class="comment">/* Do not close on abort */</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIO_APPEND</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">19</span>; <span class="comment">/* opened in append-mode */</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIO_UPDATE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">20</span>; <span class="comment">/* opened in update-mode */</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIO_ISATTY</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">21</span>; <span class="comment">/* Stream is a tty */</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIO_CLOSING</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">22</span>; <span class="comment">/* We are closing the stream */</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIO_TIMEOUT</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">23</span>; <span class="comment">/* We had a timeout */</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIO_NOMUTEX</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">24</span>; <span class="comment">/* Do not allow multi-thread access */</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIO_ADVLOCK</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">25</span>; <span class="comment">/* File locked with advisory lock */</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIO_WARN</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">26</span>; <span class="comment">/* Pending warning */</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIO_RAW</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">27</span>; <span class="comment">/* TTY Stream is in raw mode */</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIO_REPXML</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">28</span>; <span class="comment">/* Bad char --&gt; XML entity */</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIO_REPPL</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">29</span>; <span class="comment">/* Bad char --&gt; Prolog \hex\ */</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIO_BOM</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">30</span>; <span class="comment">/* BOM was detected/written */</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIO_REPPLU</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">31</span>; <span class="comment">/* Bad char --&gt; Prolog \uXXXX */</span>
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl_fli" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0 (fe5b13d68 2022-05-18)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl_fli" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0 (a8314ef7d 2022-06-27)" ></div>
 </body></html>
