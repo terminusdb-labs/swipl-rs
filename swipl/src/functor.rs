@@ -85,19 +85,7 @@ impl Functor {
     ///
     /// This will panic if no prolog engine is active on this thread.
     pub fn name_string(&self) -> String {
-        self.with_name(|n| n.name().to_string())
-    }
-
-    /// Retrieve the name of this functor as a &str, which is passed into the given function.
-    ///
-    /// This avoids unnecessary string copies.
-    ///
-    /// This will panic if no prolog engine is active on this thread.
-    pub fn with_name_string<F, R>(&self, func: F) -> R
-    where
-        F: Fn(&str) -> R,
-    {
-        self.with_name(|n| func(n.name()))
+        self.with_name(|n| n.name())
     }
 
     /// Retrieve the arity of this functor.
@@ -210,7 +198,6 @@ mod tests {
         assert_eq!("moocows", f.name_string());
         assert_eq!("moocows", f.name().name());
         f.with_name(|name| assert_eq!("moocows", name.name()));
-        f.with_name_string(|name| assert_eq!("moocows", name));
 
         assert_eq!(3, f.arity());
     }
