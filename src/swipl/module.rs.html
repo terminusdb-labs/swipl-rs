@@ -100,18 +100,6 @@
 <span id="95">95</span>
 <span id="96">96</span>
 <span id="97">97</span>
-<span id="98">98</span>
-<span id="99">99</span>
-<span id="100">100</span>
-<span id="101">101</span>
-<span id="102">102</span>
-<span id="103">103</span>
-<span id="104">104</span>
-<span id="105">105</span>
-<span id="106">106</span>
-<span id="107">107</span>
-<span id="108">108</span>
-<span id="109">109</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Prolog modules.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! Modules are prolog namespaces. They are created from an</span>
@@ -192,19 +180,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// This will panic if no prolog engine is active on this thread.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name_string</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">String</span> {
-        <span class="self">self</span>.<span class="ident">with_name</span>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="ident">n</span>.<span class="ident">name</span>().<span class="ident">to_string</span>())
-    }
-
-    <span class="doccomment">/// Retrieve the name of this module as a &amp;str, which is passed into the given function.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This avoids unnecessary string copies.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This will panic if no prolog engine is active on this thread.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_name_string</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">func</span>: <span class="ident">F</span>) -&gt; <span class="ident">R</span>
-    <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">R</span>,
-    {
-        <span class="self">self</span>.<span class="ident">with_name</span>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="ident">func</span>(<span class="ident">n</span>.<span class="ident">name</span>()))
+        <span class="self">self</span>.<span class="ident">with_name</span>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="ident">n</span>.<span class="ident">name</span>())
     }
 }
 
