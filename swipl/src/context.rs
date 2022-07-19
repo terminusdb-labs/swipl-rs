@@ -55,6 +55,7 @@ use super::engine::*;
 use super::fli::*;
 use super::module::*;
 use super::result::*;
+use super::stream::*;
 use super::term::*;
 
 use std::cell::Cell;
@@ -279,6 +280,14 @@ impl<'a, T: ContextType> Context<'a, T> {
         }
 
         Err(PrologError::Exception)
+    }
+    pub fn current_output<'b>(&self) -> WritablePrologStream<'b> {
+        assert_some_engine_is_active();
+        unsafe {
+            let current_output = *_PL_streams().offset(4);
+
+            WritablePrologStream::new(current_output)
+        }
     }
 }
 
