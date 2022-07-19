@@ -281,6 +281,8 @@ impl<'a, T: ContextType> Context<'a, T> {
 
         Err(PrologError::Exception)
     }
+
+    /// Retrieve the current output stream.
     pub fn current_output<'b>(&self) -> WritablePrologStream<'b> {
         assert_some_engine_is_active();
         unsafe {
