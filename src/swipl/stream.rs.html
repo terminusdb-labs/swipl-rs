@@ -147,11 +147,21 @@
 <span id="142">142</span>
 <span id="143">143</span>
 <span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Prolog streams.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! This exists mostly to support blob description writers. In the</span>
 <span class="doccomment">//! future this will include more proper stream support.</span>
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="self">self</span>, <span class="ident">Write</span>};
+<span class="kw">use</span> <span class="ident">std::marker::PhantomData</span>;
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::engine</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::term</span>::<span class="kw-2">*</span>;
@@ -170,18 +180,42 @@
 }
 
 <span class="doccomment">/// A stream from prolog that can be directly written to.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">WritablePrologStream</span> {
+<span class="doccomment">///</span>
+<span class="doccomment">/// This stream will be in a claimed state, meaning, any attempted</span>
+<span class="doccomment">/// handling of this stream from another (prolog) thread will fail. On</span>
+<span class="doccomment">/// drop, this claim will be released. It is therefore important to</span>
+<span class="doccomment">/// drop this stream as soon as possible.</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">WritablePrologStream</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="ident">stream</span>: <span class="kw-2">*mut</span> <span class="ident">fli::IOSTREAM</span>,
+    <span class="ident">_x</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> ()<span class="op">&gt;</span>,
 }
 
-<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">Send</span> <span class="kw">for</span> <span class="ident">WritablePrologStream</span> {}
-<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">Sync</span> <span class="kw">for</span> <span class="ident">WritablePrologStream</span> {}
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">WritablePrologStream</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">stream</span>: <span class="kw-2">*mut</span> <span class="ident">fli::IOSTREAM</span>) -&gt; <span class="ident">WritablePrologStream</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+        <span class="ident">WritablePrologStream</span> {
+            <span class="ident">stream</span>,
+            <span class="ident">_x</span>: <span class="ident">PhantomData::default</span>(),
+        }
+    }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">WritablePrologStream</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">drop</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
+        <span class="kw">unsafe</span> {
+            <span class="ident">fli::PL_release_stream</span>(<span class="self">self</span>.<span class="ident">stream</span>);
+        }
+    }
+}
 
 <span class="macro">term_getable!</span> {
-    (<span class="ident">WritablePrologStream</span>, <span class="ident">term</span>) =&gt; {
+    <span class="comment">// note that &#39;a is a known lifetime in this context, set up by the</span>
+    <span class="comment">// macro, and it refers to the lifetime of the term&#39;s origin. This</span>
+    <span class="comment">// means that the stream retrieved here cannot outlive that</span>
+    <span class="comment">// origin.</span>
+    (<span class="ident">WritablePrologStream</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>, <span class="ident">term</span>) =&gt; {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stream</span>: <span class="kw-2">*mut</span> <span class="ident">fli::IOSTREAM</span> <span class="op">=</span> <span class="ident">std::ptr::null_mut</span>();
         <span class="kw">if</span> <span class="kw">unsafe</span> { <span class="ident">fli::PL_get_stream</span>(<span class="ident">term</span>.<span class="ident">term_ptr</span>(), <span class="kw-2">&amp;mut</span> <span class="ident">stream</span>, <span class="ident">fli::SH_OUTPUT</span><span class="op">|</span><span class="ident">fli::SH_UNLOCKED</span><span class="op">|</span><span class="ident">fli::SH_NOPAIR</span>) } <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">WritablePrologStream</span>{<span class="ident">stream</span>})
+            <span class="prelude-val">Some</span>(<span class="kw">unsafe</span> {<span class="ident">WritablePrologStream::new</span>(<span class="ident">stream</span>) })
         }
         <span class="kw">else</span> {
             <span class="prelude-val">None</span>
@@ -241,23 +275,18 @@
     <span class="prelude-val">Ok</span>(<span class="ident">count</span>)
 }
 
-<span class="kw">impl</span> <span class="ident">Write</span> <span class="kw">for</span> <span class="ident">WritablePrologStream</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Write</span> <span class="kw">for</span> <span class="ident">WritablePrologStream</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
         <span class="ident">assert_some_engine_is_active</span>();
-        <span class="kw">unsafe</span> { <span class="ident">fli::PL_acquire_stream</span>(<span class="self">self</span>.<span class="ident">stream</span>) };
 
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">write_to_prolog_stream</span>(<span class="self">self</span>.<span class="ident">stream</span>, <span class="ident">buf</span>) };
-
-        <span class="kw">unsafe</span> { <span class="ident">fli::PL_release_stream</span>(<span class="self">self</span>.<span class="ident">stream</span>) };
 
         <span class="ident">result</span>
     }
 
     <span class="kw">fn</span> <span class="ident">flush</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="ident">assert_some_engine_is_active</span>();
-        <span class="kw">unsafe</span> { <span class="ident">fli::PL_acquire_stream</span>(<span class="self">self</span>.<span class="ident">stream</span>) };
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">fli::Sflush</span>(<span class="self">self</span>.<span class="ident">stream</span>) };
-        <span class="kw">unsafe</span> { <span class="ident">fli::PL_release_stream</span>(<span class="self">self</span>.<span class="ident">stream</span>) };
         <span class="kw">match</span> <span class="ident">result</span> {
             <span class="number">0</span> =&gt; <span class="prelude-val">Ok</span>(()),
             <span class="kw">_</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">io::Error::new</span>(<span class="ident">io::ErrorKind::Other</span>, <span class="string">&quot;prolog flush failed&quot;</span>)),
@@ -280,17 +309,6 @@
         }
     }
 }
-
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">current_output</span>() -&gt; <span class="ident">WritablePrologStream</span> {
-    <span class="ident">assert_some_engine_is_active</span>();
-    <span class="kw">unsafe</span> {
-        <span class="kw">let</span> <span class="ident">current_output</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">fli::_PL_streams</span>().<span class="ident">offset</span>(<span class="number">4</span>);
-
-        <span class="ident">WritablePrologStream</span> {
-            <span class="ident">stream</span>: <span class="ident">current_output</span>,
-        }
-    }
-}
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0 (a8314ef7d 2022-06-27)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.1 (e092d0b6b 2022-07-16)" ></div>
 </body></html>

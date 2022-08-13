@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["current_output",""]],"struct":[["PrologStream","A stream from prolog, used in blob writers."],["WritablePrologStream","A stream from prolog that can be directly written to."]]});
+initSidebarItems({"struct":[["PrologStream","A stream from prolog, used in blob writers."],["WritablePrologStream","A stream from prolog that can be directly written to."]]});

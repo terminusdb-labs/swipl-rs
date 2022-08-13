@@ -1559,6 +1559,17 @@
 <span id="1554">1554</span>
 <span id="1555">1555</span>
 <span id="1556">1556</span>
+<span id="1557">1557</span>
+<span id="1558">1558</span>
+<span id="1559">1559</span>
+<span id="1560">1560</span>
+<span id="1561">1561</span>
+<span id="1562">1562</span>
+<span id="1563">1563</span>
+<span id="1564">1564</span>
+<span id="1565">1565</span>
+<span id="1566">1566</span>
+<span id="1567">1567</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Prolog contexts.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! As you interact with SWI-Prolog, the underlying prolog engine</span>
@@ -1616,6 +1627,7 @@
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::fli</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::module</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::result</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::stream</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::term</span>::<span class="kw-2">*</span>;
 
 <span class="kw">use</span> <span class="ident">std::cell::Cell</span>;
@@ -1840,6 +1852,16 @@
         }
 
         <span class="prelude-val">Err</span>(<span class="ident">PrologError::Exception</span>)
+    }
+
+    <span class="doccomment">/// Retrieve the current output stream.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">current_output</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">WritablePrologStream</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span><span class="op">&gt;</span> {
+        <span class="ident">assert_some_engine_is_active</span>();
+        <span class="kw">unsafe</span> {
+            <span class="kw">let</span> <span class="ident">current_output</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">_PL_streams</span>().<span class="ident">offset</span>(<span class="number">4</span>);
+
+            <span class="ident">WritablePrologStream::new</span>(<span class="ident">current_output</span>)
+        }
     }
 }
 
@@ -3116,5 +3138,5 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0 (a8314ef7d 2022-06-27)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.1 (e092d0b6b 2022-07-16)" ></div>
 </body></html>
