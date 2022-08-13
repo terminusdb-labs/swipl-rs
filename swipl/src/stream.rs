@@ -3,6 +3,7 @@
 //! This exists mostly to support blob description writers. In the
 //! future this will include more proper stream support.
 use std::io::{self, Write};
+use std::marker::PhantomData;
 
 use crate::engine::*;
 use crate::term::*;
@@ -21,18 +22,42 @@ impl PrologStream {
 }
 
 /// A stream from prolog that can be directly written to.
-pub struct WritablePrologStream {
+///
+/// This stream will be in a claimed state, meaning, any attempted
+/// handling of this stream from another (prolog) thread will fail. On
+/// drop, this claim will be released. It is therefore important to
+/// drop this stream as soon as possible.
+pub struct WritablePrologStream<'a> {
     stream: *mut fli::IOSTREAM,
+    _x: PhantomData<&'a ()>,
 }
 
-unsafe impl Send for WritablePrologStream {}
-unsafe impl Sync for WritablePrologStream {}
+impl<'a> WritablePrologStream<'a> {
+    pub unsafe fn new(stream: *mut fli::IOSTREAM) -> WritablePrologStream<'a> {
+        WritablePrologStream {
+            stream,
+            _x: PhantomData::default(),
+        }
+    }
+}
+
+impl<'a> Drop for WritablePrologStream<'a> {
+    fn drop(&mut self) {
+        unsafe {
+            fli::PL_release_stream(self.stream);
+        }
+    }
+}
 
 term_getable! {
-    (WritablePrologStream, term) => {
+    // note that 'a is a known lifetime in this context, set up by the
+    // macro, and it refers to the lifetime of the term's origin. This
+    // means that the stream retrieved here cannot outlive that
+    // origin.
+    (WritablePrologStream<'a>, term) => {
         let mut stream: *mut fli::IOSTREAM = std::ptr::null_mut();
         if unsafe { fli::PL_get_stream(term.term_ptr(), &mut stream, fli::SH_OUTPUT|fli::SH_UNLOCKED|fli::SH_NOPAIR) } != 0 {
-            Some(WritablePrologStream{stream})
+            Some(unsafe {WritablePrologStream::new(stream) })
         }
         else {
             None
@@ -92,23 +117,18 @@ unsafe fn write_to_prolog_stream(stream: *mut fli::IOSTREAM, buf: &[u8]) -> io::
     Ok(count)
 }
 
-impl Write for WritablePrologStream {
+impl<'a> Write for WritablePrologStream<'a> {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
         assert_some_engine_is_active();
-        unsafe { fli::PL_acquire_stream(self.stream) };
 
         let result = unsafe { write_to_prolog_stream(self.stream, buf) };
-
-        unsafe { fli::PL_release_stream(self.stream) };
 
         result
     }
 
     fn flush(&mut self) -> io::Result<()> {
         assert_some_engine_is_active();
-        unsafe { fli::PL_acquire_stream(self.stream) };
         let result = unsafe { fli::Sflush(self.stream) };
-        unsafe { fli::PL_release_stream(self.stream) };
         match result {
             0 => Ok(()),
             _ => Err(io::Error::new(io::ErrorKind::Other, "prolog flush failed")),
@@ -128,17 +148,6 @@ impl Write for PrologStream {
         match result {
             0 => Ok(()),
             _ => Err(io::Error::new(io::ErrorKind::Other, "prolog flush failed")),
-        }
-    }
-}
-
-pub fn current_output() -> WritablePrologStream {
-    assert_some_engine_is_active();
-    unsafe {
-        let current_output = *fli::_PL_streams().offset(4);
-
-        WritablePrologStream {
-            stream: current_output,
         }
     }
 }
