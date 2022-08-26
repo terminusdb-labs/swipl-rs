@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["get_swipl_info","Retrieve information about the installed swipl environment."]],"struct":[["SwiplInfo","Struct containing information about a SWI-Prolog installation"]]});
+window.SIDEBAR_ITEMS = {"fn":[["get_swipl_info","Retrieve information about the installed swipl environment."]],"struct":[["SwiplInfo","Struct containing information about a SWI-Prolog installation"]]};

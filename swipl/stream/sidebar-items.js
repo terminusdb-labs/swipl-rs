@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["PrologStream","A stream from prolog, used in blob writers."],["WritablePrologStream","A stream from prolog that can be directly written to."]]});
+window.SIDEBAR_ITEMS = {"struct":[["PrologStream","A stream from prolog, used in blob writers."],["WritablePrologStream","A stream from prolog that can be directly written to."]]};
