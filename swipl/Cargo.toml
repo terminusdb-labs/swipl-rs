@@ -1,6 +1,6 @@
 [package]
 name = "swipl"
-version = "0.3.8"
+version = "0.3.9"
 authors = ["Matthijs van Otterdijk <matthijs@terminusdb.com>"]
 edition = "2018"
 license = "Apache-2.0/MIT"
@@ -12,6 +12,6 @@ documentation = "https://terminusdb-labs.github.io/swipl-rs/swipl/"
 
 [dependencies]
 swipl-fli = {path = "../swipl-fli", version="0.3.4"}
-swipl-macros = {path = "../swipl-macros", version="0.3.6"}
+swipl-macros = {path = "../swipl-macros", version="0.3.7"}
 lazy_static = "1.4.0"
 thiserror = "1.0"
