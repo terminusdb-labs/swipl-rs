@@ -338,7 +338,7 @@ pub unsafe fn unify_with_arc<T>(
 
     let result = fli::PL_unify_blob(
         term.term_ptr(),
-        Arc::as_ptr(arc) as *const T as *mut c_void,
+        Arc::as_ptr(arc) as *mut c_void,
         0,
         blob_definition as *const fli::PL_blob_t as *mut fli::PL_blob_t,
     );

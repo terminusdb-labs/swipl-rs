@@ -209,11 +209,11 @@ pub fn wrapped_arc_blob_macro(item: proc_macro::TokenStream) -> proc_macro::Toke
         static #blob_definition_ident: std::sync::atomic::AtomicPtr<#crt::fli::PL_blob_t> = std::sync::atomic::AtomicPtr::new(std::ptr::null_mut());
 
         unsafe extern "C" fn #blob_acquire(a: #crt::fli::atom_t) {
-            #crt::blob::acquire_arc_blob::<#item_name>(a);
+            #crt::blob::acquire_arc_blob::<#inner_type_name>(a);
         }
 
         unsafe extern "C" fn #blob_release(a: #crt::fli::atom_t) -> std::os::raw::c_int {
-            #crt::blob::release_arc_blob::<#item_name>(a);
+            #crt::blob::release_arc_blob::<#inner_type_name>(a);
 
             1
         }
