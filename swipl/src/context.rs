@@ -50,6 +50,7 @@
 //! into prolog (if you're implementing a foreign predicate), which
 //! will then raise this exception in prolog, or to clear the
 //! exception.
+use super::atom::*;
 use super::callable::*;
 use super::engine::*;
 use super::fli::*;
@@ -1017,8 +1018,10 @@ impl IntoPrologException for std::io::Error {
         self,
         context: &'a Context<'b, T>,
     ) -> PrologResult<Term<'a>> {
+        let kind_str = format!("{:?}", self.kind());
+        let kind_atom = Atom::new(&kind_str);
         let msg = format!("{}", self);
-        term! {context: error(rust_io_error(#msg), _)}
+        term! {context: error(rust_io_error(#kind_atom, #msg), _)}
     }
 }
 
