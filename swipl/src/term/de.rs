@@ -26,14 +26,15 @@ pub struct Deserializer<'de, C: QueryableContextType> {
 #[derive(Debug)]
 pub enum Error {
     Message(String),
-    PrologError(PrologError),
+    PrologError(PrologException),
     UnsupportedValue,
     UnexpectedType(&'static str),
+    ValueNotOfExpectedType(&'static str),
     ValueOutOfRange
 }
 
-impl From<PrologError> for Error {
-    fn from(error: PrologError) -> Self {
+impl From<PrologException> for Error {
+    fn from(error: PrologException) -> Self {
         Self::PrologError(error)
     }
 }
@@ -45,6 +46,7 @@ impl Display for Error {
             Self::PrologError(_) => formatter.write_str("prolog error"),
             Self::UnsupportedValue => formatter.write_str("unsupported value"),
             Self::UnexpectedType(t) => write!(formatter, "unexpected type {}", t),
+            Self::ValueNotOfExpectedType(t) => write!(formatter, "value not of expected type {}", t),
             Self::ValueOutOfRange => formatter.write_str("value out of range"),
         }
     }
@@ -122,73 +124,213 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
     where
         V: Visitor<'de>,
     {
-        Err(Error::UnsupportedValue)
+        match attempt_opt(self.term.get::<Atom>())? {
+            Some(atom) =>  {
+                if atom == atom!("true") {
+                    visitor.visit_bool(true)
+                }
+                else if atom == atom!("false") {
+                    visitor.visit_bool(false)
+                }
+                else {
+                    Err(Error::ValueNotOfExpectedType("bool"))
+                }
+            },
+            None => Err(Error::ValueNotOfExpectedType("bool")),
+        }
     }
     fn deserialize_i8<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        Err(Error::UnsupportedValue)
+        match attempt_opt(self.term.get::<i64>())? {
+            Some(i) => {
+                if i >= i8::MIN as i64 && i <= i8::MAX as i64 {
+                    visitor.visit_i8(i as i8)
+                }
+                else {
+                    Err(Error::ValueOutOfRange)
+                }
+            }
+            None => Err(Error::ValueNotOfExpectedType("i8"))
+        }
     }
     fn deserialize_i16<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        Err(Error::UnsupportedValue)
+        match attempt_opt(self.term.get::<i64>())? {
+            Some(i) => {
+                if i >= i16::MIN as i64 && i <= i16::MAX as i64 {
+                    visitor.visit_i16(i as i16)
+                }
+                else {
+                    Err(Error::ValueOutOfRange)
+                }
+            }
+            None => Err(Error::ValueNotOfExpectedType("i16"))
+        }
     }
     fn deserialize_i32<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        Err(Error::UnsupportedValue)
+        match attempt_opt(self.term.get::<i64>())? {
+            Some(i) => {
+                if i >= i32::MIN as i64 && i <= i32::MAX as i64 {
+                    visitor.visit_i32(i as i32)
+                }
+                else {
+                    Err(Error::ValueOutOfRange)
+                }
+            }
+            None => Err(Error::ValueNotOfExpectedType("i32"))
+        }
     }
     fn deserialize_i64<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        Err(Error::UnsupportedValue)
+        match attempt_opt(self.term.get::<i64>())? {
+            Some(i) => {
+                if i >= i64::MIN as i64 && i <= i64::MAX as i64 {
+                    visitor.visit_i64(i as i64)
+                }
+                else {
+                    Err(Error::ValueOutOfRange)
+                }
+            }
+            None => Err(Error::ValueNotOfExpectedType("i64"))
+        }
     }
     fn deserialize_u8<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        Err(Error::UnsupportedValue)
+        match attempt_opt(self.term.get::<u64>())? {
+            Some(i) => {
+                if i <= u8::MAX as u64 {
+                    visitor.visit_u8(i as u8)
+                }
+                else {
+                    Err(Error::ValueOutOfRange)
+                }
+            }
+            None => Err(Error::ValueNotOfExpectedType("u8"))
+        }
     }
     fn deserialize_u16<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        Err(Error::UnsupportedValue)
+        match attempt_opt(self.term.get::<u64>())? {
+            Some(i) => {
+                if i <= u16::MAX as u64 {
+                    visitor.visit_u16(i as u16)
+                }
+                else {
+                    Err(Error::ValueOutOfRange)
+                }
+            }
+            None => Err(Error::ValueNotOfExpectedType("u16"))
+        }
     }
     fn deserialize_u32<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        Err(Error::UnsupportedValue)
+        match attempt_opt(self.term.get::<u64>())? {
+            Some(i) => {
+                if i <= u32::MAX as u64 {
+                    visitor.visit_u32(i as u32)
+                }
+                else {
+                    Err(Error::ValueOutOfRange)
+                }
+            }
+            None => Err(Error::ValueNotOfExpectedType("u32"))
+        }
     }
     fn deserialize_u64<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        Err(Error::UnsupportedValue)
+        match attempt_opt(self.term.get::<u64>())? {
+            Some(i) => {
+                if i <= u64::MAX as u64 {
+                    visitor.visit_u64(i as u64)
+                }
+                else {
+                    Err(Error::ValueOutOfRange)
+                }
+            }
+            None => Err(Error::ValueNotOfExpectedType("u64"))
+        }
     }
     fn deserialize_f32<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        Err(Error::UnsupportedValue)
+        match attempt_opt(self.term.get::<f64>())? {
+            // a little bit suspicious as this loses precision
+            Some(f) => visitor.visit_f32(f as f32),
+            None => Err(Error::ValueNotOfExpectedType("f32"))
+        }
     }
     fn deserialize_f64<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        Err(Error::UnsupportedValue)
+        match attempt_opt(self.term.get::<f64>())? {
+            // a little bit suspicious as this loses precision
+            Some(f) => visitor.visit_f64(f),
+            None => Err(Error::ValueNotOfExpectedType("f64"))
+        }
     }
     fn deserialize_char<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        Err(Error::UnsupportedValue)
+        // there's two representations in prolog, namely as a single character atom or as a code number
+        match self.term.term_type() {
+            TermType::Atom => {
+                let c = attempt_opt(self.term.get_atom_name(|a| {
+                    if a.is_none() {
+                        return None;
+                    }
+
+                    let mut it = a.unwrap().chars();
+                    if let Some(c) = it.next() {
+                        if it.next().is_none() {
+                            return Some(c);
+                        }
+                    }
+
+                    None
+            }))?.expect("get_atom_name should not fail");
+                match c {
+                    Some(c) => visitor.visit_char(c),
+                    None => Err(Error::ValueNotOfExpectedType("char"))
+                }
+            },
+            TermType::Integer => {
+                match attempt_opt(self.term.get::<u64>())? {
+                    Some(i) => {
+                        if i > u32::MAX as u64 {
+                            Err(Error::ValueOutOfRange)
+                        }
+                        else {
+                            match char::from_u32(i as u32) {
+                                Some(c) => visitor.visit_char(c),
+                                None => Err(Error::ValueOutOfRange)
+                            }
+                        }
+                    },
+                    None => Err(Error::ValueNotOfExpectedType("char"))
+                }
+            },
+            _ => Err(Error::ValueNotOfExpectedType("char"))
+        }
     }
     fn deserialize_str<V>(self, visitor: V) -> Result<V::Value>
     where
@@ -201,10 +343,9 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
     where
         V: Visitor<'de>,
     {
-        match self.term.get::<PrologText>() {
-            Ok(s) => visitor.visit_string(s.into_inner()),
-            Err(PrologError::Failure) => Err(Error::UnexpectedType("string")),
-            Err(e) => Err(e.into())
+        match attempt_opt(self.term.get::<PrologText>())? {
+            Some(s) => visitor.visit_string(s.into_inner()),
+            None => Err(Error::ValueNotOfExpectedType("string")),
         }
     }
     fn deserialize_bytes<V>(self, visitor: V) -> Result<V::Value>
@@ -230,13 +371,18 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
     where
         V: Visitor<'de>,
     {
-        Err(Error::UnsupportedValue)
+        if self.term.term_type() == TermType::Nil {
+            visitor.visit_unit()
+        }
+        else {
+            Err(Error::ValueNotOfExpectedType("unit"))
+        }
     }
     fn deserialize_unit_struct<V>(self, name: &'static str, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        Err(Error::UnsupportedValue)
+        self.deserialize_unit(visitor)
     }
     fn deserialize_newtype_struct<V>(self, name: &'static str, visitor: V) -> Result<V::Value>
     where
@@ -246,7 +392,7 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
             self.deserialize_string(visitor)
         }
         else {
-            self.deserialize_any(visitor)
+            visitor.visit_newtype_struct(self)
         }
     }
     fn deserialize_seq<V>(self, visitor: V) -> Result<V::Value>
@@ -309,7 +455,10 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
     where
         V: Visitor<'de>,
     {
-        Err(Error::UnsupportedValue)
+        match attempt_opt(self.term.get::<Atom>())? {
+            Some(atom) => visitor.visit_string(atom.to_string()),
+            None => Err(Error::ValueNotOfExpectedType("identifier"))
+        }
     }
     fn deserialize_ignored_any<V>(self, visitor: V) -> Result<V::Value>
     where
@@ -346,7 +495,7 @@ impl<'de, C:QueryableContextType> de::Deserializer<'de> for KeyDeserializer<'de,
                     visitor.visit_bool(false)
                 }
                 else {
-                    Err(Error::UnexpectedType("bool"))
+                    Err(Error::ValueNotOfExpectedType("bool"))
                 }
             },
             Key::Int(i) => visitor.visit_u64(i)
@@ -365,7 +514,7 @@ impl<'de, C:QueryableContextType> de::Deserializer<'de> for KeyDeserializer<'de,
                     Err(Error::ValueOutOfRange)
                 }
             }
-            _ => Err(Error::UnexpectedType("i8"))
+            _ => Err(Error::ValueNotOfExpectedType("i8"))
         }
     }
     fn deserialize_i16<V>(self, visitor: V) -> Result<V::Value>
@@ -381,7 +530,7 @@ impl<'de, C:QueryableContextType> de::Deserializer<'de> for KeyDeserializer<'de,
                     Err(Error::ValueOutOfRange)
                 }
             }
-            _ => Err(Error::UnexpectedType("i16"))
+            _ => Err(Error::ValueNotOfExpectedType("i16"))
         }
     }
     fn deserialize_i32<V>(self, visitor: V) -> Result<V::Value>
@@ -397,7 +546,7 @@ impl<'de, C:QueryableContextType> de::Deserializer<'de> for KeyDeserializer<'de,
                     Err(Error::ValueOutOfRange)
                 }
             }
-            _ => Err(Error::UnexpectedType("i32"))
+            _ => Err(Error::ValueNotOfExpectedType("i32"))
         }
     }
     fn deserialize_i64<V>(self, visitor: V) -> Result<V::Value>
@@ -413,7 +562,7 @@ impl<'de, C:QueryableContextType> de::Deserializer<'de> for KeyDeserializer<'de,
                     Err(Error::ValueOutOfRange)
                 }
             }
-            _ => Err(Error::UnexpectedType("i64"))
+            _ => Err(Error::ValueNotOfExpectedType("i64"))
         }
     }
     fn deserialize_u8<V>(self, visitor: V) -> Result<V::Value>
@@ -429,7 +578,7 @@ impl<'de, C:QueryableContextType> de::Deserializer<'de> for KeyDeserializer<'de,
                     Err(Error::ValueOutOfRange)
                 }
             }
-            _ => Err(Error::UnexpectedType("u8"))
+            _ => Err(Error::ValueNotOfExpectedType("u8"))
         }
     }
     fn deserialize_u16<V>(self, visitor: V) -> Result<V::Value>
@@ -445,7 +594,7 @@ impl<'de, C:QueryableContextType> de::Deserializer<'de> for KeyDeserializer<'de,
                     Err(Error::ValueOutOfRange)
                 }
             }
-            _ => Err(Error::UnexpectedType("u16"))
+            _ => Err(Error::ValueNotOfExpectedType("u16"))
         }
     }
     fn deserialize_u32<V>(self, visitor: V) -> Result<V::Value>
@@ -461,7 +610,7 @@ impl<'de, C:QueryableContextType> de::Deserializer<'de> for KeyDeserializer<'de,
                     Err(Error::ValueOutOfRange)
                 }
             }
-            _ => Err(Error::UnexpectedType("u32"))
+            _ => Err(Error::ValueNotOfExpectedType("u32"))
         }
     }
     fn deserialize_u64<V>(self, visitor: V) -> Result<V::Value>
@@ -470,22 +619,22 @@ impl<'de, C:QueryableContextType> de::Deserializer<'de> for KeyDeserializer<'de,
     {
         match self.key {
             Key::Int(i) => visitor.visit_u64(i),
-            _ => Err(Error::UnexpectedType("u64"))
+            _ => Err(Error::ValueNotOfExpectedType("u64"))
         }
     }
-    fn deserialize_f32<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_f32<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
         Err(Error::UnexpectedType("f32"))
     }
-    fn deserialize_f64<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_f64<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
         Err(Error::UnexpectedType("f64"))
     }
-    fn deserialize_char<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_char<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
@@ -508,31 +657,31 @@ impl<'de, C:QueryableContextType> de::Deserializer<'de> for KeyDeserializer<'de,
             Key::Int(i) => visitor.visit_string(i.to_string())
         }
     }
-    fn deserialize_bytes<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_bytes<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
         Err(Error::UnexpectedType("bytes"))
     }
-    fn deserialize_byte_buf<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_byte_buf<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
         Err(Error::UnexpectedType("byte_buf"))
     }
-    fn deserialize_option<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_option<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
         Err(Error::UnexpectedType("option"))
     }
-    fn deserialize_unit<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_unit<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
         Err(Error::UnexpectedType("unit"))
     }
-    fn deserialize_unit_struct<V>(self, name: &'static str, visitor: V) -> Result<V::Value>
+    fn deserialize_unit_struct<V>(self, _name: &'static str, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
@@ -542,15 +691,21 @@ impl<'de, C:QueryableContextType> de::Deserializer<'de> for KeyDeserializer<'de,
     where
         V: Visitor<'de>,
     {
-        Err(Error::UnexpectedType("newtype struct"))
+        if name == "$swipl::private::atom" {
+            // an atom key!
+            self.deserialize_string(visitor)
+        }
+        else {
+            Err(Error::UnexpectedType("newtype struct"))
+        }
     }
-    fn deserialize_seq<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_seq<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
         Err(Error::UnexpectedType("seq"))
     }
-    fn deserialize_tuple<V>(self, len: usize, visitor: V) -> Result<V::Value>
+    fn deserialize_tuple<V>(self, len: usize, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
@@ -558,16 +713,16 @@ impl<'de, C:QueryableContextType> de::Deserializer<'de> for KeyDeserializer<'de,
     }
     fn deserialize_tuple_struct<V>(
         self,
-        name: &'static str,
-        len: usize,
-        visitor: V,
+        _name: &'static str,
+        _len: usize,
+        _visitor: V,
     ) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
         Err(Error::UnexpectedType("tuple struct"))
     }
-    fn deserialize_map<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_map<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
@@ -577,7 +732,7 @@ impl<'de, C:QueryableContextType> de::Deserializer<'de> for KeyDeserializer<'de,
         self,
         _name: &'static str,
         _fields: &'static [&'static str],
-        visitor: V,
+        _visitor: V,
     ) -> Result<V::Value>
     where
         V: Visitor<'de>,
@@ -586,9 +741,9 @@ impl<'de, C:QueryableContextType> de::Deserializer<'de> for KeyDeserializer<'de,
     }
     fn deserialize_enum<V>(
         self,
-        name: &'static str,
-        variants: &'static [&'static str],
-        visitor: V,
+        _name: &'static str,
+        _variants: &'static [&'static str],
+        _visitor: V,
     ) -> Result<V::Value>
     where
         V: Visitor<'de>,
@@ -604,9 +759,8 @@ impl<'de, C:QueryableContextType> de::Deserializer<'de> for KeyDeserializer<'de,
             // dubious, maybe error
             Key::Int(i) => visitor.visit_string(i.to_string())
         }
-        //Err(Error::UnexpectedType("identifier"))
     }
-    fn deserialize_ignored_any<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_ignored_any<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
@@ -680,5 +834,36 @@ mod tests {
         let result: Atom = from_term(&context, &term).unwrap();
 
         assert_eq!(atom!("foo"), result);
+    }
+
+    use std::collections::HashMap;
+
+    #[test]
+    fn deserialize_a_hashmap() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term = context.term_from_string("_{foo:bar,baz:quux}").unwrap();
+
+        let result: HashMap<Atom,Atom> = from_term(&context, &term).unwrap();
+
+        assert_eq!(HashMap::from([(atom!("foo"),atom!("bar")),
+                                  (atom!("baz"),atom!("quux"))]),
+                   result);
+    }
+    #[test]
+    fn deserialize_a_hashmap_from_number_keys() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term = context.term_from_string("_{10:foo,20:bar}").unwrap();
+
+        let result: HashMap<u8,Atom> = from_term(&context, &term).unwrap();
+
+        assert_eq!(HashMap::from([(10,atom!("foo")),
+                                  (20,atom!("bar"))]),
+                   result);
     }
 }
