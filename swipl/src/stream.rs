@@ -2,7 +2,7 @@
 //!
 //! This exists mostly to support blob description writers. In the
 //! future this will include more proper stream support.
-use std::io::{self, Write};
+use std::io::{self, Read, Write};
 use std::marker::PhantomData;
 
 use crate::engine::*;
@@ -90,6 +90,14 @@ unsafe fn write_to_prolog_stream(stream: *mut fli::IOSTREAM, buf: &[u8]) -> io::
             buf.len() as fli::size_t,
             stream,
         ) as usize;
+
+        let error = fli::Sferror(stream);
+        if error == -1 {
+            return Err(io::Error::new(
+                io::ErrorKind::UnexpectedEof,
+                "unexpected eof",
+            ));
+        }
     } else {
         //eprintln!("indirect write! ({:?}", buf);
         let mut write_buf = Vec::with_capacity(buf.len() + 1);
@@ -149,5 +157,91 @@ impl Write for PrologStream {
             0 => Ok(()),
             _ => Err(io::Error::new(io::ErrorKind::Other, "prolog flush failed")),
         }
+    }
+}
+
+/// A stream from prolog that can be read from.
+///
+/// This stream will be in a claimed state, meaning, any attempted
+/// handling of this stream from another (prolog) thread will fail. On
+/// drop, this claim will be released. It is therefore important to
+/// drop this stream as soon as possible.
+pub struct ReadablePrologStream<'a> {
+    stream: *mut fli::IOSTREAM,
+    _x: PhantomData<&'a ()>,
+}
+
+impl<'a> ReadablePrologStream<'a> {
+    pub unsafe fn new(stream: *mut fli::IOSTREAM) -> ReadablePrologStream<'a> {
+        ReadablePrologStream {
+            stream,
+            _x: PhantomData::default(),
+        }
+    }
+}
+
+impl<'a> Drop for ReadablePrologStream<'a> {
+    fn drop(&mut self) {
+        unsafe {
+            fli::PL_release_stream(self.stream);
+        }
+    }
+}
+
+term_getable! {
+    // note that 'a is a known lifetime in this context, set up by the
+    // macro, and it refers to the lifetime of the term's origin. This
+    // means that the stream retrieved here cannot outlive that
+    // origin.
+    (ReadablePrologStream<'a>, term) => {
+        let mut stream: *mut fli::IOSTREAM = std::ptr::null_mut();
+        if unsafe { fli::PL_get_stream(term.term_ptr(), &mut stream, fli::SH_INPUT|fli::SH_UNLOCKED|fli::SH_NOPAIR) } != 0 {
+            Some(unsafe {ReadablePrologStream::new(stream) })
+        }
+        else {
+            None
+        }
+    }
+}
+
+unsafe fn ensure_readable_prolog_stream(stream: *mut fli::IOSTREAM) -> io::Result<()> {
+    if (*stream).flags & fli::SIO_INPUT == 0 {
+        Err(io::Error::new(
+            io::ErrorKind::BrokenPipe,
+            "prolog stream is not readable",
+        ))
+    } else {
+        Ok(())
+    }
+}
+
+unsafe fn read_from_prolog_stream(stream: *mut fli::IOSTREAM, buf: &mut [u8]) -> io::Result<usize> {
+    ensure_readable_prolog_stream(stream)?;
+
+    let count = fli::Sfread(
+        buf.as_ptr() as *mut std::ffi::c_void,
+        1,
+        buf.len() as fli::size_t,
+        stream,
+    ) as usize;
+
+    let error = fli::Sferror(stream);
+    if error == -1 {
+        Err(io::Error::new(
+            io::ErrorKind::UnexpectedEof,
+            "unexpected eof",
+        ))
+    } else {
+        Ok(count)
+    }
+}
+
+impl<'a> Read for ReadablePrologStream<'a> {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        assert_some_engine_is_active();
+
+        let result = unsafe { read_from_prolog_stream(self.stream, buf) };
+
+        result
     }
 }
