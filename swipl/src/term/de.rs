@@ -164,6 +164,30 @@ impl<'de, C:QueryableContextType> SeqAccess<'de> for CommaCompoundTermSeqAccess<
     }
 }
 
+struct ListSeqAccess<'a, C:QueryableContextType> {
+    context: &'a Context<'a, C>,
+    iter: TermListIterator<'a, 'a, C>,
+}
+
+impl<'de, C:QueryableContextType> SeqAccess<'de> for ListSeqAccess<'de, C> {
+    type Error = Error;
+
+    fn next_element_seed<T>(&mut self, seed: T) -> std::result::Result<Option<T::Value>, Error>
+    where T: DeserializeSeed<'de>
+    {
+        if let Some(term) = self.iter.next() {
+            let inner_de = Deserializer {
+                context: self.context,
+                term
+            };
+            seed.deserialize(inner_de).map(Some)
+        }
+        else {
+            Ok(None)
+        }
+    }
+}
+
 impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C> {
     type Error = Error;
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value>
@@ -454,7 +478,12 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
     where
         V: Visitor<'de>,
     {
-        Err(Error::UnsupportedValue)
+        let cleanup_term = self.context.new_term_ref();
+        let iter = self.context.term_list_iter(&self.term);
+        visitor.visit_seq(ListSeqAccess {
+            context: self.context,
+            iter
+        })
     }
     fn deserialize_tuple<V>(self, len: usize, visitor: V) -> Result<V::Value>
     where
@@ -973,6 +1002,20 @@ mod tests {
         let result: (Atom, String, u64) = from_term(&context, &term).unwrap();
 
         assert_eq!((atom!("a"), "b".to_string(), 42),
+                   result);
+    }
+
+    #[test]
+    fn deserialize_a_list() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term = context.term_from_string("(a,b,c)").unwrap();
+
+        let result: [Atom;3] = from_term(&context, &term).unwrap();
+
+        assert_eq!([atom!("a"), atom!("b"), atom!("c")],
                    result);
     }
 }
