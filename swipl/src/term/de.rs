@@ -1,11 +1,12 @@
-use crate::atom;
+use crate::{atom,functor};
 use super::*;
+use crate::functor::*;
 use crate::result::*;
 use crate::term::*;
 use crate::text::*;
 use crate::dict::*;
 use serde::Deserialize;
-use serde::de::{self, Visitor, MapAccess, DeserializeSeed};
+use serde::de::{self, Visitor, MapAccess, SeqAccess, DeserializeSeed};
 use std::fmt::{self, Display};
 
 fn from_term<'a, C:QueryableContextType, T>(context: &'a Context<C>, term: &Term<'a>) -> Result<T>
@@ -105,6 +106,60 @@ impl<'de,C:QueryableContextType> MapAccess<'de> for DictMapAccess<'de,C> {
                 seed.deserialize(inner_de)
             }
             None => panic!("MapAccess used out of order")
+        }
+    }
+}
+
+struct CompoundTermSeqAccess<'a, C:QueryableContextType> {
+    context: &'a Context<'a, C>,
+    terms: Vec<Term<'a>>
+}
+
+impl<'de, C:QueryableContextType> SeqAccess<'de> for CompoundTermSeqAccess<'de, C> {
+    type Error = Error;
+
+    fn next_element_seed<T>(&mut self, seed: T) -> std::result::Result<Option<T::Value>, Error>
+    where T: DeserializeSeed<'de>
+    {
+        if let Some(term) = self.terms.pop() {
+            let inner_de = Deserializer {
+                context: self.context,
+                term
+            };
+            seed.deserialize(inner_de).map(Some)
+        }
+        else {
+            Ok(None)
+        }
+    }
+}
+
+struct CommaCompoundTermSeqAccess<'a, C:QueryableContextType> {
+    context: &'a Context<'a, C>,
+    term: Term<'a>
+}
+
+impl<'de, C:QueryableContextType> SeqAccess<'de> for CommaCompoundTermSeqAccess<'de, C> {
+    type Error = Error;
+
+    fn next_element_seed<T>(&mut self, seed: T) -> std::result::Result<Option<T::Value>, Error>
+    where T: DeserializeSeed<'de>
+    {
+        if attempt_opt(self.term.get::<Functor>())? == Some(functor!(",/2")) {
+            let [head, tail] = attempt_opt(self.context.compound_terms(&self.term))?.unwrap();
+            self.term = tail;
+            let inner_de = Deserializer {
+                context: self.context,
+                term: head
+            };
+            seed.deserialize(inner_de).map(Some)
+        }
+        else {
+            let inner_de = Deserializer {
+                context: self.context,
+                term: self.term.clone()
+            };
+            seed.deserialize(inner_de).map(Some)
         }
     }
 }
@@ -405,7 +460,32 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
     where
         V: Visitor<'de>,
     {
-        Err(Error::UnsupportedValue)
+        let cleanup_term = self.context.new_term_ref();
+        let result;
+        if attempt_opt(self.term.get::<Functor>())? == Some(functor!(",/2")) {
+            result = visitor.visit_seq(CommaCompoundTermSeqAccess {
+                context: self.context,
+                term: self.term
+            });
+        }
+        else {
+            result = match attempt_opt(self.context.compound_terms_vec_sized(&self.term, len))? {
+                Some(mut terms) => {
+                    terms.reverse();
+                    visitor.visit_seq(CompoundTermSeqAccess {
+                        context:self.context,
+                        terms
+                    })
+                },
+                None => Err(Error::ValueNotOfExpectedType("tuple"))
+            };
+        }
+
+        unsafe {
+            cleanup_term.reset();
+        }
+
+        result
     }
     fn deserialize_tuple_struct<V>(
         self,
@@ -852,6 +932,7 @@ mod tests {
                                   (atom!("baz"),atom!("quux"))]),
                    result);
     }
+
     #[test]
     fn deserialize_a_hashmap_from_number_keys() {
         let engine = Engine::new();
@@ -864,6 +945,34 @@ mod tests {
 
         assert_eq!(HashMap::from([(10,atom!("foo")),
                                   (20,atom!("bar"))]),
+                   result);
+    }
+
+    #[test]
+    fn deserialize_a_named_tuple() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term = context.term_from_string("foo(a,b,42)").unwrap();
+
+        let result: (Atom, String, u64) = from_term(&context, &term).unwrap();
+
+        assert_eq!((atom!("a"), "b".to_string(), 42),
+                   result);
+    }
+
+    #[test]
+    fn deserialize_an_unnamed_tuple() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term = context.term_from_string("(a,b,42)").unwrap();
+
+        let result: (Atom, String, u64) = from_term(&context, &term).unwrap();
+
+        assert_eq!((atom!("a"), "b".to_string(), 42),
                    result);
     }
 }
