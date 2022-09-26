@@ -242,7 +242,12 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
     where
         V: Visitor<'de>,
     {
-        Err(Error::UnsupportedValue)
+        if name == "$swipl::private::atom" {
+            self.deserialize_string(visitor)
+        }
+        else {
+            self.deserialize_any(visitor)
+        }
     }
     fn deserialize_seq<V>(self, visitor: V) -> Result<V::Value>
     where
@@ -609,6 +614,28 @@ impl<'de, C:QueryableContextType> de::Deserializer<'de> for KeyDeserializer<'de,
     }
 }
 
+impl<'de> Deserialize<'de> for Atom {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where D: de::Deserializer<'de> {
+        deserializer.deserialize_newtype_struct("$swipl::private::atom", AtomVisitor)
+    }
+}
+
+struct AtomVisitor;
+
+impl<'de> Visitor<'de> for AtomVisitor {
+    type Value = Atom;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(formatter, "an atom")
+    }
+
+    fn visit_str<E>(self, s: &str) -> std::result::Result<Atom, E>
+    where E: de::Error {
+        Ok(Atom::new(s))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -640,5 +667,18 @@ mod tests {
                         b: "bar".to_string(),
                         baa: Some(Baa { c: "wow".to_string() })},
                    result);
+    }
+
+    #[test]
+    fn deserialize_an_atom() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term = context.term_from_string("foo").unwrap();
+
+        let result: Atom = from_term(&context, &term).unwrap();
+
+        assert_eq!(atom!("foo"), result);
     }
 }
