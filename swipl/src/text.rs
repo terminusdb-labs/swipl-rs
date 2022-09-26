@@ -17,6 +17,12 @@ use std::os::raw::c_char;
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub struct PrologText(String);
 
+impl PrologText {
+    pub fn into_inner(self) -> String {
+        self.0
+    }
+}
+
 impl std::ops::Deref for PrologText {
     type Target = String;
     fn deref(&self) -> &String {
