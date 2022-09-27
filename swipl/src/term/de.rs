@@ -84,7 +84,7 @@ impl<'de,C:QueryableContextType> MapAccess<'de> for DictMapAccess<'de,C> {
             Some((key, value)) => {
                 self.next_value = Some(value);
 
-                let inner_de = KeyDeserializer { context: self.context, key };
+                let inner_de = KeyDeserializer { key };
                 seed.deserialize(inner_de).map(Some)
             },
             None => Ok(None)
@@ -195,7 +195,34 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
         V: Visitor<'de>,
     {
         match self.term.term_type() {
+            TermType::Atom => self.deserialize_newtype_struct("$swipl::private::atom", visitor),
+            TermType::Nil => self.deserialize_unit(visitor),
             TermType::String => self.deserialize_string(visitor),
+            // TODO check signedness and call the correct one here
+            TermType::Integer => self.deserialize_i64(visitor),
+            TermType::Float => self.deserialize_f64(visitor),
+            // we do the following inline rather than calling to
+            // another deserializer cause we do not care about the
+            // tuple length and don't want to check for it.
+            TermType::CompoundTerm => {
+                let f = attempt_opt(self.term.get::<Functor>())?.unwrap();
+                if f.name() == atom!(",") && f.arity() == 2 {
+                    visitor.visit_seq(CommaCompoundTermSeqAccess {
+                        context: self.context,
+                        term: self.term
+                    })
+                }
+                else {
+                    let mut terms = attempt_opt(self.context.compound_terms_vec(&self.term))?.unwrap();
+                    terms.reverse();
+                    visitor.visit_seq(CompoundTermSeqAccess {
+                        context: self.context,
+                        terms
+                    })
+                }
+            },
+            TermType::ListPair => self.deserialize_seq(visitor),
+            TermType::Dict => self.deserialize_map(visitor),
             _ => Err(Error::UnsupportedValue)
         }
     }
@@ -518,14 +545,15 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
     }
     fn deserialize_tuple_struct<V>(
         self,
-        name: &'static str,
+        _name: &'static str,
         len: usize,
         visitor: V,
     ) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        Err(Error::UnsupportedValue)
+        // TODO possibly we can actually check for the functor name here
+        self.deserialize_tuple(len,visitor)
     }
     fn deserialize_map<V>(self, visitor: V) -> Result<V::Value>
     where
@@ -578,12 +606,11 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
 }
 
 
-struct KeyDeserializer<'de, C:QueryableContextType> {
-    context: &'de Context<'de, C>,
+struct KeyDeserializer {
     key: Key
 }
 
-impl<'de, C:QueryableContextType> de::Deserializer<'de> for KeyDeserializer<'de, C> {
+impl<'de> de::Deserializer<'de> for KeyDeserializer {
     type Error = Error;
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value>
     where
