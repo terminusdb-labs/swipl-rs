@@ -16,3 +16,4 @@ swipl-macros = {path = "../swipl-macros", version="0.3.7"}
 lazy_static = "1.4.0"
 thiserror = "1.0"
 serde = {version="1.0", features=["derive"]}
+convert_case = "0.6"

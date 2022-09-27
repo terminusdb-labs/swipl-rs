@@ -6,8 +6,9 @@ use crate::term::*;
 use crate::text::*;
 use crate::dict::*;
 use serde::Deserialize;
-use serde::de::{self, Visitor, MapAccess, SeqAccess, DeserializeSeed};
+use serde::de::{self, Visitor, MapAccess, SeqAccess, EnumAccess, VariantAccess, DeserializeSeed};
 use std::fmt::{self, Display};
+use convert_case::{Case, Casing};
 
 fn from_term<'a, C:QueryableContextType, T>(context: &'a Context<C>, term: &Term<'a>) -> Result<T>
 where T: Deserialize<'a> {
@@ -134,6 +135,86 @@ impl<'de, C:QueryableContextType> SeqAccess<'de> for CompoundTermSeqAccess<'de, 
     }
 }
 
+struct CompoundTermEnumAccess<'a, C:QueryableContextType> {
+    context: &'a Context<'a, C>,
+    variant_name: String,
+    term: Term<'a>
+}
+
+impl<'de, C:QueryableContextType> EnumAccess<'de> for CompoundTermEnumAccess<'de, C> {
+    type Error = Error;
+    type Variant = Self;
+
+    fn variant_seed<T>(self, seed: T) -> std::result::Result<(T::Value,Self::Variant), Error>
+    where T: DeserializeSeed<'de>
+    {
+        // this seems hugely wasteful but having the seed here requires us to go through a visitor
+        let value = seed.deserialize(EnumVariantDeserializer {
+            variant_name: self.variant_name.clone()
+        })?;
+        Ok((value, self))
+    }
+}
+
+impl<'de, C:QueryableContextType> VariantAccess<'de> for CompoundTermEnumAccess<'de, C> {
+    type Error = Error;
+
+    fn unit_variant(self) -> Result<()> {
+        if self.term.is_atom() {
+            Ok(())
+        }
+        else if let Some(f) = attempt_opt(self.term.get::<Functor>())? {
+            if f.arity() == 0 {
+                Ok(())
+            }
+            else {
+                Err(Error::ValueOutOfRange)
+            }
+        }
+        else {
+            Err(Error::ValueOutOfRange)
+        }
+    }
+
+    fn newtype_variant_seed<T>(self, seed: T) -> Result<T::Value>
+    where
+        T: DeserializeSeed<'de>,
+    {
+        if let Some([term]) = attempt_opt(self.context.compound_terms(&self.term))? {
+            seed.deserialize(Deserializer {
+                context: self.context,
+                term
+            })
+        }
+        else {
+            Err(Error::ValueOutOfRange)
+        }
+    }
+
+    fn tuple_variant<V>(self, len: usize, visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        let inner_de = Deserializer {
+            context: self.context,
+            term: self.term
+        };
+
+        de::Deserializer::deserialize_tuple(inner_de, len, visitor)
+    }
+
+    fn struct_variant<V>(
+        self,
+        _fields: &'static [&'static str],
+        visitor: V,
+    ) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        Err(Error::UnexpectedType("enum struct variant"))
+    }
+}
+
 struct CommaCompoundTermSeqAccess<'a, C:QueryableContextType> {
     context: &'a Context<'a, C>,
     term: Term<'a>
@@ -148,6 +229,7 @@ impl<'de, C:QueryableContextType> SeqAccess<'de> for CommaCompoundTermSeqAccess<
         if attempt_opt(self.term.get::<Functor>())? == Some(functor!(",/2")) {
             let [head, tail] = attempt_opt(self.context.compound_terms(&self.term))?.unwrap();
             self.term = tail;
+            self.remaining -= 1;
             let inner_de = Deserializer {
                 context: self.context,
                 term: head
@@ -579,14 +661,31 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
     }
     fn deserialize_enum<V>(
         self,
-        name: &'static str,
-        variants: &'static [&'static str],
+        _name: &'static str,
+        _variants: &'static [&'static str],
         visitor: V,
     ) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        Err(Error::UnsupportedValue)
+        let variant_name;
+        if let Some(functor) = attempt_opt(self.term.get::<Functor>())? {
+            variant_name = functor.name();
+        }
+        else if let Some(atom) = attempt_opt(self.term.get::<Atom>())? {
+            variant_name = atom;
+        }
+        else {
+            return Err(Error::ValueOutOfRange);
+        }
+
+        // TODO more efficient string handling without atom reserving
+        let variant_camel_name = variant_name.to_string().to_case(Case::Pascal);
+        visitor.visit_enum(CompoundTermEnumAccess {
+            context: self.context,
+            variant_name: variant_camel_name,
+            term: self.term
+        })
     }
     fn deserialize_identifier<V>(self, visitor: V) -> Result<V::Value>
     where
@@ -904,6 +1003,206 @@ impl<'de> de::Deserializer<'de> for KeyDeserializer {
     }
 }
 
+struct EnumVariantDeserializer {
+    variant_name: String
+}
+
+impl<'de> de::Deserializer<'de> for EnumVariantDeserializer {
+    type Error = Error;
+    fn deserialize_any<V>(self, visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        self.deserialize_string(visitor)
+    }
+    fn deserialize_bool<V>(self, visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        Err(Error::UnexpectedType("bool"))
+    }
+    fn deserialize_i8<V>(self, visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        Err(Error::UnexpectedType("i8"))
+    }
+    fn deserialize_i16<V>(self, visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        Err(Error::UnexpectedType("i16"))
+    }
+    fn deserialize_i32<V>(self, visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        Err(Error::UnexpectedType("i32"))
+    }
+    fn deserialize_i64<V>(self, visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        Err(Error::UnexpectedType("i64"))
+    }
+    fn deserialize_u8<V>(self, visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        Err(Error::UnexpectedType("u8"))
+    }
+    fn deserialize_u16<V>(self, visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        Err(Error::UnexpectedType("u16"))
+    }
+    fn deserialize_u32<V>(self, visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        Err(Error::UnexpectedType("u32"))
+    }
+    fn deserialize_u64<V>(self, visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        Err(Error::UnexpectedType("u64"))
+    }
+    fn deserialize_f32<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        Err(Error::UnexpectedType("f32"))
+    }
+    fn deserialize_f64<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        Err(Error::UnexpectedType("f64"))
+    }
+    fn deserialize_char<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        Err(Error::UnexpectedType("char"))
+    }
+    fn deserialize_str<V>(self, visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        self.deserialize_string(visitor)
+    }
+
+    fn deserialize_string<V>(self, visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        // we already parsed the variant, so lets visit it now
+        visitor.visit_string(self.variant_name)
+    }
+    fn deserialize_bytes<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        Err(Error::UnexpectedType("bytes"))
+    }
+    fn deserialize_byte_buf<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        Err(Error::UnexpectedType("byte_buf"))
+    }
+    fn deserialize_option<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        Err(Error::UnexpectedType("option"))
+    }
+    fn deserialize_unit<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        Err(Error::UnexpectedType("unit"))
+    }
+    fn deserialize_unit_struct<V>(self, _name: &'static str, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        Err(Error::UnexpectedType("unit struct"))
+    }
+    fn deserialize_newtype_struct<V>(self, name: &'static str, visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        Err(Error::UnexpectedType("newtype struct"))
+    }
+    fn deserialize_seq<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        Err(Error::UnexpectedType("seq"))
+    }
+    fn deserialize_tuple<V>(self, len: usize, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        Err(Error::UnexpectedType("tuple"))
+    }
+    fn deserialize_tuple_struct<V>(
+        self,
+        _name: &'static str,
+        _len: usize,
+        _visitor: V,
+    ) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        Err(Error::UnexpectedType("tuple struct"))
+    }
+    fn deserialize_map<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        Err(Error::UnexpectedType("map"))
+    }
+    fn deserialize_struct<V>(
+        self,
+        _name: &'static str,
+        _fields: &'static [&'static str],
+        _visitor: V,
+    ) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        Err(Error::UnexpectedType("struct"))
+    }
+    fn deserialize_enum<V>(
+        self,
+        _name: &'static str,
+        _variants: &'static [&'static str],
+        _visitor: V,
+    ) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        Err(Error::UnexpectedType("enum"))
+    }
+    fn deserialize_identifier<V>(self, visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        // we already parsed the variant, so lets visit it now
+        visitor.visit_string(self.variant_name)
+    }
+    fn deserialize_ignored_any<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        Err(Error::UnexpectedType("ignored any"))
+    }
+}
+
 impl<'de> Deserialize<'de> for Atom {
     fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
     where D: de::Deserializer<'de> {
@@ -1043,6 +1342,27 @@ mod tests {
         let result: [Atom;3] = from_term(&context, &term).unwrap();
 
         assert_eq!([atom!("a"), atom!("b"), atom!("c")],
+                   result);
+    }
+
+    #[derive(Debug, Deserialize, PartialEq)]
+    enum Animal {
+        Cow,
+        Duck(String),
+        Horse(Atom, u64)
+    }
+
+    #[test]
+    fn deserialize_an_enum() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term = context.term_from_string("(cow, duck(quack), horse(neigh, 42))").unwrap();
+
+        let result: (Animal, Animal, Animal) = from_term(&context, &term).unwrap();
+
+        assert_eq!((Animal::Cow, Animal::Duck("quack".to_string()), Animal::Horse(atom!("neigh"), 42)),
                    result);
     }
 }
