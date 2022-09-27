@@ -59,9 +59,9 @@ use super::result::*;
 use super::stream::*;
 use super::term::*;
 
+use serde::Deserialize;
 use std::cell::Cell;
 use std::mem::MaybeUninit;
-use serde::Deserialize;
 
 use swipl_macros::{prolog, term};
 
@@ -976,7 +976,10 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         Ok(terms)
     }
 
-    pub fn deserialize_from_term<'de, DT:Deserialize<'de>>(&'de self, term: &'de Term<'de>) -> super::term::de::Result<DT> {
+    pub fn deserialize_from_term<'de, DT: Deserialize<'de>>(
+        &'de self,
+        term: &'de Term<'de>,
+    ) -> super::term::de::Result<DT> {
         super::term::de::from_term(self, term)
     }
 }

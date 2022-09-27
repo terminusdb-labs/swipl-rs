@@ -1,20 +1,25 @@
-use crate::{atom,functor};
 use super::*;
+use crate::dict::*;
 use crate::functor::*;
 use crate::result::*;
 use crate::term::*;
 use crate::text::*;
-use crate::dict::*;
-use serde::Deserialize;
-use serde::de::{self, Visitor, MapAccess, SeqAccess, EnumAccess, VariantAccess, DeserializeSeed};
-use std::fmt::{self, Display};
+use crate::{atom, functor};
 use convert_case::{Case, Casing};
+use serde::de::{self, DeserializeSeed, EnumAccess, MapAccess, SeqAccess, VariantAccess, Visitor};
+use serde::Deserialize;
+use std::fmt::{self, Display};
 
-pub fn from_term<'a, C:QueryableContextType, T>(context: &'a Context<C>, term: &Term<'a>) -> Result<T>
-where T: Deserialize<'a> {
+pub fn from_term<'a, C: QueryableContextType, T>(
+    context: &'a Context<C>,
+    term: &Term<'a>,
+) -> Result<T>
+where
+    T: Deserialize<'a>,
+{
     let deserializer = Deserializer {
         context,
-        term: term.clone()
+        term: term.clone(),
     };
 
     Deserialize::deserialize(deserializer)
@@ -32,7 +37,7 @@ pub enum Error {
     UnsupportedValue,
     UnexpectedType(&'static str),
     ValueNotOfExpectedType(&'static str),
-    ValueOutOfRange
+    ValueOutOfRange,
 }
 
 impl From<PrologException> for Error {
@@ -48,7 +53,9 @@ impl Display for Error {
             Self::PrologError(_) => formatter.write_str("prolog error"),
             Self::UnsupportedValue => formatter.write_str("unsupported value"),
             Self::UnexpectedType(t) => write!(formatter, "unexpected type {}", t),
-            Self::ValueNotOfExpectedType(t) => write!(formatter, "value not of expected type {}", t),
+            Self::ValueNotOfExpectedType(t) => {
+                write!(formatter, "value not of expected type {}", t)
+            }
             Self::ValueOutOfRange => formatter.write_str("value out of range"),
         }
     }
@@ -65,16 +72,15 @@ impl de::Error for Error {
     }
 }
 
-
 pub type Result<T> = std::result::Result<T, Error>;
 
-struct DictMapAccess<'de, C:QueryableContextType> {
+struct DictMapAccess<'de, C: QueryableContextType> {
     context: &'de Context<'de, C>,
     iter: DictIterator<'de, 'de, C>,
-    next_value: Option<Term<'de>>
+    next_value: Option<Term<'de>>,
 }
 
-impl<'de,C:QueryableContextType> MapAccess<'de> for DictMapAccess<'de,C> {
+impl<'de, C: QueryableContextType> MapAccess<'de> for DictMapAccess<'de, C> {
     type Error = Error;
 
     fn next_key_seed<K>(&mut self, seed: K) -> Result<Option<K::Value>>
@@ -87,8 +93,8 @@ impl<'de,C:QueryableContextType> MapAccess<'de> for DictMapAccess<'de,C> {
 
                 let inner_de = KeyDeserializer { key };
                 seed.deserialize(inner_de).map(Some)
-            },
-            None => Ok(None)
+            }
+            None => Ok(None),
         }
     }
 
@@ -102,76 +108,74 @@ impl<'de,C:QueryableContextType> MapAccess<'de> for DictMapAccess<'de,C> {
             Some(value) => {
                 let inner_de = Deserializer {
                     context: self.context,
-                    term: value
+                    term: value,
                 };
                 seed.deserialize(inner_de)
             }
-            None => panic!("MapAccess used out of order")
+            None => panic!("MapAccess used out of order"),
         }
     }
 }
 
-struct CompoundTermSeqAccess<'a, C:QueryableContextType> {
+struct CompoundTermSeqAccess<'a, C: QueryableContextType> {
     context: &'a Context<'a, C>,
-    terms: Vec<Term<'a>>
+    terms: Vec<Term<'a>>,
 }
 
-impl<'de, C:QueryableContextType> SeqAccess<'de> for CompoundTermSeqAccess<'de, C> {
+impl<'de, C: QueryableContextType> SeqAccess<'de> for CompoundTermSeqAccess<'de, C> {
     type Error = Error;
 
     fn next_element_seed<T>(&mut self, seed: T) -> std::result::Result<Option<T::Value>, Error>
-    where T: DeserializeSeed<'de>
+    where
+        T: DeserializeSeed<'de>,
     {
         if let Some(term) = self.terms.pop() {
             let inner_de = Deserializer {
                 context: self.context,
-                term
+                term,
             };
             seed.deserialize(inner_de).map(Some)
-        }
-        else {
+        } else {
             Ok(None)
         }
     }
 }
 
-struct CompoundTermEnumAccess<'a, C:QueryableContextType> {
+struct CompoundTermEnumAccess<'a, C: QueryableContextType> {
     context: &'a Context<'a, C>,
     variant_name: String,
-    term: Term<'a>
+    term: Term<'a>,
 }
 
-impl<'de, C:QueryableContextType> EnumAccess<'de> for CompoundTermEnumAccess<'de, C> {
+impl<'de, C: QueryableContextType> EnumAccess<'de> for CompoundTermEnumAccess<'de, C> {
     type Error = Error;
     type Variant = Self;
 
-    fn variant_seed<T>(self, seed: T) -> std::result::Result<(T::Value,Self::Variant), Error>
-    where T: DeserializeSeed<'de>
+    fn variant_seed<T>(self, seed: T) -> std::result::Result<(T::Value, Self::Variant), Error>
+    where
+        T: DeserializeSeed<'de>,
     {
         // this seems hugely wasteful but having the seed here requires us to go through a visitor
         let value = seed.deserialize(EnumVariantDeserializer {
-            variant_name: self.variant_name.clone()
+            variant_name: self.variant_name.clone(),
         })?;
         Ok((value, self))
     }
 }
 
-impl<'de, C:QueryableContextType> VariantAccess<'de> for CompoundTermEnumAccess<'de, C> {
+impl<'de, C: QueryableContextType> VariantAccess<'de> for CompoundTermEnumAccess<'de, C> {
     type Error = Error;
 
     fn unit_variant(self) -> Result<()> {
         if self.term.is_atom() {
             Ok(())
-        }
-        else if let Some(f) = attempt_opt(self.term.get::<Functor>())? {
+        } else if let Some(f) = attempt_opt(self.term.get::<Functor>())? {
             if f.arity() == 0 {
                 Ok(())
-            }
-            else {
+            } else {
                 Err(Error::ValueOutOfRange)
             }
-        }
-        else {
+        } else {
             Err(Error::ValueOutOfRange)
         }
     }
@@ -183,10 +187,9 @@ impl<'de, C:QueryableContextType> VariantAccess<'de> for CompoundTermEnumAccess<
         if let Some([term]) = attempt_opt(self.context.compound_terms(&self.term))? {
             seed.deserialize(Deserializer {
                 context: self.context,
-                term
+                term,
             })
-        }
-        else {
+        } else {
             Err(Error::ValueOutOfRange)
         }
     }
@@ -197,78 +200,74 @@ impl<'de, C:QueryableContextType> VariantAccess<'de> for CompoundTermEnumAccess<
     {
         let inner_de = Deserializer {
             context: self.context,
-            term: self.term
+            term: self.term,
         };
 
         de::Deserializer::deserialize_tuple(inner_de, len, visitor)
     }
 
-    fn struct_variant<V>(
-        self,
-        _fields: &'static [&'static str],
-        visitor: V,
-    ) -> Result<V::Value>
+    fn struct_variant<V>(self, _fields: &'static [&'static str], visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
         let inner_de = Deserializer {
             context: self.context,
-            term: self.term
+            term: self.term,
         };
 
         de::Deserializer::deserialize_map(inner_de, visitor)
     }
 }
 
-struct CommaCompoundTermSeqAccess<'a, C:QueryableContextType> {
+struct CommaCompoundTermSeqAccess<'a, C: QueryableContextType> {
     context: &'a Context<'a, C>,
-    term: Term<'a>
+    term: Term<'a>,
 }
 
-impl<'de, C:QueryableContextType> SeqAccess<'de> for CommaCompoundTermSeqAccess<'de, C> {
+impl<'de, C: QueryableContextType> SeqAccess<'de> for CommaCompoundTermSeqAccess<'de, C> {
     type Error = Error;
 
     fn next_element_seed<T>(&mut self, seed: T) -> std::result::Result<Option<T::Value>, Error>
-    where T: DeserializeSeed<'de>
+    where
+        T: DeserializeSeed<'de>,
     {
         if attempt_opt(self.term.get::<Functor>())? == Some(functor!(",/2")) {
             let [head, tail] = attempt_opt(self.context.compound_terms(&self.term))?.unwrap();
             self.term = tail;
             let inner_de = Deserializer {
                 context: self.context,
-                term: head
+                term: head,
             };
             seed.deserialize(inner_de).map(Some)
-        }
-        else {
+        } else {
             let inner_de = Deserializer {
                 context: self.context,
-                term: self.term.clone()
+                term: self.term.clone(),
             };
             seed.deserialize(inner_de).map(Some)
         }
     }
 }
 
-struct ListSeqAccess<'a, C:QueryableContextType> {
+struct ListSeqAccess<'a, C: QueryableContextType> {
     context: &'a Context<'a, C>,
     iter: TermListIterator<'a, 'a, C>,
 }
 
-impl<'de, C:QueryableContextType> SeqAccess<'de> for ListSeqAccess<'de, C> {
+impl<'de, C: QueryableContextType> SeqAccess<'de> for ListSeqAccess<'de, C> {
     type Error = Error;
 
     fn next_element_seed<T>(&mut self, seed: T) -> std::result::Result<Option<T::Value>, Error>
-    where T: DeserializeSeed<'de>
+    where
+        T: DeserializeSeed<'de>,
     {
         if let Some(term) = self.iter.next() {
             let inner_de = Deserializer {
                 context: self.context,
-                term
+                term,
             };
             seed.deserialize(inner_de).map(Some)
-        }
-        else {
+        } else {
             Ok(None)
         }
     }
@@ -295,21 +294,21 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
                 if f.name() == atom!(",") && f.arity() == 2 {
                     visitor.visit_seq(CommaCompoundTermSeqAccess {
                         context: self.context,
-                        term: self.term
+                        term: self.term,
                     })
-                }
-                else {
-                    let mut terms = attempt_opt(self.context.compound_terms_vec(&self.term))?.unwrap();
+                } else {
+                    let mut terms =
+                        attempt_opt(self.context.compound_terms_vec(&self.term))?.unwrap();
                     terms.reverse();
                     visitor.visit_seq(CompoundTermSeqAccess {
                         context: self.context,
-                        terms
+                        terms,
                     })
                 }
-            },
+            }
             TermType::ListPair => self.deserialize_seq(visitor),
             TermType::Dict => self.deserialize_map(visitor),
-            _ => Err(Error::UnsupportedValue)
+            _ => Err(Error::UnsupportedValue),
         }
     }
     fn deserialize_bool<V>(self, visitor: V) -> Result<V::Value>
@@ -317,17 +316,15 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
         V: Visitor<'de>,
     {
         match attempt_opt(self.term.get::<Atom>())? {
-            Some(atom) =>  {
+            Some(atom) => {
                 if atom == atom!("true") {
                     visitor.visit_bool(true)
-                }
-                else if atom == atom!("false") {
+                } else if atom == atom!("false") {
                     visitor.visit_bool(false)
-                }
-                else {
+                } else {
                     Err(Error::ValueNotOfExpectedType("bool"))
                 }
-            },
+            }
             None => Err(Error::ValueNotOfExpectedType("bool")),
         }
     }
@@ -339,12 +336,11 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
             Some(i) => {
                 if i >= i8::MIN as i64 && i <= i8::MAX as i64 {
                     visitor.visit_i8(i as i8)
-                }
-                else {
+                } else {
                     Err(Error::ValueOutOfRange)
                 }
             }
-            None => Err(Error::ValueNotOfExpectedType("i8"))
+            None => Err(Error::ValueNotOfExpectedType("i8")),
         }
     }
     fn deserialize_i16<V>(self, visitor: V) -> Result<V::Value>
@@ -355,12 +351,11 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
             Some(i) => {
                 if i >= i16::MIN as i64 && i <= i16::MAX as i64 {
                     visitor.visit_i16(i as i16)
-                }
-                else {
+                } else {
                     Err(Error::ValueOutOfRange)
                 }
             }
-            None => Err(Error::ValueNotOfExpectedType("i16"))
+            None => Err(Error::ValueNotOfExpectedType("i16")),
         }
     }
     fn deserialize_i32<V>(self, visitor: V) -> Result<V::Value>
@@ -371,12 +366,11 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
             Some(i) => {
                 if i >= i32::MIN as i64 && i <= i32::MAX as i64 {
                     visitor.visit_i32(i as i32)
-                }
-                else {
+                } else {
                     Err(Error::ValueOutOfRange)
                 }
             }
-            None => Err(Error::ValueNotOfExpectedType("i32"))
+            None => Err(Error::ValueNotOfExpectedType("i32")),
         }
     }
     fn deserialize_i64<V>(self, visitor: V) -> Result<V::Value>
@@ -387,12 +381,11 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
             Some(i) => {
                 if i >= i64::MIN as i64 && i <= i64::MAX as i64 {
                     visitor.visit_i64(i as i64)
-                }
-                else {
+                } else {
                     Err(Error::ValueOutOfRange)
                 }
             }
-            None => Err(Error::ValueNotOfExpectedType("i64"))
+            None => Err(Error::ValueNotOfExpectedType("i64")),
         }
     }
     fn deserialize_u8<V>(self, visitor: V) -> Result<V::Value>
@@ -403,12 +396,11 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
             Some(i) => {
                 if i <= u8::MAX as u64 {
                     visitor.visit_u8(i as u8)
-                }
-                else {
+                } else {
                     Err(Error::ValueOutOfRange)
                 }
             }
-            None => Err(Error::ValueNotOfExpectedType("u8"))
+            None => Err(Error::ValueNotOfExpectedType("u8")),
         }
     }
     fn deserialize_u16<V>(self, visitor: V) -> Result<V::Value>
@@ -419,12 +411,11 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
             Some(i) => {
                 if i <= u16::MAX as u64 {
                     visitor.visit_u16(i as u16)
-                }
-                else {
+                } else {
                     Err(Error::ValueOutOfRange)
                 }
             }
-            None => Err(Error::ValueNotOfExpectedType("u16"))
+            None => Err(Error::ValueNotOfExpectedType("u16")),
         }
     }
     fn deserialize_u32<V>(self, visitor: V) -> Result<V::Value>
@@ -435,12 +426,11 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
             Some(i) => {
                 if i <= u32::MAX as u64 {
                     visitor.visit_u32(i as u32)
-                }
-                else {
+                } else {
                     Err(Error::ValueOutOfRange)
                 }
             }
-            None => Err(Error::ValueNotOfExpectedType("u32"))
+            None => Err(Error::ValueNotOfExpectedType("u32")),
         }
     }
     fn deserialize_u64<V>(self, visitor: V) -> Result<V::Value>
@@ -451,12 +441,11 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
             Some(i) => {
                 if i <= u64::MAX as u64 {
                     visitor.visit_u64(i as u64)
-                }
-                else {
+                } else {
                     Err(Error::ValueOutOfRange)
                 }
             }
-            None => Err(Error::ValueNotOfExpectedType("u64"))
+            None => Err(Error::ValueNotOfExpectedType("u64")),
         }
     }
     fn deserialize_f32<V>(self, visitor: V) -> Result<V::Value>
@@ -466,7 +455,7 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
         match attempt_opt(self.term.get::<f64>())? {
             // a little bit suspicious as this loses precision
             Some(f) => visitor.visit_f32(f as f32),
-            None => Err(Error::ValueNotOfExpectedType("f32"))
+            None => Err(Error::ValueNotOfExpectedType("f32")),
         }
     }
     fn deserialize_f64<V>(self, visitor: V) -> Result<V::Value>
@@ -476,7 +465,7 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
         match attempt_opt(self.term.get::<f64>())? {
             // a little bit suspicious as this loses precision
             Some(f) => visitor.visit_f64(f),
-            None => Err(Error::ValueNotOfExpectedType("f64"))
+            None => Err(Error::ValueNotOfExpectedType("f64")),
         }
     }
     fn deserialize_char<V>(self, visitor: V) -> Result<V::Value>
@@ -499,29 +488,27 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
                     }
 
                     None
-            }))?.expect("get_atom_name should not fail");
+                }))?
+                .expect("get_atom_name should not fail");
                 match c {
                     Some(c) => visitor.visit_char(c),
-                    None => Err(Error::ValueNotOfExpectedType("char"))
+                    None => Err(Error::ValueNotOfExpectedType("char")),
                 }
-            },
-            TermType::Integer => {
-                match attempt_opt(self.term.get::<u64>())? {
-                    Some(i) => {
-                        if i > u32::MAX as u64 {
-                            Err(Error::ValueOutOfRange)
+            }
+            TermType::Integer => match attempt_opt(self.term.get::<u64>())? {
+                Some(i) => {
+                    if i > u32::MAX as u64 {
+                        Err(Error::ValueOutOfRange)
+                    } else {
+                        match char::from_u32(i as u32) {
+                            Some(c) => visitor.visit_char(c),
+                            None => Err(Error::ValueOutOfRange),
                         }
-                        else {
-                            match char::from_u32(i as u32) {
-                                Some(c) => visitor.visit_char(c),
-                                None => Err(Error::ValueOutOfRange)
-                            }
-                        }
-                    },
-                    None => Err(Error::ValueNotOfExpectedType("char"))
+                    }
                 }
+                None => Err(Error::ValueNotOfExpectedType("char")),
             },
-            _ => Err(Error::ValueNotOfExpectedType("char"))
+            _ => Err(Error::ValueNotOfExpectedType("char")),
         }
     }
     fn deserialize_str<V>(self, visitor: V) -> Result<V::Value>
@@ -565,8 +552,7 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
     {
         if self.term.term_type() == TermType::Nil {
             visitor.visit_unit()
-        }
-        else {
+        } else {
             Err(Error::ValueNotOfExpectedType("unit"))
         }
     }
@@ -582,8 +568,7 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
     {
         if name == "$swipl::private::atom" {
             self.deserialize_string(visitor)
-        }
-        else {
+        } else {
             visitor.visit_newtype_struct(self)
         }
     }
@@ -595,7 +580,7 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
         let iter = self.context.term_list_iter(&self.term);
         visitor.visit_seq(ListSeqAccess {
             context: self.context,
-            iter
+            iter,
         })
     }
     fn deserialize_tuple<V>(self, len: usize, visitor: V) -> Result<V::Value>
@@ -607,19 +592,18 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
         if attempt_opt(self.term.get::<Functor>())? == Some(functor!(",/2")) {
             result = visitor.visit_seq(CommaCompoundTermSeqAccess {
                 context: self.context,
-                term: self.term
+                term: self.term,
             });
-        }
-        else {
+        } else {
             result = match attempt_opt(self.context.compound_terms_vec_sized(&self.term, len))? {
                 Some(mut terms) => {
                     terms.reverse();
                     visitor.visit_seq(CompoundTermSeqAccess {
-                        context:self.context,
-                        terms
+                        context: self.context,
+                        terms,
                     })
-                },
-                None => Err(Error::ValueNotOfExpectedType("tuple"))
+                }
+                None => Err(Error::ValueNotOfExpectedType("tuple")),
             };
         }
 
@@ -639,16 +623,19 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
         V: Visitor<'de>,
     {
         // TODO possibly we can actually check for the functor name here
-        self.deserialize_tuple(len,visitor)
+        self.deserialize_tuple(len, visitor)
     }
     fn deserialize_map<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
         if self.term.term_type() == TermType::Dict {
-            visitor.visit_map(DictMapAccess { context: self.context, iter: self.context.dict_entries(&self.term), next_value: None })
-        }
-        else {
+            visitor.visit_map(DictMapAccess {
+                context: self.context,
+                iter: self.context.dict_entries(&self.term),
+                next_value: None,
+            })
+        } else {
             Err(Error::ValueNotOfExpectedType("dict"))
         }
     }
@@ -675,14 +662,11 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
         let variant_name;
         if let Some(Some(atom)) = attempt_opt(self.term.get_dict_tag())? {
             variant_name = atom;
-        }
-        else if let Some(functor) = attempt_opt(self.term.get::<Functor>())? {
+        } else if let Some(functor) = attempt_opt(self.term.get::<Functor>())? {
             variant_name = functor.name();
-        }
-        else if let Some(atom) = attempt_opt(self.term.get::<Atom>())? {
+        } else if let Some(atom) = attempt_opt(self.term.get::<Atom>())? {
             variant_name = atom;
-        }
-        else {
+        } else {
             return Err(Error::ValueOutOfRange);
         }
 
@@ -691,7 +675,7 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
         visitor.visit_enum(CompoundTermEnumAccess {
             context: self.context,
             variant_name: variant_camel_name,
-            term: self.term
+            term: self.term,
         })
     }
     fn deserialize_identifier<V>(self, visitor: V) -> Result<V::Value>
@@ -700,7 +684,7 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
     {
         match attempt_opt(self.term.get::<Atom>())? {
             Some(atom) => visitor.visit_string(atom.to_string()),
-            None => Err(Error::ValueNotOfExpectedType("identifier"))
+            None => Err(Error::ValueNotOfExpectedType("identifier")),
         }
     }
     fn deserialize_ignored_any<V>(self, visitor: V) -> Result<V::Value>
@@ -711,9 +695,8 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
     }
 }
 
-
 struct KeyDeserializer {
-    key: Key
+    key: Key,
 }
 
 impl<'de> de::Deserializer<'de> for KeyDeserializer {
@@ -732,15 +715,13 @@ impl<'de> de::Deserializer<'de> for KeyDeserializer {
             Key::Atom(atom) => {
                 if atom == atom!("true") {
                     visitor.visit_bool(true)
-                }
-                else if atom == atom!("false") {
+                } else if atom == atom!("false") {
                     visitor.visit_bool(false)
-                }
-                else {
+                } else {
                     Err(Error::ValueNotOfExpectedType("bool"))
                 }
-            },
-            Key::Int(i) => visitor.visit_u64(i)
+            }
+            Key::Int(i) => visitor.visit_u64(i),
         }
     }
     fn deserialize_i8<V>(self, visitor: V) -> Result<V::Value>
@@ -751,12 +732,11 @@ impl<'de> de::Deserializer<'de> for KeyDeserializer {
             Key::Int(i) => {
                 if i <= i8::MAX as u64 {
                     visitor.visit_i8(i as i8)
-                }
-                else {
+                } else {
                     Err(Error::ValueOutOfRange)
                 }
             }
-            _ => Err(Error::ValueNotOfExpectedType("i8"))
+            _ => Err(Error::ValueNotOfExpectedType("i8")),
         }
     }
     fn deserialize_i16<V>(self, visitor: V) -> Result<V::Value>
@@ -767,12 +747,11 @@ impl<'de> de::Deserializer<'de> for KeyDeserializer {
             Key::Int(i) => {
                 if i <= i16::MAX as u64 {
                     visitor.visit_i16(i as i16)
-                }
-                else {
+                } else {
                     Err(Error::ValueOutOfRange)
                 }
             }
-            _ => Err(Error::ValueNotOfExpectedType("i16"))
+            _ => Err(Error::ValueNotOfExpectedType("i16")),
         }
     }
     fn deserialize_i32<V>(self, visitor: V) -> Result<V::Value>
@@ -783,12 +762,11 @@ impl<'de> de::Deserializer<'de> for KeyDeserializer {
             Key::Int(i) => {
                 if i <= i32::MAX as u64 {
                     visitor.visit_i32(i as i32)
-                }
-                else {
+                } else {
                     Err(Error::ValueOutOfRange)
                 }
             }
-            _ => Err(Error::ValueNotOfExpectedType("i32"))
+            _ => Err(Error::ValueNotOfExpectedType("i32")),
         }
     }
     fn deserialize_i64<V>(self, visitor: V) -> Result<V::Value>
@@ -799,12 +777,11 @@ impl<'de> de::Deserializer<'de> for KeyDeserializer {
             Key::Int(i) => {
                 if i <= i64::MAX as u64 {
                     visitor.visit_i64(i as i64)
-                }
-                else {
+                } else {
                     Err(Error::ValueOutOfRange)
                 }
             }
-            _ => Err(Error::ValueNotOfExpectedType("i64"))
+            _ => Err(Error::ValueNotOfExpectedType("i64")),
         }
     }
     fn deserialize_u8<V>(self, visitor: V) -> Result<V::Value>
@@ -815,12 +792,11 @@ impl<'de> de::Deserializer<'de> for KeyDeserializer {
             Key::Int(i) => {
                 if i <= u8::MAX as u64 {
                     visitor.visit_u8(i as u8)
-                }
-                else {
+                } else {
                     Err(Error::ValueOutOfRange)
                 }
             }
-            _ => Err(Error::ValueNotOfExpectedType("u8"))
+            _ => Err(Error::ValueNotOfExpectedType("u8")),
         }
     }
     fn deserialize_u16<V>(self, visitor: V) -> Result<V::Value>
@@ -831,12 +807,11 @@ impl<'de> de::Deserializer<'de> for KeyDeserializer {
             Key::Int(i) => {
                 if i <= u16::MAX as u64 {
                     visitor.visit_u16(i as u16)
-                }
-                else {
+                } else {
                     Err(Error::ValueOutOfRange)
                 }
             }
-            _ => Err(Error::ValueNotOfExpectedType("u16"))
+            _ => Err(Error::ValueNotOfExpectedType("u16")),
         }
     }
     fn deserialize_u32<V>(self, visitor: V) -> Result<V::Value>
@@ -847,12 +822,11 @@ impl<'de> de::Deserializer<'de> for KeyDeserializer {
             Key::Int(i) => {
                 if i <= u32::MAX as u64 {
                     visitor.visit_u32(i as u32)
-                }
-                else {
+                } else {
                     Err(Error::ValueOutOfRange)
                 }
             }
-            _ => Err(Error::ValueNotOfExpectedType("u32"))
+            _ => Err(Error::ValueNotOfExpectedType("u32")),
         }
     }
     fn deserialize_u64<V>(self, visitor: V) -> Result<V::Value>
@@ -861,7 +835,7 @@ impl<'de> de::Deserializer<'de> for KeyDeserializer {
     {
         match self.key {
             Key::Int(i) => visitor.visit_u64(i),
-            _ => Err(Error::ValueNotOfExpectedType("u64"))
+            _ => Err(Error::ValueNotOfExpectedType("u64")),
         }
     }
     fn deserialize_f32<V>(self, _visitor: V) -> Result<V::Value>
@@ -896,7 +870,7 @@ impl<'de> de::Deserializer<'de> for KeyDeserializer {
         match self.key {
             Key::Atom(a) => visitor.visit_string(a.to_string()),
             // dubious, maybe error
-            Key::Int(i) => visitor.visit_string(i.to_string())
+            Key::Int(i) => visitor.visit_string(i.to_string()),
         }
     }
     fn deserialize_bytes<V>(self, _visitor: V) -> Result<V::Value>
@@ -936,8 +910,7 @@ impl<'de> de::Deserializer<'de> for KeyDeserializer {
         if name == "$swipl::private::atom" {
             // an atom key!
             self.deserialize_string(visitor)
-        }
-        else {
+        } else {
             Err(Error::UnexpectedType("newtype struct"))
         }
     }
@@ -999,7 +972,7 @@ impl<'de> de::Deserializer<'de> for KeyDeserializer {
         match self.key {
             Key::Atom(a) => visitor.visit_string(a.to_string()),
             // dubious, maybe error
-            Key::Int(i) => visitor.visit_string(i.to_string())
+            Key::Int(i) => visitor.visit_string(i.to_string()),
         }
     }
     fn deserialize_ignored_any<V>(self, _visitor: V) -> Result<V::Value>
@@ -1011,7 +984,7 @@ impl<'de> de::Deserializer<'de> for KeyDeserializer {
 }
 
 struct EnumVariantDeserializer {
-    variant_name: String
+    variant_name: String,
 }
 
 impl<'de> de::Deserializer<'de> for EnumVariantDeserializer {
@@ -1212,7 +1185,9 @@ impl<'de> de::Deserializer<'de> for EnumVariantDeserializer {
 
 impl<'de> Deserialize<'de> for Atom {
     fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where D: de::Deserializer<'de> {
+    where
+        D: de::Deserializer<'de>,
+    {
         deserializer.deserialize_newtype_struct("$swipl::private::atom", AtomVisitor)
     }
 }
@@ -1227,7 +1202,9 @@ impl<'de> Visitor<'de> for AtomVisitor {
     }
 
     fn visit_str<E>(self, s: &str) -> std::result::Result<Atom, E>
-    where E: de::Error {
+    where
+        E: de::Error,
+    {
         Ok(Atom::new(s))
     }
 }
@@ -1239,14 +1216,14 @@ mod tests {
 
     #[derive(Deserialize, Debug, PartialEq)]
     struct Baa {
-        c: String
+        c: String,
     }
 
     #[derive(Deserialize, Debug, PartialEq)]
     struct Moo {
         a: String,
         b: String,
-        baa: Option<Baa>
+        baa: Option<Baa>,
     }
 
     #[test]
@@ -1255,14 +1232,22 @@ mod tests {
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
-        let term = context.term_from_string("_{1:\"foo\",a:\"wah\",b:\"bar\", baa: _{c:\"wow\"}}").unwrap();
+        let term = context
+            .term_from_string("_{1:\"foo\",a:\"wah\",b:\"bar\", baa: _{c:\"wow\"}}")
+            .unwrap();
 
         let result: Moo = from_term(&context, &term).unwrap();
 
-        assert_eq!(Moo {a: "wah".to_string(),
-                        b: "bar".to_string(),
-                        baa: Some(Baa { c: "wow".to_string() })},
-                   result);
+        assert_eq!(
+            Moo {
+                a: "wah".to_string(),
+                b: "bar".to_string(),
+                baa: Some(Baa {
+                    c: "wow".to_string()
+                })
+            },
+            result
+        );
     }
 
     #[test]
@@ -1288,11 +1273,12 @@ mod tests {
 
         let term = context.term_from_string("_{foo:bar,baz:quux}").unwrap();
 
-        let result: HashMap<Atom,Atom> = from_term(&context, &term).unwrap();
+        let result: HashMap<Atom, Atom> = from_term(&context, &term).unwrap();
 
-        assert_eq!(HashMap::from([(atom!("foo"),atom!("bar")),
-                                  (atom!("baz"),atom!("quux"))]),
-                   result);
+        assert_eq!(
+            HashMap::from([(atom!("foo"), atom!("bar")), (atom!("baz"), atom!("quux"))]),
+            result
+        );
     }
 
     #[test]
@@ -1303,11 +1289,12 @@ mod tests {
 
         let term = context.term_from_string("_{10:foo,20:bar}").unwrap();
 
-        let result: HashMap<u8,Atom> = from_term(&context, &term).unwrap();
+        let result: HashMap<u8, Atom> = from_term(&context, &term).unwrap();
 
-        assert_eq!(HashMap::from([(10,atom!("foo")),
-                                  (20,atom!("bar"))]),
-                   result);
+        assert_eq!(
+            HashMap::from([(10, atom!("foo")), (20, atom!("bar"))]),
+            result
+        );
     }
 
     #[test]
@@ -1320,8 +1307,7 @@ mod tests {
 
         let result: (Atom, String, u64) = from_term(&context, &term).unwrap();
 
-        assert_eq!((atom!("a"), "b".to_string(), 42),
-                   result);
+        assert_eq!((atom!("a"), "b".to_string(), 42), result);
     }
 
     #[test]
@@ -1334,8 +1320,7 @@ mod tests {
 
         let result: (Atom, String, u64) = from_term(&context, &term).unwrap();
 
-        assert_eq!((atom!("a"), "b".to_string(), 42),
-                   result);
+        assert_eq!((atom!("a"), "b".to_string(), 42), result);
     }
 
     #[test]
@@ -1346,10 +1331,9 @@ mod tests {
 
         let term = context.term_from_string("(a,b,c)").unwrap();
 
-        let result: [Atom;3] = from_term(&context, &term).unwrap();
+        let result: [Atom; 3] = from_term(&context, &term).unwrap();
 
-        assert_eq!([atom!("a"), atom!("b"), atom!("c")],
-                   result);
+        assert_eq!([atom!("a"), atom!("b"), atom!("c")], result);
     }
 
     #[derive(Debug, Deserialize, PartialEq)]
@@ -1357,7 +1341,7 @@ mod tests {
         Cow,
         Duck(String),
         Horse(Atom, u64),
-        Goat{horns: usize}
+        Goat { horns: usize },
     }
 
     #[test]
@@ -1366,14 +1350,20 @@ mod tests {
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
-        let term = context.term_from_string("(cow, duck(quack), horse(neigh, 42), goat{horns: 42})").unwrap();
+        let term = context
+            .term_from_string("(cow, duck(quack), horse(neigh, 42), goat{horns: 42})")
+            .unwrap();
 
         let result: (Animal, Animal, Animal, Animal) = from_term(&context, &term).unwrap();
 
-        assert_eq!((Animal::Cow,
-                    Animal::Duck("quack".to_string()),
-                    Animal::Horse(atom!("neigh"), 42),
-                    Animal::Goat{horns:42}),
-                   result);
+        assert_eq!(
+            (
+                Animal::Cow,
+                Animal::Duck("quack".to_string()),
+                Animal::Horse(atom!("neigh"), 42),
+                Animal::Goat { horns: 42 }
+            ),
+            result
+        );
     }
 }

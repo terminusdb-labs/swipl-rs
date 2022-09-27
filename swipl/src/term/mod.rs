@@ -71,7 +71,7 @@ pub enum TermType {
     CompoundTerm,
     ListPair,
     Dict,
-    Unknown
+    Unknown,
 }
 
 impl<'a> Term<'a> {
@@ -103,7 +103,7 @@ impl<'a> Term<'a> {
             PL_BLOB => TermType::Blob,
             PL_LIST_PAIR => TermType::ListPair,
             PL_DICT => TermType::Dict,
-            _ => TermType::Unknown
+            _ => TermType::Unknown,
         }
     }
 
