@@ -43,8 +43,7 @@ use std::os::raw::c_char;
 
 use swipl_macros::term;
 
-mod de;
-pub use de::*;
+pub mod de;
 
 /// A term reference.
 #[derive(Clone)]

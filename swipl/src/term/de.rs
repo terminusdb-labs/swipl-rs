@@ -10,7 +10,7 @@ use serde::de::{self, Visitor, MapAccess, SeqAccess, EnumAccess, VariantAccess, 
 use std::fmt::{self, Display};
 use convert_case::{Case, Casing};
 
-fn from_term<'a, C:QueryableContextType, T>(context: &'a Context<C>, term: &Term<'a>) -> Result<T>
+pub fn from_term<'a, C:QueryableContextType, T>(context: &'a Context<C>, term: &Term<'a>) -> Result<T>
 where T: Deserialize<'a> {
     let deserializer = Deserializer {
         context,
@@ -66,7 +66,7 @@ impl de::Error for Error {
 }
 
 
-type Result<T> = std::result::Result<T, Error>;
+pub type Result<T> = std::result::Result<T, Error>;
 
 struct DictMapAccess<'de, C:QueryableContextType> {
     context: &'de Context<'de, C>,
