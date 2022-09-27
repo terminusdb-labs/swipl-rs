@@ -211,7 +211,12 @@ impl<'de, C:QueryableContextType> VariantAccess<'de> for CompoundTermEnumAccess<
     where
         V: Visitor<'de>,
     {
-        Err(Error::UnexpectedType("enum struct variant"))
+        let inner_de = Deserializer {
+            context: self.context,
+            term: self.term
+        };
+
+        de::Deserializer::deserialize_map(inner_de, visitor)
     }
 }
 
@@ -229,7 +234,6 @@ impl<'de, C:QueryableContextType> SeqAccess<'de> for CommaCompoundTermSeqAccess<
         if attempt_opt(self.term.get::<Functor>())? == Some(functor!(",/2")) {
             let [head, tail] = attempt_opt(self.context.compound_terms(&self.term))?.unwrap();
             self.term = tail;
-            self.remaining -= 1;
             let inner_de = Deserializer {
                 context: self.context,
                 term: head
@@ -645,7 +649,7 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
             visitor.visit_map(DictMapAccess { context: self.context, iter: self.context.dict_entries(&self.term), next_value: None })
         }
         else {
-            Err(Error::UnsupportedValue)
+            Err(Error::ValueNotOfExpectedType("dict"))
         }
     }
     fn deserialize_struct<V>(
@@ -669,7 +673,10 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
         V: Visitor<'de>,
     {
         let variant_name;
-        if let Some(functor) = attempt_opt(self.term.get::<Functor>())? {
+        if let Some(Some(atom)) = attempt_opt(self.term.get_dict_tag())? {
+            variant_name = atom;
+        }
+        else if let Some(functor) = attempt_opt(self.term.get::<Functor>())? {
             variant_name = functor.name();
         }
         else if let Some(atom) = attempt_opt(self.term.get::<Atom>())? {
@@ -1349,7 +1356,8 @@ mod tests {
     enum Animal {
         Cow,
         Duck(String),
-        Horse(Atom, u64)
+        Horse(Atom, u64),
+        Goat{horns: usize}
     }
 
     #[test]
@@ -1358,11 +1366,14 @@ mod tests {
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
-        let term = context.term_from_string("(cow, duck(quack), horse(neigh, 42))").unwrap();
+        let term = context.term_from_string("(cow, duck(quack), horse(neigh, 42), goat{horns: 42})").unwrap();
 
-        let result: (Animal, Animal, Animal) = from_term(&context, &term).unwrap();
+        let result: (Animal, Animal, Animal, Animal) = from_term(&context, &term).unwrap();
 
-        assert_eq!((Animal::Cow, Animal::Duck("quack".to_string()), Animal::Horse(atom!("neigh"), 42)),
+        assert_eq!((Animal::Cow,
+                    Animal::Duck("quack".to_string()),
+                    Animal::Horse(atom!("neigh"), 42),
+                    Animal::Goat{horns:42}),
                    result);
     }
 }
