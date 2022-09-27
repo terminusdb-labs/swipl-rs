@@ -595,15 +595,29 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
                 term: self.term,
             });
         } else {
-            result = match attempt_opt(self.context.compound_terms_vec_sized(&self.term, len))? {
-                Some(mut terms) => {
+            if let Some(mut terms) = attempt_opt(self.context.compound_terms_vec_sized(&self.term, len))? {
+                terms.reverse();
+                result = visitor.visit_seq(CompoundTermSeqAccess {
+                    context: self.context,
+                    terms,
+                });
+            }
+            else if self.term.term_type() == TermType::ListPair || self.term.term_type() == TermType::Nil {
+                let mut terms = self.context.term_list_vec(&self.term);
+                if terms.len() != len {
+                    result = Err(Error::ValueOutOfRange);
+                }
+                else {
                     terms.reverse();
-                    visitor.visit_seq(CompoundTermSeqAccess {
+
+                    result = visitor.visit_seq(CompoundTermSeqAccess {
                         context: self.context,
                         terms,
-                    })
+                    });
                 }
-                None => Err(Error::ValueNotOfExpectedType("tuple")),
+            }
+            else {
+                result = Err(Error::ValueNotOfExpectedType("tuple"));
             };
         }
 
@@ -1324,12 +1338,38 @@ mod tests {
     }
 
     #[test]
-    fn deserialize_a_list() {
+    fn deserialize_a_list_to_a_tuple() {
         let engine = Engine::new();
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
-        let term = context.term_from_string("(a,b,c)").unwrap();
+        let term = context.term_from_string("[a,b,c]").unwrap();
+
+        let result: [Atom;3] = from_term(&context, &term).unwrap();
+
+        assert_eq!([atom!("a"), atom!("b"), atom!("c")], result);
+    }
+
+    #[test]
+    fn deserialize_a_list_to_vec() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term = context.term_from_string("[a,b,c]").unwrap();
+
+        let result: Vec<Atom> = from_term(&context, &term).unwrap();
+
+        assert_eq!(vec![atom!("a"), atom!("b"), atom!("c")], result);
+    }
+
+    #[test]
+    fn deserialize_a_list_to_const_array() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term = context.term_from_string("[a,b,c]").unwrap();
 
         let result: [Atom; 3] = from_term(&context, &term).unwrap();
 
