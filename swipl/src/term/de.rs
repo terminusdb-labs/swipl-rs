@@ -595,19 +595,21 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
                 term: self.term,
             });
         } else {
-            if let Some(mut terms) = attempt_opt(self.context.compound_terms_vec_sized(&self.term, len))? {
+            if let Some(mut terms) =
+                attempt_opt(self.context.compound_terms_vec_sized(&self.term, len))?
+            {
                 terms.reverse();
                 result = visitor.visit_seq(CompoundTermSeqAccess {
                     context: self.context,
                     terms,
                 });
-            }
-            else if self.term.term_type() == TermType::ListPair || self.term.term_type() == TermType::Nil {
+            } else if self.term.term_type() == TermType::ListPair
+                || self.term.term_type() == TermType::Nil
+            {
                 let mut terms = self.context.term_list_vec(&self.term);
                 if terms.len() != len {
                     result = Err(Error::ValueOutOfRange);
-                }
-                else {
+                } else {
                     terms.reverse();
 
                     result = visitor.visit_seq(CompoundTermSeqAccess {
@@ -615,8 +617,7 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
                         terms,
                     });
                 }
-            }
-            else {
+            } else {
                 result = Err(Error::ValueNotOfExpectedType("tuple"));
             };
         }
@@ -1346,7 +1347,7 @@ mod tests {
 
         let term = context.term_from_string("[a,b,c]").unwrap();
 
-        let result: [Atom;3] = from_term(&context, &term).unwrap();
+        let result: [Atom; 3] = from_term(&context, &term).unwrap();
 
         assert_eq!([atom!("a"), atom!("b"), atom!("c")], result);
     }

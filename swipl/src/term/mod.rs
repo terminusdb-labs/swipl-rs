@@ -44,6 +44,7 @@ use std::os::raw::c_char;
 use swipl_macros::term;
 
 pub mod de;
+pub mod ser;
 
 /// A term reference.
 #[derive(Clone)]
