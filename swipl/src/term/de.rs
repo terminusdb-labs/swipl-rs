@@ -685,6 +685,7 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
         }
 
         // TODO more efficient string handling without atom reserving
+        // TODO is it actually legitimate to do case conversion here?
         let variant_camel_name = variant_name.to_string().to_case(Case::Pascal);
         visitor.visit_enum(CompoundTermEnumAccess {
             context: self.context,
