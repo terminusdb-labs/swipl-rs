@@ -38,6 +38,7 @@ pub enum Error {
     UnexpectedType(&'static str),
     ValueNotOfExpectedType(&'static str),
     ValueOutOfRange,
+    UnificationFailed
 }
 
 impl From<PrologException> for Error {
@@ -57,6 +58,7 @@ impl Display for Error {
                 write!(formatter, "value not of expected type {}", t)
             }
             Self::ValueOutOfRange => formatter.write_str("value out of range"),
+            Self::UnificationFailed => formatter.write_str("unification failed"),
         }
     }
 }
