@@ -60,6 +60,7 @@ use super::stream::*;
 use super::term::*;
 
 use serde::Deserialize;
+use swipl_macros::pred;
 use std::cell::Cell;
 use std::mem::MaybeUninit;
 
@@ -739,6 +740,23 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         frame.close();
 
         Ok(term)
+    }
+
+    /// Turn the given string into a prolog term.
+    ///
+    /// This uses the prolog predicate `read_term_from_atom/3` for the
+    /// heavy lifting.
+    ///
+    /// Consider using the `term!` macro instead.
+    pub fn string_from_term(&self, t: &Term) -> PrologResult<String> {
+        let frame = self.open_frame();
+        let out = frame.new_term_ref();
+
+        frame.call_once(pred!("term_string/2"), [&t, &out])?;
+        let s: String = out.get()?;
+        frame.close();
+
+        Ok(s)
     }
 
     /// Open a query for the given term using the `call/1` prolog predicate.

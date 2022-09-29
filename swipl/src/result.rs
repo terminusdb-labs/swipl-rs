@@ -9,6 +9,8 @@
 //! This module also provides some transformations on prolog results.
 use thiserror::Error;
 
+use crate::context::{ContextType, Context, QueryableContextType};
+
 /// A prolog error.
 ///
 /// This is either a failure or an exception. In case of an exception,
@@ -129,4 +131,31 @@ pub fn into_prolog_result(b: bool) -> PrologResult<()> {
 /// This is a shorthand for `Err(PrologError::Failure)`.
 pub fn fail() -> PrologResult<()> {
     Err(PrologError::Failure)
+}
+
+pub fn unwrap_result<'a, C:QueryableContextType,T>(c: &Context<'a, C>, r: PrologResult<T>) -> T{
+    match r {
+        Ok(r) => r,
+        Err(PrologError::Failure) => panic!("prolog failed"),
+        Err(PrologError::Exception) => 
+        {
+            let r = c.with_exception(|e| {
+                eprintln!("a");
+                let e = e.expect("prolog exception but no exception in prolog engine");
+                eprintln!("b");
+                let result = c.string_from_term(e);
+                eprintln!("c");
+
+                result
+            });
+
+            c.clear_exception();
+
+            match r {
+                Ok(s) => panic!("prolog had the following exception: {}", s),
+                Err(PrologError::Failure) => panic!("prolog failed while retrieving string from previous error"),
+                Err(PrologError::Exception) => panic!("prolog threw exception while retrieving string from previous error"),
+            }
+        }
+    }
 }

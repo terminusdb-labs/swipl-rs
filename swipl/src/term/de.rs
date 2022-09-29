@@ -700,8 +700,8 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
     where
         V: Visitor<'de>,
     {
-        match attempt_opt(self.term.get::<Atom>())? {
-            Some(atom) => visitor.visit_string(atom.to_string()),
+        match attempt_opt(self.term.get::<PrologText>())? {
+            Some(text) => visitor.visit_string(text.to_string()),
             None => Err(Error::ValueNotOfExpectedType("identifier")),
         }
     }
