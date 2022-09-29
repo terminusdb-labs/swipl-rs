@@ -1,3 +1,4 @@
+use crate::{atom, functor};
 use crate::context::*;
 use crate::result::*;
 use super::*;
@@ -29,6 +30,15 @@ where
     obj.serialize(serializer)
 }
 
+fn attempt_unify<U:Unifiable>(term: &Term, v: U) -> Result<(), Error> {
+    if attempt(term.unify(v))? {
+        Ok(())
+    }
+    else {
+        Err(Error::UnificationFailed)
+    }
+}
+
 struct Serializer<'a,C:QueryableContextType> {
     context: &'a Context<'a, C>,
     term: Term<'a>,
@@ -46,12 +56,7 @@ impl<'a, C:QueryableContextType> serde::Serializer for Serializer<'a, C> {
     type SerializeStructVariant = Self;
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
-        if attempt(self.term.unify(v))? {
-            Ok(())
-        }
-        else {
-            Err(Error::UnificationFailed)
-        }
+        attempt_unify(&self.term, v)
     }
     fn serialize_i8(self, v: i8) -> Result<Self::Ok, Self::Error> {
         self.serialize_i64(v as i64)
@@ -63,12 +68,7 @@ impl<'a, C:QueryableContextType> serde::Serializer for Serializer<'a, C> {
         self.serialize_i64(v as i64)
     }
     fn serialize_i64(self, v: i64) -> Result<Self::Ok, Self::Error> {
-        if attempt(self.term.unify(v))? {
-            Ok(())
-        }
-        else {
-            Err(Error::UnificationFailed)
-        }
+        attempt_unify(&self.term, v)
     }
     fn serialize_u8(self, v: u8) -> Result<Self::Ok, Self::Error> {
         self.serialize_u64(v as u64)
@@ -80,47 +80,49 @@ impl<'a, C:QueryableContextType> serde::Serializer for Serializer<'a, C> {
         self.serialize_u64(v as u64)
     }
     fn serialize_u64(self, v: u64) -> Result<Self::Ok, Self::Error> {
-        if attempt(self.term.unify(v))? {
-            Ok(())
-        }
-        else {
-            Err(Error::UnificationFailed)
-        }
+        attempt_unify(&self.term, v)
     }
     fn serialize_f32(self, v: f32) -> Result<Self::Ok, Self::Error> {
         self.serialize_f64(v as f64)
     }
     fn serialize_f64(self, v: f64) -> Result<Self::Ok, Self::Error> {
-        if attempt(self.term.unify(v))? {
-            Ok(())
-        }
-        else {
-            Err(Error::UnificationFailed)
-        }
+        attempt_unify(&self.term, v)
     }
     fn serialize_char(self, v: char) -> Result<Self::Ok, Self::Error> {
-        todo!();
+        attempt_unify(&self.term, Atomable::String(v.to_string()))
     }
     fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error> {
-        todo!();
+        attempt_unify(&self.term, v)
     }
     fn serialize_bytes(self, v: &[u8]) -> Result<Self::Ok, Self::Error> {
-        todo!();
+        attempt_unify(&self.term, v)
     }
     fn serialize_none(self) -> Result<Self::Ok, Self::Error> {
-        todo!();
+        attempt_unify(&self.term, atom!("none"))
     }
     fn serialize_some<T: ?Sized>(self, value: &T) -> Result<Self::Ok, Self::Error>
     where
         T: Serialize,
     {
-        todo!();
+        if attempt(self.term.unify(functor!("some/1")))? {
+            let [term] = attempt_opt(self.context.compound_terms(&self.term))?.expect("having just unified the functor some/1, retrieving its argument list should have been possible");
+            let inner_serializer = Serializer {
+                context: self.context,
+                term: term.clone()
+            };
+            let result = value.serialize(inner_serializer);
+            unsafe { term.reset(); }
+            result
+        }
+        else {
+            Err(Error::UnificationFailed)
+        }
     }
     fn serialize_unit(self) -> Result<Self::Ok, Self::Error> {
-        todo!();
+        attempt_unify(&self.term, Nil)
     }
     fn serialize_unit_struct(self, name: &'static str) -> Result<Self::Ok, Self::Error> {
-        todo!();
+        attempt_unify(&self.term, Atom::new(name))
     }
     fn serialize_unit_variant(
         self,
@@ -299,17 +301,17 @@ impl<'a, C:QueryableContextType> ser::SerializeMap for Serializer<'a, C> {
 
     fn serialize_key<T: ?Sized>(&mut self, key: &T) -> Result<(), Self::Error>
     where
-        T: Serialize,
-    {
-        todo!();
+        T: Serialize {
+        todo!()
     }
+
     fn serialize_value<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
     where
-        T: Serialize,
-    {
-        todo!();
+        T: Serialize {
+        todo!()
     }
+
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        todo!();
+        todo!()
     }
 }
