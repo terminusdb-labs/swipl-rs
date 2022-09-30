@@ -30,6 +30,14 @@ pub struct Deserializer<'de, C: QueryableContextType> {
     term: Term<'de>,
 }
 
+impl<'de, C: QueryableContextType> Deserializer<'de, C> {
+    pub fn new(context: &'de Context<'de, C>, term: Term<'de>) -> Self {
+        Self {
+            context, term
+        }
+    }
+}
+
 #[derive(Debug)]
 pub enum Error {
     Message(String),

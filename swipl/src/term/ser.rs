@@ -41,7 +41,7 @@ fn attempt_unify<U:Unifiable>(term: &Term, v: U) -> Result<(), Error> {
     }
 }
 
-struct Serializer<'a,C:QueryableContextType> {
+pub struct Serializer<'a,C:QueryableContextType> {
     context: &'a Context<'a, C>,
     term: Term<'a>,
 }
