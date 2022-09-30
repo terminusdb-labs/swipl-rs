@@ -1,8 +1,10 @@
+use crate::functor::Functor;
 use crate::{atom, functor};
 use crate::context::*;
 use crate::result::*;
 use super::*;
 use super::de::{Error};
+use serde::ser::Impossible;
 use serde::{self, ser, Serialize};
 
 impl ser::Error for Error {
@@ -127,10 +129,18 @@ impl<'a, C:QueryableContextType> serde::Serializer for Serializer<'a, C> {
     fn serialize_unit_variant(
         self,
         name: &'static str,
-        variant_index: u32,
+        _variant_index: u32,
         variant: &'static str,
     ) -> Result<Self::Ok, Self::Error> {
-        todo!();
+        if attempt(self.term.unify(Functor::new(name,1)))? {
+            let [term] = attempt_opt(self.context.compound_terms(&self.term))?.expect("having just unified the functor with arity 1, retrieving its argument list should have been possible");
+            let result = attempt_unify(&term, Atom::new(variant));
+            unsafe { term.reset(); }
+            result
+        }
+        else {
+            Err(Error::UnificationFailed)
+        }
     }
     fn serialize_newtype_struct<T: ?Sized>(
         self,
@@ -140,19 +150,50 @@ impl<'a, C:QueryableContextType> serde::Serializer for Serializer<'a, C> {
     where
         T: Serialize,
     {
-        todo!();
+        if name == "$swipl::private::atom" {
+            value.serialize(AtomEmitter(self.term))
+        }
+        else {
+            if attempt(self.term.unify(Functor::new(name,1)))? {
+                let [term] = attempt_opt(self.context.compound_terms(&self.term))?.expect("having just unified the functor with arity 1, retrieving its argument list should have been possible");
+                let inner_serializer = Serializer { context: self.context, term: term.clone() };
+                let result = value.serialize(inner_serializer);
+                unsafe { term.reset(); }
+                result
+            }
+            else {
+                Err(Error::UnificationFailed)
+            }
+        }
     }
     fn serialize_newtype_variant<T: ?Sized>(
         self,
         name: &'static str,
-        variant_index: u32,
+        _variant_index: u32,
         variant: &'static str,
         value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
         T: Serialize,
     {
-        todo!();
+        if attempt(self.term.unify(Functor::new(name,1)))? {
+            let [term] = attempt_opt(self.context.compound_terms(&self.term))?.expect("having just unified the functor with arity 1, retrieving its argument list should have been possible");
+            let result;
+            if attempt(term.unify(Functor::new(variant,1)))? {
+                let [term] = attempt_opt(self.context.compound_terms(&self.term))?.expect("having just unified the functor with arity 1, retrieving its argument list should have been possible");
+                let inner_serializer = Serializer { context: self.context, term: term.clone() };
+                result = value.serialize(inner_serializer);
+                unsafe { term.reset(); }
+            }
+            else {
+                return Err(Error::UnificationFailed);
+            }
+            unsafe { term.reset(); }
+            result
+        }
+        else {
+            Err(Error::UnificationFailed)
+        }
     }
     fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
         todo!();
@@ -313,5 +354,209 @@ impl<'a, C:QueryableContextType> ser::SerializeMap for Serializer<'a, C> {
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
         todo!()
+    }
+}
+
+impl ser::Serialize for Atom {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer {
+        serializer.serialize_newtype_struct("$swipl::private::atom",
+                                            &self.atom_ptr())
+    }
+}
+
+struct AtomEmitter<'a>(Term<'a>);
+
+fn attempt_unify_atom<'a>(term: &Term<'a>, atom_ptr: usize) -> Result<(), Error> {
+    let atom = unsafe {Atom::wrap(atom_ptr)};
+    let result = attempt_unify(term, &atom);
+    std::mem::forget(atom);
+
+    result
+}
+
+impl<'a> ser::Serializer for AtomEmitter<'a> {
+    type Ok = ();
+
+    type Error = Error;
+
+    type SerializeSeq = Impossible<(), Error>;
+
+    type SerializeTuple = Impossible<(), Error>;
+
+    type SerializeTupleStruct = Impossible<(), Error>;
+
+    type SerializeTupleVariant = Impossible<(), Error>;
+
+    type SerializeMap = Impossible<(), Error>;
+
+    type SerializeStruct = Impossible<(), Error>;
+
+    type SerializeStructVariant = Impossible<(), Error>;
+
+    fn serialize_bool(self, _v: bool) -> Result<Self::Ok, Self::Error> {
+        Err(Error::ValueNotOfExpectedType("string"))
+    }
+
+    fn serialize_i8(self, _v: i8) -> Result<Self::Ok, Self::Error> {
+        Err(Error::ValueNotOfExpectedType("string"))
+    }
+
+    fn serialize_i16(self, _v: i16) -> Result<Self::Ok, Self::Error> {
+        Err(Error::ValueNotOfExpectedType("string"))
+    }
+
+    fn serialize_i32(self, _v: i32) -> Result<Self::Ok, Self::Error> {
+        Err(Error::ValueNotOfExpectedType("string"))
+    }
+
+    fn serialize_i64(self, _v: i64) -> Result<Self::Ok, Self::Error> {
+        Err(Error::ValueNotOfExpectedType("string"))
+    }
+
+    fn serialize_u8(self, _v: u8) -> Result<Self::Ok, Self::Error> {
+        Err(Error::ValueNotOfExpectedType("string"))
+    }
+
+    fn serialize_u16(self, _v: u16) -> Result<Self::Ok, Self::Error> {
+        Err(Error::ValueNotOfExpectedType("string"))
+    }
+
+    #[cfg(target_pointer_width = "32")]
+    fn serialize_u32(self, v: u32) -> Result<Self::Ok, Self::Error> {
+        attempt_unify_atom(&self.0, v as usize)
+    }
+
+    #[cfg(target_pointer_width = "32")]
+    fn serialize_u64(self, _v: u64) -> Result<Self::Ok, Self::Error> {
+        Err(Error::ValueNotOfExpectedType("string"))
+    }
+
+    #[cfg(target_pointer_width = "64")]
+    fn serialize_u32(self, _v: u32) -> Result<Self::Ok, Self::Error> {
+        Err(Error::ValueNotOfExpectedType("string"))
+    }
+
+    #[cfg(target_pointer_width = "64")]
+    fn serialize_u64(self, v: u64) -> Result<Self::Ok, Self::Error> {
+        attempt_unify_atom(&self.0, v as usize)
+    }
+
+    fn serialize_f32(self, _v: f32) -> Result<Self::Ok, Self::Error> {
+        Err(Error::ValueNotOfExpectedType("string"))
+    }
+
+    fn serialize_f64(self, _v: f64) -> Result<Self::Ok, Self::Error> {
+        Err(Error::ValueNotOfExpectedType("string"))
+    }
+
+    fn serialize_char(self, _v: char) -> Result<Self::Ok, Self::Error> {
+        Err(Error::ValueNotOfExpectedType("string"))
+    }
+
+    fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error> {
+        attempt_unify(&self.0, Atomable::Str(v))
+    }
+
+    fn serialize_bytes(self, _v: &[u8]) -> Result<Self::Ok, Self::Error> {
+        Err(Error::ValueNotOfExpectedType("string"))
+    }
+
+    fn serialize_none(self) -> Result<Self::Ok, Self::Error> {
+        Err(Error::ValueNotOfExpectedType("string"))
+    }
+
+    fn serialize_some<T: ?Sized>(self, _value: &T) -> Result<Self::Ok, Self::Error>
+    where
+        T: Serialize {
+        Err(Error::ValueNotOfExpectedType("string"))
+    }
+
+    fn serialize_unit(self) -> Result<Self::Ok, Self::Error> {
+        Err(Error::ValueNotOfExpectedType("string"))
+    }
+
+    fn serialize_unit_struct(self, _name: &'static str) -> Result<Self::Ok, Self::Error> {
+        Err(Error::ValueNotOfExpectedType("string"))
+    }
+
+    fn serialize_unit_variant(
+        self,
+        _name: &'static str,
+        _variant_index: u32,
+        _variant: &'static str,
+    ) -> Result<Self::Ok, Self::Error> {
+        Err(Error::ValueNotOfExpectedType("string"))
+    }
+
+    fn serialize_newtype_struct<T: ?Sized>(
+        self,
+        _name: &'static str,
+        _value: &T,
+    ) -> Result<Self::Ok, Self::Error>
+    where
+        T: Serialize {
+        Err(Error::ValueNotOfExpectedType("string"))
+    }
+
+    fn serialize_newtype_variant<T: ?Sized>(
+        self,
+        _name: &'static str,
+        _variant_index: u32,
+        _variant: &'static str,
+        _value: &T,
+    ) -> Result<Self::Ok, Self::Error>
+    where
+        T: Serialize {
+        Err(Error::ValueNotOfExpectedType("string"))
+    }
+
+    fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
+        Err(Error::ValueNotOfExpectedType("string"))
+    }
+
+    fn serialize_tuple(self, len: usize) -> Result<Self::SerializeTuple, Self::Error> {
+        Err(Error::ValueNotOfExpectedType("string"))
+    }
+
+    fn serialize_tuple_struct(
+        self,
+        _name: &'static str,
+        _len: usize,
+    ) -> Result<Self::SerializeTupleStruct, Self::Error> {
+        Err(Error::ValueNotOfExpectedType("string"))
+    }
+
+    fn serialize_tuple_variant(
+        self,
+        _name: &'static str,
+        _variant_index: u32,
+        _variant: &'static str,
+        _len: usize,
+    ) -> Result<Self::SerializeTupleVariant, Self::Error> {
+        Err(Error::ValueNotOfExpectedType("string"))
+    }
+
+    fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
+        Err(Error::ValueNotOfExpectedType("string"))
+    }
+
+    fn serialize_struct(
+        self,
+        _name: &'static str,
+        _len: usize,
+    ) -> Result<Self::SerializeStruct, Self::Error> {
+        Err(Error::ValueNotOfExpectedType("string"))
+    }
+
+    fn serialize_struct_variant(
+        self,
+        _name: &'static str,
+        _variant_index: u32,
+        _variant: &'static str,
+        _len: usize,
+    ) -> Result<Self::SerializeStructVariant, Self::Error> {
+        Err(Error::ValueNotOfExpectedType("string"))
     }
 }
