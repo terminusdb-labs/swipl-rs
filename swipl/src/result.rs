@@ -9,7 +9,7 @@
 //! This module also provides some transformations on prolog results.
 use thiserror::Error;
 
-use crate::context::{ContextType, Context, QueryableContextType};
+use crate::context::{Context, QueryableContextType};
 
 /// A prolog error.
 ///

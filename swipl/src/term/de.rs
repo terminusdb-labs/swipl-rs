@@ -1,11 +1,8 @@
 use super::*;
 use crate::dict::*;
 use crate::functor::*;
-use crate::result::*;
-use crate::term::*;
 use crate::text::*;
 use crate::{atom, functor};
-use convert_case::{Case, Casing};
 use serde::de::{self, DeserializeSeed, EnumAccess, MapAccess, SeqAccess, VariantAccess, Visitor};
 use serde::Deserialize;
 use std::fmt::{self, Display};
@@ -537,13 +534,13 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
             None => Err(Error::ValueNotOfExpectedType("string")),
         }
     }
-    fn deserialize_bytes<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_bytes<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
         Err(Error::UnsupportedValue)
     }
-    fn deserialize_byte_buf<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_byte_buf<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
@@ -566,7 +563,7 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
             Err(Error::ValueNotOfExpectedType("unit"))
         }
     }
-    fn deserialize_unit_struct<V>(self, name: &'static str, visitor: V) -> Result<V::Value>
+    fn deserialize_unit_struct<V>(self, _name: &'static str, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
@@ -588,10 +585,13 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
     {
         let cleanup_term = self.context.new_term_ref();
         let iter = self.context.term_list_iter(&self.term);
-        visitor.visit_seq(ListSeqAccess {
+        let result = visitor.visit_seq(ListSeqAccess {
             context: self.context,
             iter,
-        })
+        });
+        unsafe { cleanup_term.reset(); }
+
+        result
     }
     fn deserialize_tuple<V>(self, len: usize, visitor: V) -> Result<V::Value>
     where
@@ -696,11 +696,9 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
         }
 
         // TODO more efficient string handling without atom reserving
-        // TODO is it actually legitimate to do case conversion here?
-        let variant_camel_name = variant_name.to_string().to_case(Case::Pascal);
         visitor.visit_enum(CompoundTermEnumAccess {
             context: self.context,
-            variant_name: variant_camel_name,
+            variant_name: variant_name.to_string(),
             term: self.term,
         })
     }
@@ -946,7 +944,7 @@ impl<'de> de::Deserializer<'de> for KeyDeserializer {
     {
         Err(Error::UnexpectedType("seq"))
     }
-    fn deserialize_tuple<V>(self, len: usize, _visitor: V) -> Result<V::Value>
+    fn deserialize_tuple<V>(self, _len: usize, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
@@ -1021,55 +1019,55 @@ impl<'de> de::Deserializer<'de> for EnumVariantDeserializer {
     {
         self.deserialize_string(visitor)
     }
-    fn deserialize_bool<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_bool<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
         Err(Error::UnexpectedType("bool"))
     }
-    fn deserialize_i8<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_i8<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
         Err(Error::UnexpectedType("i8"))
     }
-    fn deserialize_i16<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_i16<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
         Err(Error::UnexpectedType("i16"))
     }
-    fn deserialize_i32<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_i32<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
         Err(Error::UnexpectedType("i32"))
     }
-    fn deserialize_i64<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_i64<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
         Err(Error::UnexpectedType("i64"))
     }
-    fn deserialize_u8<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_u8<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
         Err(Error::UnexpectedType("u8"))
     }
-    fn deserialize_u16<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_u16<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
         Err(Error::UnexpectedType("u16"))
     }
-    fn deserialize_u32<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_u32<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
         Err(Error::UnexpectedType("u32"))
     }
-    fn deserialize_u64<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_u64<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
@@ -1137,7 +1135,7 @@ impl<'de> de::Deserializer<'de> for EnumVariantDeserializer {
     {
         Err(Error::UnexpectedType("unit struct"))
     }
-    fn deserialize_newtype_struct<V>(self, name: &'static str, visitor: V) -> Result<V::Value>
+    fn deserialize_newtype_struct<V>(self, _name: &'static str, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
@@ -1149,7 +1147,7 @@ impl<'de> de::Deserializer<'de> for EnumVariantDeserializer {
     {
         Err(Error::UnexpectedType("seq"))
     }
-    fn deserialize_tuple<V>(self, len: usize, _visitor: V) -> Result<V::Value>
+    fn deserialize_tuple<V>(self, _len: usize, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
@@ -1336,6 +1334,36 @@ mod tests {
         assert_eq!((atom!("a"), "b".to_string(), 42), result);
     }
 
+    #[derive(Deserialize, PartialEq, Debug)]
+    #[serde(rename="a_named_tuple")]
+    struct ANamedTuple(Atom, Atom);
+
+    #[test]
+    fn deserialize_a_named_tuple_to_a_struct() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term = context.term_from_string("a_named_tuple(foo,bar)").unwrap();
+
+        let result: ANamedTuple = from_term(&context, &term).unwrap();
+
+        assert_eq!(ANamedTuple(atom!("foo"), atom!("bar")), result);
+    }
+
+    #[test]
+    fn deserialize_a_named_tuple_to_a_struct_with_another_name() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term = context.term_from_string("a_wrongly_named_tuple(foo,bar)").unwrap();
+
+        let result: ANamedTuple = from_term(&context, &term).unwrap();
+
+        assert_eq!(ANamedTuple(atom!("foo"), atom!("bar")), result);
+    }
+
     #[test]
     fn deserialize_an_unnamed_tuple() {
         let engine = Engine::new();
@@ -1389,6 +1417,7 @@ mod tests {
     }
 
     #[derive(Debug, Deserialize, PartialEq)]
+    #[serde(rename_all = "snake_case")]
     enum Animal {
         Cow,
         Duck(String),

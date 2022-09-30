@@ -228,7 +228,7 @@ impl<'a, C:QueryableContextType> serde::Serializer for Serializer<'a, C> {
     fn serialize_tuple_variant(
         self,
         name: &'static str,
-        variant_index: u32,
+        _variant_index: u32,
         variant: &'static str,
         len: usize,
     ) -> Result<Self::SerializeTupleVariant, Self::Error> {
