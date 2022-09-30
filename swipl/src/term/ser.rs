@@ -49,9 +49,9 @@ pub struct Serializer<'a,C:QueryableContextType> {
 impl<'a, C:QueryableContextType> serde::Serializer for Serializer<'a, C> {
     type Ok = ();
     type Error = Error;
-    type SerializeSeq = Self;
-    type SerializeTuple = Self;
-    type SerializeTupleStruct = Self;
+    type SerializeSeq = SerializeSeq<'a, C>;
+    type SerializeTuple = SerializeTuple<'a, C>;
+    type SerializeTupleStruct = SerializeTupleStruct<'a, C>;
     type SerializeTupleVariant = Self;
     type SerializeMap = Self;
     type SerializeStruct = Self;
@@ -195,18 +195,35 @@ impl<'a, C:QueryableContextType> serde::Serializer for Serializer<'a, C> {
             Err(Error::UnificationFailed)
         }
     }
-    fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
-        todo!();
+    fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
+        Ok(SerializeSeq {
+            context: self.context,
+            term: self.term.clone()
+        })
     }
     fn serialize_tuple(self, len: usize) -> Result<Self::SerializeTuple, Self::Error> {
-        todo!();
+        Ok(SerializeTuple {
+            context: self.context,
+            term: self.term.clone(),
+            len
+        })
     }
     fn serialize_tuple_struct(
         self,
         name: &'static str,
         len: usize,
     ) -> Result<Self::SerializeTupleStruct, Self::Error> {
-        todo!();
+        if len > u16::MAX as usize {
+            return Err(Error::UnsupportedValue);
+        }
+
+        attempt_unify(&self.term, Functor::new(name, len as u16))?;
+
+        Ok(SerializeTupleStruct {
+            context: self.context,
+            term: self.term.clone(),
+            pos: 0
+        })
     }
     fn serialize_tuple_variant(
         self,
@@ -558,5 +575,238 @@ impl<'a> ser::Serializer for AtomEmitter<'a> {
         _len: usize,
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
         Err(Error::ValueNotOfExpectedType("string"))
+    }
+}
+
+pub struct SerializeSeq<'a, C: QueryableContextType> {
+    context: &'a Context<'a, C>,
+    term: Term<'a>
+}
+
+impl<'a, C:QueryableContextType> ser::SerializeSeq for SerializeSeq<'a, C> {
+    type Ok = ();
+
+    type Error = Error;
+
+    fn serialize_element<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
+    where
+        T: Serialize {
+        if let Some((head, tail)) = attempt_opt(self.context.unify_list_functor(&self.term))? {
+            let inner_serializer = Serializer {
+                context: self.context,
+                term: head
+            };
+            value.serialize(inner_serializer)?;
+            self.term = tail;
+
+            Ok(())
+        }
+        else {
+            Err(Error::UnificationFailed)
+        }
+    }
+
+    fn end(self) -> Result<Self::Ok, Self::Error> {
+        attempt_unify(&self.term, Nil)
+    }
+}
+
+pub struct SerializeTuple<'a, C: QueryableContextType> {
+    context: &'a Context<'a, C>,
+    term: Term<'a>,
+    len: usize
+}
+
+impl<'a, C:QueryableContextType> ser::SerializeTuple for SerializeTuple<'a, C> {
+    type Ok = ();
+
+    type Error = Error;
+
+    fn serialize_element<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
+    where
+        T: Serialize {
+        self.len -= 1;
+        if self.len == 0 {
+            eprintln!("last item");
+            // this is our last item, so just unify directly
+            let inner_serializer = Serializer {
+                context: self.context,
+                term: self.term.clone()
+            };
+            value.serialize(inner_serializer)
+        }
+        else {
+            eprintln!("some item");
+            attempt_unify(&self.term, functor!(",/2"))?;
+            let [head, tail] = attempt_opt(self.context.compound_terms(&self.term))?.expect("should have two terms");
+            let inner_serializer = Serializer {
+                context: self.context,
+                term: head
+            };
+            value.serialize(inner_serializer)?;
+
+            self.term = tail;
+
+            Ok(())
+        }
+    }
+
+    fn end(self) -> Result<Self::Ok, Self::Error> {
+        assert!(self.len == 0);
+
+        Ok(())
+    }
+}
+
+pub struct SerializeTupleStruct<'a, C: QueryableContextType> {
+    context: &'a Context<'a, C>,
+    term: Term<'a>,
+    pos: usize
+}
+
+impl<'a, C:QueryableContextType> ser::SerializeTupleStruct for SerializeTupleStruct<'a, C> {
+    type Ok = ();
+
+    type Error = Error;
+
+    fn serialize_field<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
+    where
+        T: Serialize {
+        self.pos += 1;
+
+        let term = self.context.new_term_ref();
+        // unifying with a variable should always succeed, except for things like resource exceptions
+        assert!(attempt(self.term.unify_arg(self.pos, &term))?);
+
+        let inner_serializer = Serializer {
+            context: self.context,
+            term
+        };
+        value.serialize(inner_serializer)?;
+
+        Ok(())
+    }
+
+    fn end(self) -> Result<Self::Ok, Self::Error> {
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn serialize_u32() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let num: u32 = 42;
+
+        let term = context.new_term_ref();
+
+        to_term(&context, &num, &term).unwrap();
+
+        let term_string = context.string_from_term(&term).unwrap();
+        assert_eq!("42", term_string);
+    }
+
+    #[test]
+    fn serialize_string() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let s = "hello";
+
+        let term = context.new_term_ref();
+
+        to_term(&context, &s, &term).unwrap();
+
+        let term_string = context.string_from_term(&term).unwrap();
+        assert_eq!("\"hello\"", term_string);
+    }
+
+    #[test]
+    fn serialize_atom() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let a = atom!("hello");
+
+        let term = context.new_term_ref();
+
+        to_term(&context, &a, &term).unwrap();
+
+        let term_string = context.string_from_term(&term).unwrap();
+        assert_eq!("hello", term_string);
+    }
+
+    #[test]
+    fn serialize_list() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let list = [42, 43, 44];
+
+        let term = context.new_term_ref();
+
+        to_term(&context, &list.as_slice(), &term).unwrap();
+
+        let term_string = context.string_from_term(&term).unwrap();
+        assert_eq!("[42,43,44]", term_string);
+    }
+
+    #[test]
+    fn serialize_tuple() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let tuple = (42, 43, 44);
+
+        let term = context.new_term_ref();
+
+        to_term(&context, &tuple, &term).unwrap();
+
+        let term_string = context.string_from_term(&term).unwrap();
+        assert_eq!("42,43,44", term_string);
+    }
+
+    #[test]
+    fn serialize_tuple_list() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let list = [42, 43, 44];
+
+        let term = context.new_term_ref();
+
+        to_term(&context, &list, &term).unwrap();
+
+        let term_string = context.string_from_term(&term).unwrap();
+        assert_eq!("42,43,44", term_string);
+    }
+
+    #[derive(Serialize)]
+    #[serde(rename = "flargh")]
+    struct Flargh(u64, String, Atom);
+
+    #[test]
+    fn serialize_named_tuple() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let flargh = Flargh(42, "hello".to_string(), atom!("moo"));
+
+        let term = context.new_term_ref();
+        to_term(&context, &flargh, &term).unwrap();
+
+        let term_string = context.string_from_term(&term).unwrap();
+        assert_eq!("flargh(42,\"hello\",moo)", term_string);
     }
 }

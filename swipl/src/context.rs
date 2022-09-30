@@ -1000,6 +1000,21 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
     ) -> super::term::de::Result<DT> {
         super::term::de::from_term(self, term)
     }
+
+    pub fn unify_list_functor<'b>(&'b self, term: &Term) -> Result<(Term<'b>, Term<'b>), PrologError> {
+        let [head, tail] = self.new_term_refs();
+        match unsafe {PL_unify_list(term.term_ptr(), head.term_ptr(), tail.term_ptr())} {
+            0 => {
+                unsafe { head.reset(); }
+                if unsafe { pl_default_exception() != 0 } {
+                    Err(PrologError::Exception)
+                } else {
+                    Err(PrologError::Failure)
+                }
+            },
+            _ => Ok((head, tail))
+        }
+    }
 }
 
 /// An iterator over a term list.
