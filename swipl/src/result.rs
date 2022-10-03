@@ -133,10 +133,17 @@ pub fn fail() -> PrologResult<()> {
     Err(PrologError::Failure)
 }
 
-pub fn unwrap_result<'a, C:QueryableContextType,T>(c: &Context<'a, C>, r: PrologResult<T>) -> T{
+pub enum PrologStringError {
+    Failure,
+    Exception(String),
+}
+
+pub type PrologStringResult<T> = Result<T, PrologStringError>;
+
+pub fn result_to_string_result<'a, C:QueryableContextType,T>(c: &Context<'a, C>, r: PrologResult<T>) -> PrologStringResult<T> {
     match r {
-        Ok(r) => r,
-        Err(PrologError::Failure) => panic!("prolog failed"),
+        Ok(r) => Ok(r),
+        Err(PrologError::Failure) => Err(PrologStringError::Failure),
         Err(PrologError::Exception) => 
         {
             let r = c.with_exception(|e| {
@@ -152,10 +159,18 @@ pub fn unwrap_result<'a, C:QueryableContextType,T>(c: &Context<'a, C>, r: Prolog
             c.clear_exception();
 
             match r {
-                Ok(s) => panic!("prolog had the following exception: {}", s),
-                Err(PrologError::Failure) => panic!("prolog failed while retrieving string from previous error"),
-                Err(PrologError::Exception) => panic!("prolog threw exception while retrieving string from previous error"),
+                Ok(s) => Err(PrologStringError::Exception(format!("prolog had the following exception: {}", s))),
+                Err(PrologError::Failure) => Err(PrologStringError::Exception(format!("prolog failed while retrieving string from previous error"))),
+                Err(PrologError::Exception) => Err(PrologStringError::Exception(format!("prolog threw exception while retrieving string from previous error"))),
             }
         }
+    }
+}
+
+pub fn unwrap_result<'a, C:QueryableContextType,T>(c: &Context<'a, C>, r: PrologResult<T>) -> T{
+    match result_to_string_result(c, r) {
+        Ok(r) => r,
+        Err(PrologStringError::Failure) => panic!("prolog failed"),
+        Err(PrologStringError::Exception(s)) => panic!("{}", s)
     }
 }
