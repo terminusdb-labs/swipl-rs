@@ -60,9 +60,9 @@ use super::stream::*;
 use super::term::*;
 
 use serde::Deserialize;
-use swipl_macros::pred;
 use std::cell::Cell;
 use std::mem::MaybeUninit;
+use swipl_macros::pred;
 
 use swipl_macros::{prolog, term};
 
@@ -1001,18 +1001,23 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         super::term::de::from_term(self, term)
     }
 
-    pub fn unify_list_functor<'b>(&'b self, term: &Term) -> Result<(Term<'b>, Term<'b>), PrologError> {
+    pub fn unify_list_functor<'b>(
+        &'b self,
+        term: &Term,
+    ) -> Result<(Term<'b>, Term<'b>), PrologError> {
         let [head, tail] = self.new_term_refs();
-        match unsafe {PL_unify_list(term.term_ptr(), head.term_ptr(), tail.term_ptr())} {
+        match unsafe { PL_unify_list(term.term_ptr(), head.term_ptr(), tail.term_ptr()) } {
             0 => {
-                unsafe { head.reset(); }
+                unsafe {
+                    head.reset();
+                }
                 if unsafe { pl_default_exception() != 0 } {
                     Err(PrologError::Exception)
                 } else {
                     Err(PrologError::Failure)
                 }
-            },
-            _ => Ok((head, tail))
+            }
+            _ => Ok((head, tail)),
         }
     }
 }

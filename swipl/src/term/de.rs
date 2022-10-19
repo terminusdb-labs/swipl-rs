@@ -29,9 +29,7 @@ pub struct Deserializer<'de, C: QueryableContextType> {
 
 impl<'de, C: QueryableContextType> Deserializer<'de, C> {
     pub fn new(context: &'de Context<'de, C>, term: Term<'de>) -> Self {
-        Self {
-            context, term
-        }
+        Self { context, term }
     }
 }
 
@@ -43,7 +41,7 @@ pub enum Error {
     UnexpectedType(&'static str),
     ValueNotOfExpectedType(&'static str),
     ValueOutOfRange,
-    UnificationFailed
+    UnificationFailed,
 }
 
 impl From<PrologException> for Error {
@@ -589,7 +587,9 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
             context: self.context,
             iter,
         });
-        unsafe { cleanup_term.reset(); }
+        unsafe {
+            cleanup_term.reset();
+        }
 
         result
     }
@@ -1335,7 +1335,7 @@ mod tests {
     }
 
     #[derive(Deserialize, PartialEq, Debug)]
-    #[serde(rename="a_named_tuple")]
+    #[serde(rename = "a_named_tuple")]
     struct ANamedTuple(Atom, Atom);
 
     #[test]
@@ -1357,7 +1357,9 @@ mod tests {
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
-        let term = context.term_from_string("a_wrongly_named_tuple(foo,bar)").unwrap();
+        let term = context
+            .term_from_string("a_wrongly_named_tuple(foo,bar)")
+            .unwrap();
 
         let result: ANamedTuple = from_term(&context, &term).unwrap();
 

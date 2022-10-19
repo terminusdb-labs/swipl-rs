@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod tests {
     use serde_json::{self, json, Value};
+    use std::io::{BufWriter, Write};
     use swipl::prelude::*;
-    use std::io::{Write, BufWriter};
 
     #[test]
     fn deserialize_into_json() {
