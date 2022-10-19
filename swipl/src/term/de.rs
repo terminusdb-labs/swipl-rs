@@ -1,4 +1,5 @@
 use super::*;
+use super::ser::ATOM_STRUCT_NAME;
 use crate::dict::*;
 use crate::functor::*;
 use crate::text::*;
@@ -285,7 +286,7 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
         V: Visitor<'de>,
     {
         match self.term.term_type() {
-            TermType::Atom => self.deserialize_newtype_struct("$swipl::private::atom", visitor),
+            TermType::Atom => self.deserialize_newtype_struct(ATOM_STRUCT_NAME, visitor),
             TermType::Nil => self.deserialize_unit(visitor),
             TermType::String => self.deserialize_string(visitor),
             // TODO check signedness and call the correct one here
@@ -313,6 +314,7 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
             }
             TermType::ListPair => self.deserialize_seq(visitor),
             TermType::Dict => self.deserialize_map(visitor),
+            TermType::Variable => todo!("variables are not yet supported"),
             _ => Err(Error::UnsupportedValue),
         }
     }
@@ -571,7 +573,7 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
     where
         V: Visitor<'de>,
     {
-        if name == "$swipl::private::atom" {
+        if name == ATOM_STRUCT_NAME {
             self.deserialize_string(visitor)
         } else {
             visitor.visit_newtype_struct(self)
@@ -931,7 +933,7 @@ impl<'de> de::Deserializer<'de> for KeyDeserializer {
     where
         V: Visitor<'de>,
     {
-        if name == "$swipl::private::atom" {
+        if name == ATOM_STRUCT_NAME {
             // an atom key!
             self.deserialize_string(visitor)
         } else {
@@ -1212,7 +1214,7 @@ impl<'de> Deserialize<'de> for Atom {
     where
         D: de::Deserializer<'de>,
     {
-        deserializer.deserialize_newtype_struct("$swipl::private::atom", AtomVisitor)
+        deserializer.deserialize_newtype_struct(ATOM_STRUCT_NAME, AtomVisitor)
     }
 }
 

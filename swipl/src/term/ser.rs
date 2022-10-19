@@ -1,11 +1,11 @@
 use super::de::Error;
 use super::*;
-use crate::context::*;
 use crate::functor::Functor;
-use crate::result::*;
 use crate::{atom, functor};
 use serde::ser::Impossible;
 use serde::{self, ser, Serialize};
+
+pub(crate) const ATOM_STRUCT_NAME: &'static str = "$swipl::private::atom";
 
 impl ser::Error for Error {
     fn custom<T>(c: T) -> Self
@@ -151,7 +151,7 @@ impl<'a, C: QueryableContextType> serde::Serializer for Serializer<'a, C> {
     where
         T: Serialize,
     {
-        if name == "$swipl::private::atom" {
+        if name == ATOM_STRUCT_NAME {
             value.serialize(AtomEmitter(self.term))
         } else {
             if attempt(self.term.unify(Functor::new(name, 1)))? {
@@ -390,7 +390,7 @@ impl ser::Serialize for Atom {
     where
         S: serde::Serializer,
     {
-        serializer.serialize_newtype_struct("$swipl::private::atom", &self.atom_ptr())
+        serializer.serialize_newtype_struct(ATOM_STRUCT_NAME, &self.atom_ptr())
     }
 }
 
