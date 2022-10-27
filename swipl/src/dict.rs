@@ -7,7 +7,7 @@ use super::prelude::*;
 use std::collections::HashMap;
 
 /// A key in a prolog dictionary.
-#[derive(PartialEq, Eq, Hash, Debug)]
+#[derive(PartialEq, Eq, Hash, Debug, Clone)]
 pub enum Key {
     Int(u64),
     Atom(Atom),
