@@ -1173,6 +1173,29 @@ mod tests {
         let term = context.new_term_ref();
         to_term(&context, &map, &term).unwrap();
 
+        let tag = term.get_dict_tag().unwrap();
+        assert_eq!(None, tag);
+
+        let return_map: HashMap<Atom, String> = context.deserialize_from_term(&term).unwrap();
+        assert_eq!(HashMap::from([(atom!("foo"), "bar".to_string()),
+                                  (atom!("baz"), "quux".to_string())]),
+                   return_map);
+    }
+
+    #[test]
+    fn serialize_map_with_atom_keys_default_tag() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let map = HashMap::from([(atom!("foo"), "bar"), (atom!("baz"), "quux")]);
+
+        let term = context.new_term_ref();
+        to_term_with_config(&context, &map, &term, SerializerConfiguration::new().default_tag("default_tag")).unwrap();
+
+        let tag = term.get_dict_tag().unwrap();
+        assert_eq!(Some(atom!("default_tag")), tag);
+
         let return_map: HashMap<Atom, String> = context.deserialize_from_term(&term).unwrap();
         assert_eq!(HashMap::from([(atom!("foo"), "bar".to_string()),
                                   (atom!("baz"), "quux".to_string())]),
