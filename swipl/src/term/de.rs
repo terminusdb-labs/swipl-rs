@@ -649,7 +649,13 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
     where
         V: Visitor<'de>,
     {
-        // TODO possibly we can actually check for the functor name here
+
+        // Possibly we can actually check for the functor name here.
+        // But we want to serialize loosely. Us being here means the
+        // user is expecting something that looks enough like a tuple
+        // struct that we can make it happen. So even if the struct
+        // we're deserializing into has a different name, that doesn't
+        // matter.
         self.deserialize_tuple(len, visitor)
     }
     fn deserialize_map<V>(self, visitor: V) -> Result<V::Value>

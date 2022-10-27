@@ -109,7 +109,7 @@ impl Atom {
     }
 
     /// Increase the reference counter for this atom.
-    fn increment_refcount(&self) {
+    pub(crate) fn increment_refcount(&self) {
         unsafe { PL_register_atom(self.atom) }
     }
 }
