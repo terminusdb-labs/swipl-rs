@@ -50,6 +50,7 @@
 //! into prolog (if you're implementing a foreign predicate), which
 //! will then raise this exception in prolog, or to clear the
 //! exception.
+#[cfg(feature = "serde")]
 use crate::term::ser::SerializerConfiguration;
 
 use super::atom::*;
@@ -61,8 +62,8 @@ use super::result::*;
 use super::stream::*;
 use super::term::*;
 
-use serde::Deserialize;
-use serde::Serialize;
+#[cfg(feature = "serde")]
+use serde::{Serialize,Deserialize};
 use std::cell::Cell;
 use std::mem::MaybeUninit;
 use swipl_macros::pred;
@@ -997,6 +998,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         Ok(terms)
     }
 
+    #[cfg(feature = "serde")]
     pub fn deserialize_from_term<'de, DT: Deserialize<'de>>(
         &'de self,
         term: &'de Term<'de>,
@@ -1004,6 +1006,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         super::term::de::from_term(self, term)
     }
 
+    #[cfg(feature = "serde")]
     pub fn serialize_to_term<ST: Serialize>(
         &self,
         term: &Term,
@@ -1012,6 +1015,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         super::term::ser::to_term(self, term, obj)
     }
 
+    #[cfg(feature = "serde")]
     pub fn serialize_to_term_with_config<ST: Serialize>(
         &self,
         term: &Term,

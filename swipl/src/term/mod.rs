@@ -43,7 +43,9 @@ use std::os::raw::c_char;
 
 use swipl_macros::term;
 
+#[cfg(feature = "serde")]
 pub mod de;
+#[cfg(feature = "serde")]
 pub mod ser;
 
 /// A term reference.
