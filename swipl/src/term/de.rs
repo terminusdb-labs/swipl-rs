@@ -1,5 +1,5 @@
-use super::*;
 use super::ser::ATOM_STRUCT_NAME;
+use super::*;
 use crate::dict::*;
 use crate::functor::*;
 use crate::text::*;
@@ -649,7 +649,6 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
     where
         V: Visitor<'de>,
     {
-
         // Possibly we can actually check for the functor name here.
         // But we want to serialize loosely. Us being here means the
         // user is expecting something that looks enough like a tuple

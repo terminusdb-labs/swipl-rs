@@ -63,7 +63,7 @@ use super::stream::*;
 use super::term::*;
 
 #[cfg(feature = "serde")]
-use serde::{Serialize,Deserialize};
+use serde::{Deserialize, Serialize};
 use std::cell::Cell;
 use std::mem::MaybeUninit;
 use swipl_macros::pred;
@@ -1010,7 +1010,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
     pub fn serialize_to_term<ST: Serialize>(
         &self,
         term: &Term,
-        obj: &ST
+        obj: &ST,
     ) -> Result<(), super::term::de::Error> {
         super::term::ser::to_term(self, term, obj)
     }
@@ -1020,7 +1020,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         &self,
         term: &Term,
         obj: &ST,
-        config: SerializerConfiguration
+        config: SerializerConfiguration,
     ) -> Result<(), super::term::de::Error> {
         super::term::ser::to_term_with_config(self, term, obj, config)
     }

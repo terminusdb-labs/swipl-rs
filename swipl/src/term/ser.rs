@@ -34,7 +34,7 @@ pub fn to_term_with_config<'a, T, C: QueryableContextType>(
     context: &'a Context<C>,
     term: &Term<'a>,
     obj: &T,
-    configuration: SerializerConfiguration
+    configuration: SerializerConfiguration,
 ) -> Result<(), Error>
 where
     T: Serialize,
@@ -55,22 +55,22 @@ fn attempt_unify<U: Unifiable>(term: &Term, v: U) -> Result<(), Error> {
 #[derive(Debug, Clone)]
 pub struct SerializerConfiguration {
     default_tag: Option<Atom>,
-    tag_struct_dicts: bool
+    tag_struct_dicts: bool,
 }
 
 impl SerializerConfiguration {
     pub fn new() -> Self {
         Self {
             default_tag: None,
-            tag_struct_dicts: false
+            tag_struct_dicts: false,
         }
     }
 
-    pub fn set_default_tag<A:AsAtom>(&mut self, tag: A) {
+    pub fn set_default_tag<A: AsAtom>(&mut self, tag: A) {
         self.default_tag = Some(tag.as_atom());
     }
 
-    pub fn default_tag<A:AsAtom>(mut self, tag: A) -> Self {
+    pub fn default_tag<A: AsAtom>(mut self, tag: A) -> Self {
         self.set_default_tag(tag.as_atom());
 
         self
@@ -92,20 +92,24 @@ pub struct Serializer<'a, C: QueryableContextType> {
     configuration: SerializerConfiguration,
 }
 
-impl<'a, C:QueryableContextType> Serializer<'a, C> {
+impl<'a, C: QueryableContextType> Serializer<'a, C> {
     fn new(context: &'a Context<'a, C>, term: Term<'a>) -> Self {
         Self {
             context,
             term,
-            configuration: SerializerConfiguration::new()
+            configuration: SerializerConfiguration::new(),
         }
     }
 
-    fn new_with_config(context: &'a Context<'a, C>, term: Term<'a>, configuration: SerializerConfiguration) -> Self {
+    fn new_with_config(
+        context: &'a Context<'a, C>,
+        term: Term<'a>,
+        configuration: SerializerConfiguration,
+    ) -> Self {
         Self {
             context,
             term,
-            configuration
+            configuration,
         }
     }
 }
@@ -172,7 +176,8 @@ impl<'a, C: QueryableContextType> serde::Serializer for Serializer<'a, C> {
     {
         if attempt(self.term.unify(functor!("some/1")))? {
             let [term] = attempt_opt(self.context.compound_terms(&self.term))?.expect("having just unified the functor some/1, retrieving its argument list should have been possible");
-            let inner_serializer = Serializer::new_with_config(self.context, term.clone(), self.configuration.clone());
+            let inner_serializer =
+                Serializer::new_with_config(self.context, term.clone(), self.configuration.clone());
             let result = value.serialize(inner_serializer);
             unsafe {
                 term.reset();
@@ -209,7 +214,11 @@ impl<'a, C: QueryableContextType> serde::Serializer for Serializer<'a, C> {
         } else {
             if attempt(self.term.unify(Functor::new(name, 1)))? {
                 let [term] = attempt_opt(self.context.compound_terms(&self.term))?.expect("having just unified the functor with arity 1, retrieving its argument list should have been possible");
-                let inner_serializer = Serializer::new_with_config(self.context, term.clone(), self.configuration.clone());
+                let inner_serializer = Serializer::new_with_config(
+                    self.context,
+                    term.clone(),
+                    self.configuration.clone(),
+                );
                 let result = value.serialize(inner_serializer);
                 unsafe {
                     term.reset();
@@ -232,7 +241,8 @@ impl<'a, C: QueryableContextType> serde::Serializer for Serializer<'a, C> {
     {
         if attempt(self.term.unify(Functor::new(variant, 1)))? {
             let [term] = attempt_opt(self.context.compound_terms(&self.term))?.expect("having just unified the functor with arity 1, retrieving its argument list should have been possible");
-            let inner_serializer = Serializer::new_with_config(self.context, term.clone(), self.configuration.clone());
+            let inner_serializer =
+                Serializer::new_with_config(self.context, term.clone(), self.configuration.clone());
             let result = value.serialize(inner_serializer);
             unsafe {
                 term.reset();
@@ -246,7 +256,7 @@ impl<'a, C: QueryableContextType> serde::Serializer for Serializer<'a, C> {
         Ok(SerializeSeq {
             context: self.context,
             term: self.term.clone(),
-            configuration: self.configuration.clone()
+            configuration: self.configuration.clone(),
         })
     }
     fn serialize_tuple(self, len: usize) -> Result<Self::SerializeTuple, Self::Error> {
@@ -254,7 +264,7 @@ impl<'a, C: QueryableContextType> serde::Serializer for Serializer<'a, C> {
             context: self.context,
             term: self.term.clone(),
             len,
-            configuration: self.configuration.clone()
+            configuration: self.configuration.clone(),
         })
     }
     fn serialize_tuple_struct(
@@ -272,7 +282,7 @@ impl<'a, C: QueryableContextType> serde::Serializer for Serializer<'a, C> {
             context: self.context,
             term: self.term.clone(),
             pos: 0,
-            configuration: self.configuration.clone()
+            configuration: self.configuration.clone(),
         })
     }
     fn serialize_tuple_variant(
@@ -289,11 +299,16 @@ impl<'a, C: QueryableContextType> serde::Serializer for Serializer<'a, C> {
             context: self.context,
             term: self.term.clone(),
             pos: 0,
-            configuration: self.configuration.clone()
+            configuration: self.configuration.clone(),
         })
     }
     fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
-        Ok(SerializeMap::new(self.context, self.term, None, self.configuration))
+        Ok(SerializeMap::new(
+            self.context,
+            self.term,
+            None,
+            self.configuration,
+        ))
     }
     fn serialize_struct(
         self,
@@ -303,11 +318,15 @@ impl<'a, C: QueryableContextType> serde::Serializer for Serializer<'a, C> {
         let tag;
         if self.configuration.tag_struct_dicts {
             tag = Some(name);
-        }
-        else {
+        } else {
             tag = None;
         }
-        Ok(SerializeMap::new(self.context, self.term, tag, self.configuration))
+        Ok(SerializeMap::new(
+            self.context,
+            self.term,
+            tag,
+            self.configuration,
+        ))
     }
     fn serialize_struct_variant(
         self,
@@ -316,7 +335,12 @@ impl<'a, C: QueryableContextType> serde::Serializer for Serializer<'a, C> {
         variant: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
-        Ok(SerializeMap::new(self.context, self.term, Some(variant), self.configuration))
+        Ok(SerializeMap::new(
+            self.context,
+            self.term,
+            Some(variant),
+            self.configuration,
+        ))
     }
 }
 
@@ -530,7 +554,7 @@ impl<'a> ser::Serializer for AtomEmitter<'a> {
 pub struct SerializeSeq<'a, C: QueryableContextType> {
     context: &'a Context<'a, C>,
     term: Term<'a>,
-    configuration: SerializerConfiguration
+    configuration: SerializerConfiguration,
 }
 
 impl<'a, C: QueryableContextType> ser::SerializeSeq for SerializeSeq<'a, C> {
@@ -543,7 +567,8 @@ impl<'a, C: QueryableContextType> ser::SerializeSeq for SerializeSeq<'a, C> {
         T: Serialize,
     {
         if let Some((head, tail)) = attempt_opt(self.context.unify_list_functor(&self.term))? {
-            let inner_serializer = Serializer::new_with_config(self.context, head, self.configuration.clone());
+            let inner_serializer =
+                Serializer::new_with_config(self.context, head, self.configuration.clone());
             value.serialize(inner_serializer)?;
             self.term = tail;
 
@@ -562,7 +587,7 @@ pub struct SerializeTuple<'a, C: QueryableContextType> {
     context: &'a Context<'a, C>,
     term: Term<'a>,
     len: usize,
-    configuration: SerializerConfiguration
+    configuration: SerializerConfiguration,
 }
 
 impl<'a, C: QueryableContextType> ser::SerializeTuple for SerializeTuple<'a, C> {
@@ -578,14 +603,19 @@ impl<'a, C: QueryableContextType> ser::SerializeTuple for SerializeTuple<'a, C> 
         if self.len == 0 {
             eprintln!("last item");
             // this is our last item, so just unify directly
-            let inner_serializer = Serializer::new_with_config(self.context, self.term.clone(), self.configuration.clone());
+            let inner_serializer = Serializer::new_with_config(
+                self.context,
+                self.term.clone(),
+                self.configuration.clone(),
+            );
             value.serialize(inner_serializer)
         } else {
             eprintln!("some item");
             attempt_unify(&self.term, functor!(",/2"))?;
             let [head, tail] = attempt_opt(self.context.compound_terms(&self.term))?
                 .expect("should have two terms");
-            let inner_serializer = Serializer::new_with_config(self.context, head, self.configuration.clone());
+            let inner_serializer =
+                Serializer::new_with_config(self.context, head, self.configuration.clone());
             value.serialize(inner_serializer)?;
 
             self.term = tail;
@@ -605,7 +635,7 @@ pub struct SerializeNamedTuple<'a, C: QueryableContextType> {
     context: &'a Context<'a, C>,
     term: Term<'a>,
     pos: usize,
-    configuration: SerializerConfiguration
+    configuration: SerializerConfiguration,
 }
 
 impl<'a, C: QueryableContextType> SerializeNamedTuple<'a, C> {
@@ -619,7 +649,8 @@ impl<'a, C: QueryableContextType> SerializeNamedTuple<'a, C> {
         // unifying with a variable should always succeed, except for things like resource exceptions
         assert!(attempt(self.term.unify_arg(self.pos, &term))?);
 
-        let inner_serializer = Serializer::new_with_config(self.context, term, self.configuration.clone());
+        let inner_serializer =
+            Serializer::new_with_config(self.context, term, self.configuration.clone());
         value.serialize(inner_serializer)?;
 
         Ok(())
@@ -660,23 +691,27 @@ impl<'a, C: QueryableContextType> ser::SerializeTupleVariant for SerializeNamedT
     }
 }
 
-pub struct SerializeMap<'a, C:QueryableContextType> {
+pub struct SerializeMap<'a, C: QueryableContextType> {
     context: &'a Context<'a, C>,
     term: Term<'a>,
     configuration: SerializerConfiguration,
     reset_term: Term<'a>,
     builder: DictBuilder<'a>,
-    last_key: Option<Key>
+    last_key: Option<Key>,
 }
 
-impl<'a, C:QueryableContextType> SerializeMap<'a, C> {
-    fn new(context: &'a Context<'a, C>, term: Term<'a>, tag: Option<&str>, configuration: SerializerConfiguration) -> Self {
+impl<'a, C: QueryableContextType> SerializeMap<'a, C> {
+    fn new(
+        context: &'a Context<'a, C>,
+        term: Term<'a>,
+        tag: Option<&str>,
+        configuration: SerializerConfiguration,
+    ) -> Self {
         let reset_term = context.new_term_ref();
         let mut builder = DictBuilder::new();
         if let Some(tag) = tag {
             builder.set_tag(tag);
-        }
-        else if let Some(tag) = configuration.default_tag.as_ref() {
+        } else if let Some(tag) = configuration.default_tag.as_ref() {
             builder.set_tag(tag);
         }
         Self {
@@ -685,22 +720,23 @@ impl<'a, C:QueryableContextType> SerializeMap<'a, C> {
             configuration,
             reset_term,
             builder,
-            last_key: None
+            last_key: None,
         }
     }
 }
 
-impl<'a, C:QueryableContextType> ser::SerializeMap for SerializeMap<'a, C> {
+impl<'a, C: QueryableContextType> ser::SerializeMap for SerializeMap<'a, C> {
     type Ok = ();
 
     type Error = Error;
 
     fn serialize_key<T: ?Sized>(&mut self, key: &T) -> Result<(), Self::Error>
     where
-        T: Serialize {
+        T: Serialize,
+    {
         let serializer = KeyEmitter {
             key: &mut self.last_key,
-            getting_atom: false
+            getting_atom: false,
         };
 
         key.serialize(serializer)
@@ -708,14 +744,16 @@ impl<'a, C:QueryableContextType> ser::SerializeMap for SerializeMap<'a, C> {
 
     fn serialize_value<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
     where
-        T: Serialize {
+        T: Serialize,
+    {
         let val_term = self.context.new_term_ref();
-        let serializer = Serializer::new_with_config(self.context, val_term.clone(), self.configuration.clone());
+        let serializer =
+            Serializer::new_with_config(self.context, val_term.clone(), self.configuration.clone());
         value.serialize(serializer)?;
         let mut key = None;
         std::mem::swap(&mut key, &mut self.last_key);
-        self.builder.add_entry(key.expect("key should have been set"),
-                               val_term);
+        self.builder
+            .add_entry(key.expect("key should have been set"), val_term);
 
         Ok(())
     }
@@ -739,9 +777,14 @@ impl<'a, C: QueryableContextType> ser::SerializeStruct for SerializeMap<'a, C> {
         value: &T,
     ) -> Result<(), Self::Error>
     where
-        T: Serialize {
+        T: Serialize,
+    {
         let value_term = self.context.new_term_ref();
-        let serializer = Serializer::new_with_config(self.context, value_term.clone(), self.configuration.clone());
+        let serializer = Serializer::new_with_config(
+            self.context,
+            value_term.clone(),
+            self.configuration.clone(),
+        );
         value.serialize(serializer)?;
         self.builder.add_entry(key, value_term);
 
@@ -767,9 +810,14 @@ impl<'a, C: QueryableContextType> ser::SerializeStructVariant for SerializeMap<'
         value: &T,
     ) -> Result<(), Self::Error>
     where
-        T: Serialize {
+        T: Serialize,
+    {
         let value_term = self.context.new_term_ref();
-        let serializer = Serializer::new_with_config(self.context, value_term.clone(), self.configuration.clone());
+        let serializer = Serializer::new_with_config(
+            self.context,
+            value_term.clone(),
+            self.configuration.clone(),
+        );
         value.serialize(serializer)?;
         self.builder.add_entry(key, value_term);
 
@@ -786,7 +834,7 @@ impl<'a, C: QueryableContextType> ser::SerializeStructVariant for SerializeMap<'
 
 struct KeyEmitter<'a> {
     key: &'a mut Option<Key>,
-    getting_atom: bool
+    getting_atom: bool,
 }
 
 impl<'a> ser::Serializer for KeyEmitter<'a> {
@@ -805,7 +853,7 @@ impl<'a> ser::Serializer for KeyEmitter<'a> {
     fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
         match v {
             true => *self.key = Some(Key::Atom(atom!("true"))),
-            false => *self.key = Some(Key::Atom(atom!("false")))
+            false => *self.key = Some(Key::Atom(atom!("false"))),
         }
 
         Ok(())
@@ -814,8 +862,7 @@ impl<'a> ser::Serializer for KeyEmitter<'a> {
     fn serialize_i8(self, v: i8) -> Result<Self::Ok, Self::Error> {
         if v >= 0 {
             self.serialize_u8(v as u8)
-        }
-        else {
+        } else {
             Err(Error::ValueNotOfExpectedType("key"))
         }
     }
@@ -823,8 +870,7 @@ impl<'a> ser::Serializer for KeyEmitter<'a> {
     fn serialize_i16(self, v: i16) -> Result<Self::Ok, Self::Error> {
         if v >= 0 {
             self.serialize_u16(v as u16)
-        }
-        else {
+        } else {
             Err(Error::ValueNotOfExpectedType("key"))
         }
     }
@@ -832,8 +878,7 @@ impl<'a> ser::Serializer for KeyEmitter<'a> {
     fn serialize_i32(self, v: i32) -> Result<Self::Ok, Self::Error> {
         if v >= 0 {
             self.serialize_u32(v as u32)
-        }
-        else {
+        } else {
             Err(Error::ValueNotOfExpectedType("key"))
         }
     }
@@ -841,8 +886,7 @@ impl<'a> ser::Serializer for KeyEmitter<'a> {
     fn serialize_i64(self, v: i64) -> Result<Self::Ok, Self::Error> {
         if v >= 0 {
             self.serialize_u64(v as u64)
-        }
-        else {
+        } else {
             Err(Error::ValueNotOfExpectedType("key"))
         }
     }
@@ -863,8 +907,7 @@ impl<'a> ser::Serializer for KeyEmitter<'a> {
             let atom = unsafe { Atom::wrap(v as atom_t) };
             atom.increment_refcount();
             *self.key = Some(Key::Atom(atom));
-        }
-        else {
+        } else {
             *self.key = Some(Key::Int(v as u64));
         }
         Ok(())
@@ -888,8 +931,7 @@ impl<'a> ser::Serializer for KeyEmitter<'a> {
             let atom = unsafe { Atom::wrap(v as atom_t) };
             atom.increment_refcount();
             *self.key = Some(Key::Atom(atom));
-        }
-        else {
+        } else {
             *self.key = Some(Key::Int(v as u64));
         }
         Ok(())
@@ -904,7 +946,7 @@ impl<'a> ser::Serializer for KeyEmitter<'a> {
     }
 
     fn serialize_char(self, v: char) -> Result<Self::Ok, Self::Error> {
-        let mut buf = [0u8;4];
+        let mut buf = [0u8; 4];
         let s = v.encode_utf8(&mut buf);
         *self.key = Some(Key::Atom(Atom::new(s)));
         Ok(())
@@ -925,7 +967,8 @@ impl<'a> ser::Serializer for KeyEmitter<'a> {
 
     fn serialize_some<T: ?Sized>(self, _value: &T) -> Result<Self::Ok, Self::Error>
     where
-        T: Serialize {
+        T: Serialize,
+    {
         Err(Error::ValueNotOfExpectedType("key"))
     }
 
@@ -952,13 +995,13 @@ impl<'a> ser::Serializer for KeyEmitter<'a> {
         value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
-        T: Serialize {
+        T: Serialize,
+    {
         // could be an atom!
         if name == ATOM_STRUCT_NAME {
             self.getting_atom = true;
             value.serialize(self)
-        }
-        else {
+        } else {
             value.serialize(self)
         }
     }
@@ -971,7 +1014,8 @@ impl<'a> ser::Serializer for KeyEmitter<'a> {
         _value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
-        T: Serialize {
+        T: Serialize,
+    {
         Err(Error::ValueNotOfExpectedType("key"))
     }
 
@@ -1023,7 +1067,6 @@ impl<'a> ser::Serializer for KeyEmitter<'a> {
         Err(Error::ValueNotOfExpectedType("key"))
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -1157,9 +1200,13 @@ mod tests {
         to_term(&context, &term, &map).unwrap();
 
         let return_map: HashMap<Atom, String> = context.deserialize_from_term(&term).unwrap();
-        assert_eq!(HashMap::from([(atom!("foo"), "bar".to_string()),
-                                  (atom!("baz"), "quux".to_string())]),
-                   return_map);
+        assert_eq!(
+            HashMap::from([
+                (atom!("foo"), "bar".to_string()),
+                (atom!("baz"), "quux".to_string())
+            ]),
+            return_map
+        );
     }
 
     #[test]
@@ -1177,9 +1224,13 @@ mod tests {
         assert_eq!(None, tag);
 
         let return_map: HashMap<Atom, String> = context.deserialize_from_term(&term).unwrap();
-        assert_eq!(HashMap::from([(atom!("foo"), "bar".to_string()),
-                                  (atom!("baz"), "quux".to_string())]),
-                   return_map);
+        assert_eq!(
+            HashMap::from([
+                (atom!("foo"), "bar".to_string()),
+                (atom!("baz"), "quux".to_string())
+            ]),
+            return_map
+        );
     }
 
     #[test]
@@ -1191,15 +1242,25 @@ mod tests {
         let map = HashMap::from([(atom!("foo"), "bar"), (atom!("baz"), "quux")]);
 
         let term = context.new_term_ref();
-        to_term_with_config(&context, &term, &map, SerializerConfiguration::new().default_tag("default_tag")).unwrap();
+        to_term_with_config(
+            &context,
+            &term,
+            &map,
+            SerializerConfiguration::new().default_tag("default_tag"),
+        )
+        .unwrap();
 
         let tag = term.get_dict_tag().unwrap();
         assert_eq!(Some(atom!("default_tag")), tag);
 
         let return_map: HashMap<Atom, String> = context.deserialize_from_term(&term).unwrap();
-        assert_eq!(HashMap::from([(atom!("foo"), "bar".to_string()),
-                                  (atom!("baz"), "quux".to_string())]),
-                   return_map);
+        assert_eq!(
+            HashMap::from([
+                (atom!("foo"), "bar".to_string()),
+                (atom!("baz"), "quux".to_string())
+            ]),
+            return_map
+        );
     }
 
     #[test]
@@ -1214,9 +1275,10 @@ mod tests {
         to_term(&context, &term, &map).unwrap();
 
         let return_map: HashMap<u8, String> = context.deserialize_from_term(&term).unwrap();
-        assert_eq!(HashMap::from([(12, "bar".to_string()),
-                                  (42, "quux".to_string())]),
-                   return_map);
+        assert_eq!(
+            HashMap::from([(12, "bar".to_string()), (42, "quux".to_string())]),
+            return_map
+        );
     }
 
     #[test]
@@ -1231,15 +1293,16 @@ mod tests {
         to_term(&context, &term, &map).unwrap();
 
         let return_map: HashMap<u8, String> = context.deserialize_from_term(&term).unwrap();
-        assert_eq!(HashMap::from([(12, "bar".to_string()),
-                                  (42, "quux".to_string())]),
-                   return_map);
+        assert_eq!(
+            HashMap::from([(12, "bar".to_string()), (42, "quux".to_string())]),
+            return_map
+        );
     }
 
     #[derive(Debug, Clone, PartialEq, Serialize, serde::Deserialize)]
     struct AStruct {
         foo: String,
-        bar: u32
+        bar: u32,
     }
 
     #[test]
@@ -1248,13 +1311,16 @@ mod tests {
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
-        let s = AStruct { foo: "hello".to_string(), bar: 120 };
+        let s = AStruct {
+            foo: "hello".to_string(),
+            bar: 120,
+        };
 
         let term = context.new_term_ref();
         to_term(&context, &term, &s).unwrap();
 
-        let foo:String = term.get_dict_key("foo").unwrap();
-        let bar:u64 = term.get_dict_key("bar").unwrap();
+        let foo: String = term.get_dict_key("foo").unwrap();
+        let bar: u64 = term.get_dict_key("bar").unwrap();
         let tag = term.get_dict_tag().unwrap();
         assert_eq!("hello", foo);
         assert_eq!(120, bar);
@@ -1270,13 +1336,22 @@ mod tests {
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
-        let s = AStruct { foo: "hello".to_string(), bar: 120 };
+        let s = AStruct {
+            foo: "hello".to_string(),
+            bar: 120,
+        };
 
         let term = context.new_term_ref();
-        to_term_with_config(&context, &term, &s, SerializerConfiguration::new().tag_struct_dicts()).unwrap();
+        to_term_with_config(
+            &context,
+            &term,
+            &s,
+            SerializerConfiguration::new().tag_struct_dicts(),
+        )
+        .unwrap();
 
-        let foo:String = term.get_dict_key("foo").unwrap();
-        let bar:u64 = term.get_dict_key("bar").unwrap();
+        let foo: String = term.get_dict_key("foo").unwrap();
+        let bar: u64 = term.get_dict_key("bar").unwrap();
         let tag = term.get_dict_tag().unwrap();
         assert_eq!("hello", foo);
         assert_eq!(120, bar);
@@ -1292,13 +1367,22 @@ mod tests {
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
-        let s = AStruct { foo: "hello".to_string(), bar: 120 };
+        let s = AStruct {
+            foo: "hello".to_string(),
+            bar: 120,
+        };
 
         let term = context.new_term_ref();
-        to_term_with_config(&context, &term, &s, SerializerConfiguration::new().default_tag("json")).unwrap();
+        to_term_with_config(
+            &context,
+            &term,
+            &s,
+            SerializerConfiguration::new().default_tag("json"),
+        )
+        .unwrap();
 
-        let foo:String = term.get_dict_key("foo").unwrap();
-        let bar:u64 = term.get_dict_key("bar").unwrap();
+        let foo: String = term.get_dict_key("foo").unwrap();
+        let bar: u64 = term.get_dict_key("bar").unwrap();
         let tag = term.get_dict_tag().unwrap();
         assert_eq!("hello", foo);
         assert_eq!(120, bar);
@@ -1313,7 +1397,7 @@ mod tests {
         Variant1,
         Variant2(String),
         Variant3(String, u32),
-        Variant4{foo: String, bar: u32}
+        Variant4 { foo: String, bar: u32 },
     }
 
     #[test]
@@ -1340,7 +1424,10 @@ mod tests {
         let v = EnumStruct::Variant2("hello".to_string());
         let term = context.new_term_ref();
         to_term(&context, &term, &v).unwrap();
-        assert_eq!("'Variant2'(\"hello\")", context.string_from_term(&term).unwrap());
+        assert_eq!(
+            "'Variant2'(\"hello\")",
+            context.string_from_term(&term).unwrap()
+        );
 
         let r: EnumStruct = context.deserialize_from_term(&term).unwrap();
         assert_eq!(r, v);
@@ -1355,7 +1442,10 @@ mod tests {
         let v = EnumStruct::Variant3("hello".to_string(), 103);
         let term = context.new_term_ref();
         to_term(&context, &term, &v).unwrap();
-        assert_eq!("'Variant3'(\"hello\",103)", context.string_from_term(&term).unwrap());
+        assert_eq!(
+            "'Variant3'(\"hello\",103)",
+            context.string_from_term(&term).unwrap()
+        );
 
         let r: EnumStruct = context.deserialize_from_term(&term).unwrap();
         assert_eq!(r, v);
@@ -1367,11 +1457,14 @@ mod tests {
         let activation = engine.activate();
         let context: Context<_> = activation.into();
 
-        let v = EnumStruct::Variant4{foo:"hello".to_string(), bar:103};
+        let v = EnumStruct::Variant4 {
+            foo: "hello".to_string(),
+            bar: 103,
+        };
         let term = context.new_term_ref();
         to_term(&context, &term, &v).unwrap();
-        let foo:String = term.get_dict_key("foo").unwrap();
-        let bar:u64 = term.get_dict_key("bar").unwrap();
+        let foo: String = term.get_dict_key("foo").unwrap();
+        let bar: u64 = term.get_dict_key("bar").unwrap();
         assert_eq!("hello", foo);
         assert_eq!(103, bar);
 
