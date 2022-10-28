@@ -1,3 +1,4 @@
+//! Deserialization of rust values from prolog terms.
 use super::ser::ATOM_STRUCT_NAME;
 use super::*;
 use crate::dict::*;
@@ -8,6 +9,7 @@ use serde::de::{self, DeserializeSeed, EnumAccess, MapAccess, SeqAccess, Variant
 use serde::Deserialize;
 use std::fmt::{self, Display};
 
+/// Deserialize a term into a rust value using serde.
 pub fn from_term<'a, C: QueryableContextType, T>(
     context: &'a Context<C>,
     term: &Term<'a>,
@@ -23,17 +25,20 @@ where
     Deserialize::deserialize(deserializer)
 }
 
+/// A serde deserializer for turning prolog terms into rust values.
 pub struct Deserializer<'de, C: QueryableContextType> {
     context: &'de Context<'de, C>,
     term: Term<'de>,
 }
 
 impl<'de, C: QueryableContextType> Deserializer<'de, C> {
+    /// Create a new deserializer.
     pub fn new(context: &'de Context<'de, C>, term: Term<'de>) -> Self {
         Self { context, term }
     }
 }
 
+/// Error type for serialization/deserialization.
 #[derive(Debug)]
 pub enum Error {
     Message(String),
@@ -78,6 +83,7 @@ impl de::Error for Error {
     }
 }
 
+/// Result type for deserialization.
 pub type Result<T> = std::result::Result<T, Error>;
 
 struct DictMapAccess<'de, C: QueryableContextType> {

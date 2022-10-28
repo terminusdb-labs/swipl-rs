@@ -999,6 +999,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
     }
 
     #[cfg(feature = "serde")]
+    /// Deserialize a term into a rust value using serde.
     pub fn deserialize_from_term<'de, DT: Deserialize<'de>>(
         &'de self,
         term: &'de Term<'de>,
@@ -1007,6 +1008,11 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
     }
 
     #[cfg(feature = "serde")]
+    /// Serialize a value into a prolog term using serde.
+    ///
+    /// This uses the default serialization configuration, meaning:
+    /// - prolog dictionary tags will remain variables.
+    /// - struct type names are ignored and will not be set as the dictionary tag.
     pub fn serialize_to_term<ST: Serialize>(
         &self,
         term: &Term,
@@ -1016,6 +1022,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
     }
 
     #[cfg(feature = "serde")]
+    /// Serialize a value into a prolog term using serde, providing configuration options.
     pub fn serialize_to_term_with_config<ST: Serialize>(
         &self,
         term: &Term,
@@ -1025,6 +1032,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         super::term::ser::to_term_with_config(self, term, obj, config)
     }
 
+    /// Unify the term with the list functor, returning a term for the head and the tail.
     pub fn unify_list_functor<'b>(
         &'b self,
         term: &Term,

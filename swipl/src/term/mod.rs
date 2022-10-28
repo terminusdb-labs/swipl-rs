@@ -48,6 +48,12 @@ pub mod de;
 #[cfg(feature = "serde")]
 pub mod ser;
 
+#[cfg(feature = "serde")]
+pub use de::Deserializer;
+
+#[cfg(feature = "serde")]
+pub use ser::{Serializer, SerializerConfiguration};
+
 /// A term reference.
 #[derive(Clone)]
 pub struct Term<'a> {
@@ -61,6 +67,7 @@ impl<'a> Debug for Term<'a> {
     }
 }
 
+/// Various types a term can be.
 #[derive(Debug, PartialEq)]
 pub enum TermType {
     Variable,

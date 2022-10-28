@@ -1,3 +1,4 @@
+//! Serialization of rust values into prolog terms.
 use super::de::Error;
 use super::*;
 use crate::dict::{DictBuilder, Key};
@@ -17,6 +18,11 @@ impl ser::Error for Error {
     }
 }
 
+/// Serialize a value into a prolog term using serde.
+///
+/// This uses the default serialization configuration, meaning:
+/// - prolog dictionary tags will remain variables.
+/// - struct type names are ignored and will not be set as the dictionary tag.
 pub fn to_term<'a, T, C: QueryableContextType>(
     context: &'a Context<C>,
     term: &Term<'a>,
@@ -30,6 +36,7 @@ where
     obj.serialize(serializer)
 }
 
+/// Serialize a value into a prolog term using serde, providing configuration options.
 pub fn to_term_with_config<'a, T, C: QueryableContextType>(
     context: &'a Context<C>,
     term: &Term<'a>,
@@ -52,6 +59,13 @@ fn attempt_unify<U: Unifiable>(term: &Term, v: U) -> Result<(), Error> {
     }
 }
 
+/// Configuration object for the serializer.
+///
+/// By default, serialization is done with the following options:
+/// - prolog dictionary tags will remain variables.
+/// - struct type names are ignored and will not be set as the dictionary tag.
+///
+/// This object allows you to override these options.
 #[derive(Debug, Clone)]
 pub struct SerializerConfiguration {
     default_tag: Option<Atom>,
@@ -59,6 +73,7 @@ pub struct SerializerConfiguration {
 }
 
 impl SerializerConfiguration {
+    /// Create a new SerializerConfiguration.
     pub fn new() -> Self {
         Self {
             default_tag: None,
@@ -66,26 +81,44 @@ impl SerializerConfiguration {
         }
     }
 
+    /// Set the default tag to use for dictionaries.
+    ///
+    /// This is used when serializing maps. By default, this tag will
+    /// also be used for structs.
     pub fn set_default_tag<A: AsAtom>(&mut self, tag: A) {
         self.default_tag = Some(tag.as_atom());
     }
 
+
+    /// Set the default tag to use for dictionaries.
+    ///
+    /// This is used when serializing maps. By default, this tag will
+    /// also be used for structs.
     pub fn default_tag<A: AsAtom>(mut self, tag: A) -> Self {
         self.set_default_tag(tag.as_atom());
 
         self
     }
 
+    /// Ensure that prolog dicts get tagged with the struct name when serializing structs.
+    ///
+    /// If this is not set, instead the default tag is used, or if the
+    /// default tag is not set, the tag will remain a variable.
     pub fn set_tag_struct_dicts(&mut self) {
         self.tag_struct_dicts = true;
     }
 
+    /// Ensure that prolog dicts get tagged with the struct name when serializing structs.
+    ///
+    /// If this is not set, instead the default tag is used, or if the
+    /// default tag is not set, the tag will remain a variable.
     pub fn tag_struct_dicts(mut self) -> Self {
         self.set_tag_struct_dicts();
         self
     }
 }
 
+/// A serde serializer for turning rust values into prolog terms.
 pub struct Serializer<'a, C: QueryableContextType> {
     context: &'a Context<'a, C>,
     term: Term<'a>,
@@ -93,7 +126,8 @@ pub struct Serializer<'a, C: QueryableContextType> {
 }
 
 impl<'a, C: QueryableContextType> Serializer<'a, C> {
-    fn new(context: &'a Context<'a, C>, term: Term<'a>) -> Self {
+    /// Create a new serializer with the default configuration.
+    pub fn new(context: &'a Context<'a, C>, term: Term<'a>) -> Self {
         Self {
             context,
             term,
@@ -101,7 +135,8 @@ impl<'a, C: QueryableContextType> Serializer<'a, C> {
         }
     }
 
-    fn new_with_config(
+    /// Create a new serializer with the given configuration.
+    pub fn new_with_config(
         context: &'a Context<'a, C>,
         term: Term<'a>,
         configuration: SerializerConfiguration,
