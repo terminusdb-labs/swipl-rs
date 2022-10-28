@@ -20,9 +20,6 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         dmg: [no_dmg]
-        include:
-          - os: macos-latest
-            dmg: dmg
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
