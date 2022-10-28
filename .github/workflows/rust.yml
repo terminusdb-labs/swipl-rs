@@ -58,15 +58,15 @@ jobs:
       run: cargo install --path ./cargo-swipl
     - name: Run tests on posix
       if: ${{ matrix.os != 'windows-latest' && matrix.dmg == 'no_dmg' }}
-      run: cargo swipl test
+      run: cargo swipl test --all-features
     - name: Run tests on windows
       if: ${{ matrix.os == 'windows-latest' }}
       env: 
         SWIPL: C:\Program Files\swipl\bin\swipl.exe
         LIBCLANG_PATH: C:\Program Files\LLVM\bin\
-      run: cargo swipl test
+      run: cargo swipl test --all-features
     - name: Run tests on osx with dmg
       if: ${{ matrix.dmg == 'dmg' }}
       env: 
         SWIPL: /Applications/SWI-Prolog.app/Contents/MacOS/swipl
-      run: cargo swipl test
+      run: cargo swipl test --all-features
