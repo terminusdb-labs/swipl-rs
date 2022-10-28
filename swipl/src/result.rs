@@ -9,6 +9,8 @@
 //! This module also provides some transformations on prolog results.
 use thiserror::Error;
 
+use crate::context::{Context, QueryableContextType};
+
 /// A prolog error.
 ///
 /// This is either a failure or an exception. In case of an exception,
@@ -129,4 +131,55 @@ pub fn into_prolog_result(b: bool) -> PrologResult<()> {
 /// This is a shorthand for `Err(PrologError::Failure)`.
 pub fn fail() -> PrologResult<()> {
     Err(PrologError::Failure)
+}
+
+pub enum PrologStringError {
+    Failure,
+    Exception(String),
+}
+
+pub type PrologStringResult<T> = Result<T, PrologStringError>;
+
+pub fn result_to_string_result<'a, C: QueryableContextType, T>(
+    c: &Context<'a, C>,
+    r: PrologResult<T>,
+) -> PrologStringResult<T> {
+    match r {
+        Ok(r) => Ok(r),
+        Err(PrologError::Failure) => Err(PrologStringError::Failure),
+        Err(PrologError::Exception) => {
+            let r = c.with_exception(|e| {
+                eprintln!("a");
+                let e = e.expect("prolog exception but no exception in prolog engine");
+                eprintln!("b");
+                let result = c.string_from_term(e);
+                eprintln!("c");
+
+                result
+            });
+
+            c.clear_exception();
+
+            match r {
+                Ok(s) => Err(PrologStringError::Exception(format!(
+                    "prolog had the following exception: {}",
+                    s
+                ))),
+                Err(PrologError::Failure) => Err(PrologStringError::Exception(format!(
+                    "prolog failed while retrieving string from previous error"
+                ))),
+                Err(PrologError::Exception) => Err(PrologStringError::Exception(format!(
+                    "prolog threw exception while retrieving string from previous error"
+                ))),
+            }
+        }
+    }
+}
+
+pub fn unwrap_result<'a, C: QueryableContextType, T>(c: &Context<'a, C>, r: PrologResult<T>) -> T {
+    match result_to_string_result(c, r) {
+        Ok(r) => r,
+        Err(PrologStringError::Failure) => panic!("prolog failed"),
+        Err(PrologStringError::Exception(s)) => panic!("{}", s),
+    }
 }

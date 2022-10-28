@@ -43,6 +43,17 @@ use std::os::raw::c_char;
 
 use swipl_macros::term;
 
+#[cfg(feature = "serde")]
+pub mod de;
+#[cfg(feature = "serde")]
+pub mod ser;
+
+#[cfg(feature = "serde")]
+pub use de::Deserializer;
+
+#[cfg(feature = "serde")]
+pub use ser::{Serializer, SerializerConfiguration};
+
 /// A term reference.
 #[derive(Clone)]
 pub struct Term<'a> {
@@ -54,6 +65,23 @@ impl<'a> Debug for Term<'a> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         write!(fmt, "Term({:?})", self.term)
     }
+}
+
+/// Various types a term can be.
+#[derive(Debug, PartialEq)]
+pub enum TermType {
+    Variable,
+    Atom,
+    Nil,
+    Blob,
+    String,
+    Integer,
+    Rational,
+    Float,
+    CompoundTerm,
+    ListPair,
+    Dict,
+    Unknown,
 }
 
 impl<'a> Term<'a> {
@@ -68,6 +96,25 @@ impl<'a> Term<'a> {
 
     pub fn origin_engine_ptr(&self) -> PL_engine_t {
         self.origin.origin_engine_ptr()
+    }
+
+    /// Returns the type of the value in this term.
+    pub fn term_type(&self) -> TermType {
+        self.assert_term_handling_possible();
+        match unsafe { PL_term_type(self.term) as u32 } {
+            PL_VARIABLE => TermType::Variable,
+            PL_ATOM => TermType::Atom,
+            PL_INTEGER => TermType::Integer,
+            PL_RATIONAL => TermType::Rational,
+            PL_FLOAT => TermType::Float,
+            PL_STRING => TermType::String,
+            PL_TERM => TermType::CompoundTerm,
+            PL_NIL => TermType::Nil,
+            PL_BLOB => TermType::Blob,
+            PL_LIST_PAIR => TermType::ListPair,
+            PL_DICT => TermType::Dict,
+            _ => TermType::Unknown,
+        }
     }
 
     /// Returns true if this term reference holds a variable.

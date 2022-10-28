@@ -7,5 +7,6 @@ members = [
         "swipl",
         "cargo-swipl",
         "examples/swipl-module-example",
-        "examples/binary-example"
+        "examples/binary-example",
+        "tests/json"
 ]

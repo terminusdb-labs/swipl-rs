@@ -15,3 +15,8 @@ swipl-fli = {path = "../swipl-fli", version="0.3.4"}
 swipl-macros = {path = "../swipl-macros", version="0.3.7"}
 lazy_static = "1.4.0"
 thiserror = "1.0"
+serde = {version="1.0", optional=true}
+convert_case = "0.6"
+
+[dev-dependencies]
+serde = {version="1.0", features=["derive"]}

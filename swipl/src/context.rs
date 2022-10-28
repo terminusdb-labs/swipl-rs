@@ -50,6 +50,9 @@
 //! into prolog (if you're implementing a foreign predicate), which
 //! will then raise this exception in prolog, or to clear the
 //! exception.
+#[cfg(feature = "serde")]
+use crate::term::ser::SerializerConfiguration;
+
 use super::atom::*;
 use super::callable::*;
 use super::engine::*;
@@ -59,8 +62,11 @@ use super::result::*;
 use super::stream::*;
 use super::term::*;
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 use std::cell::Cell;
 use std::mem::MaybeUninit;
+use swipl_macros::pred;
 
 use swipl_macros::{prolog, term};
 
@@ -740,6 +746,23 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         Ok(term)
     }
 
+    /// Turn the given string into a prolog term.
+    ///
+    /// This uses the prolog predicate `read_term_from_atom/3` for the
+    /// heavy lifting.
+    ///
+    /// Consider using the `term!` macro instead.
+    pub fn string_from_term(&self, t: &Term) -> PrologResult<String> {
+        let frame = self.open_frame();
+        let out = frame.new_term_ref();
+
+        frame.call_once(pred!("term_string/2"), [&t, &out])?;
+        let s: String = out.get()?;
+        frame.close();
+
+        Ok(s)
+    }
+
     /// Open a query for the given term using the `call/1` prolog predicate.
     pub fn open_call(&'a self, t: &Term<'a>) -> Context<'a, impl OpenCall> {
         open_call(self, t)
@@ -974,6 +997,61 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
 
         Ok(terms)
     }
+
+    #[cfg(feature = "serde")]
+    /// Deserialize a term into a rust value using serde.
+    pub fn deserialize_from_term<'de, DT: Deserialize<'de>>(
+        &'de self,
+        term: &'de Term<'de>,
+    ) -> super::term::de::Result<DT> {
+        super::term::de::from_term(self, term)
+    }
+
+    #[cfg(feature = "serde")]
+    /// Serialize a value into a prolog term using serde.
+    ///
+    /// This uses the default serialization configuration, meaning:
+    /// - prolog dictionary tags will remain variables.
+    /// - struct type names are ignored and will not be set as the dictionary tag.
+    pub fn serialize_to_term<ST: Serialize>(
+        &self,
+        term: &Term,
+        obj: &ST,
+    ) -> Result<(), super::term::de::Error> {
+        super::term::ser::to_term(self, term, obj)
+    }
+
+    #[cfg(feature = "serde")]
+    /// Serialize a value into a prolog term using serde, providing configuration options.
+    pub fn serialize_to_term_with_config<ST: Serialize>(
+        &self,
+        term: &Term,
+        obj: &ST,
+        config: SerializerConfiguration,
+    ) -> Result<(), super::term::de::Error> {
+        super::term::ser::to_term_with_config(self, term, obj, config)
+    }
+
+    /// Unify the term with the list functor, returning a term for the head and the tail.
+    pub fn unify_list_functor<'b>(
+        &'b self,
+        term: &Term,
+    ) -> Result<(Term<'b>, Term<'b>), PrologError> {
+        let [head, tail] = self.new_term_refs();
+        match unsafe { PL_unify_list(term.term_ptr(), head.term_ptr(), tail.term_ptr()) } {
+            0 => {
+                unsafe {
+                    head.reset();
+                }
+                if unsafe { pl_default_exception() != 0 } {
+                    Err(PrologError::Exception)
+                } else {
+                    Err(PrologError::Failure)
+                }
+            }
+            _ => Ok((head, tail)),
+        }
+    }
 }
 
 /// An iterator over a term list.
@@ -1069,7 +1147,6 @@ pub unsafe fn prolog_catch_unwind<F: FnOnce() -> R + std::panic::UnwindSafe, R>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::atom::*;
     use crate::functor::*;
     use crate::predicate::*;
     use crate::predicates;
