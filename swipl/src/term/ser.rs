@@ -19,8 +19,8 @@ impl ser::Error for Error {
 
 pub fn to_term<'a, T, C: QueryableContextType>(
     context: &'a Context<C>,
-    obj: &T,
     term: &Term<'a>,
+    obj: &T,
 ) -> Result<(), Error>
 where
     T: Serialize,
@@ -32,8 +32,8 @@ where
 
 pub fn to_term_with_config<'a, T, C: QueryableContextType>(
     context: &'a Context<C>,
-    obj: &T,
     term: &Term<'a>,
+    obj: &T,
     configuration: SerializerConfiguration
 ) -> Result<(), Error>
 where
@@ -1040,7 +1040,7 @@ mod tests {
 
         let term = context.new_term_ref();
 
-        to_term(&context, &num, &term).unwrap();
+        to_term(&context, &term, &num).unwrap();
 
         let term_string = context.string_from_term(&term).unwrap();
         assert_eq!("42", term_string);
@@ -1056,7 +1056,7 @@ mod tests {
 
         let term = context.new_term_ref();
 
-        to_term(&context, &s, &term).unwrap();
+        to_term(&context, &term, &s).unwrap();
 
         let term_string = context.string_from_term(&term).unwrap();
         assert_eq!("\"hello\"", term_string);
@@ -1072,7 +1072,7 @@ mod tests {
 
         let term = context.new_term_ref();
 
-        to_term(&context, &a, &term).unwrap();
+        to_term(&context, &term, &a).unwrap();
 
         let term_string = context.string_from_term(&term).unwrap();
         assert_eq!("hello", term_string);
@@ -1088,7 +1088,7 @@ mod tests {
 
         let term = context.new_term_ref();
 
-        to_term(&context, &list.as_slice(), &term).unwrap();
+        to_term(&context, &term, &list.as_slice()).unwrap();
 
         let term_string = context.string_from_term(&term).unwrap();
         assert_eq!("[42,43,44]", term_string);
@@ -1104,7 +1104,7 @@ mod tests {
 
         let term = context.new_term_ref();
 
-        to_term(&context, &tuple, &term).unwrap();
+        to_term(&context, &term, &tuple).unwrap();
 
         let term_string = context.string_from_term(&term).unwrap();
         assert_eq!("42,43,44", term_string);
@@ -1120,7 +1120,7 @@ mod tests {
 
         let term = context.new_term_ref();
 
-        to_term(&context, &list, &term).unwrap();
+        to_term(&context, &term, &list).unwrap();
 
         let term_string = context.string_from_term(&term).unwrap();
         assert_eq!("42,43,44", term_string);
@@ -1139,7 +1139,7 @@ mod tests {
         let flargh = Flargh(42, "hello".to_string(), atom!("moo"));
 
         let term = context.new_term_ref();
-        to_term(&context, &flargh, &term).unwrap();
+        to_term(&context, &term, &flargh).unwrap();
 
         let term_string = context.string_from_term(&term).unwrap();
         assert_eq!("flargh(42,\"hello\",moo)", term_string);
@@ -1154,7 +1154,7 @@ mod tests {
         let map = HashMap::from([("foo", "bar"), ("baz", "quux")]);
 
         let term = context.new_term_ref();
-        to_term(&context, &map, &term).unwrap();
+        to_term(&context, &term, &map).unwrap();
 
         let return_map: HashMap<Atom, String> = context.deserialize_from_term(&term).unwrap();
         assert_eq!(HashMap::from([(atom!("foo"), "bar".to_string()),
@@ -1171,7 +1171,7 @@ mod tests {
         let map = HashMap::from([(atom!("foo"), "bar"), (atom!("baz"), "quux")]);
 
         let term = context.new_term_ref();
-        to_term(&context, &map, &term).unwrap();
+        to_term(&context, &term, &map).unwrap();
 
         let tag = term.get_dict_tag().unwrap();
         assert_eq!(None, tag);
@@ -1191,7 +1191,7 @@ mod tests {
         let map = HashMap::from([(atom!("foo"), "bar"), (atom!("baz"), "quux")]);
 
         let term = context.new_term_ref();
-        to_term_with_config(&context, &map, &term, SerializerConfiguration::new().default_tag("default_tag")).unwrap();
+        to_term_with_config(&context, &term, &map, SerializerConfiguration::new().default_tag("default_tag")).unwrap();
 
         let tag = term.get_dict_tag().unwrap();
         assert_eq!(Some(atom!("default_tag")), tag);
@@ -1211,7 +1211,7 @@ mod tests {
         let map = HashMap::from([(12u8, "bar"), (42, "quux")]);
 
         let term = context.new_term_ref();
-        to_term(&context, &map, &term).unwrap();
+        to_term(&context, &term, &map).unwrap();
 
         let return_map: HashMap<u8, String> = context.deserialize_from_term(&term).unwrap();
         assert_eq!(HashMap::from([(12, "bar".to_string()),
@@ -1228,7 +1228,7 @@ mod tests {
         let map = HashMap::from([(12i8, "bar"), (42, "quux")]);
 
         let term = context.new_term_ref();
-        to_term(&context, &map, &term).unwrap();
+        to_term(&context, &term, &map).unwrap();
 
         let return_map: HashMap<u8, String> = context.deserialize_from_term(&term).unwrap();
         assert_eq!(HashMap::from([(12, "bar".to_string()),
@@ -1251,7 +1251,7 @@ mod tests {
         let s = AStruct { foo: "hello".to_string(), bar: 120 };
 
         let term = context.new_term_ref();
-        to_term(&context, &s, &term).unwrap();
+        to_term(&context, &term, &s).unwrap();
 
         let foo:String = term.get_dict_key("foo").unwrap();
         let bar:u64 = term.get_dict_key("bar").unwrap();
@@ -1273,7 +1273,7 @@ mod tests {
         let s = AStruct { foo: "hello".to_string(), bar: 120 };
 
         let term = context.new_term_ref();
-        to_term_with_config(&context, &s, &term, SerializerConfiguration::new().tag_struct_dicts()).unwrap();
+        to_term_with_config(&context, &term, &s, SerializerConfiguration::new().tag_struct_dicts()).unwrap();
 
         let foo:String = term.get_dict_key("foo").unwrap();
         let bar:u64 = term.get_dict_key("bar").unwrap();
@@ -1295,7 +1295,7 @@ mod tests {
         let s = AStruct { foo: "hello".to_string(), bar: 120 };
 
         let term = context.new_term_ref();
-        to_term_with_config(&context, &s, &term, SerializerConfiguration::new().default_tag("json")).unwrap();
+        to_term_with_config(&context, &term, &s, SerializerConfiguration::new().default_tag("json")).unwrap();
 
         let foo:String = term.get_dict_key("foo").unwrap();
         let bar:u64 = term.get_dict_key("bar").unwrap();
@@ -1324,7 +1324,7 @@ mod tests {
 
         let v = EnumStruct::Variant1;
         let term = context.new_term_ref();
-        to_term(&context, &v, &term).unwrap();
+        to_term(&context, &term, &v).unwrap();
         assert_eq!("'Variant1'", context.string_from_term(&term).unwrap());
 
         let r: EnumStruct = context.deserialize_from_term(&term).unwrap();
@@ -1339,7 +1339,7 @@ mod tests {
 
         let v = EnumStruct::Variant2("hello".to_string());
         let term = context.new_term_ref();
-        to_term(&context, &v, &term).unwrap();
+        to_term(&context, &term, &v).unwrap();
         assert_eq!("'Variant2'(\"hello\")", context.string_from_term(&term).unwrap());
 
         let r: EnumStruct = context.deserialize_from_term(&term).unwrap();
@@ -1354,7 +1354,7 @@ mod tests {
 
         let v = EnumStruct::Variant3("hello".to_string(), 103);
         let term = context.new_term_ref();
-        to_term(&context, &v, &term).unwrap();
+        to_term(&context, &term, &v).unwrap();
         assert_eq!("'Variant3'(\"hello\",103)", context.string_from_term(&term).unwrap());
 
         let r: EnumStruct = context.deserialize_from_term(&term).unwrap();
@@ -1369,7 +1369,7 @@ mod tests {
 
         let v = EnumStruct::Variant4{foo:"hello".to_string(), bar:103};
         let term = context.new_term_ref();
-        to_term(&context, &v, &term).unwrap();
+        to_term(&context, &term, &v).unwrap();
         let foo:String = term.get_dict_key("foo").unwrap();
         let bar:u64 = term.get_dict_key("bar").unwrap();
         assert_eq!("hello", foo);

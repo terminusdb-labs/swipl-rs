@@ -50,6 +50,8 @@
 //! into prolog (if you're implementing a foreign predicate), which
 //! will then raise this exception in prolog, or to clear the
 //! exception.
+use crate::term::ser::SerializerConfiguration;
+
 use super::atom::*;
 use super::callable::*;
 use super::engine::*;
@@ -60,6 +62,7 @@ use super::stream::*;
 use super::term::*;
 
 use serde::Deserialize;
+use serde::Serialize;
 use std::cell::Cell;
 use std::mem::MaybeUninit;
 use swipl_macros::pred;
@@ -999,6 +1002,23 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         term: &'de Term<'de>,
     ) -> super::term::de::Result<DT> {
         super::term::de::from_term(self, term)
+    }
+
+    pub fn serialize_to_term<ST: Serialize>(
+        &self,
+        term: &Term,
+        obj: &ST
+    ) -> Result<(), super::term::de::Error> {
+        super::term::ser::to_term(self, term, obj)
+    }
+
+    pub fn serialize_to_term_with_config<ST: Serialize>(
+        &self,
+        term: &Term,
+        obj: &ST,
+        config: SerializerConfiguration
+    ) -> Result<(), super::term::de::Error> {
+        super::term::ser::to_term_with_config(self, term, obj, config)
     }
 
     pub fn unify_list_functor<'b>(
