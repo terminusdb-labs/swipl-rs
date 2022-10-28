@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["swipl"] = [{"text":"impl&lt;'a, C:&nbsp;<a class=\"trait\" href=\"swipl/context/trait.QueryableContextType.html\" title=\"trait swipl::context::QueryableContextType\">QueryableContextType</a>&gt; <a class=\"trait\" href=\"https://docs.rs/serde/1.0.147/serde/ser/trait.SerializeStruct.html\" title=\"trait serde::ser::SerializeStruct\">SerializeStruct</a> for <a class=\"struct\" href=\"swipl/term/ser/struct.SerializeMap.html\" title=\"struct swipl::term::ser::SerializeMap\">SerializeMap</a>&lt;'a, C&gt;","synthetic":false,"types":["swipl::term::ser::SerializeMap"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

@@ -1568,6 +1568,83 @@
 <span id="1568">1568</span>
 <span id="1569">1569</span>
 <span id="1570">1570</span>
+<span id="1571">1571</span>
+<span id="1572">1572</span>
+<span id="1573">1573</span>
+<span id="1574">1574</span>
+<span id="1575">1575</span>
+<span id="1576">1576</span>
+<span id="1577">1577</span>
+<span id="1578">1578</span>
+<span id="1579">1579</span>
+<span id="1580">1580</span>
+<span id="1581">1581</span>
+<span id="1582">1582</span>
+<span id="1583">1583</span>
+<span id="1584">1584</span>
+<span id="1585">1585</span>
+<span id="1586">1586</span>
+<span id="1587">1587</span>
+<span id="1588">1588</span>
+<span id="1589">1589</span>
+<span id="1590">1590</span>
+<span id="1591">1591</span>
+<span id="1592">1592</span>
+<span id="1593">1593</span>
+<span id="1594">1594</span>
+<span id="1595">1595</span>
+<span id="1596">1596</span>
+<span id="1597">1597</span>
+<span id="1598">1598</span>
+<span id="1599">1599</span>
+<span id="1600">1600</span>
+<span id="1601">1601</span>
+<span id="1602">1602</span>
+<span id="1603">1603</span>
+<span id="1604">1604</span>
+<span id="1605">1605</span>
+<span id="1606">1606</span>
+<span id="1607">1607</span>
+<span id="1608">1608</span>
+<span id="1609">1609</span>
+<span id="1610">1610</span>
+<span id="1611">1611</span>
+<span id="1612">1612</span>
+<span id="1613">1613</span>
+<span id="1614">1614</span>
+<span id="1615">1615</span>
+<span id="1616">1616</span>
+<span id="1617">1617</span>
+<span id="1618">1618</span>
+<span id="1619">1619</span>
+<span id="1620">1620</span>
+<span id="1621">1621</span>
+<span id="1622">1622</span>
+<span id="1623">1623</span>
+<span id="1624">1624</span>
+<span id="1625">1625</span>
+<span id="1626">1626</span>
+<span id="1627">1627</span>
+<span id="1628">1628</span>
+<span id="1629">1629</span>
+<span id="1630">1630</span>
+<span id="1631">1631</span>
+<span id="1632">1632</span>
+<span id="1633">1633</span>
+<span id="1634">1634</span>
+<span id="1635">1635</span>
+<span id="1636">1636</span>
+<span id="1637">1637</span>
+<span id="1638">1638</span>
+<span id="1639">1639</span>
+<span id="1640">1640</span>
+<span id="1641">1641</span>
+<span id="1642">1642</span>
+<span id="1643">1643</span>
+<span id="1644">1644</span>
+<span id="1645">1645</span>
+<span id="1646">1646</span>
+<span id="1647">1647</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Prolog contexts.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! As you interact with SWI-Prolog, the underlying prolog engine</span>
@@ -1620,6 +1697,9 @@
 <span class="doccomment">//! into prolog (if you&#39;re implementing a foreign predicate), which</span>
 <span class="doccomment">//! will then raise this exception in prolog, or to clear the</span>
 <span class="doccomment">//! exception.</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;serde&quot;</span>)]</span>
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::term::ser::SerializerConfiguration</span>;
+
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::atom</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::callable</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::engine</span>::<span class="kw-2">*</span>;
@@ -1629,8 +1709,11 @@
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::stream</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::term</span>::<span class="kw-2">*</span>;
 
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;serde&quot;</span>)]</span>
+<span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 <span class="kw">use</span> <span class="ident">std::cell::Cell</span>;
 <span class="kw">use</span> <span class="ident">std::mem::MaybeUninit</span>;
+<span class="kw">use</span> <span class="ident">swipl_macros::pred</span>;
 
 <span class="kw">use</span> <span class="ident">swipl_macros</span>::{<span class="ident">prolog</span>, <span class="ident">term</span>};
 
@@ -2310,6 +2393,23 @@
         <span class="prelude-val">Ok</span>(<span class="ident">term</span>)
     }
 
+    <span class="doccomment">/// Turn the given string into a prolog term.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This uses the prolog predicate `read_term_from_atom/3` for the</span>
+    <span class="doccomment">/// heavy lifting.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Consider using the `term!` macro instead.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">string_from_term</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">t</span>: <span class="kw-2">&amp;</span><span class="ident">Term</span>) -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">frame</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">open_frame</span>();
+        <span class="kw">let</span> <span class="ident">out</span> <span class="op">=</span> <span class="ident">frame</span>.<span class="ident">new_term_ref</span>();
+
+        <span class="ident">frame</span>.<span class="ident">call_once</span>(<span class="macro">pred!</span>(<span class="string">&quot;term_string/2&quot;</span>), [<span class="kw-2">&amp;</span><span class="ident">t</span>, <span class="kw-2">&amp;</span><span class="ident">out</span>])<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">s</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">out</span>.<span class="ident">get</span>()<span class="question-mark">?</span>;
+        <span class="ident">frame</span>.<span class="ident">close</span>();
+
+        <span class="prelude-val">Ok</span>(<span class="ident">s</span>)
+    }
+
     <span class="doccomment">/// Open a query for the given term using the `call/1` prolog predicate.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">open_call</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">t</span>: <span class="kw-2">&amp;</span><span class="ident">Term</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>) -&gt; <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="kw">impl</span> <span class="ident">OpenCall</span><span class="op">&gt;</span> {
         <span class="ident">open_call</span>(<span class="self">self</span>, <span class="ident">t</span>)
@@ -2544,6 +2644,61 @@
 
         <span class="prelude-val">Ok</span>(<span class="ident">terms</span>)
     }
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;serde&quot;</span>)]</span>
+    <span class="doccomment">/// Deserialize a term into a rust value using serde.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">deserialize_from_term</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span>, <span class="ident">DT</span>: <span class="ident">Deserialize</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span><span class="op">&gt;</span>(
+        <span class="kw-2">&amp;</span><span class="lifetime">&#39;de</span> <span class="self">self</span>,
+        <span class="ident">term</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;de</span> <span class="ident">Term</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
+    ) -&gt; <span class="ident"><span class="kw">super</span>::term::de::Result</span><span class="op">&lt;</span><span class="ident">DT</span><span class="op">&gt;</span> {
+        <span class="ident"><span class="kw">super</span>::term::de::from_term</span>(<span class="self">self</span>, <span class="ident">term</span>)
+    }
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;serde&quot;</span>)]</span>
+    <span class="doccomment">/// Serialize a value into a prolog term using serde.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This uses the default serialization configuration, meaning:</span>
+    <span class="doccomment">/// - prolog dictionary tags will remain variables.</span>
+    <span class="doccomment">/// - struct type names are ignored and will not be set as the dictionary tag.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">serialize_to_term</span><span class="op">&lt;</span><span class="ident">ST</span>: <span class="ident">Serialize</span><span class="op">&gt;</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="ident">term</span>: <span class="kw-2">&amp;</span><span class="ident">Term</span>,
+        <span class="ident">obj</span>: <span class="kw-2">&amp;</span><span class="ident">ST</span>,
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident"><span class="kw">super</span>::term::de::Error</span><span class="op">&gt;</span> {
+        <span class="ident"><span class="kw">super</span>::term::ser::to_term</span>(<span class="self">self</span>, <span class="ident">term</span>, <span class="ident">obj</span>)
+    }
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;serde&quot;</span>)]</span>
+    <span class="doccomment">/// Serialize a value into a prolog term using serde, providing configuration options.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">serialize_to_term_with_config</span><span class="op">&lt;</span><span class="ident">ST</span>: <span class="ident">Serialize</span><span class="op">&gt;</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="ident">term</span>: <span class="kw-2">&amp;</span><span class="ident">Term</span>,
+        <span class="ident">obj</span>: <span class="kw-2">&amp;</span><span class="ident">ST</span>,
+        <span class="ident">config</span>: <span class="ident">SerializerConfiguration</span>,
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident"><span class="kw">super</span>::term::de::Error</span><span class="op">&gt;</span> {
+        <span class="ident"><span class="kw">super</span>::term::ser::to_term_with_config</span>(<span class="self">self</span>, <span class="ident">term</span>, <span class="ident">obj</span>, <span class="ident">config</span>)
+    }
+
+    <span class="doccomment">/// Unify the term with the list functor, returning a term for the head and the tail.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">unify_list_functor</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span><span class="op">&gt;</span>(
+        <span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="self">self</span>,
+        <span class="ident">term</span>: <span class="kw-2">&amp;</span><span class="ident">Term</span>,
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">Term</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span><span class="op">&gt;</span>, <span class="ident">Term</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span><span class="op">&gt;</span>), <span class="ident">PrologError</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> [<span class="ident">head</span>, <span class="ident">tail</span>] <span class="op">=</span> <span class="self">self</span>.<span class="ident">new_term_refs</span>();
+        <span class="kw">match</span> <span class="kw">unsafe</span> { <span class="ident">PL_unify_list</span>(<span class="ident">term</span>.<span class="ident">term_ptr</span>(), <span class="ident">head</span>.<span class="ident">term_ptr</span>(), <span class="ident">tail</span>.<span class="ident">term_ptr</span>()) } {
+            <span class="number">0</span> =&gt; {
+                <span class="kw">unsafe</span> {
+                    <span class="ident">head</span>.<span class="ident">reset</span>();
+                }
+                <span class="kw">if</span> <span class="kw">unsafe</span> { <span class="ident">pl_default_exception</span>() <span class="op">!</span><span class="op">=</span> <span class="number">0</span> } {
+                    <span class="prelude-val">Err</span>(<span class="ident">PrologError::Exception</span>)
+                } <span class="kw">else</span> {
+                    <span class="prelude-val">Err</span>(<span class="ident">PrologError::Failure</span>)
+                }
+            }
+            <span class="kw">_</span> =&gt; <span class="prelude-val">Ok</span>((<span class="ident">head</span>, <span class="ident">tail</span>)),
+        }
+    }
 }
 
 <span class="doccomment">/// An iterator over a term list.</span>
@@ -2639,7 +2794,6 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::atom</span>::<span class="kw-2">*</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::functor</span>::<span class="kw-2">*</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::predicate</span>::<span class="kw-2">*</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::predicates</span>;

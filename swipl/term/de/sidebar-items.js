@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["Error","Error type for serialization/deserialization."]],"fn":[["from_term","Deserialize a term into a rust value using serde."]],"struct":[["Deserializer","A serde deserializer for turning prolog terms into rust values."]],"type":[["Result","Result type for deserialization."]]};
