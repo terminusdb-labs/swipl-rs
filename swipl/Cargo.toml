@@ -17,6 +17,7 @@ lazy_static = "1.4.0"
 thiserror = "1.0"
 serde = {version="1.0", optional=true}
 convert_case = "0.6"
+rug = {version = "1.17", default-features = false, features=["integer","rational"]}
 
 [dev-dependencies]
 serde = {version="1.0", features=["derive"]}

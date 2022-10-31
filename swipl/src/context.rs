@@ -455,7 +455,7 @@ enum FrameState {
 ///    let term2 = frame.new_term_ref();
 ///
 ///    frame.close();
-///    assert_eq!(42_u64, term.get()?);
+///    assert_eq!(42_u64, term.get::<u64>()?);
 ///    // the following would result in a compile error:
 ///    // term2.unify(42_u64)?;
 ///
@@ -482,7 +482,7 @@ enum FrameState {
 ///    term.unify(43_u64)?;
 ///
 ///    frame.close();
-///    assert_eq!(43_u64, term.get()?);
+///    assert_eq!(43_u64, term.get::<u64>()?);
 ///
 ///    Ok(())
 /// }
@@ -1207,7 +1207,7 @@ mod tests {
         let next = query.next_solution()?;
 
         assert!(!next);
-        assert_eq!(42_u64, term1.get()?);
+        assert_eq!(42_u64, term1.get::<u64>()?);
 
         let next = query.next_solution();
         assert!(next.is_err());
@@ -1239,7 +1239,7 @@ mod tests {
             let next = query.next_solution()?;
 
             assert!(!next);
-            assert_eq!(42_u64, term1.get().unwrap());
+            assert_eq!(42_u64, term1.get::<u64>().unwrap());
         }
 
         // after leaving the block, we have discarded
@@ -1272,7 +1272,7 @@ mod tests {
             let next = query.next_solution()?;
 
             assert!(!next);
-            assert_eq!(42_u64, term1.get()?);
+            assert_eq!(42_u64, term1.get::<u64>()?);
             query.discard();
         }
 
@@ -1306,12 +1306,12 @@ mod tests {
             let next = query.next_solution()?;
 
             assert!(!next);
-            assert_eq!(42_u64, term1.get()?);
+            assert_eq!(42_u64, term1.get::<u64>()?);
             query.cut();
         }
 
         // a cut query leaves data intact
-        assert_eq!(42_u64, term1.get()?);
+        assert_eq!(42_u64, term1.get::<u64>()?);
 
         Ok(())
     }
