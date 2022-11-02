@@ -992,7 +992,7 @@ term_putable! {
 
 unifiable! {
     (self: &[u8], term) => {
-        let result = unsafe { PL_unify_string_nchars(term.term_ptr(), self.len() as size_t, self.as_ptr() as *const i8) };
+        let result = unsafe { PL_unify_string_nchars(term.term_ptr(), self.len() as size_t, self.as_ptr() as *const std::os::raw::c_char) };
 
         result != 0
     }
@@ -1017,7 +1017,7 @@ term_getable! {
 
 term_putable! {
     (self: [u8], term) => {
-        unsafe { PL_put_string_nchars(term.term_ptr(), self.len() as size_t, self.as_ptr() as *const i8) };
+        unsafe { PL_put_string_nchars(term.term_ptr(), self.len() as size_t, self.as_ptr() as *const std::os::raw::c_char) };
     }
 
 }

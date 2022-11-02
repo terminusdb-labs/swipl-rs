@@ -107,9 +107,9 @@ fn initialize_internal(
     mut initialized: RwLockWriteGuard<Option<Engine>>,
 ) -> Option<EngineActivation<'static>> {
     // TOOD we just pick "rust-swipl" as a fake program name here. This seems to work fine. But what we should really do is pass along the actual argv[0].
-    let mut args: [*mut i8; 3] = [
-        ARG0.as_ptr() as *mut i8,
-        ARG1.as_ptr() as *mut i8,
+    let mut args: [*mut std::os::raw::c_char; 3] = [
+        ARG0.as_ptr() as *mut std::os::raw::c_char,
+        ARG1.as_ptr() as *mut std::os::raw::c_char,
         std::ptr::null_mut(),
     ];
     // unsafe justification: this initializes the swipl library and is idempotent
