@@ -2422,7 +2422,7 @@
 
 <span class="macro">unifiable!</span> {
     (<span class="self">self</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">term</span>) =&gt; {
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">PL_unify_string_nchars</span>(<span class="ident">term</span>.<span class="ident">term_ptr</span>(), <span class="self">self</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">size_t</span>, <span class="self">self</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*const</span> <span class="ident">i8</span>) };
+        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">PL_unify_string_nchars</span>(<span class="ident">term</span>.<span class="ident">term_ptr</span>(), <span class="self">self</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">size_t</span>, <span class="self">self</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*const</span> <span class="ident">std::os::raw::c_char</span>) };
 
         <span class="ident">result</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span>
     }
@@ -2447,7 +2447,7 @@
 
 <span class="macro">term_putable!</span> {
     (<span class="self">self</span>: [<span class="ident">u8</span>], <span class="ident">term</span>) =&gt; {
-        <span class="kw">unsafe</span> { <span class="ident">PL_put_string_nchars</span>(<span class="ident">term</span>.<span class="ident">term_ptr</span>(), <span class="self">self</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">size_t</span>, <span class="self">self</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*const</span> <span class="ident">i8</span>) };
+        <span class="kw">unsafe</span> { <span class="ident">PL_put_string_nchars</span>(<span class="ident">term</span>.<span class="ident">term_ptr</span>(), <span class="self">self</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">size_t</span>, <span class="self">self</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*const</span> <span class="ident">std::os::raw::c_char</span>) };
     }
 
 }

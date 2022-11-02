@@ -350,7 +350,7 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">write_buf</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">buf</span>.<span class="ident">len</span>() <span class="op">+</span> <span class="number">1</span>);
         <span class="ident">write_buf</span>.<span class="ident">extend_from_slice</span>(<span class="ident">buf</span>);
         <span class="ident">write_buf</span>.<span class="ident">push</span>(<span class="number">0</span>);
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">fli::Sfputs</span>(<span class="ident">write_buf</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*const</span> <span class="ident">i8</span>, <span class="ident">stream</span>);
+        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">fli::Sfputs</span>(<span class="ident">write_buf</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*const</span> <span class="ident">std::os::raw::c_char</span>, <span class="ident">stream</span>);
         <span class="kw">if</span> <span class="ident">result</span> <span class="op">==</span> <span class="ident">fli::EOF</span> {
             <span class="kw">if</span> <span class="ident">fli::Sferror</span>(<span class="ident">stream</span>) <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
                 <span class="ident">fli::Sclearerr</span>(<span class="ident">stream</span>);

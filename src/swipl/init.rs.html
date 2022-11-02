@@ -316,9 +316,9 @@
     <span class="kw-2">mut</span> <span class="ident">initialized</span>: <span class="ident">RwLockWriteGuard</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Engine</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 ) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">EngineActivation</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span><span class="op">&gt;</span> {
     <span class="comment">// TOOD we just pick &quot;rust-swipl&quot; as a fake program name here. This seems to work fine. But what we should really do is pass along the actual argv[0].</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">args</span>: [<span class="kw-2">*mut</span> <span class="ident">i8</span>; <span class="number">3</span>] <span class="op">=</span> [
-        <span class="ident">ARG0</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">i8</span>,
-        <span class="ident">ARG1</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">i8</span>,
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">args</span>: [<span class="kw-2">*mut</span> <span class="ident">std::os::raw::c_char</span>; <span class="number">3</span>] <span class="op">=</span> [
+        <span class="ident">ARG0</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">std::os::raw::c_char</span>,
+        <span class="ident">ARG1</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">std::os::raw::c_char</span>,
         <span class="ident">std::ptr::null_mut</span>(),
     ];
     <span class="comment">// unsafe justification: this initializes the swipl library and is idempotent</span>

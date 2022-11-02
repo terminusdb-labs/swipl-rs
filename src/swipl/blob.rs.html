@@ -923,7 +923,7 @@
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">std::mem::zeroed</span>::<span class="op">&lt;</span><span class="ident">fli::PL_blob_t</span><span class="op">&gt;</span>() };
     <span class="ident">result</span>.<span class="ident">magic</span> <span class="op">=</span> <span class="ident">fli::PL_BLOB_MAGIC</span> <span class="kw">as</span> <span class="ident">usize</span>;
     <span class="ident">result</span>.<span class="ident">flags</span> <span class="op">=</span> <span class="ident">flags</span> <span class="kw">as</span> <span class="ident">usize</span>;
-    <span class="ident">result</span>.<span class="ident">name</span> <span class="op">=</span> <span class="ident">name</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">i8</span>;
+    <span class="ident">result</span>.<span class="ident">name</span> <span class="op">=</span> <span class="ident">name</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">std::os::raw::c_char</span>;
     <span class="ident">result</span>.<span class="ident">acquire</span> <span class="op">=</span> <span class="ident">acquire</span>;
     <span class="ident">result</span>.<span class="ident">release</span> <span class="op">=</span> <span class="ident">release</span>;
     <span class="ident">result</span>.<span class="ident">compare</span> <span class="op">=</span> <span class="ident">compare</span>;
