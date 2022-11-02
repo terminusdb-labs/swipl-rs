@@ -86,7 +86,7 @@ jobs:
           --volume "${PWD}:/app"
         run: |
           apt-get update -q -y
-          apt install software-properties-common
+          apt install software-properties-common -q -y
           apt-add-repository ppa:swi-prolog/stable
           apt-get update -q -y
           apt install swi-prolog-nox curl -q -y
