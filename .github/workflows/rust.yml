@@ -87,7 +87,7 @@ jobs:
         run: |
           apt-get update -q -y
           apt install software-properties-common -q -y
-          apt-add-repository ppa:swi-prolog/stable
+          apt-add-repository ppa:swi-prolog/stable -y
           apt-get update -q -y
           apt install swi-prolog-nox curl -q -y
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
