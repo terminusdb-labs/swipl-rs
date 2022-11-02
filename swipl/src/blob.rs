@@ -260,7 +260,7 @@ pub fn create_blob_definition(
     let mut result = unsafe { std::mem::zeroed::<fli::PL_blob_t>() };
     result.magic = fli::PL_BLOB_MAGIC as usize;
     result.flags = flags as usize;
-    result.name = name.as_ptr() as *mut i8;
+    result.name = name.as_ptr() as *mut std::os::raw::c_char;
     result.acquire = acquire;
     result.release = release;
     result.compare = compare;
