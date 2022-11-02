@@ -70,3 +70,26 @@ jobs:
       env: 
         SWIPL: /Applications/SWI-Prolog.app/Contents/MacOS/swipl
       run: cargo swipl test --all-features
+
+    build_arm64:
+      # Still a seperate job until GitHub actions supports arm64 natively
+      runs-on: ubuntu-latest
+      steps:
+      - uses: actions/checkout@v3
+      - uses: uraimo/run-on-arch-action@v2
+        name: Run tests on arm64
+        id: build
+        with:
+          arch: aarch64
+          distro: ubuntu_latest
+          dockerRunArgs: |
+            --volume "${PWD}:/app"
+          run: |
+            apt-get update -q -y
+            apt-add-repository ppa:swi-prolog/stable
+            apt-get update -q -y
+            apt install swi-prolog-nox curl -q -y
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+            source "$HOME/.cargo/env"
+            cd /app
+            cargo swipl test --all-features
