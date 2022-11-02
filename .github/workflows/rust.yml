@@ -93,4 +93,5 @@ jobs:
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
           source "$HOME/.cargo/env"
           cd /app
+          cargo install --path ./cargo-swipl
           cargo swipl test --all-features
