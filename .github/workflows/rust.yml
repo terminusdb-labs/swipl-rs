@@ -89,7 +89,7 @@ jobs:
           apt install software-properties-common -q -y
           apt-add-repository ppa:swi-prolog/stable -y
           apt-get update -q -y
-          apt install swi-prolog-nox curl git build-essentials -q -y
+          apt install swi-prolog-nox curl git build-essential -q -y
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
           source "$HOME/.cargo/env"
           cd /app
