@@ -1,6 +1,3 @@
-name: Build and test
-
-on:
 name: Run tests on other platforms
 
 on:
