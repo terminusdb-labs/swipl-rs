@@ -1,0 +1,36 @@
+name: Build and test
+
+on:
+name: Run tests on other platforms
+
+on:
+  schedule:
+    - cron:  '45 1 * * *'
+  workflow_dispatch:
+
+jobs:
+  build_arm64:
+      # Still a seperate job until GitHub actions supports arm64 natively
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: uraimo/run-on-arch-action@v2
+      name: Run tests on arm64
+      id: build
+      with:
+        arch: aarch64
+        distro: ubuntu_latest
+        dockerRunArgs: |
+          --volume "${PWD}:/app"
+        run: |
+          apt-get update -q -y
+          apt install software-properties-common -q -y
+          apt-add-repository ppa:swi-prolog/stable -y
+          apt-get update -q -y
+          apt install swi-prolog-nox curl git build-essential libclang-dev clang -q -y
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          source "$HOME/.cargo/env"
+          cd /app
+          export CARGO_NET_GIT_FETCH_WITH_CLI=true
+          cargo install --path ./cargo-swipl
+          cargo swipl test --all-features
