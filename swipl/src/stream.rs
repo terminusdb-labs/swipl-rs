@@ -103,7 +103,7 @@ unsafe fn write_to_prolog_stream(stream: *mut fli::IOSTREAM, buf: &[u8]) -> io::
         let mut write_buf = Vec::with_capacity(buf.len() + 1);
         write_buf.extend_from_slice(buf);
         write_buf.push(0);
-        let result = fli::Sfputs(write_buf.as_ptr() as *const i8, stream);
+        let result = fli::Sfputs(write_buf.as_ptr() as *const std::os::raw::c_char, stream);
         if result == fli::EOF {
             if fli::Sferror(stream) != 0 {
                 fli::Sclearerr(stream);
