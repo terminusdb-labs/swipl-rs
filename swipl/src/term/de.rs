@@ -8,6 +8,7 @@ use crate::{atom, functor};
 use serde::de::{self, DeserializeSeed, EnumAccess, MapAccess, SeqAccess, VariantAccess, Visitor};
 use serde::Deserialize;
 use std::fmt::{self, Display};
+use std::cell::Cell;
 
 /// Deserialize a term into a rust value using serde.
 pub fn from_term<'a, C: QueryableContextType, T>(
@@ -458,7 +459,7 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
                     Err(Error::ValueOutOfRange)
                 }
             }
-            None => Err(Error::ValueNotOfExpectedType("u64")),
+            None => Err(Error::ValueNotOfExpectedType("u64 (x)")),
         }
     }
     fn deserialize_f32<V>(self, visitor: V) -> Result<V::Value>
@@ -580,7 +581,23 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
         V: Visitor<'de>,
     {
         if name == ATOM_STRUCT_NAME {
-            self.deserialize_string(visitor)
+            if DeserializingAtomState::is_deserializing_atom() {
+                let atom = attempt_opt(self.term.get::<Atom>())?;
+                match atom {
+                    Some(atom) => {
+                        if cfg!(target_pointer_width = "32") {
+                            visitor.visit_u32(atom.atom_ptr() as u32)
+                        }
+                        else {
+                            visitor.visit_u64(atom.atom_ptr() as u64)
+                        }
+                    },
+                    None => Err(Error::ValueNotOfExpectedType("atom"))
+                }
+            }
+            else {
+                self.deserialize_string(visitor)
+            }
         } else {
             visitor.visit_newtype_struct(self)
         }
@@ -944,9 +961,24 @@ impl<'de> de::Deserializer<'de> for KeyDeserializer {
     where
         V: Visitor<'de>,
     {
+        // an atom key!
         if name == ATOM_STRUCT_NAME {
-            // an atom key!
-            self.deserialize_string(visitor)
+            if DeserializingAtomState::is_deserializing_atom() {
+                match self.key {
+                    Key::Atom(atom) => {
+                        if cfg!(target_pointer_width = "32") {
+                            visitor.visit_u32(atom.atom_ptr() as u32)
+                        }
+                        else {
+                            visitor.visit_u64(atom.atom_ptr() as u64)
+                        }
+                    },
+                    _ => Err(Error::ValueNotOfExpectedType("atom"))
+                }
+            }
+            else {
+                self.deserialize_string(visitor)
+            }
         } else {
             Err(Error::UnexpectedType("newtype struct"))
         }
@@ -1220,11 +1252,42 @@ impl<'de> de::Deserializer<'de> for EnumVariantDeserializer {
     }
 }
 
+thread_local! {
+    static DESERIALIZING_ATOM: Cell<bool> = Cell::new(false);
+}
+
+struct DeserializingAtomState;
+
+impl DeserializingAtomState {
+    fn start() -> Self {
+        DESERIALIZING_ATOM.with(|da| {
+            if da.get() {
+                panic!("atom serialization was already set. did we recurse?");
+            }
+            da.set(true)
+        });
+
+
+        Self
+    }
+
+    fn is_deserializing_atom() -> bool {
+        DESERIALIZING_ATOM.with(|da| da.get())
+    }
+}
+
+impl Drop for DeserializingAtomState {
+    fn drop(&mut self) {
+        DESERIALIZING_ATOM.with(|da| da.set(false));
+    }
+}
+
 impl<'de> Deserialize<'de> for Atom {
     fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
     where
         D: de::Deserializer<'de>,
     {
+        let _state = DeserializingAtomState::start();
         deserializer.deserialize_newtype_struct(ATOM_STRUCT_NAME, AtomVisitor)
     }
 }
@@ -1238,11 +1301,47 @@ impl<'de> Visitor<'de> for AtomVisitor {
         write!(formatter, "an atom")
     }
 
+    #[cfg(target_pointer_width = "32")]
+    fn visit_u32<E>(self, v: u32) -> std::result::Result<Atom, E>
+    where
+        E: de::Error,
+    {
+        if !DeserializingAtomState::is_deserializing_atom() {
+            panic!("visiting atom as pointer but not in deserializing state");
+        }
+        let atom = unsafe { Atom::wrap((v as usize).into()) };
+        atom.increment_refcount();
+        Ok(atom)
+    }
+
+    #[cfg(target_pointer_width = "64")]
+    fn visit_u64<E>(self, v: u64) -> std::result::Result<Atom, E>
+    where
+        E: de::Error,
+    {
+        if !DeserializingAtomState::is_deserializing_atom() {
+            panic!("visiting atom as pointer but not in deserializing state");
+        }
+        let atom = unsafe { Atom::wrap((v as usize).into()) };
+        atom.increment_refcount();
+        Ok(atom)
+    }
+
     fn visit_str<E>(self, s: &str) -> std::result::Result<Atom, E>
     where
         E: de::Error,
     {
         Ok(Atom::new(s))
+    }
+
+    fn visit_newtype_struct<D>(self, deserializer: D) -> std::result::Result<Atom, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        // us being here indicates we're being deserialized from an
+        // unknown deserializer (not swipl). That means we have to
+        // interpret as string and not as a pointer.
+        deserializer.deserialize_str(self)
     }
 }
 
