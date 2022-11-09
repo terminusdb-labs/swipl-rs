@@ -57,9 +57,9 @@ jobs:
           gmp
           gmp-devel
           mingw-w64-x86_64-gcc
-          swi-prolog
-          clang
-          rust
+          mingw-w64-x86_64-rust
+          mingw-w64-x86_64-swi-prolog
+          mingw-w64-clang-x86_64-toolchain
 
     - name: Install SWI Prolog on MacOS from brew
       if: ${{ matrix.os == 'macos-latest' && matrix.dmg == 'no_dmg' }}
