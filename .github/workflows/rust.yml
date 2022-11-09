@@ -78,8 +78,9 @@ jobs:
           diffutils
           m4
           make
+          gmp
+          gmp-devel
           mingw-w64-x86_64-gcc
-          mingw-w64-gmp
     - name: Run tests on windows
       if: ${{ matrix.os == 'windows-latest' }}
       shell: msys2 {0}
@@ -88,6 +89,7 @@ jobs:
         LIBCLANG_PATH: C:\Program Files\LLVM\bin\
       run: |
         export PATH="$PATH:/c/Users/Default/.cargo/bin"
+        export C_INCLUDE_PATH=/usr/include/
         cargo swipl test --all-features --target=x86_64-pc-windows-gnu
 
     - name: Run tests on osx with dmg
