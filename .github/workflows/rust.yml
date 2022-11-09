@@ -85,7 +85,7 @@ jobs:
         SWIPL: C:\Program Files\swipl\bin\swipl.exe
         LIBCLANG_PATH: C:\Program Files\LLVM\bin\
       run: |
-        export PATH="$PATH:/c/UsersDefault/.cargo/bin"
+        export PATH="$PATH:/c/Users/Default/.cargo/bin"
         cargo swipl test --all-features --target=x86_64-pc-windows-gnu
 
     - name: Run tests on osx with dmg
