@@ -28,7 +28,7 @@ jobs:
     - uses: actions/checkout@v2
       # This is needed because the GMP crate does not support MSVC
     - name: Install MINGW version of rust for Windows
-      if ${{ matrix.os == 'windows-latest' }}
+      if: ${{ matrix.os == 'windows-latest' }}
       uses: actions-rs/toolchain@v1
       with:
           toolchain: stable
