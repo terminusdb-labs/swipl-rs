@@ -78,6 +78,8 @@ jobs:
           m4
           make
           mingw-w64-x86_64-gcc
+          gmp
+          gmp-devel
     - name: Run tests on windows
       if: ${{ matrix.os == 'windows-latest' }}
       shell: msys2 {0}
