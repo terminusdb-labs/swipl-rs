@@ -26,6 +26,15 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
+      # This is needed because the GMP crate does not support MSVC
+    - name: Install MINGW version of rust for Windows
+      if ${{ matrix.os == 'windows-latest' }}
+      uses: actions-rs/toolchain@v1
+      with:
+          toolchain: stable
+          target: x86_64-pc-windows-gnu
+          override: true
+          default: true
     - name: Install SWI Prolog on Linux
       if: ${{ matrix.os == 'ubuntu-latest' }}
       run: |
