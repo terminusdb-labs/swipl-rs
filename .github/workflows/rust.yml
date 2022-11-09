@@ -68,15 +68,26 @@ jobs:
     - name: Run tests on posix
       if: ${{ matrix.os != 'windows-latest' && matrix.dmg == 'no_dmg' }}
       run: cargo swipl test --all-features
+
+    - name: Install msys2
+      if: ${{ matrix.os == 'windows-latest' }}
+      uses: msys2/setup-msys2@v2
+      with:
+        install: >-
+          base-devel
+          gmp
+          gmp-devel
+          m4
     - name: Run tests on windows
       if: ${{ matrix.os == 'windows-latest' }}
-      env: 
+      shell: msys2 {0}
+      env:
         SWIPL: C:\Program Files\swipl\bin\swipl.exe
         LIBCLANG_PATH: C:\Program Files\LLVM\bin\
       run: |
-        export PATH=$PATH:/c/msys64/usr/bin:/c/msys64/bin
-        pacman -S gmp gmp-devel m4
         cargo swipl test --all-features --target=x86_64-pc-windows-gnu
+
+
     - name: Run tests on osx with dmg
       if: ${{ matrix.dmg == 'dmg' }}
       env: 
