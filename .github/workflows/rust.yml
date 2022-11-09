@@ -74,6 +74,8 @@ jobs:
       run: cargo install --path ./cargo-swipl
     - name: Print information with swipl-info on windows
       if: ${{ matrix.os == 'windows-latest' }}
+      env:
+        SWIPL: /mingw64/bin/swipl
       run: cargo swipl run --bin print_swipl_info
     - name: Print information with swipl-info on osx with dmg
       if: ${{ matrix.dmg == 'dmg' }}
@@ -86,6 +88,9 @@ jobs:
 
     - name: Run tests on windows
       if: ${{ matrix.os == 'windows-latest' }}
+      env:
+        C_INCLUDE_PATH: /usr/include
+        SWIPL: /mingw64/bin/swipl
       run: |
         export C_INCLUDE_PATH=/usr/include/
         cargo swipl test --all-features --target=x86_64-pc-windows-gnu
