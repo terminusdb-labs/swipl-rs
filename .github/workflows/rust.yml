@@ -70,16 +70,16 @@ jobs:
     - name: Print information with swipl-info on posix
       if: ${{ matrix.os != 'windows-latest' && matrix.dmg == 'no_dmg' }}
       run: cargo run --bin print_swipl_info
+    - name: Install cargo-swipl
+      run: cargo install --path ./cargo-swipl
     - name: Print information with swipl-info on windows
       if: ${{ matrix.os == 'windows-latest' }}
-      run: cargo run --bin print_swipl_info
+      run: cargo swipl run --bin print_swipl_info
     - name: Print information with swipl-info on osx with dmg
       if: ${{ matrix.dmg == 'dmg' }}
       env: 
         SWIPL: /Applications/SWI-Prolog.app/Contents/MacOS/swipl
       run: cargo run --bin print_swipl_info
-    - name: Install cargo-swipl
-      run: cargo install --path ./cargo-swipl
     - name: Run tests on posix
       if: ${{ matrix.os != 'windows-latest' && matrix.dmg == 'no_dmg' }}
       run: cargo swipl test --all-features
