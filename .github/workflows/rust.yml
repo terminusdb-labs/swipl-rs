@@ -21,11 +21,13 @@ jobs:
         include:
           - os: ubuntu-latest
             shell: bash
+            dmg: no_dmg
           - os: macos-latest
             shell: bash
+            dmg: no_dmg
           - os: windows-latest
             shell: msys2
-        dmg: [no_dmg]
+            dmg: no_dmg
 
     defaults:
       run:
