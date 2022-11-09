@@ -75,6 +75,7 @@ jobs:
         LIBCLANG_PATH: C:\Program Files\LLVM\bin\
       run: |
         export PATH=$PATH:/c/msys64/usr/bin:/c/msys64/bin
+        pacman -S gmp gmp-devel m4
         cargo swipl test --all-features --target=x86_64-pc-windows-gnu
     - name: Run tests on osx with dmg
       if: ${{ matrix.dmg == 'dmg' }}
