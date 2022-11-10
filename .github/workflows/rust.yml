@@ -90,7 +90,7 @@ jobs:
       if: ${{ matrix.os == 'windows-latest' }}
       env:
         C_INCLUDE_PATH: /usr/include
-        SWIPL: C:\msys64\mingw64\bin
+        SWIPL: C:\msys64\mingw64\bin\swipl
       run: |
         export C_INCLUDE_PATH=/usr/include/
         cargo swipl test --all-features --target=x86_64-pc-windows-gnu
