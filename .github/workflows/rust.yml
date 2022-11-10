@@ -75,7 +75,7 @@ jobs:
     - name: Print information with swipl-info on windows
       if: ${{ matrix.os == 'windows-latest' }}
       env:
-        SWIPL: C:\msys64\mingw64\lib\swipl\bin\amd64-windows\swipl.exe
+        SWIPL: /mingw64/lib/swipl/bin/amd64-windows/swipl.exe
       run: cargo swipl run --bin print_swipl_info
     - name: Print information with swipl-info on osx with dmg
       if: ${{ matrix.dmg == 'dmg' }}
@@ -90,7 +90,7 @@ jobs:
       if: ${{ matrix.os == 'windows-latest' }}
       env:
         C_INCLUDE_PATH: /usr/include
-        SWIPL: C:\msys64\mingw64\lib\swipl\bin\amd64-windows\swipl.exe
+        SWIPL: /mingw64/lib/swipl/bin/amd64-windows/swipl.exe
       run: |
         export C_INCLUDE_PATH=/usr/include/
         cargo swipl test --all-features --target=x86_64-pc-windows-gnu
