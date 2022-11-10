@@ -75,7 +75,7 @@ jobs:
     - name: Print information with swipl-info on windows
       if: ${{ matrix.os == 'windows-latest' }}
       env:
-        SWIPL: /mingw64/bin/swipl
+        SWIPL: C:\msys64\mingw64\bin\swipl
       run: cargo swipl run --bin print_swipl_info
     - name: Print information with swipl-info on osx with dmg
       if: ${{ matrix.dmg == 'dmg' }}
