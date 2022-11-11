@@ -459,7 +459,7 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
                     Err(Error::ValueOutOfRange)
                 }
             }
-            None => Err(Error::ValueNotOfExpectedType("u64 (x)")),
+            None => Err(Error::ValueNotOfExpectedType("u64")),
         }
     }
     fn deserialize_f32<V>(self, visitor: V) -> Result<V::Value>
