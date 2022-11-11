@@ -59,4 +59,18 @@ mod tests {
 
         assert_eq!(atom!("hello"), atom);
     }
+
+    #[test]
+    fn serialize_atom_to_json() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let _context: Context<_> = activation.into();
+
+        let atom = atom!("hello");
+        let expected = json!("hello");
+
+        let json = serde_json::to_value(atom).unwrap();
+
+        assert_eq!(expected, json);
+    }
 }

@@ -7,6 +7,8 @@ use crate::{atom, functor};
 use serde::ser::Impossible;
 use serde::{self, ser, Serialize};
 
+use std::cell::Cell;
+
 pub(crate) const ATOM_STRUCT_NAME: &'static str = "$swipl::private::atom";
 
 impl ser::Error for Error {
@@ -32,6 +34,7 @@ where
     T: Serialize,
 {
     let serializer = Serializer::new(context, term.clone());
+    let _state = SerializingSwiplTermState::start();
 
     obj.serialize(serializer)
 }
@@ -47,6 +50,7 @@ where
     T: Serialize,
 {
     let serializer = Serializer::new_with_config(context, term.clone(), configuration);
+    let _state = SerializingSwiplTermState::start();
 
     obj.serialize(serializer)
 }
@@ -379,12 +383,47 @@ impl<'a, C: QueryableContextType> serde::Serializer for Serializer<'a, C> {
     }
 }
 
+thread_local! {
+    static SERIALIZING_SWIPL_TERM: Cell<bool> = Cell::new(false);
+}
+struct SerializingSwiplTermState;
+
+impl SerializingSwiplTermState {
+    fn start() -> Self {
+        SERIALIZING_SWIPL_TERM.with(|sst| {
+            if sst.get() {
+                panic!("swipl term serialization was already set. did we recurse?");
+            }
+            sst.set(true)
+        });
+
+
+        Self
+    }
+
+    fn is_serializing_swipl_term() -> bool {
+        SERIALIZING_SWIPL_TERM.with(|sst| sst.get())
+    }
+}
+
+impl Drop for SerializingSwiplTermState {
+    fn drop(&mut self) {
+        SERIALIZING_SWIPL_TERM.with(|sst| sst.set(false));
+    }
+}
+
+
 impl ser::Serialize for Atom {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
     {
-        serializer.serialize_newtype_struct(ATOM_STRUCT_NAME, &self.atom_ptr())
+        if SerializingSwiplTermState::is_serializing_swipl_term() {
+            serializer.serialize_newtype_struct(ATOM_STRUCT_NAME, &self.atom_ptr())
+        }
+        else {
+            serializer.serialize_newtype_struct(ATOM_STRUCT_NAME, &self.name())
+        }
     }
 }
 
