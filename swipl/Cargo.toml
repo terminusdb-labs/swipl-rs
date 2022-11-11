@@ -18,9 +18,10 @@ thiserror = "1.0"
 serde = {version="1.0", optional=true}
 convert_case = "0.6"
 rug = {version = "1.17", default-features = false, optional=true, features=["integer","rational"]}
+gmp-mpfr-sys = {version = "1.4", optional=true, features=["use-system-libs"]}
 
 [dev-dependencies]
 serde = {version="1.0", features=["derive"]}
 
 [features]
-rug = ["dep:rug", "swipl-fli/gmp"]
+rug = ["dep:rug", "dep:gmp-mpfr-sys", "swipl-fli/gmp"]
