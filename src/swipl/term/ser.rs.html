@@ -1507,6 +1507,45 @@
 <span id="1507">1507</span>
 <span id="1508">1508</span>
 <span id="1509">1509</span>
+<span id="1510">1510</span>
+<span id="1511">1511</span>
+<span id="1512">1512</span>
+<span id="1513">1513</span>
+<span id="1514">1514</span>
+<span id="1515">1515</span>
+<span id="1516">1516</span>
+<span id="1517">1517</span>
+<span id="1518">1518</span>
+<span id="1519">1519</span>
+<span id="1520">1520</span>
+<span id="1521">1521</span>
+<span id="1522">1522</span>
+<span id="1523">1523</span>
+<span id="1524">1524</span>
+<span id="1525">1525</span>
+<span id="1526">1526</span>
+<span id="1527">1527</span>
+<span id="1528">1528</span>
+<span id="1529">1529</span>
+<span id="1530">1530</span>
+<span id="1531">1531</span>
+<span id="1532">1532</span>
+<span id="1533">1533</span>
+<span id="1534">1534</span>
+<span id="1535">1535</span>
+<span id="1536">1536</span>
+<span id="1537">1537</span>
+<span id="1538">1538</span>
+<span id="1539">1539</span>
+<span id="1540">1540</span>
+<span id="1541">1541</span>
+<span id="1542">1542</span>
+<span id="1543">1543</span>
+<span id="1544">1544</span>
+<span id="1545">1545</span>
+<span id="1546">1546</span>
+<span id="1547">1547</span>
+<span id="1548">1548</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Serialization of rust values into prolog terms.</span>
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::de::Error</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
@@ -1515,6 +1554,8 @@
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">atom</span>, <span class="ident">functor</span>};
 <span class="kw">use</span> <span class="ident">serde::ser::Impossible</span>;
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="self">self</span>, <span class="ident">ser</span>, <span class="ident">Serialize</span>};
+
+<span class="kw">use</span> <span class="ident">std::cell::Cell</span>;
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const</span> <span class="ident">ATOM_STRUCT_NAME</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;$swipl::private::atom&quot;</span>;
 
@@ -1541,6 +1582,7 @@
     <span class="ident">T</span>: <span class="ident">Serialize</span>,
 {
     <span class="kw">let</span> <span class="ident">serializer</span> <span class="op">=</span> <span class="ident">Serializer::new</span>(<span class="ident">context</span>, <span class="ident">term</span>.<span class="ident">clone</span>());
+    <span class="kw">let</span> <span class="ident">_state</span> <span class="op">=</span> <span class="ident">SerializingSwiplTermState::start</span>();
 
     <span class="ident">obj</span>.<span class="ident">serialize</span>(<span class="ident">serializer</span>)
 }
@@ -1556,6 +1598,7 @@
     <span class="ident">T</span>: <span class="ident">Serialize</span>,
 {
     <span class="kw">let</span> <span class="ident">serializer</span> <span class="op">=</span> <span class="ident">Serializer::new_with_config</span>(<span class="ident">context</span>, <span class="ident">term</span>.<span class="ident">clone</span>(), <span class="ident">configuration</span>);
+    <span class="kw">let</span> <span class="ident">_state</span> <span class="op">=</span> <span class="ident">SerializingSwiplTermState::start</span>();
 
     <span class="ident">obj</span>.<span class="ident">serialize</span>(<span class="ident">serializer</span>)
 }
@@ -1888,12 +1931,47 @@
     }
 }
 
+<span class="macro">thread_local!</span> {
+    <span class="kw">static</span> <span class="ident">SERIALIZING_SWIPL_TERM</span>: <span class="ident">Cell</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Cell::new</span>(<span class="bool-val">false</span>);
+}
+<span class="kw">struct</span> <span class="ident">SerializingSwiplTermState</span>;
+
+<span class="kw">impl</span> <span class="ident">SerializingSwiplTermState</span> {
+    <span class="kw">fn</span> <span class="ident">start</span>() -&gt; <span class="self">Self</span> {
+        <span class="ident">SERIALIZING_SWIPL_TERM</span>.<span class="ident">with</span>(<span class="op">|</span><span class="ident">sst</span><span class="op">|</span> {
+            <span class="kw">if</span> <span class="ident">sst</span>.<span class="ident">get</span>() {
+                <span class="macro">panic!</span>(<span class="string">&quot;swipl term serialization was already set. did we recurse?&quot;</span>);
+            }
+            <span class="ident">sst</span>.<span class="ident">set</span>(<span class="bool-val">true</span>)
+        });
+
+
+        <span class="self">Self</span>
+    }
+
+    <span class="kw">fn</span> <span class="ident">is_serializing_swipl_term</span>() -&gt; <span class="ident">bool</span> {
+        <span class="ident">SERIALIZING_SWIPL_TERM</span>.<span class="ident">with</span>(<span class="op">|</span><span class="ident">sst</span><span class="op">|</span> <span class="ident">sst</span>.<span class="ident">get</span>())
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">SerializingSwiplTermState</span> {
+    <span class="kw">fn</span> <span class="ident">drop</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
+        <span class="ident">SERIALIZING_SWIPL_TERM</span>.<span class="ident">with</span>(<span class="op">|</span><span class="ident">sst</span><span class="op">|</span> <span class="ident">sst</span>.<span class="ident">set</span>(<span class="bool-val">false</span>));
+    }
+}
+
+
 <span class="kw">impl</span> <span class="ident">ser::Serialize</span> <span class="kw">for</span> <span class="ident">Atom</span> {
     <span class="kw">fn</span> <span class="ident">serialize</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">serializer</span>: <span class="ident">S</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">S::Ok</span>, <span class="ident">S::Error</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="ident">S</span>: <span class="ident">serde::Serializer</span>,
     {
-        <span class="ident">serializer</span>.<span class="ident">serialize_newtype_struct</span>(<span class="ident">ATOM_STRUCT_NAME</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">atom_ptr</span>())
+        <span class="kw">if</span> <span class="ident">SerializingSwiplTermState::is_serializing_swipl_term</span>() {
+            <span class="ident">serializer</span>.<span class="ident">serialize_newtype_struct</span>(<span class="ident">ATOM_STRUCT_NAME</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">atom_ptr</span>())
+        }
+        <span class="kw">else</span> {
+            <span class="ident">serializer</span>.<span class="ident">serialize_newtype_struct</span>(<span class="ident">ATOM_STRUCT_NAME</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">name</span>())
+        }
     }
 }
 

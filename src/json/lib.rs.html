@@ -48,9 +48,34 @@
 <span id="48">48</span>
 <span id="49">49</span>
 <span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
 </pre><pre class="rust"><code><span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
     <span class="kw">use</span> <span class="ident">serde_json</span>::{<span class="self">self</span>, <span class="ident">json</span>, <span class="ident">Value</span>};
     <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">BufWriter</span>, <span class="ident">Write</span>};
     <span class="kw">use</span> <span class="ident">swipl::prelude</span>::<span class="kw-2">*</span>;
@@ -96,6 +121,33 @@
         <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">std::str::from_utf8</span>(<span class="kw-2">&amp;</span><span class="ident">vec</span>).<span class="ident">unwrap</span>();
 
         <span class="macro">assert_eq!</span>(<span class="string">r#&quot;{&quot;foo&quot;:&quot;bar&quot;,&quot;baz&quot;:{&quot;elts&quot;:[42,{&quot;wow&quot;:&quot;moo&quot;},50]}}&quot;#</span>, <span class="ident">s</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">deserialize_atom_from_json</span>() {
+        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
+        <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
+        <span class="kw">let</span> <span class="ident">_context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
+
+        <span class="kw">let</span> <span class="ident">json</span> <span class="op">=</span> <span class="macro">json!</span>(<span class="string">&quot;hello&quot;</span>);
+
+        <span class="kw">let</span> <span class="ident">atom</span>: <span class="ident">Atom</span> <span class="op">=</span> <span class="ident">serde_json::from_value</span>(<span class="ident">json</span>).<span class="ident">unwrap</span>();
+
+        <span class="macro">assert_eq!</span>(<span class="macro">atom!</span>(<span class="string">&quot;hello&quot;</span>), <span class="ident">atom</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">serialize_atom_to_json</span>() {
+        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
+        <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
+        <span class="kw">let</span> <span class="ident">_context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
+
+        <span class="kw">let</span> <span class="ident">atom</span> <span class="op">=</span> <span class="macro">atom!</span>(<span class="string">&quot;hello&quot;</span>);
+        <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="macro">json!</span>(<span class="string">&quot;hello&quot;</span>);
+
+        <span class="kw">let</span> <span class="ident">json</span> <span class="op">=</span> <span class="ident">serde_json::to_value</span>(<span class="ident">atom</span>).<span class="ident">unwrap</span>();
+
+        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">json</span>);
     }
 }
 </code></pre></div>

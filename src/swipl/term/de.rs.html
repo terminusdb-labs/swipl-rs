@@ -1463,6 +1463,105 @@
 <span id="1463">1463</span>
 <span id="1464">1464</span>
 <span id="1465">1465</span>
+<span id="1466">1466</span>
+<span id="1467">1467</span>
+<span id="1468">1468</span>
+<span id="1469">1469</span>
+<span id="1470">1470</span>
+<span id="1471">1471</span>
+<span id="1472">1472</span>
+<span id="1473">1473</span>
+<span id="1474">1474</span>
+<span id="1475">1475</span>
+<span id="1476">1476</span>
+<span id="1477">1477</span>
+<span id="1478">1478</span>
+<span id="1479">1479</span>
+<span id="1480">1480</span>
+<span id="1481">1481</span>
+<span id="1482">1482</span>
+<span id="1483">1483</span>
+<span id="1484">1484</span>
+<span id="1485">1485</span>
+<span id="1486">1486</span>
+<span id="1487">1487</span>
+<span id="1488">1488</span>
+<span id="1489">1489</span>
+<span id="1490">1490</span>
+<span id="1491">1491</span>
+<span id="1492">1492</span>
+<span id="1493">1493</span>
+<span id="1494">1494</span>
+<span id="1495">1495</span>
+<span id="1496">1496</span>
+<span id="1497">1497</span>
+<span id="1498">1498</span>
+<span id="1499">1499</span>
+<span id="1500">1500</span>
+<span id="1501">1501</span>
+<span id="1502">1502</span>
+<span id="1503">1503</span>
+<span id="1504">1504</span>
+<span id="1505">1505</span>
+<span id="1506">1506</span>
+<span id="1507">1507</span>
+<span id="1508">1508</span>
+<span id="1509">1509</span>
+<span id="1510">1510</span>
+<span id="1511">1511</span>
+<span id="1512">1512</span>
+<span id="1513">1513</span>
+<span id="1514">1514</span>
+<span id="1515">1515</span>
+<span id="1516">1516</span>
+<span id="1517">1517</span>
+<span id="1518">1518</span>
+<span id="1519">1519</span>
+<span id="1520">1520</span>
+<span id="1521">1521</span>
+<span id="1522">1522</span>
+<span id="1523">1523</span>
+<span id="1524">1524</span>
+<span id="1525">1525</span>
+<span id="1526">1526</span>
+<span id="1527">1527</span>
+<span id="1528">1528</span>
+<span id="1529">1529</span>
+<span id="1530">1530</span>
+<span id="1531">1531</span>
+<span id="1532">1532</span>
+<span id="1533">1533</span>
+<span id="1534">1534</span>
+<span id="1535">1535</span>
+<span id="1536">1536</span>
+<span id="1537">1537</span>
+<span id="1538">1538</span>
+<span id="1539">1539</span>
+<span id="1540">1540</span>
+<span id="1541">1541</span>
+<span id="1542">1542</span>
+<span id="1543">1543</span>
+<span id="1544">1544</span>
+<span id="1545">1545</span>
+<span id="1546">1546</span>
+<span id="1547">1547</span>
+<span id="1548">1548</span>
+<span id="1549">1549</span>
+<span id="1550">1550</span>
+<span id="1551">1551</span>
+<span id="1552">1552</span>
+<span id="1553">1553</span>
+<span id="1554">1554</span>
+<span id="1555">1555</span>
+<span id="1556">1556</span>
+<span id="1557">1557</span>
+<span id="1558">1558</span>
+<span id="1559">1559</span>
+<span id="1560">1560</span>
+<span id="1561">1561</span>
+<span id="1562">1562</span>
+<span id="1563">1563</span>
+<span id="1564">1564</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Deserialization of rust values from prolog terms.</span>
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::ser::ATOM_STRUCT_NAME</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
@@ -1473,6 +1572,7 @@
 <span class="kw">use</span> <span class="ident">serde::de</span>::{<span class="self">self</span>, <span class="ident">DeserializeSeed</span>, <span class="ident">EnumAccess</span>, <span class="ident">MapAccess</span>, <span class="ident">SeqAccess</span>, <span class="ident">VariantAccess</span>, <span class="ident">Visitor</span>};
 <span class="kw">use</span> <span class="ident">serde::Deserialize</span>;
 <span class="kw">use</span> <span class="ident">std::fmt</span>::{<span class="self">self</span>, <span class="ident">Display</span>};
+<span class="kw">use</span> <span class="ident">std::cell::Cell</span>;
 
 <span class="doccomment">/// Deserialize a term into a rust value using serde.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_term</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">C</span>: <span class="ident">QueryableContextType</span>, <span class="ident">T</span><span class="op">&gt;</span>(
@@ -2045,7 +2145,23 @@
         <span class="ident">V</span>: <span class="ident">Visitor</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
     {
         <span class="kw">if</span> <span class="ident">name</span> <span class="op">==</span> <span class="ident">ATOM_STRUCT_NAME</span> {
-            <span class="self">self</span>.<span class="ident">deserialize_string</span>(<span class="ident">visitor</span>)
+            <span class="kw">if</span> <span class="ident">DeserializingAtomState::is_deserializing_atom</span>() {
+                <span class="kw">let</span> <span class="ident">atom</span> <span class="op">=</span> <span class="ident">attempt_opt</span>(<span class="self">self</span>.<span class="ident">term</span>.<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">Atom</span><span class="op">&gt;</span>())<span class="question-mark">?</span>;
+                <span class="kw">match</span> <span class="ident">atom</span> {
+                    <span class="prelude-val">Some</span>(<span class="ident">atom</span>) =&gt; {
+                        <span class="kw">if</span> <span class="macro">cfg!</span>(<span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>) {
+                            <span class="ident">visitor</span>.<span class="ident">visit_u32</span>(<span class="ident">atom</span>.<span class="ident">atom_ptr</span>() <span class="kw">as</span> <span class="ident">u32</span>)
+                        }
+                        <span class="kw">else</span> {
+                            <span class="ident">visitor</span>.<span class="ident">visit_u64</span>(<span class="ident">atom</span>.<span class="ident">atom_ptr</span>() <span class="kw">as</span> <span class="ident">u64</span>)
+                        }
+                    },
+                    <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">Error::ValueNotOfExpectedType</span>(<span class="string">&quot;atom&quot;</span>))
+                }
+            }
+            <span class="kw">else</span> {
+                <span class="self">self</span>.<span class="ident">deserialize_string</span>(<span class="ident">visitor</span>)
+            }
         } <span class="kw">else</span> {
             <span class="ident">visitor</span>.<span class="ident">visit_newtype_struct</span>(<span class="self">self</span>)
         }
@@ -2409,9 +2525,24 @@
     <span class="kw">where</span>
         <span class="ident">V</span>: <span class="ident">Visitor</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
     {
+        <span class="comment">// an atom key!</span>
         <span class="kw">if</span> <span class="ident">name</span> <span class="op">==</span> <span class="ident">ATOM_STRUCT_NAME</span> {
-            <span class="comment">// an atom key!</span>
-            <span class="self">self</span>.<span class="ident">deserialize_string</span>(<span class="ident">visitor</span>)
+            <span class="kw">if</span> <span class="ident">DeserializingAtomState::is_deserializing_atom</span>() {
+                <span class="kw">match</span> <span class="self">self</span>.<span class="ident">key</span> {
+                    <span class="ident">Key::Atom</span>(<span class="ident">atom</span>) =&gt; {
+                        <span class="kw">if</span> <span class="macro">cfg!</span>(<span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>) {
+                            <span class="ident">visitor</span>.<span class="ident">visit_u32</span>(<span class="ident">atom</span>.<span class="ident">atom_ptr</span>() <span class="kw">as</span> <span class="ident">u32</span>)
+                        }
+                        <span class="kw">else</span> {
+                            <span class="ident">visitor</span>.<span class="ident">visit_u64</span>(<span class="ident">atom</span>.<span class="ident">atom_ptr</span>() <span class="kw">as</span> <span class="ident">u64</span>)
+                        }
+                    },
+                    <span class="kw">_</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">Error::ValueNotOfExpectedType</span>(<span class="string">&quot;atom&quot;</span>))
+                }
+            }
+            <span class="kw">else</span> {
+                <span class="self">self</span>.<span class="ident">deserialize_string</span>(<span class="ident">visitor</span>)
+            }
         } <span class="kw">else</span> {
             <span class="prelude-val">Err</span>(<span class="ident">Error::UnexpectedType</span>(<span class="string">&quot;newtype struct&quot;</span>))
         }
@@ -2685,11 +2816,42 @@
     }
 }
 
+<span class="macro">thread_local!</span> {
+    <span class="kw">static</span> <span class="ident">DESERIALIZING_ATOM</span>: <span class="ident">Cell</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Cell::new</span>(<span class="bool-val">false</span>);
+}
+
+<span class="kw">struct</span> <span class="ident">DeserializingAtomState</span>;
+
+<span class="kw">impl</span> <span class="ident">DeserializingAtomState</span> {
+    <span class="kw">fn</span> <span class="ident">start</span>() -&gt; <span class="self">Self</span> {
+        <span class="ident">DESERIALIZING_ATOM</span>.<span class="ident">with</span>(<span class="op">|</span><span class="ident">da</span><span class="op">|</span> {
+            <span class="kw">if</span> <span class="ident">da</span>.<span class="ident">get</span>() {
+                <span class="macro">panic!</span>(<span class="string">&quot;atom serialization was already set. did we recurse?&quot;</span>);
+            }
+            <span class="ident">da</span>.<span class="ident">set</span>(<span class="bool-val">true</span>)
+        });
+
+
+        <span class="self">Self</span>
+    }
+
+    <span class="kw">fn</span> <span class="ident">is_deserializing_atom</span>() -&gt; <span class="ident">bool</span> {
+        <span class="ident">DESERIALIZING_ATOM</span>.<span class="ident">with</span>(<span class="op">|</span><span class="ident">da</span><span class="op">|</span> <span class="ident">da</span>.<span class="ident">get</span>())
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">DeserializingAtomState</span> {
+    <span class="kw">fn</span> <span class="ident">drop</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
+        <span class="ident">DESERIALIZING_ATOM</span>.<span class="ident">with</span>(<span class="op">|</span><span class="ident">da</span><span class="op">|</span> <span class="ident">da</span>.<span class="ident">set</span>(<span class="bool-val">false</span>));
+    }
+}
+
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="ident">Deserialize</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Atom</span> {
     <span class="kw">fn</span> <span class="ident">deserialize</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">deserializer</span>: <span class="ident">D</span>) -&gt; <span class="ident">std::result::Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">D::Error</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="ident">D</span>: <span class="ident">de::Deserializer</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
     {
+        <span class="kw">let</span> <span class="ident">_state</span> <span class="op">=</span> <span class="ident">DeserializingAtomState::start</span>();
         <span class="ident">deserializer</span>.<span class="ident">deserialize_newtype_struct</span>(<span class="ident">ATOM_STRUCT_NAME</span>, <span class="ident">AtomVisitor</span>)
     }
 }
@@ -2703,11 +2865,47 @@
         <span class="macro">write!</span>(<span class="ident">formatter</span>, <span class="string">&quot;an atom&quot;</span>)
     }
 
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">visit_u32</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">v</span>: <span class="ident">u32</span>) -&gt; <span class="ident">std::result::Result</span><span class="op">&lt;</span><span class="ident">Atom</span>, <span class="ident">E</span><span class="op">&gt;</span>
+    <span class="kw">where</span>
+        <span class="ident">E</span>: <span class="ident">de::Error</span>,
+    {
+        <span class="kw">if</span> <span class="op">!</span><span class="ident">DeserializingAtomState::is_deserializing_atom</span>() {
+            <span class="macro">panic!</span>(<span class="string">&quot;visiting atom as pointer but not in deserializing state&quot;</span>);
+        }
+        <span class="kw">let</span> <span class="ident">atom</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">Atom::wrap</span>((<span class="ident">v</span> <span class="kw">as</span> <span class="ident">usize</span>).<span class="ident">into</span>()) };
+        <span class="ident">atom</span>.<span class="ident">increment_refcount</span>();
+        <span class="prelude-val">Ok</span>(<span class="ident">atom</span>)
+    }
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;64&quot;</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">visit_u64</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">v</span>: <span class="ident">u64</span>) -&gt; <span class="ident">std::result::Result</span><span class="op">&lt;</span><span class="ident">Atom</span>, <span class="ident">E</span><span class="op">&gt;</span>
+    <span class="kw">where</span>
+        <span class="ident">E</span>: <span class="ident">de::Error</span>,
+    {
+        <span class="kw">if</span> <span class="op">!</span><span class="ident">DeserializingAtomState::is_deserializing_atom</span>() {
+            <span class="macro">panic!</span>(<span class="string">&quot;visiting atom as pointer but not in deserializing state&quot;</span>);
+        }
+        <span class="kw">let</span> <span class="ident">atom</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">Atom::wrap</span>((<span class="ident">v</span> <span class="kw">as</span> <span class="ident">usize</span>).<span class="ident">into</span>()) };
+        <span class="ident">atom</span>.<span class="ident">increment_refcount</span>();
+        <span class="prelude-val">Ok</span>(<span class="ident">atom</span>)
+    }
+
     <span class="kw">fn</span> <span class="ident">visit_str</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">std::result::Result</span><span class="op">&lt;</span><span class="ident">Atom</span>, <span class="ident">E</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="ident">E</span>: <span class="ident">de::Error</span>,
     {
         <span class="prelude-val">Ok</span>(<span class="ident">Atom::new</span>(<span class="ident">s</span>))
+    }
+
+    <span class="kw">fn</span> <span class="ident">visit_newtype_struct</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">deserializer</span>: <span class="ident">D</span>) -&gt; <span class="ident">std::result::Result</span><span class="op">&lt;</span><span class="ident">Atom</span>, <span class="ident">D::Error</span><span class="op">&gt;</span>
+    <span class="kw">where</span>
+        <span class="ident">D</span>: <span class="ident">serde::Deserializer</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
+    {
+        <span class="comment">// us being here indicates we&#39;re being deserialized from an</span>
+        <span class="comment">// unknown deserializer (not swipl). That means we have to</span>
+        <span class="comment">// interpret as string and not as a pointer.</span>
+        <span class="ident">deserializer</span>.<span class="ident">deserialize_str</span>(<span class="self">self</span>)
     }
 }
 
