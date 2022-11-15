@@ -1,6 +1,5 @@
 #[cfg(test)]
 mod tests {
-    use serde::{Deserialize, Serialize};
     use serde_json::{self, json, Value};
     use std::io::{BufWriter, Write};
     use swipl::prelude::*;
@@ -46,5 +45,32 @@ mod tests {
         let s = std::str::from_utf8(&vec).unwrap();
 
         assert_eq!(r#"{"foo":"bar","baz":{"elts":[42,{"wow":"moo"},50]}}"#, s);
+    }
+
+    #[test]
+    fn deserialize_atom_from_json() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let _context: Context<_> = activation.into();
+
+        let json = json!("hello");
+
+        let atom: Atom = serde_json::from_value(json).unwrap();
+
+        assert_eq!(atom!("hello"), atom);
+    }
+
+    #[test]
+    fn serialize_atom_to_json() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let _context: Context<_> = activation.into();
+
+        let atom = atom!("hello");
+        let expected = json!("hello");
+
+        let json = serde_json::to_value(atom).unwrap();
+
+        assert_eq!(expected, json);
     }
 }
