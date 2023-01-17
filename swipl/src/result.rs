@@ -16,7 +16,7 @@ use crate::context::{Context, QueryableContextType};
 /// This is either a failure or an exception. In case of an exception,
 /// whowever returned the exception was also supposed to raise an
 /// exception on the context.
-#[derive(Error, Debug)]
+#[derive(Error, Debug, PartialEq, Eq)]
 pub enum PrologError {
     #[error("prolog function failed")]
     Failure,
