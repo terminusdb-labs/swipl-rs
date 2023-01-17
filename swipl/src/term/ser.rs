@@ -93,7 +93,6 @@ impl SerializerConfiguration {
         self.default_tag = Some(tag.as_atom());
     }
 
-
     /// Set the default tag to use for dictionaries.
     ///
     /// This is used when serializing maps. By default, this tag will
@@ -397,7 +396,6 @@ impl SerializingSwiplTermState {
             sst.set(true)
         });
 
-
         Self
     }
 
@@ -412,7 +410,6 @@ impl Drop for SerializingSwiplTermState {
     }
 }
 
-
 impl ser::Serialize for Atom {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -420,8 +417,7 @@ impl ser::Serialize for Atom {
     {
         if SerializingSwiplTermState::is_serializing_swipl_term() {
             serializer.serialize_newtype_struct(ATOM_STRUCT_NAME, &self.atom_ptr())
-        }
-        else {
+        } else {
             serializer.serialize_newtype_struct(ATOM_STRUCT_NAME, &self.name())
         }
     }

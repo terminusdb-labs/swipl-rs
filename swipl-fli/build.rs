@@ -15,7 +15,8 @@ fn main() {
         bindings = bindings.header_contents("include_gmp", "#include <gmp.h>\n");
     }
 
-    let bindings = bindings.header("c/wrapper.h")
+    let bindings = bindings
+        .header("c/wrapper.h")
         .clang_arg(format!("-I{}", info.header_dir))
         .parse_callbacks(Box::new(bindgen::CargoCallbacks))
         .generate()

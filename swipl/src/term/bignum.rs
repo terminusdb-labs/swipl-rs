@@ -1,8 +1,8 @@
 //! Support for rug Integer and Rational using SWI-Prolog's GMP support.
 
-use crate::{term_getable, unifiable};
-use crate::term::*;
 use crate::fli;
+use crate::term::*;
+use crate::{term_getable, unifiable};
 use rug::{Integer, Rational};
 
 term_getable! {
@@ -36,6 +36,7 @@ unifiable! {
 
 term_getable! {
     (Rational, "bigrat", term) => {
+        eprintln!("hi");
         let mut r = Rational::new();
         let ptr = r.as_raw_mut();
 
@@ -65,9 +66,9 @@ unifiable! {
 
 #[cfg(test)]
 mod tests {
-    use std::str::FromStr;
-    use crate::context::*;
     use super::*;
+    use crate::context::*;
+    use std::str::FromStr;
     #[test]
     fn get_bigint() {
         let engine = Engine::new();
@@ -132,6 +133,28 @@ mod tests {
 
         let term = context.new_term_ref();
         term.unify(&i).unwrap();
+
+        let s = context.string_from_term(&term).unwrap();
+
+        assert_eq!(big_rat_prolog_string, s);
+    }
+
+    #[test]
+    fn unify_unequal_bigrat_fails() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let big_numerator = "1234123412341234123412341234123412341234";
+        let big_prime_str = "19131612631094571991039";
+        let big_rat_prolog_string = format!("{big_numerator}r{big_prime_str}");
+        let big_rat_div_string = format!("{big_numerator}/{big_prime_str}");
+        let i = Rational::from_str(&big_rat_div_string).unwrap();
+        let i2: Rational = i.clone() + 1;
+
+        let term = context.new_term_ref();
+        term.unify(&i).unwrap();
+        assert!(term.unify(&i2).unwrap_err().is_failure());
 
         let s = context.string_from_term(&term).unwrap();
 
