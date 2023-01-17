@@ -328,6 +328,46 @@ impl<'a> Term<'a> {
         result2
     }
 
+    /// Retrieve data from the nth position of the given term. This
+    /// assumes that the given term contains a functor.
+    ///
+    /// The argument position is 1-indexed. Therefore, the first
+    /// argument is argument 1.
+    ///
+    /// This will return an `Err(PrologError::Exception)` if during
+    /// getting, an error was raised somewhere in the SWI-Prolog fli,
+    /// or if the underlying type was not the expected type, or if the
+    /// term was not a compound or had the wrong arity.  Otherwise the
+    /// result is an `Ok(data)`, with the requested data in it.
+    pub fn get_arg_ex<G: TermGetable>(&self, index: usize) -> PrologResult<G> {
+        if index == 0 {
+            panic!("unify_arg was given index 0, but index starts at 1");
+        }
+
+        self.assert_term_handling_possible();
+
+        let arg_ref = unsafe { PL_new_term_ref() };
+
+        let result = unsafe { PL_get_arg(index.try_into().unwrap(), self.term, arg_ref) };
+        if unsafe { pl_default_exception() != 0 } {
+            return Err(PrologError::Exception);
+        }
+
+        let arg = unsafe { Term::new(arg_ref, self.origin.clone()) };
+        let result2;
+        if result != 0 {
+            result2 = arg.get_ex();
+        } else {
+            let context = unsafe { unmanaged_engine_context() };
+            let exception_term = term! {context: error(arity_error, _)};
+            result2 = exception_term.and_then(|t| context.raise_exception(&t));
+        }
+
+        unsafe { PL_reset_term_refs(arg_ref) };
+
+        result2
+    }
+
     /// Retrieve a &str from this term, and call the given function with it.
     ///
     /// This allows you to extract a string from a prolog string with
@@ -1426,5 +1466,64 @@ mod tests {
         assert_eq!("bar", terms[0].get::<String>().unwrap());
         assert_eq!("baz", terms[1].get::<String>().unwrap());
         assert_eq!("foo", terms[2].get::<String>().unwrap());
+    }
+
+    #[test]
+    fn get_arg_ex_raises_exception_for_wrong_arity() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term = term! {context: foo(bar)}.unwrap();
+
+        let expected = term! {context: error(arity_error, _)}.unwrap();
+        let result: PrologResult<u64> = term.get_arg_ex(2);
+        assert_eq!(PrologError::Exception, result.err().unwrap());
+        assert!(context.has_exception());
+        context.with_exception(|e| e.unwrap().unify(&expected).unwrap());
+    }
+
+    #[test]
+    fn get_arg_ex_raises_exception_for_non_compound() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term = term! {context: 42}.unwrap();
+
+        let expected = term! {context: error(arity_error, _)}.unwrap();
+        let result: PrologResult<u64> = term.get_arg_ex(2);
+        assert_eq!(PrologError::Exception, result.err().unwrap());
+        assert!(context.has_exception());
+        context.with_exception(|e| e.unwrap().unify(&expected).unwrap());
+    }
+
+    #[test]
+    fn get_arg_ex_raises_exception_for_float_with_expected_int() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term = term! {context: foo(42.3)}.unwrap();
+
+        let expected = term! {context: error(type_error(integer,42.3), _)}.unwrap();
+        let result: PrologResult<u64> = term.get_arg_ex(1);
+        assert_eq!(PrologError::Exception, result.err().unwrap());
+        assert!(context.has_exception());
+        context.with_exception(|e| println!("{}", context.string_from_term(&e.unwrap()).unwrap()));
+        context.with_exception(|e| e.unwrap().unify(&expected).unwrap());
+    }
+
+    #[test]
+    fn get_arg_ex_works_with_expected_type_and_arity() {
+        let engine = Engine::new();
+        let activation = engine.activate();
+        let context: Context<_> = activation.into();
+
+        let term = term! {context: foo(42)}.unwrap();
+
+        let result: PrologResult<u64> = term.get_arg_ex(1);
+        assert_eq!(42, result.unwrap());
+        assert!(!context.has_exception());
     }
 }
