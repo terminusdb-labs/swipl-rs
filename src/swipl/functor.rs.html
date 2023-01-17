@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl/src/functor.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>functor.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../swipl/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../swipl/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../swipl/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl/src/functor.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>functor.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../swipl/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -353,360 +353,360 @@
 <span id="353">353</span>
 <span id="354">354</span>
 <span id="355">355</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Prolog functors.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! A functor is a core datatype in prolog. It is a combination of an</span>
-<span class="doccomment">//! atom and an arity. Unlike atoms, functors are not</span>
-<span class="doccomment">//! reference-counted and are never garbage collected.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! This module provides functions and types for interacting with</span>
-<span class="doccomment">//! prolog functors.</span>
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::atom</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::consts</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::engine</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::fli</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::term</span>::<span class="kw-2">*</span>;
+</pre><pre class="rust"><code><span class="doccomment">//! Prolog functors.
+//!
+//! A functor is a core datatype in prolog. It is a combination of an
+//! atom and an arity. Unlike atoms, functors are not
+//! reference-counted and are never garbage collected.
+//!
+//! This module provides functions and types for interacting with
+//! prolog functors.
+</span><span class="kw">use </span><span class="kw">super</span>::atom::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">super</span>::consts::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">super</span>::engine::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">super</span>::fli::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">super</span>::term::<span class="kw-2">*</span>;
 
-<span class="kw">use</span> <span class="ident">std::convert::TryInto</span>;
-<span class="kw">use</span> <span class="ident">std::sync::atomic</span>::{<span class="ident">AtomicUsize</span>, <span class="ident">Ordering</span>};
+<span class="kw">use </span>std::convert::TryInto;
+<span class="kw">use </span>std::sync::atomic::{AtomicUsize, Ordering};
 
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">term_getable</span>, <span class="ident">term_putable</span>, <span class="ident">unifiable</span>};
+<span class="kw">use crate</span>::{term_getable, term_putable, unifiable};
 
-<span class="doccomment">/// A wrapper for a prolog functor.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Functor</span> {
-    <span class="ident">functor</span>: <span class="ident">functor_t</span>,
+<span class="doccomment">/// A wrapper for a prolog functor.
+</span><span class="attribute">#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+</span><span class="kw">pub struct </span>Functor {
+    functor: functor_t,
 }
 
-<span class="kw">impl</span> <span class="ident">Functor</span> {
-    <span class="doccomment">/// Wrap a `functor_t`, which is how the SWI-Prolog fli represents functors.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This is unsafe because no check is done to ensure that the</span>
-    <span class="doccomment">/// functor_t indeed points at a valid functor. The caller will</span>
-    <span class="doccomment">/// have to ensure that this is the case.</span>
-    <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">wrap</span>(<span class="ident">functor</span>: <span class="ident">functor_t</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> { <span class="ident">functor</span> }
+<span class="kw">impl </span>Functor {
+    <span class="doccomment">/// Wrap a `functor_t`, which is how the SWI-Prolog fli represents functors.
+    ///
+    /// This is unsafe because no check is done to ensure that the
+    /// functor_t indeed points at a valid functor. The caller will
+    /// have to ensure that this is the case.
+    </span><span class="kw">pub unsafe fn </span>wrap(functor: functor_t) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{ functor }
     }
 
-    <span class="doccomment">/// Create a new functor from the given name and arity.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This will panic if no prolog engine is active on this thread.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="ident">IntoAtom</span><span class="op">&gt;</span>(<span class="ident">name</span>: <span class="ident">A</span>, <span class="ident">arity</span>: <span class="ident">u16</span>) -&gt; <span class="ident">Functor</span> {
-        <span class="ident">assert_some_engine_is_active</span>();
-        <span class="kw">if</span> <span class="ident">arity</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">&gt;</span> <span class="ident">MAX_ARITY</span> {
-            <span class="macro">panic!</span>(<span class="string">&quot;functor arity is &gt;1024: {}&quot;</span>, <span class="ident">arity</span>);
+    <span class="doccomment">/// Create a new functor from the given name and arity.
+    ///
+    /// This will panic if no prolog engine is active on this thread.
+    </span><span class="kw">pub fn </span>new&lt;A: IntoAtom&gt;(name: A, arity: u16) -&gt; Functor {
+        assert_some_engine_is_active();
+        <span class="kw">if </span>arity <span class="kw">as </span>usize &gt; MAX_ARITY {
+            <span class="macro">panic!</span>(<span class="string">&quot;functor arity is &gt;1024: {}&quot;</span>, arity);
         }
-        <span class="kw">let</span> <span class="ident">atom</span> <span class="op">=</span> <span class="ident">name</span>.<span class="ident">into_atom</span>();
+        <span class="kw">let </span>atom = name.into_atom();
 
-        <span class="kw">let</span> <span class="ident">functor</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">PL_new_functor</span>(<span class="ident">atom</span>.<span class="ident">atom_ptr</span>(), <span class="ident">arity</span>.<span class="ident">try_into</span>().<span class="ident">unwrap</span>()) };
+        <span class="kw">let </span>functor = <span class="kw">unsafe </span>{ PL_new_functor(atom.atom_ptr(), arity.try_into().unwrap()) };
 
-        <span class="kw">unsafe</span> { <span class="ident">Functor::wrap</span>(<span class="ident">functor</span>) }
+        <span class="kw">unsafe </span>{ Functor::wrap(functor) }
     }
 
-    <span class="doccomment">/// Return the underlying `functor_t` which SWI-Prolog uses to refer to the functor.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">functor_ptr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">functor_t</span> {
-        <span class="self">self</span>.<span class="ident">functor</span>
+    <span class="doccomment">/// Return the underlying `functor_t` which SWI-Prolog uses to refer to the functor.
+    </span><span class="kw">pub fn </span>functor_ptr(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; functor_t {
+        <span class="self">self</span>.functor
     }
 
-    <span class="doccomment">/// Retrieve the name of this functor as an atom and pass it into the given function.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The atom does not outlive this call, and the reference count</span>
-    <span class="doccomment">/// is never incremented. This may be slightly faster in some</span>
-    <span class="doccomment">/// cases than returning the name directly.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This will panic if no prolog engine is active on this thread.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_name</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">func</span>: <span class="ident">F</span>) -&gt; <span class="ident">R</span>
-    <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">Atom</span>) -&gt; <span class="ident">R</span>,
+    <span class="doccomment">/// Retrieve the name of this functor as an atom and pass it into the given function.
+    ///
+    /// The atom does not outlive this call, and the reference count
+    /// is never incremented. This may be slightly faster in some
+    /// cases than returning the name directly.
+    ///
+    /// This will panic if no prolog engine is active on this thread.
+    </span><span class="kw">pub fn </span>with_name&lt;F, R&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, func: F) -&gt; R
+    <span class="kw">where
+        </span>F: Fn(<span class="kw-2">&amp;</span>Atom) -&gt; R,
     {
-        <span class="ident">assert_some_engine_is_active</span>();
-        <span class="kw">let</span> <span class="ident">atom</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">Atom::wrap</span>(<span class="ident">PL_functor_name</span>(<span class="self">self</span>.<span class="ident">functor</span>)) };
+        assert_some_engine_is_active();
+        <span class="kw">let </span>atom = <span class="kw">unsafe </span>{ Atom::wrap(PL_functor_name(<span class="self">self</span>.functor)) };
 
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">func</span>(<span class="kw-2">&amp;</span><span class="ident">atom</span>);
+        <span class="kw">let </span>result = func(<span class="kw-2">&amp;</span>atom);
 
-        <span class="ident">std::mem::forget</span>(<span class="ident">atom</span>);
+        std::mem::forget(atom);
 
-        <span class="ident">result</span>
+        result
     }
 
-    <span class="doccomment">/// Retrieve the name of this functor as an atom.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This will panic if no prolog engine is active on this thread.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Atom</span> {
-        <span class="self">self</span>.<span class="ident">with_name</span>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="ident">n</span>.<span class="ident">clone</span>())
+    <span class="doccomment">/// Retrieve the name of this functor as an atom.
+    ///
+    /// This will panic if no prolog engine is active on this thread.
+    </span><span class="kw">pub fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Atom {
+        <span class="self">self</span>.with_name(|n| n.clone())
     }
 
-    <span class="doccomment">/// Retrieve the name of this functor as a string.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This will panic if no prolog engine is active on this thread.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name_string</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">String</span> {
-        <span class="self">self</span>.<span class="ident">with_name</span>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="ident">n</span>.<span class="ident">name</span>())
+    <span class="doccomment">/// Retrieve the name of this functor as a string.
+    ///
+    /// This will panic if no prolog engine is active on this thread.
+    </span><span class="kw">pub fn </span>name_string(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+        <span class="self">self</span>.with_name(|n| n.name())
     }
 
-    <span class="doccomment">/// Retrieve the arity of this functor.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This will panic if no prolog engine is active on this thread.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">arity</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u16</span> {
-        <span class="ident">assert_some_engine_is_active</span>();
-        <span class="kw">let</span> <span class="ident">arity</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">PL_functor_arity</span>(<span class="self">self</span>.<span class="ident">functor</span>) };
+    <span class="doccomment">/// Retrieve the arity of this functor.
+    ///
+    /// This will panic if no prolog engine is active on this thread.
+    </span><span class="kw">pub fn </span>arity(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u16 {
+        assert_some_engine_is_active();
+        <span class="kw">let </span>arity = <span class="kw">unsafe </span>{ PL_functor_arity(<span class="self">self</span>.functor) };
 
-        <span class="ident">arity</span>.<span class="ident">try_into</span>().<span class="ident">unwrap</span>()
-    }
-}
-
-<span class="macro">unifiable!</span> {
-    (<span class="self">self</span>: <span class="ident">Functor</span>, <span class="ident">term</span>) =&gt; {
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="kw">unsafe</span> {<span class="ident">PL_unify_compound</span>(<span class="ident">term</span>.<span class="ident">term_ptr</span>(), <span class="self">self</span>.<span class="ident">functor</span>)};
-
-        <span class="ident">result</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span>
+        arity.try_into().unwrap()
     }
 }
 
-<span class="macro">term_getable!</span> {
-    (<span class="ident">Functor</span>, <span class="string">&quot;functor&quot;</span>, <span class="ident">term</span>) =&gt; {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">functor</span> <span class="op">=</span> <span class="number">0</span>;
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">PL_get_functor</span>(<span class="ident">term</span>.<span class="ident">term_ptr</span>(), <span class="kw-2">&amp;mut</span> <span class="ident">functor</span>) };
+<span class="macro">unifiable! </span>{
+    (<span class="self">self</span>: Functor, term) =&gt; {
+        <span class="kw">let </span>result = <span class="kw">unsafe </span>{PL_unify_compound(term.term_ptr(), <span class="self">self</span>.functor)};
 
-        <span class="kw">if</span> <span class="ident">result</span> <span class="op">==</span> <span class="number">0</span> {
-            <span class="prelude-val">None</span>
+        result != <span class="number">0
+    </span>}
+}
+
+<span class="macro">term_getable! </span>{
+    (Functor, <span class="string">&quot;functor&quot;</span>, term) =&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>functor = <span class="number">0</span>;
+        <span class="kw">let </span>result = <span class="kw">unsafe </span>{ PL_get_functor(term.term_ptr(), <span class="kw-2">&amp;mut </span>functor) };
+
+        <span class="kw">if </span>result == <span class="number">0 </span>{
+            <span class="prelude-val">None
+        </span>}
+        <span class="kw">else </span>{
+            <span class="prelude-val">Some</span>(<span class="kw">unsafe </span>{ Functor::wrap(functor) })
         }
-        <span class="kw">else</span> {
-            <span class="prelude-val">Some</span>(<span class="kw">unsafe</span> { <span class="ident">Functor::wrap</span>(<span class="ident">functor</span>) })
-        }
 
     }
 }
 
-<span class="macro">term_putable!</span> {
-    (<span class="self">self</span>: <span class="ident">Functor</span>, <span class="ident">term</span>) =&gt; {
-        <span class="kw">unsafe</span> {<span class="ident">PL_put_functor</span>(<span class="ident">term</span>.<span class="ident">term_ptr</span>(), <span class="self">self</span>.<span class="ident">functor</span>)};
+<span class="macro">term_putable! </span>{
+    (<span class="self">self</span>: Functor, term) =&gt; {
+        <span class="kw">unsafe </span>{PL_put_functor(term.term_ptr(), <span class="self">self</span>.functor)};
     }
 }
 
-<span class="doccomment">/// A struct which provides a way to delay and cache functor creation.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This struct wraps a static string and an arity and uses it to</span>
-<span class="doccomment">/// construct a swipl functor on the first invocation of</span>
-<span class="doccomment">/// `as_functor`. Subsequent invocations will reuse the earlier</span>
-<span class="doccomment">/// constructed functor.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The purpose of this struct is to back the implementation of the</span>
-<span class="doccomment">/// `functor!` macro, but it&#39;s also usable on its own.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LazyFunctor</span> {
-    <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>,
-    <span class="ident">arity</span>: <span class="ident">u16</span>,
-    <span class="ident">f</span>: <span class="ident">AtomicUsize</span>,
+<span class="doccomment">/// A struct which provides a way to delay and cache functor creation.
+///
+/// This struct wraps a static string and an arity and uses it to
+/// construct a swipl functor on the first invocation of
+/// `as_functor`. Subsequent invocations will reuse the earlier
+/// constructed functor.
+///
+/// The purpose of this struct is to back the implementation of the
+/// `functor!` macro, but it&#39;s also usable on its own.
+</span><span class="kw">pub struct </span>LazyFunctor {
+    name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+    arity: u16,
+    f: AtomicUsize,
 }
 
-<span class="kw">impl</span> <span class="ident">LazyFunctor</span> {
-    <span class="doccomment">/// Create a new LazyFunctor.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This constructor is const, as all it does is set up the</span>
-    <span class="doccomment">/// struct. No actual calls into SWI-Prolog happen at this stage.</span>
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>, <span class="ident">arity</span>: <span class="ident">u16</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">name</span>,
-            <span class="ident">arity</span>,
-            <span class="ident">f</span>: <span class="ident">AtomicUsize::new</span>(<span class="number">0</span>),
-        }
-    }
-
-    <span class="doccomment">/// Create a functor, or return an earlier created functor.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// On first call, this will call swipl to create a</span>
-    <span class="doccomment">/// functor. Subsequent calls will reuse the functor that was</span>
-    <span class="doccomment">/// retrieved before.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_functor</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Functor</span> {
-        <span class="kw">let</span> <span class="ident">ptr</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">f</span>.<span class="ident">load</span>(<span class="ident">Ordering::Relaxed</span>);
-        <span class="kw">if</span> <span class="ident">ptr</span> <span class="op">==</span> <span class="number">0</span> {
-            <span class="comment">// we&#39;ve not yet allocated a functor. let&#39;s do it now.</span>
-            <span class="kw">let</span> <span class="ident">functor</span> <span class="op">=</span> <span class="ident">Functor::new</span>(<span class="self">self</span>.<span class="ident">name</span>, <span class="self">self</span>.<span class="ident">arity</span>);
-
-            <span class="self">self</span>.<span class="ident">f</span>
-                .<span class="ident">store</span>(<span class="ident">functor</span>.<span class="ident">functor_ptr</span>() <span class="kw">as</span> <span class="ident">atom_t</span>, <span class="ident">Ordering::Relaxed</span>);
-            <span class="comment">// Note that no special precautions have to be taken</span>
-            <span class="comment">// around refcounting and garbage collection. Unlike</span>
-            <span class="comment">// atoms, functors are not refcounted and are valid for</span>
-            <span class="comment">// the entire prolog session.</span>
-
-            <span class="ident">functor</span>
-        } <span class="kw">else</span> {
-            <span class="kw">let</span> <span class="ident">functor</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">Functor::wrap</span>(<span class="ident">ptr</span> <span class="kw">as</span> <span class="ident">functor_t</span>) };
-
-            <span class="ident">functor</span>
+<span class="kw">impl </span>LazyFunctor {
+    <span class="doccomment">/// Create a new LazyFunctor.
+    ///
+    /// This constructor is const, as all it does is set up the
+    /// struct. No actual calls into SWI-Prolog happen at this stage.
+    </span><span class="kw">pub const fn </span>new(name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, arity: u16) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            name,
+            arity,
+            f: AtomicUsize::new(<span class="number">0</span>),
         }
     }
+
+    <span class="doccomment">/// Create a functor, or return an earlier created functor.
+    ///
+    /// On first call, this will call swipl to create a
+    /// functor. Subsequent calls will reuse the functor that was
+    /// retrieved before.
+    </span><span class="kw">pub fn </span>as_functor(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Functor {
+        <span class="kw">let </span>ptr = <span class="self">self</span>.f.load(Ordering::Relaxed);
+        <span class="kw">if </span>ptr == <span class="number">0 </span>{
+            <span class="comment">// we&#39;ve not yet allocated a functor. let&#39;s do it now.
+            </span><span class="kw">let </span>functor = Functor::new(<span class="self">self</span>.name, <span class="self">self</span>.arity);
+
+            <span class="self">self</span>.f
+                .store(functor.functor_ptr() <span class="kw">as </span>atom_t, Ordering::Relaxed);
+            <span class="comment">// Note that no special precautions have to be taken
+            // around refcounting and garbage collection. Unlike
+            // atoms, functors are not refcounted and are valid for
+            // the entire prolog session.
+
+            </span>functor
+        } <span class="kw">else </span>{
+            <span class="kw">let </span>functor = <span class="kw">unsafe </span>{ Functor::wrap(ptr <span class="kw">as </span>functor_t) };
+
+            functor
+        }
+    }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::context</span>::<span class="kw-2">*</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use </span><span class="kw">crate</span>::context::<span class="kw-2">*</span>;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">create_and_query_functor</span>() {
-        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
-        <span class="kw">let</span> <span class="ident">_activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>create_and_query_functor() {
+        <span class="kw">let </span>engine = Engine::new();
+        <span class="kw">let </span>_activation = engine.activate();
 
-        <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">Functor::new</span>(<span class="string">&quot;moocows&quot;</span>, <span class="number">3</span>);
+        <span class="kw">let </span>f = Functor::new(<span class="string">&quot;moocows&quot;</span>, <span class="number">3</span>);
 
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;moocows&quot;</span>, <span class="ident">f</span>.<span class="ident">name_string</span>());
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;moocows&quot;</span>, <span class="ident">f</span>.<span class="ident">name</span>().<span class="ident">name</span>());
-        <span class="ident">f</span>.<span class="ident">with_name</span>(<span class="op">|</span><span class="ident">name</span><span class="op">|</span> <span class="macro">assert_eq!</span>(<span class="string">&quot;moocows&quot;</span>, <span class="ident">name</span>.<span class="ident">name</span>()));
+        <span class="macro">assert_eq!</span>(<span class="string">&quot;moocows&quot;</span>, f.name_string());
+        <span class="macro">assert_eq!</span>(<span class="string">&quot;moocows&quot;</span>, f.name().name());
+        f.with_name(|name| <span class="macro">assert_eq!</span>(<span class="string">&quot;moocows&quot;</span>, name.name()));
 
-        <span class="macro">assert_eq!</span>(<span class="number">3</span>, <span class="ident">f</span>.<span class="ident">arity</span>());
+        <span class="macro">assert_eq!</span>(<span class="number">3</span>, f.arity());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">unify_same_functor_twice_succeeds</span>() {
-        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
-        <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
-        <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>unify_same_functor_twice_succeeds() {
+        <span class="kw">let </span>engine = Engine::new();
+        <span class="kw">let </span>activation = engine.activate();
+        <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">Functor::new</span>(<span class="string">&quot;moocows&quot;</span>, <span class="number">3</span>);
-        <span class="kw">let</span> <span class="ident">term</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_term_ref</span>();
-        <span class="macro">assert!</span>(<span class="ident">term</span>.<span class="ident">unify</span>(<span class="kw-2">&amp;</span><span class="ident">f</span>).<span class="ident">is_ok</span>());
-        <span class="macro">assert!</span>(<span class="ident">term</span>.<span class="ident">unify</span>(<span class="kw-2">&amp;</span><span class="ident">f</span>).<span class="ident">is_ok</span>());
+        <span class="kw">let </span>f = Functor::new(<span class="string">&quot;moocows&quot;</span>, <span class="number">3</span>);
+        <span class="kw">let </span>term = context.new_term_ref();
+        <span class="macro">assert!</span>(term.unify(<span class="kw-2">&amp;</span>f).is_ok());
+        <span class="macro">assert!</span>(term.unify(<span class="kw-2">&amp;</span>f).is_ok());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">unity_retrieve_same_functor</span>() {
-        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
-        <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
-        <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>unity_retrieve_same_functor() {
+        <span class="kw">let </span>engine = Engine::new();
+        <span class="kw">let </span>activation = engine.activate();
+        <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">Functor::new</span>(<span class="string">&quot;moocows&quot;</span>, <span class="number">3</span>);
-        <span class="kw">let</span> <span class="ident">term</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_term_ref</span>();
-        <span class="macro">assert!</span>(<span class="ident">term</span>.<span class="ident">unify</span>(<span class="kw-2">&amp;</span><span class="ident">f</span>).<span class="ident">is_ok</span>());
+        <span class="kw">let </span>f = Functor::new(<span class="string">&quot;moocows&quot;</span>, <span class="number">3</span>);
+        <span class="kw">let </span>term = context.new_term_ref();
+        <span class="macro">assert!</span>(term.unify(<span class="kw-2">&amp;</span>f).is_ok());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">unify_different_functor_arity_fails</span>() {
-        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
-        <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
-        <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>unify_different_functor_arity_fails() {
+        <span class="kw">let </span>engine = Engine::new();
+        <span class="kw">let </span>activation = engine.activate();
+        <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let</span> <span class="ident">f1</span> <span class="op">=</span> <span class="ident">Functor::new</span>(<span class="string">&quot;moocows&quot;</span>, <span class="number">3</span>);
-        <span class="kw">let</span> <span class="ident">term</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_term_ref</span>();
-        <span class="ident">term</span>.<span class="ident">unify</span>(<span class="kw-2">&amp;</span><span class="ident">f1</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">f2</span>: <span class="ident">Functor</span> <span class="op">=</span> <span class="ident">term</span>.<span class="ident">get</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">f1</span>, <span class="ident">f2</span>);
+        <span class="kw">let </span>f1 = Functor::new(<span class="string">&quot;moocows&quot;</span>, <span class="number">3</span>);
+        <span class="kw">let </span>term = context.new_term_ref();
+        term.unify(<span class="kw-2">&amp;</span>f1).unwrap();
+        <span class="kw">let </span>f2: Functor = term.get().unwrap();
+        <span class="macro">assert_eq!</span>(f1, f2);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">unify_different_functor_name_fails</span>() {
-        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
-        <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
-        <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>unify_different_functor_name_fails() {
+        <span class="kw">let </span>engine = Engine::new();
+        <span class="kw">let </span>activation = engine.activate();
+        <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let</span> <span class="ident">f1</span> <span class="op">=</span> <span class="ident">Functor::new</span>(<span class="string">&quot;moocows&quot;</span>, <span class="number">3</span>);
-        <span class="kw">let</span> <span class="ident">f2</span> <span class="op">=</span> <span class="ident">Functor::new</span>(<span class="string">&quot;oinkpigs&quot;</span>, <span class="number">3</span>);
-        <span class="kw">let</span> <span class="ident">term</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_term_ref</span>();
-        <span class="macro">assert!</span>(<span class="ident">term</span>.<span class="ident">unify</span>(<span class="kw-2">&amp;</span><span class="ident">f1</span>).<span class="ident">is_ok</span>());
-        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">term</span>.<span class="ident">unify</span>(<span class="kw-2">&amp;</span><span class="ident">f2</span>).<span class="ident">is_ok</span>());
+        <span class="kw">let </span>f1 = Functor::new(<span class="string">&quot;moocows&quot;</span>, <span class="number">3</span>);
+        <span class="kw">let </span>f2 = Functor::new(<span class="string">&quot;oinkpigs&quot;</span>, <span class="number">3</span>);
+        <span class="kw">let </span>term = context.new_term_ref();
+        <span class="macro">assert!</span>(term.unify(<span class="kw-2">&amp;</span>f1).is_ok());
+        <span class="macro">assert!</span>(!term.unify(<span class="kw-2">&amp;</span>f2).is_ok());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="attribute">#[<span class="ident">should_panic</span>]</span>
-    <span class="kw">fn</span> <span class="ident">functor_creation_with_too_high_arity_panics</span>() {
-        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
-        <span class="kw">let</span> <span class="ident">_activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
+    <span class="attribute">#[test]
+    #[should_panic]
+    </span><span class="kw">fn </span>functor_creation_with_too_high_arity_panics() {
+        <span class="kw">let </span>engine = Engine::new();
+        <span class="kw">let </span>_activation = engine.activate();
 
-        <span class="kw">let</span> <span class="ident">_f</span> <span class="op">=</span> <span class="ident">Functor::new</span>(<span class="string">&quot;moocows&quot;</span>, <span class="number">1025</span>);
+        <span class="kw">let </span>_f = Functor::new(<span class="string">&quot;moocows&quot;</span>, <span class="number">1025</span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">functor_arg_unify_and_get_succeeds</span>() {
-        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
-        <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
-        <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>functor_arg_unify_and_get_succeeds() {
+        <span class="kw">let </span>engine = Engine::new();
+        <span class="kw">let </span>activation = engine.activate();
+        <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">Functor::new</span>(<span class="string">&quot;moocows&quot;</span>, <span class="number">2</span>);
-        <span class="kw">let</span> <span class="ident">term</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_term_ref</span>();
-        <span class="macro">assert!</span>(<span class="ident">term</span>.<span class="ident">get_arg</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>(<span class="number">1</span>).<span class="ident">unwrap_err</span>().<span class="ident">is_failure</span>());
-        <span class="macro">assert!</span>(<span class="ident">term</span>.<span class="ident">unify</span>(<span class="ident">f</span>).<span class="ident">is_ok</span>());
-        <span class="macro">assert!</span>(<span class="ident">term</span>.<span class="ident">get_arg</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>(<span class="number">1</span>).<span class="ident">unwrap_err</span>().<span class="ident">is_failure</span>());
-        <span class="macro">assert!</span>(<span class="ident">term</span>.<span class="ident">unify_arg</span>(<span class="number">1</span>, <span class="number">42_u64</span>).<span class="ident">is_ok</span>());
-        <span class="macro">assert_eq!</span>(<span class="number">42_u64</span>, <span class="ident">term</span>.<span class="ident">get_arg</span>(<span class="number">1</span>).<span class="ident">unwrap</span>());
-        <span class="macro">assert!</span>(<span class="ident">term</span>.<span class="ident">unify_arg</span>(<span class="number">1</span>, <span class="number">42_u64</span>).<span class="ident">is_ok</span>());
-        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">term</span>.<span class="ident">unify_arg</span>(<span class="number">1</span>, <span class="number">43_u64</span>).<span class="ident">is_ok</span>());
+        <span class="kw">let </span>f = Functor::new(<span class="string">&quot;moocows&quot;</span>, <span class="number">2</span>);
+        <span class="kw">let </span>term = context.new_term_ref();
+        <span class="macro">assert!</span>(term.get_arg::&lt;u64&gt;(<span class="number">1</span>).unwrap_err().is_failure());
+        <span class="macro">assert!</span>(term.unify(f).is_ok());
+        <span class="macro">assert!</span>(term.get_arg::&lt;u64&gt;(<span class="number">1</span>).unwrap_err().is_failure());
+        <span class="macro">assert!</span>(term.unify_arg(<span class="number">1</span>, <span class="number">42_u64</span>).is_ok());
+        <span class="macro">assert_eq!</span>(<span class="number">42_u64</span>, term.get_arg(<span class="number">1</span>).unwrap());
+        <span class="macro">assert!</span>(term.unify_arg(<span class="number">1</span>, <span class="number">42_u64</span>).is_ok());
+        <span class="macro">assert!</span>(!term.unify_arg(<span class="number">1</span>, <span class="number">43_u64</span>).is_ok());
 
-        <span class="macro">assert!</span>(<span class="ident">term</span>.<span class="ident">unify_arg</span>(<span class="number">2</span>, <span class="number">24_u64</span>).<span class="ident">is_ok</span>());
-        <span class="macro">assert_eq!</span>(<span class="number">24_u64</span>, <span class="ident">term</span>.<span class="ident">get_arg</span>(<span class="number">2</span>).<span class="ident">unwrap</span>());
+        <span class="macro">assert!</span>(term.unify_arg(<span class="number">2</span>, <span class="number">24_u64</span>).is_ok());
+        <span class="macro">assert_eq!</span>(<span class="number">24_u64</span>, term.get_arg(<span class="number">2</span>).unwrap());
 
-        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">term</span>.<span class="ident">unify_arg</span>(<span class="number">3</span>, <span class="number">24_u64</span>).<span class="ident">is_ok</span>());
-        <span class="macro">assert!</span>(<span class="ident">term</span>.<span class="ident">get_arg</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>(<span class="number">3</span>).<span class="ident">unwrap_err</span>().<span class="ident">is_failure</span>());
+        <span class="macro">assert!</span>(!term.unify_arg(<span class="number">3</span>, <span class="number">24_u64</span>).is_ok());
+        <span class="macro">assert!</span>(term.get_arg::&lt;u64&gt;(<span class="number">3</span>).unwrap_err().is_failure());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">lazy_functor_to_functor</span>() {
-        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
-        <span class="kw">let</span> <span class="ident">_activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>lazy_functor_to_functor() {
+        <span class="kw">let </span>engine = Engine::new();
+        <span class="kw">let </span>_activation = engine.activate();
 
-        <span class="kw">let</span> <span class="ident">lazy</span> <span class="op">=</span> <span class="ident">LazyFunctor::new</span>(<span class="string">&quot;foo&quot;</span>, <span class="number">1</span>);
-        <span class="kw">let</span> <span class="ident">f1</span> <span class="op">=</span> <span class="ident">lazy</span>.<span class="ident">as_functor</span>();
-        <span class="kw">let</span> <span class="ident">f2</span> <span class="op">=</span> <span class="ident">lazy</span>.<span class="ident">as_functor</span>();
-        <span class="kw">let</span> <span class="ident">f3</span> <span class="op">=</span> <span class="ident">Functor::new</span>(<span class="string">&quot;foo&quot;</span>, <span class="number">1</span>);
+        <span class="kw">let </span>lazy = LazyFunctor::new(<span class="string">&quot;foo&quot;</span>, <span class="number">1</span>);
+        <span class="kw">let </span>f1 = lazy.as_functor();
+        <span class="kw">let </span>f2 = lazy.as_functor();
+        <span class="kw">let </span>f3 = Functor::new(<span class="string">&quot;foo&quot;</span>, <span class="number">1</span>);
 
-        <span class="macro">assert_eq!</span>(<span class="ident">f1</span>, <span class="ident">f2</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">f1</span>, <span class="ident">f3</span>);
+        <span class="macro">assert_eq!</span>(f1, f2);
+        <span class="macro">assert_eq!</span>(f1, f3);
     }
 
-    <span class="kw">use</span> <span class="ident">swipl_macros</span>::{<span class="ident">atom</span>, <span class="ident">functor</span>};
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">inline_functor_through_macro_allstring</span>() {
-        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
-        <span class="kw">let</span> <span class="ident">_activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
+    <span class="kw">use </span>swipl_macros::{atom, functor};
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>inline_functor_through_macro_allstring() {
+        <span class="kw">let </span>engine = Engine::new();
+        <span class="kw">let </span>_activation = engine.activate();
 
-        <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="macro">functor!</span>(<span class="string">&quot;foo/3&quot;</span>);
+        <span class="kw">let </span>f = <span class="macro">functor!</span>(<span class="string">&quot;foo/3&quot;</span>);
 
-        <span class="macro">assert_eq!</span>(<span class="macro">atom!</span>(<span class="string">&quot;foo&quot;</span>), <span class="ident">f</span>.<span class="ident">name</span>());
-        <span class="macro">assert_eq!</span>(<span class="number">3</span>, <span class="ident">f</span>.<span class="ident">arity</span>());
+        <span class="macro">assert_eq!</span>(<span class="macro">atom!</span>(<span class="string">&quot;foo&quot;</span>), f.name());
+        <span class="macro">assert_eq!</span>(<span class="number">3</span>, f.arity());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">inline_functor_through_macro_string_comma</span>() {
-        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
-        <span class="kw">let</span> <span class="ident">_activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>inline_functor_through_macro_string_comma() {
+        <span class="kw">let </span>engine = Engine::new();
+        <span class="kw">let </span>_activation = engine.activate();
 
-        <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="macro">functor!</span>(<span class="string">&quot;foo&quot;</span>, <span class="number">3</span>);
+        <span class="kw">let </span>f = <span class="macro">functor!</span>(<span class="string">&quot;foo&quot;</span>, <span class="number">3</span>);
 
-        <span class="macro">assert_eq!</span>(<span class="macro">atom!</span>(<span class="string">&quot;foo&quot;</span>), <span class="ident">f</span>.<span class="ident">name</span>());
-        <span class="macro">assert_eq!</span>(<span class="number">3</span>, <span class="ident">f</span>.<span class="ident">arity</span>());
+        <span class="macro">assert_eq!</span>(<span class="macro">atom!</span>(<span class="string">&quot;foo&quot;</span>), f.name());
+        <span class="macro">assert_eq!</span>(<span class="number">3</span>, f.arity());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">inline_functor_through_macro_string_slash</span>() {
-        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
-        <span class="kw">let</span> <span class="ident">_activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>inline_functor_through_macro_string_slash() {
+        <span class="kw">let </span>engine = Engine::new();
+        <span class="kw">let </span>_activation = engine.activate();
 
-        <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="macro">functor!</span>(<span class="string">&quot;foo&quot;</span> <span class="op">/</span> <span class="number">3</span>);
+        <span class="kw">let </span>f = <span class="macro">functor!</span>(<span class="string">&quot;foo&quot; </span>/ <span class="number">3</span>);
 
-        <span class="macro">assert_eq!</span>(<span class="macro">atom!</span>(<span class="string">&quot;foo&quot;</span>), <span class="ident">f</span>.<span class="ident">name</span>());
-        <span class="macro">assert_eq!</span>(<span class="number">3</span>, <span class="ident">f</span>.<span class="ident">arity</span>());
+        <span class="macro">assert_eq!</span>(<span class="macro">atom!</span>(<span class="string">&quot;foo&quot;</span>), f.name());
+        <span class="macro">assert_eq!</span>(<span class="number">3</span>, f.arity());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">inline_functor_through_macro_ident_comma</span>() {
-        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
-        <span class="kw">let</span> <span class="ident">_activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>inline_functor_through_macro_ident_comma() {
+        <span class="kw">let </span>engine = Engine::new();
+        <span class="kw">let </span>_activation = engine.activate();
 
-        <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="macro">functor!</span>(<span class="ident">foo</span>, <span class="number">3</span>);
+        <span class="kw">let </span>f = <span class="macro">functor!</span>(foo, <span class="number">3</span>);
 
-        <span class="macro">assert_eq!</span>(<span class="macro">atom!</span>(<span class="string">&quot;foo&quot;</span>), <span class="ident">f</span>.<span class="ident">name</span>());
-        <span class="macro">assert_eq!</span>(<span class="number">3</span>, <span class="ident">f</span>.<span class="ident">arity</span>());
+        <span class="macro">assert_eq!</span>(<span class="macro">atom!</span>(<span class="string">&quot;foo&quot;</span>), f.name());
+        <span class="macro">assert_eq!</span>(<span class="number">3</span>, f.arity());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">inline_functor_through_macro_ident_slash</span>() {
-        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
-        <span class="kw">let</span> <span class="ident">_activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>inline_functor_through_macro_ident_slash() {
+        <span class="kw">let </span>engine = Engine::new();
+        <span class="kw">let </span>_activation = engine.activate();
 
-        <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="macro">functor!</span>(<span class="ident">foo</span> <span class="op">/</span> <span class="number">3</span>);
+        <span class="kw">let </span>f = <span class="macro">functor!</span>(foo / <span class="number">3</span>);
 
-        <span class="macro">assert_eq!</span>(<span class="macro">atom!</span>(<span class="string">&quot;foo&quot;</span>), <span class="ident">f</span>.<span class="ident">name</span>());
-        <span class="macro">assert_eq!</span>(<span class="number">3</span>, <span class="ident">f</span>.<span class="ident">arity</span>());
+        <span class="macro">assert_eq!</span>(<span class="macro">atom!</span>(<span class="string">&quot;foo&quot;</span>), f.name());
+        <span class="macro">assert_eq!</span>(<span class="number">3</span>, f.arity());
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl-macros/src/util.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>util.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../swipl_macros/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../swipl_macros/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../swipl_macros/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl-macros/src/util.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>util.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../swipl_macros/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -27,34 +27,34 @@
 <span id="27">27</span>
 <span id="28">28</span>
 <span id="29">29</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">proc_macro2</span>::{<span class="ident">Span</span>, <span class="ident">TokenStream</span>};
-<span class="kw">use</span> <span class="ident">proc_macro_crate::crate_name</span>;
-<span class="kw">use</span> <span class="ident">quote::quote</span>;
-<span class="kw">use</span> <span class="ident">syn::Ident</span>;
+</pre><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Span, TokenStream};
+<span class="kw">use </span>proc_macro_crate::crate_name;
+<span class="kw">use </span>quote::quote;
+<span class="kw">use </span>syn::Ident;
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">crate_token</span>() -&gt; <span class="ident">TokenStream</span> {
-    <span class="kw">let</span> <span class="ident">current_crate_name</span> <span class="op">=</span> <span class="ident">std::env::var</span>(<span class="string">&quot;CARGO_CRATE_NAME&quot;</span>);
-    <span class="kw">if</span> <span class="ident">current_crate_name</span>.<span class="ident">is_ok</span>() <span class="op">&amp;&amp;</span> <span class="ident">current_crate_name</span>.<span class="ident">unwrap</span>() <span class="op">==</span> <span class="string">&quot;swipl&quot;</span> {
-        <span class="comment">// check that this is either compiling swipl as the primary package, or that environment variables indicating a rustdoc binary compile is missing.</span>
-        <span class="kw">if</span> <span class="ident">std::env::var</span>(<span class="string">&quot;CARGO_PRIMARY_PACKAGE&quot;</span>).<span class="ident">is_ok</span>()
-            <span class="op">|</span><span class="op">|</span> <span class="ident">std::env::var</span>(<span class="string">&quot;UNSTABLE_RUSTDOC_TEST_LINE&quot;</span>).<span class="ident">is_err</span>()
+<span class="kw">pub fn </span>crate_token() -&gt; TokenStream {
+    <span class="kw">let </span>current_crate_name = std::env::var(<span class="string">&quot;CARGO_CRATE_NAME&quot;</span>);
+    <span class="kw">if </span>current_crate_name.is_ok() &amp;&amp; current_crate_name.unwrap() == <span class="string">&quot;swipl&quot; </span>{
+        <span class="comment">// check that this is either compiling swipl as the primary package, or that environment variables indicating a rustdoc binary compile is missing.
+        </span><span class="kw">if </span>std::env::var(<span class="string">&quot;CARGO_PRIMARY_PACKAGE&quot;</span>).is_ok()
+            || std::env::var(<span class="string">&quot;UNSTABLE_RUSTDOC_TEST_LINE&quot;</span>).is_err()
         {
-            <span class="macro">quote!</span> {<span class="kw">crate</span>}
-        } <span class="kw">else</span> {
-            <span class="comment">// not the primary package but one of the tests. assume &#39;swipl&#39;.</span>
-            <span class="macro">quote!</span> {<span class="ident">swipl</span>}
+            <span class="macro">quote! </span>{<span class="kw">crate</span>}
+        } <span class="kw">else </span>{
+            <span class="comment">// not the primary package but one of the tests. assume &#39;swipl&#39;.
+            </span><span class="macro">quote! </span>{swipl}
         }
-    } <span class="kw">else</span> {
-        <span class="kw">match</span> <span class="ident">crate_name</span>(<span class="string">&quot;swipl&quot;</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident">name</span>) =&gt; {
-                <span class="kw">let</span> <span class="ident">name_ident</span> <span class="op">=</span> <span class="ident">Ident::new</span>(<span class="kw-2">&amp;</span><span class="ident">name</span>, <span class="ident">Span::call_site</span>());
-                <span class="macro">quote!</span> {#<span class="ident">name_ident</span>}
+    } <span class="kw">else </span>{
+        <span class="kw">match </span>crate_name(<span class="string">&quot;swipl&quot;</span>) {
+            <span class="prelude-val">Ok</span>(name) =&gt; {
+                <span class="kw">let </span>name_ident = Ident::new(<span class="kw-2">&amp;</span>name, Span::call_site());
+                <span class="macro">quote! </span>{#name_ident}
             }
             <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; {
-                <span class="macro">quote!</span> {<span class="ident">swipl</span>}
+                <span class="macro">quote! </span>{swipl}
             }
         }
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

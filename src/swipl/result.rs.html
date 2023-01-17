@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl/src/result.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>result.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../swipl/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../swipl/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../swipl/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl/src/result.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>result.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../swipl/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -183,190 +183,190 @@
 <span id="183">183</span>
 <span id="184">184</span>
 <span id="185">185</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Prolog results.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Functions in swipl-rs that interact with SWI-Prolog generally</span>
-<span class="doccomment">//! return a [PrologResult]. This allows you to use them with the `?`</span>
-<span class="doccomment">//! syntax in situations where you need to call multiple such</span>
-<span class="doccomment">//! functions, and each failure or exception is a reason to exit</span>
-<span class="doccomment">//! early.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! This module also provides some transformations on prolog results.</span>
-<span class="kw">use</span> <span class="ident">thiserror::Error</span>;
+</pre><pre class="rust"><code><span class="doccomment">//! Prolog results.
+//!
+//! Functions in swipl-rs that interact with SWI-Prolog generally
+//! return a [PrologResult]. This allows you to use them with the `?`
+//! syntax in situations where you need to call multiple such
+//! functions, and each failure or exception is a reason to exit
+//! early.
+//!
+//! This module also provides some transformations on prolog results.
+</span><span class="kw">use </span>thiserror::Error;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::context</span>::{<span class="ident">Context</span>, <span class="ident">QueryableContextType</span>};
+<span class="kw">use </span><span class="kw">crate</span>::context::{Context, QueryableContextType};
 
-<span class="doccomment">/// A prolog error.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is either a failure or an exception. In case of an exception,</span>
-<span class="doccomment">/// whowever returned the exception was also supposed to raise an</span>
-<span class="doccomment">/// exception on the context.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Error</span>, <span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">PrologError</span> {
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;prolog function failed&quot;</span>)]</span>
-    <span class="ident">Failure</span>,
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;prolog function threw an exception&quot;</span>)]</span>
-    <span class="ident">Exception</span>,
+<span class="doccomment">/// A prolog error.
+///
+/// This is either a failure or an exception. In case of an exception,
+/// whowever returned the exception was also supposed to raise an
+/// exception on the context.
+</span><span class="attribute">#[derive(Error, Debug, PartialEq, Eq)]
+</span><span class="kw">pub enum </span>PrologError {
+    <span class="attribute">#[error(<span class="string">&quot;prolog function failed&quot;</span>)]
+    </span>Failure,
+    <span class="attribute">#[error(<span class="string">&quot;prolog function threw an exception&quot;</span>)]
+    </span>Exception,
 }
 
-<span class="kw">impl</span> <span class="ident">PrologError</span> {
-    <span class="doccomment">/// Returns true if this error is a failure.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_failure</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">PrologError::Failure</span> =&gt; <span class="bool-val">true</span>,
-            <span class="kw">_</span> =&gt; <span class="bool-val">false</span>,
+<span class="kw">impl </span>PrologError {
+    <span class="doccomment">/// Returns true if this error is a failure.
+    </span><span class="kw">pub fn </span>is_failure(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="kw">match </span><span class="self">self </span>{
+            PrologError::Failure =&gt; <span class="bool-val">true</span>,
+            <span class="kw">_ </span>=&gt; <span class="bool-val">false</span>,
         }
     }
 
-    <span class="doccomment">/// Returns true if this error is an exception.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_exception</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">PrologError::Exception</span> =&gt; <span class="bool-val">true</span>,
-            <span class="kw">_</span> =&gt; <span class="bool-val">false</span>,
+    <span class="doccomment">/// Returns true if this error is an exception.
+    </span><span class="kw">pub fn </span>is_exception(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="kw">match </span><span class="self">self </span>{
+            PrologError::Exception =&gt; <span class="bool-val">true</span>,
+            <span class="kw">_ </span>=&gt; <span class="bool-val">false</span>,
         }
     }
 }
 
-<span class="doccomment">/// Unit type for errors which can only be an exception.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PrologException</span>;
+<span class="doccomment">/// Unit type for errors which can only be an exception.
+</span><span class="attribute">#[derive(Debug)]
+</span><span class="kw">pub struct </span>PrologException;
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">PrologException</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">PrologError</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">_val</span>: <span class="ident">PrologException</span>) -&gt; <span class="ident">PrologError</span> {
-        <span class="ident">PrologError::Exception</span>
+<span class="kw">impl </span>From&lt;PrologException&gt; <span class="kw">for </span>PrologError {
+    <span class="kw">fn </span>from(_val: PrologException) -&gt; PrologError {
+        PrologError::Exception
     }
 }
 
-<span class="doccomment">/// The main result type that most interface functions return.</span>
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">PrologResult</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">PrologError</span><span class="op">&gt;</span>;
-<span class="doccomment">/// Result type for operations that cannot fail, but can throw an exception.</span>
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">NonFailingPrologResult</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">PrologException</span><span class="op">&gt;</span>;
-<span class="doccomment">/// Result type for expressing failure as a boolean instead of an Err.</span>
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">BoolPrologResult</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">bool</span>, <span class="ident">PrologException</span><span class="op">&gt;</span>;
-<span class="doccomment">/// result type for expressing failure as an Option type instead of an Err.</span>
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">OptPrologResult</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>, <span class="ident">PrologException</span><span class="op">&gt;</span>;
+<span class="doccomment">/// The main result type that most interface functions return.
+</span><span class="kw">pub type </span>PrologResult&lt;R&gt; = <span class="prelude-ty">Result</span>&lt;R, PrologError&gt;;
+<span class="doccomment">/// Result type for operations that cannot fail, but can throw an exception.
+</span><span class="kw">pub type </span>NonFailingPrologResult&lt;R&gt; = <span class="prelude-ty">Result</span>&lt;R, PrologException&gt;;
+<span class="doccomment">/// Result type for expressing failure as a boolean instead of an Err.
+</span><span class="kw">pub type </span>BoolPrologResult = <span class="prelude-ty">Result</span>&lt;bool, PrologException&gt;;
+<span class="doccomment">/// result type for expressing failure as an Option type instead of an Err.
+</span><span class="kw">pub type </span>OptPrologResult&lt;R&gt; = <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;R&gt;, PrologException&gt;;
 
-<span class="doccomment">/// Transforms a `PrologResult&lt;()&gt;` into a [BoolPrologResult], allowing more easy use from an if block.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Example:</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">///# use swipl::prelude::*;</span>
-<span class="doccomment">///# fn main() -&gt; PrologResult&lt;()&gt; {</span>
-<span class="doccomment">///#    let engine = Engine::new();</span>
-<span class="doccomment">///#    let activation = engine.activate();</span>
-<span class="doccomment">///#    let context: Context&lt;_&gt; = activation.into();</span>
-<span class="doccomment">///#</span>
-<span class="doccomment">///#    let term = context.new_term_ref();</span>
-<span class="doccomment">///     if attempt(term.unify(42_u64))? {</span>
-<span class="doccomment">///         // the unification succeeded</span>
-<span class="doccomment">///     } else {</span>
-<span class="doccomment">///         // the unification failed</span>
-<span class="doccomment">///     }</span>
-<span class="doccomment">///#    Ok(())</span>
-<span class="doccomment">///# }</span>
-<span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">attempt</span>(<span class="ident">r</span>: <span class="ident">PrologResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span>) -&gt; <span class="ident">BoolPrologResult</span> {
-    <span class="kw">match</span> <span class="ident">r</span> {
+<span class="doccomment">/// Transforms a `PrologResult&lt;()&gt;` into a [BoolPrologResult], allowing more easy use from an if block.
+///
+/// Example:
+/// ```
+///# use swipl::prelude::*;
+///# fn main() -&gt; PrologResult&lt;()&gt; {
+///#    let engine = Engine::new();
+///#    let activation = engine.activate();
+///#    let context: Context&lt;_&gt; = activation.into();
+///#
+///#    let term = context.new_term_ref();
+///     if attempt(term.unify(42_u64))? {
+///         // the unification succeeded
+///     } else {
+///         // the unification failed
+///     }
+///#    Ok(())
+///# }
+/// ```
+</span><span class="kw">pub fn </span>attempt(r: PrologResult&lt;()&gt;) -&gt; BoolPrologResult {
+    <span class="kw">match </span>r {
         <span class="prelude-val">Ok</span>(()) =&gt; <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>),
-        <span class="prelude-val">Err</span>(<span class="ident">PrologError::Failure</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="bool-val">false</span>),
-        <span class="prelude-val">Err</span>(<span class="ident">PrologError::Exception</span>) =&gt; <span class="prelude-val">Err</span>(<span class="ident">PrologException</span>),
+        <span class="prelude-val">Err</span>(PrologError::Failure) =&gt; <span class="prelude-val">Ok</span>(<span class="bool-val">false</span>),
+        <span class="prelude-val">Err</span>(PrologError::Exception) =&gt; <span class="prelude-val">Err</span>(PrologException),
     }
 }
 
-<span class="doccomment">/// Transforms a [PrologResult] into an [OptPrologResult], allowing more easy use from an if block.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Example:</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">///# use swipl::prelude::*;</span>
-<span class="doccomment">///# fn main() -&gt; PrologResult&lt;()&gt; {</span>
-<span class="doccomment">///#    let engine = Engine::new();</span>
-<span class="doccomment">///#    let activation = engine.activate();</span>
-<span class="doccomment">///#    let context: Context&lt;_&gt; = activation.into();</span>
-<span class="doccomment">///#</span>
-<span class="doccomment">///#    let term = context.new_term_ref();</span>
-<span class="doccomment">///     if let Some(num) = attempt_opt(term.get::&lt;u64&gt;())? {</span>
-<span class="doccomment">///         // term contained an u64</span>
-<span class="doccomment">///     } else {</span>
-<span class="doccomment">///         // term did not contain an u64</span>
-<span class="doccomment">///     }</span>
-<span class="doccomment">///#    Ok(())</span>
-<span class="doccomment">///# }</span>
-<span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">attempt_opt</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">r</span>: <span class="ident">PrologResult</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>) -&gt; <span class="ident">OptPrologResult</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> {
-    <span class="kw">match</span> <span class="ident">r</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">r</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">r</span>)),
-        <span class="prelude-val">Err</span>(<span class="ident">PrologError::Failure</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
-        <span class="prelude-val">Err</span>(<span class="ident">PrologError::Exception</span>) =&gt; <span class="prelude-val">Err</span>(<span class="ident">PrologException</span>),
+<span class="doccomment">/// Transforms a [PrologResult] into an [OptPrologResult], allowing more easy use from an if block.
+///
+/// Example:
+/// ```
+///# use swipl::prelude::*;
+///# fn main() -&gt; PrologResult&lt;()&gt; {
+///#    let engine = Engine::new();
+///#    let activation = engine.activate();
+///#    let context: Context&lt;_&gt; = activation.into();
+///#
+///#    let term = context.new_term_ref();
+///     if let Some(num) = attempt_opt(term.get::&lt;u64&gt;())? {
+///         // term contained an u64
+///     } else {
+///         // term did not contain an u64
+///     }
+///#    Ok(())
+///# }
+/// ```
+</span><span class="kw">pub fn </span>attempt_opt&lt;R&gt;(r: PrologResult&lt;R&gt;) -&gt; OptPrologResult&lt;R&gt; {
+    <span class="kw">match </span>r {
+        <span class="prelude-val">Ok</span>(r) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(r)),
+        <span class="prelude-val">Err</span>(PrologError::Failure) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+        <span class="prelude-val">Err</span>(PrologError::Exception) =&gt; <span class="prelude-val">Err</span>(PrologException),
     }
 }
 
-<span class="doccomment">/// Turn a boolean into a prolog result.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// True will become `Ok(())`, and false will become</span>
-<span class="doccomment">/// `Err(PrologError::Failure)`.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_prolog_result</span>(<span class="ident">b</span>: <span class="ident">bool</span>) -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">match</span> <span class="ident">b</span> {
-        <span class="bool-val">true</span> =&gt; <span class="prelude-val">Ok</span>(()),
-        <span class="bool-val">false</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">PrologError::Failure</span>),
+<span class="doccomment">/// Turn a boolean into a prolog result.
+///
+/// True will become `Ok(())`, and false will become
+/// `Err(PrologError::Failure)`.
+</span><span class="kw">pub fn </span>into_prolog_result(b: bool) -&gt; PrologResult&lt;()&gt; {
+    <span class="kw">match </span>b {
+        <span class="bool-val">true </span>=&gt; <span class="prelude-val">Ok</span>(()),
+        <span class="bool-val">false </span>=&gt; <span class="prelude-val">Err</span>(PrologError::Failure),
     }
 }
 
-<span class="doccomment">/// Return a failure.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is a shorthand for `Err(PrologError::Failure)`.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fail</span>() -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="prelude-val">Err</span>(<span class="ident">PrologError::Failure</span>)
+<span class="doccomment">/// Return a failure.
+///
+/// This is a shorthand for `Err(PrologError::Failure)`.
+</span><span class="kw">pub fn </span>fail() -&gt; PrologResult&lt;()&gt; {
+    <span class="prelude-val">Err</span>(PrologError::Failure)
 }
 
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">PrologStringError</span> {
-    <span class="ident">Failure</span>,
-    <span class="ident">Exception</span>(<span class="ident">String</span>),
+<span class="kw">pub enum </span>PrologStringError {
+    Failure,
+    Exception(String),
 }
 
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">PrologStringResult</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">PrologStringError</span><span class="op">&gt;</span>;
+<span class="kw">pub type </span>PrologStringResult&lt;T&gt; = <span class="prelude-ty">Result</span>&lt;T, PrologStringError&gt;;
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">result_to_string_result</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">C</span>: <span class="ident">QueryableContextType</span>, <span class="ident">T</span><span class="op">&gt;</span>(
-    <span class="ident">c</span>: <span class="kw-2">&amp;</span><span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">C</span><span class="op">&gt;</span>,
-    <span class="ident">r</span>: <span class="ident">PrologResult</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
-) -&gt; <span class="ident">PrologStringResult</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">match</span> <span class="ident">r</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">r</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="ident">r</span>),
-        <span class="prelude-val">Err</span>(<span class="ident">PrologError::Failure</span>) =&gt; <span class="prelude-val">Err</span>(<span class="ident">PrologStringError::Failure</span>),
-        <span class="prelude-val">Err</span>(<span class="ident">PrologError::Exception</span>) =&gt; {
-            <span class="kw">let</span> <span class="ident">r</span> <span class="op">=</span> <span class="ident">c</span>.<span class="ident">with_exception</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> {
+<span class="kw">pub fn </span>result_to_string_result&lt;<span class="lifetime">&#39;a</span>, C: QueryableContextType, T&gt;(
+    c: <span class="kw-2">&amp;</span>Context&lt;<span class="lifetime">&#39;a</span>, C&gt;,
+    r: PrologResult&lt;T&gt;,
+) -&gt; PrologStringResult&lt;T&gt; {
+    <span class="kw">match </span>r {
+        <span class="prelude-val">Ok</span>(r) =&gt; <span class="prelude-val">Ok</span>(r),
+        <span class="prelude-val">Err</span>(PrologError::Failure) =&gt; <span class="prelude-val">Err</span>(PrologStringError::Failure),
+        <span class="prelude-val">Err</span>(PrologError::Exception) =&gt; {
+            <span class="kw">let </span>r = c.with_exception(|e| {
                 <span class="macro">eprintln!</span>(<span class="string">&quot;a&quot;</span>);
-                <span class="kw">let</span> <span class="ident">e</span> <span class="op">=</span> <span class="ident">e</span>.<span class="ident">expect</span>(<span class="string">&quot;prolog exception but no exception in prolog engine&quot;</span>);
+                <span class="kw">let </span>e = e.expect(<span class="string">&quot;prolog exception but no exception in prolog engine&quot;</span>);
                 <span class="macro">eprintln!</span>(<span class="string">&quot;b&quot;</span>);
-                <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">c</span>.<span class="ident">string_from_term</span>(<span class="ident">e</span>);
+                <span class="kw">let </span>result = c.string_from_term(e);
                 <span class="macro">eprintln!</span>(<span class="string">&quot;c&quot;</span>);
 
-                <span class="ident">result</span>
+                result
             });
 
-            <span class="ident">c</span>.<span class="ident">clear_exception</span>();
+            c.clear_exception();
 
-            <span class="kw">match</span> <span class="ident">r</span> {
-                <span class="prelude-val">Ok</span>(<span class="ident">s</span>) =&gt; <span class="prelude-val">Err</span>(<span class="ident">PrologStringError::Exception</span>(<span class="macro">format!</span>(
+            <span class="kw">match </span>r {
+                <span class="prelude-val">Ok</span>(s) =&gt; <span class="prelude-val">Err</span>(PrologStringError::Exception(<span class="macro">format!</span>(
                     <span class="string">&quot;prolog had the following exception: {}&quot;</span>,
-                    <span class="ident">s</span>
+                    s
                 ))),
-                <span class="prelude-val">Err</span>(<span class="ident">PrologError::Failure</span>) =&gt; <span class="prelude-val">Err</span>(<span class="ident">PrologStringError::Exception</span>(<span class="macro">format!</span>(
-                    <span class="string">&quot;prolog failed while retrieving string from previous error&quot;</span>
-                ))),
-                <span class="prelude-val">Err</span>(<span class="ident">PrologError::Exception</span>) =&gt; <span class="prelude-val">Err</span>(<span class="ident">PrologStringError::Exception</span>(<span class="macro">format!</span>(
-                    <span class="string">&quot;prolog threw exception while retrieving string from previous error&quot;</span>
-                ))),
+                <span class="prelude-val">Err</span>(PrologError::Failure) =&gt; <span class="prelude-val">Err</span>(PrologStringError::Exception(<span class="macro">format!</span>(
+                    <span class="string">&quot;prolog failed while retrieving string from previous error&quot;
+                </span>))),
+                <span class="prelude-val">Err</span>(PrologError::Exception) =&gt; <span class="prelude-val">Err</span>(PrologStringError::Exception(<span class="macro">format!</span>(
+                    <span class="string">&quot;prolog threw exception while retrieving string from previous error&quot;
+                </span>))),
             }
         }
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">unwrap_result</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">C</span>: <span class="ident">QueryableContextType</span>, <span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">c</span>: <span class="kw-2">&amp;</span><span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">C</span><span class="op">&gt;</span>, <span class="ident">r</span>: <span class="ident">PrologResult</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span> {
-    <span class="kw">match</span> <span class="ident">result_to_string_result</span>(<span class="ident">c</span>, <span class="ident">r</span>) {
-        <span class="prelude-val">Ok</span>(<span class="ident">r</span>) =&gt; <span class="ident">r</span>,
-        <span class="prelude-val">Err</span>(<span class="ident">PrologStringError::Failure</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;prolog failed&quot;</span>),
-        <span class="prelude-val">Err</span>(<span class="ident">PrologStringError::Exception</span>(<span class="ident">s</span>)) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">s</span>),
+<span class="kw">pub fn </span>unwrap_result&lt;<span class="lifetime">&#39;a</span>, C: QueryableContextType, T&gt;(c: <span class="kw-2">&amp;</span>Context&lt;<span class="lifetime">&#39;a</span>, C&gt;, r: PrologResult&lt;T&gt;) -&gt; T {
+    <span class="kw">match </span>result_to_string_result(c, r) {
+        <span class="prelude-val">Ok</span>(r) =&gt; r,
+        <span class="prelude-val">Err</span>(PrologStringError::Failure) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;prolog failed&quot;</span>),
+        <span class="prelude-val">Err</span>(PrologStringError::Exception(s)) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;{}&quot;</span>, s),
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

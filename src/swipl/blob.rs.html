@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl/src/blob.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>blob.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../swipl/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../swipl/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../swipl/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl/src/blob.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>blob.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../swipl/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -661,668 +661,668 @@
 <span id="661">661</span>
 <span id="662">662</span>
 <span id="663">663</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Blob support.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Blobs are a way to share data with SWI-Prolog which does not fit</span>
-<span class="doccomment">//! in any one of the built-in term types. They are stored in the</span>
-<span class="doccomment">//! SWI-Prolog environment as a special kind of atom.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! This module, together with the various blob macros, implement</span>
-<span class="doccomment">//! support for different classes of blobs.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! For all blob types, macros have been defined to easily define and</span>
-<span class="doccomment">//! implement them. This allows your type to be used with</span>
-<span class="doccomment">//! [Term::get](crate::term::Term::get),</span>
-<span class="doccomment">//! [Term::put](crate::term::Term::put), and</span>
-<span class="doccomment">//! [Term::unify](crate::term::Term::unify).</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! # ArcBlob</span>
-<span class="doccomment">//! This type of blob is a pointer to atomically reference counted</span>
-<span class="doccomment">//! rust data. Upon getting, putting or unifying terms with data of</span>
-<span class="doccomment">//! this type, only the pointer is transfered and reference counts are</span>
-<span class="doccomment">//! updated.</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Blob support.
+//!
+//! Blobs are a way to share data with SWI-Prolog which does not fit
+//! in any one of the built-in term types. They are stored in the
+//! SWI-Prolog environment as a special kind of atom.
+//!
+//! This module, together with the various blob macros, implement
+//! support for different classes of blobs.
+//!
+//! For all blob types, macros have been defined to easily define and
+//! implement them. This allows your type to be used with
+//! [Term::get](crate::term::Term::get),
+//! [Term::put](crate::term::Term::put), and
+//! [Term::unify](crate::term::Term::unify).
+//!
+//! # ArcBlob
+//! This type of blob is a pointer to atomically reference counted
+//! rust data. Upon getting, putting or unifying terms with data of
+//! this type, only the pointer is transfered and reference counts are
+//! updated.
 
-<span class="doccomment">//! ## Examples</span>
-<span class="doccomment">//! Using the default implementation for `write` and `compare`:</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! # use swipl::prelude::*;</span>
-<span class="doccomment">//! # use std::sync::Arc;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! // note the keyword &#39;defaults&#39; below - this makes sure that a</span>
-<span class="doccomment">//! // default implementation of `ArcBlobImpl` is generated.</span>
-<span class="doccomment">//! #[arc_blob(&quot;foo&quot;, defaults)]</span>
-<span class="doccomment">//! struct Foo {</span>
-<span class="doccomment">//!     num: u64</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! fn do_something(term1: &amp;Term, term2: &amp;Term) -&gt; PrologResult&lt;()&gt; {</span>
-<span class="doccomment">//!     let arc = Arc::new(Foo{num: 42});</span>
-<span class="doccomment">//!     term1.unify(&amp;arc)?;</span>
-<span class="doccomment">//!     let retrieved: Arc&lt;Foo&gt; = term1.get()?;</span>
-<span class="doccomment">//!     assert_eq!(42, retrieved.num);</span>
-<span class="doccomment">//!     term2.put(&amp;retrieved)?;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     Ok(())</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Provide your own implementation for `write` and `compare`:</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! # use swipl::prelude::*;</span>
-<span class="doccomment">//! # use std::sync::Arc;</span>
-<span class="doccomment">//! # use std::io::Write;</span>
-<span class="doccomment">//! # use std::cmp::Ordering;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! #[arc_blob(&quot;foo&quot;)]</span>
-<span class="doccomment">//! struct Foo {</span>
-<span class="doccomment">//!     num: u64</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! impl ArcBlobImpl for Foo {</span>
-<span class="doccomment">//!     fn write(&amp;self, stream: &amp;mut PrologStream) -&gt; std::io::Result&lt;()&gt; {</span>
-<span class="doccomment">//!         write!(stream, &quot;&lt;foo {}&gt;&quot;, self.num)</span>
-<span class="doccomment">//!     }</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     fn compare(&amp;self, other: &amp;Self) -&gt; Ordering {</span>
-<span class="doccomment">//!         self.num.cmp(&amp;other.num)</span>
-<span class="doccomment">//!     }</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! # WrappedArcBlob</span>
-<span class="doccomment">//! This type of blob is very similar to an [ArcBlob]. The difference</span>
-<span class="doccomment">//! is that it is wrapped in a struct. This is done due to the</span>
-<span class="doccomment">//! requirement that a trait from another crate can only be</span>
-<span class="doccomment">//! implemented for your own types. This means that [ArcBlob] cannot</span>
-<span class="doccomment">//! be directly implemented from code that depends on the `swipl`</span>
-<span class="doccomment">//! crate for an `Arc` that comes out of another dependency. The</span>
-<span class="doccomment">//! wrapper allows a trait to be implemented that does the job.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ## Examples</span>
-<span class="doccomment">//! Using the default implementation for `write` and `compare`:</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! # use swipl::prelude::*;</span>
-<span class="doccomment">//! # use std::sync::Arc;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! // Note that it is not possible to implement ArcBlob directly on a</span>
-<span class="doccomment">//! // Vec&lt;bool&gt;, as it is not a type defined by us. That&#39;s why it</span>
-<span class="doccomment">//! // needs to be wrapped.</span>
-<span class="doccomment">//! wrapped_arc_blob!(&quot;foo&quot;, Foo, Vec&lt;bool&gt;, defaults);</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! fn do_something(term1: &amp;Term, term2: &amp;Term) -&gt; PrologResult&lt;()&gt; {</span>
-<span class="doccomment">//!     let wrapped = Foo(Arc::new(vec![true,false,true]));</span>
-<span class="doccomment">//!     term1.unify(&amp;wrapped)?;</span>
-<span class="doccomment">//!     let retrieved: Foo = term1.get()?;</span>
-<span class="doccomment">//!     assert!(!retrieved[1]);</span>
-<span class="doccomment">//!     term2.put(&amp;retrieved)?;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     Ok(())</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Provide your own implementation for `write` and `compare`:</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! # use swipl::prelude::*;</span>
-<span class="doccomment">//! # use std::sync::Arc;</span>
-<span class="doccomment">//! # use std::io::Write;</span>
-<span class="doccomment">//! # use std::cmp::Ordering;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! wrapped_arc_blob!(&quot;foo&quot;, Foo, Vec&lt;bool&gt; );</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! impl WrappedArcBlobImpl for Foo {</span>
-<span class="doccomment">//!     fn write(this: &amp;Vec&lt;bool&gt;, stream: &amp;mut PrologStream) -&gt; std::io::Result&lt;()&gt; {</span>
-<span class="doccomment">//!         write!(stream, &quot;&lt;foo {:?}&gt;&quot;,this)</span>
-<span class="doccomment">//!     }</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     fn compare(this: &amp;Vec&lt;bool&gt;, other: &amp;Vec&lt;bool&gt;) -&gt; Ordering {</span>
-<span class="doccomment">//!         this.cmp(other)</span>
-<span class="doccomment">//!     }</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! # CloneBlob</span>
-<span class="doccomment">//! This type of blob copies its contents to and from SWI-Prolog when</span>
-<span class="doccomment">//! getting, putting or unifying terms with the data.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ## Examples</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! # use swipl::prelude::*;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! // note the keyword &#39;defaults&#39; below - this makes sure that a</span>
-<span class="doccomment">//! // default implementation of `CloneBlobImpl` is generated.</span>
-<span class="doccomment">//! // note also that the struct below derives Clone, which allows it</span>
-<span class="doccomment">//! // to be used as a clone blob.</span>
-<span class="doccomment">//! #[clone_blob(&quot;foo&quot;, defaults)]</span>
-<span class="doccomment">//! #[derive(Clone)]</span>
-<span class="doccomment">//! struct Foo {</span>
-<span class="doccomment">//!     num: u64</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! fn do_something(term1: &amp;Term, term2: &amp;Term) -&gt; PrologResult&lt;()&gt; {</span>
-<span class="doccomment">//!     let val = Foo{num: 42};</span>
-<span class="doccomment">//!     term1.unify(&amp;val)?;</span>
-<span class="doccomment">//!     let retrieved: Foo = term1.get()?;</span>
-<span class="doccomment">//!     assert_eq!(42, retrieved.num);</span>
-<span class="doccomment">//!     term2.put(&amp;retrieved)?;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     Ok(())</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Provide your own implementation for `write` and `compare`:</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! # use swipl::prelude::*;</span>
-<span class="doccomment">//! # use std::io::Write;</span>
-<span class="doccomment">//! # use std::cmp::Ordering;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! #[clone_blob(&quot;foo&quot;)]</span>
-<span class="doccomment">//! #[derive(Clone)]</span>
-<span class="doccomment">//! struct Foo {</span>
-<span class="doccomment">//!     num: u64</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! impl CloneBlobImpl for Foo {</span>
-<span class="doccomment">//!     fn write(&amp;self, stream: &amp;mut PrologStream) -&gt; std::io::Result&lt;()&gt; {</span>
-<span class="doccomment">//!         write!(stream, &quot;&lt;foo {}&gt;&quot;, self.num)</span>
-<span class="doccomment">//!     }</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     fn compare(&amp;self, other: &amp;Self) -&gt; Ordering {</span>
-<span class="doccomment">//!         self.num.cmp(&amp;other.num)</span>
-<span class="doccomment">//!     }</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! # wrapped CloneBlob</span>
-<span class="doccomment">//! For convenience, there&#39;s also a</span>
-<span class="doccomment">//! [wrapped_clone_blob!](crate::prelude::wrapped_clone_blob!) macro</span>
-<span class="doccomment">//! for cases where we wish to generate a blob out of cloneable data</span>
-<span class="doccomment">//! that is of a type defined in another crate. This is analogous to</span>
-<span class="doccomment">//! the wrapped arc blob, except that no extra types are</span>
-<span class="doccomment">//! required. There is no `WrappedCloneBlob`, instead, the wrapper</span>
-<span class="doccomment">//! just implements CloneBlob directly.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ## Examples</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! # use swipl::prelude::*;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! wrapped_clone_blob!(&quot;foo&quot;, Foo, Vec&lt;bool&gt;, defaults);</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! fn do_something(term1: &amp;Term, term2: &amp;Term) -&gt; PrologResult&lt;()&gt; {</span>
-<span class="doccomment">//!     let val = Foo(vec![true, false, true]);</span>
-<span class="doccomment">//!     term1.unify(&amp;val)?;</span>
-<span class="doccomment">//!     let retrieved: Foo = term1.get()?;</span>
-<span class="doccomment">//!     assert!(!retrieved[1]);</span>
-<span class="doccomment">//!     term2.put(&amp;retrieved)?;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     Ok(())</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Provide your own implementation for `write` and `compare`:</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! # use swipl::prelude::*;</span>
-<span class="doccomment">//! # use std::io::Write;</span>
-<span class="doccomment">//! # use std::cmp::Ordering;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! wrapped_clone_blob!(&quot;foo&quot;, Foo, Vec&lt;bool&gt;);</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! impl CloneBlobImpl for Foo {</span>
-<span class="doccomment">//!     fn write(&amp;self, stream: &amp;mut PrologStream) -&gt; std::io::Result&lt;()&gt; {</span>
-<span class="doccomment">//!         write!(stream, &quot;&lt;foo {:?}&gt;&quot;, self.0)</span>
-<span class="doccomment">//!     }</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     fn compare(&amp;self, other: &amp;Self) -&gt; Ordering {</span>
-<span class="doccomment">//!         self.0.cmp(&amp;other.0)</span>
-<span class="doccomment">//!     }</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//! ```</span>
+//! ## Examples
+//! Using the default implementation for `write` and `compare`:
+//! ```
+//! # use swipl::prelude::*;
+//! # use std::sync::Arc;
+//!
+//! // note the keyword &#39;defaults&#39; below - this makes sure that a
+//! // default implementation of `ArcBlobImpl` is generated.
+//! #[arc_blob(&quot;foo&quot;, defaults)]
+//! struct Foo {
+//!     num: u64
+//! }
+//!
+//! fn do_something(term1: &amp;Term, term2: &amp;Term) -&gt; PrologResult&lt;()&gt; {
+//!     let arc = Arc::new(Foo{num: 42});
+//!     term1.unify(&amp;arc)?;
+//!     let retrieved: Arc&lt;Foo&gt; = term1.get()?;
+//!     assert_eq!(42, retrieved.num);
+//!     term2.put(&amp;retrieved)?;
+//!
+//!     Ok(())
+//! }
+//! ```
+//!
+//! Provide your own implementation for `write` and `compare`:
+//! ```
+//! # use swipl::prelude::*;
+//! # use std::sync::Arc;
+//! # use std::io::Write;
+//! # use std::cmp::Ordering;
+//!
+//! #[arc_blob(&quot;foo&quot;)]
+//! struct Foo {
+//!     num: u64
+//! }
+//!
+//! impl ArcBlobImpl for Foo {
+//!     fn write(&amp;self, stream: &amp;mut PrologStream) -&gt; std::io::Result&lt;()&gt; {
+//!         write!(stream, &quot;&lt;foo {}&gt;&quot;, self.num)
+//!     }
+//!
+//!     fn compare(&amp;self, other: &amp;Self) -&gt; Ordering {
+//!         self.num.cmp(&amp;other.num)
+//!     }
+//! }
+//! ```
+//!
+//! # WrappedArcBlob
+//! This type of blob is very similar to an [ArcBlob]. The difference
+//! is that it is wrapped in a struct. This is done due to the
+//! requirement that a trait from another crate can only be
+//! implemented for your own types. This means that [ArcBlob] cannot
+//! be directly implemented from code that depends on the `swipl`
+//! crate for an `Arc` that comes out of another dependency. The
+//! wrapper allows a trait to be implemented that does the job.
+//!
+//! ## Examples
+//! Using the default implementation for `write` and `compare`:
+//! ```
+//! # use swipl::prelude::*;
+//! # use std::sync::Arc;
+//!
+//! // Note that it is not possible to implement ArcBlob directly on a
+//! // Vec&lt;bool&gt;, as it is not a type defined by us. That&#39;s why it
+//! // needs to be wrapped.
+//! wrapped_arc_blob!(&quot;foo&quot;, Foo, Vec&lt;bool&gt;, defaults);
+//!
+//! fn do_something(term1: &amp;Term, term2: &amp;Term) -&gt; PrologResult&lt;()&gt; {
+//!     let wrapped = Foo(Arc::new(vec![true,false,true]));
+//!     term1.unify(&amp;wrapped)?;
+//!     let retrieved: Foo = term1.get()?;
+//!     assert!(!retrieved[1]);
+//!     term2.put(&amp;retrieved)?;
+//!
+//!     Ok(())
+//! }
+//! ```
+//!
+//! Provide your own implementation for `write` and `compare`:
+//! ```
+//! # use swipl::prelude::*;
+//! # use std::sync::Arc;
+//! # use std::io::Write;
+//! # use std::cmp::Ordering;
+//!
+//! wrapped_arc_blob!(&quot;foo&quot;, Foo, Vec&lt;bool&gt; );
+//!
+//! impl WrappedArcBlobImpl for Foo {
+//!     fn write(this: &amp;Vec&lt;bool&gt;, stream: &amp;mut PrologStream) -&gt; std::io::Result&lt;()&gt; {
+//!         write!(stream, &quot;&lt;foo {:?}&gt;&quot;,this)
+//!     }
+//!
+//!     fn compare(this: &amp;Vec&lt;bool&gt;, other: &amp;Vec&lt;bool&gt;) -&gt; Ordering {
+//!         this.cmp(other)
+//!     }
+//! }
+//! ```
+//!
+//! # CloneBlob
+//! This type of blob copies its contents to and from SWI-Prolog when
+//! getting, putting or unifying terms with the data.
+//!
+//! ## Examples
+//! ```
+//! # use swipl::prelude::*;
+//!
+//! // note the keyword &#39;defaults&#39; below - this makes sure that a
+//! // default implementation of `CloneBlobImpl` is generated.
+//! // note also that the struct below derives Clone, which allows it
+//! // to be used as a clone blob.
+//! #[clone_blob(&quot;foo&quot;, defaults)]
+//! #[derive(Clone)]
+//! struct Foo {
+//!     num: u64
+//! }
+//!
+//! fn do_something(term1: &amp;Term, term2: &amp;Term) -&gt; PrologResult&lt;()&gt; {
+//!     let val = Foo{num: 42};
+//!     term1.unify(&amp;val)?;
+//!     let retrieved: Foo = term1.get()?;
+//!     assert_eq!(42, retrieved.num);
+//!     term2.put(&amp;retrieved)?;
+//!
+//!     Ok(())
+//! }
+//! ```
+//!
+//! Provide your own implementation for `write` and `compare`:
+//! ```
+//! # use swipl::prelude::*;
+//! # use std::io::Write;
+//! # use std::cmp::Ordering;
+//!
+//! #[clone_blob(&quot;foo&quot;)]
+//! #[derive(Clone)]
+//! struct Foo {
+//!     num: u64
+//! }
+//!
+//! impl CloneBlobImpl for Foo {
+//!     fn write(&amp;self, stream: &amp;mut PrologStream) -&gt; std::io::Result&lt;()&gt; {
+//!         write!(stream, &quot;&lt;foo {}&gt;&quot;, self.num)
+//!     }
+//!
+//!     fn compare(&amp;self, other: &amp;Self) -&gt; Ordering {
+//!         self.num.cmp(&amp;other.num)
+//!     }
+//! }
+//! ```
+//!
+//! # wrapped CloneBlob
+//! For convenience, there&#39;s also a
+//! [wrapped_clone_blob!](crate::prelude::wrapped_clone_blob!) macro
+//! for cases where we wish to generate a blob out of cloneable data
+//! that is of a type defined in another crate. This is analogous to
+//! the wrapped arc blob, except that no extra types are
+//! required. There is no `WrappedCloneBlob`, instead, the wrapper
+//! just implements CloneBlob directly.
+//!
+//! ## Examples
+//! ```
+//! # use swipl::prelude::*;
+//!
+//! wrapped_clone_blob!(&quot;foo&quot;, Foo, Vec&lt;bool&gt;, defaults);
+//!
+//! fn do_something(term1: &amp;Term, term2: &amp;Term) -&gt; PrologResult&lt;()&gt; {
+//!     let val = Foo(vec![true, false, true]);
+//!     term1.unify(&amp;val)?;
+//!     let retrieved: Foo = term1.get()?;
+//!     assert!(!retrieved[1]);
+//!     term2.put(&amp;retrieved)?;
+//!
+//!     Ok(())
+//! }
+//! ```
+//!
+//! Provide your own implementation for `write` and `compare`:
+//! ```
+//! # use swipl::prelude::*;
+//! # use std::io::Write;
+//! # use std::cmp::Ordering;
+//!
+//! wrapped_clone_blob!(&quot;foo&quot;, Foo, Vec&lt;bool&gt;);
+//!
+//! impl CloneBlobImpl for Foo {
+//!     fn write(&amp;self, stream: &amp;mut PrologStream) -&gt; std::io::Result&lt;()&gt; {
+//!         write!(stream, &quot;&lt;foo {:?}&gt;&quot;, self.0)
+//!     }
+//!
+//!     fn compare(&amp;self, other: &amp;Self) -&gt; Ordering {
+//!         self.0.cmp(&amp;other.0)
+//!     }
+//! }
+//! ```
 
-<span class="kw">use</span> <span class="ident">std::cmp::Ordering</span>;
-<span class="kw">use</span> <span class="ident">std::io</span>::{<span class="self">self</span>, <span class="ident">Write</span>};
-<span class="kw">use</span> <span class="ident">std::os::raw</span>::{<span class="ident">c_int</span>, <span class="ident">c_void</span>};
-<span class="kw">use</span> <span class="ident">std::sync::Arc</span>;
+</span><span class="kw">use </span>std::cmp::Ordering;
+<span class="kw">use </span>std::io::{<span class="self">self</span>, Write};
+<span class="kw">use </span>std::os::raw::{c_int, c_void};
+<span class="kw">use </span>std::sync::Arc;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::fli</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::stream</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::term</span>::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">crate</span>::fli;
+<span class="kw">use </span><span class="kw">crate</span>::stream::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">crate</span>::term::<span class="kw-2">*</span>;
 
-<span class="doccomment">/// Create a blob definition for use with the SWI-Prolog fli out of</span>
-<span class="doccomment">/// the given components.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is used by the various blob macros. You&#39;ll almost never have</span>
-<span class="doccomment">/// to use this directly.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">create_blob_definition</span>(
-    <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [<span class="ident">u8</span>],
-    <span class="ident">text</span>: <span class="ident">bool</span>,
-    <span class="ident">unique</span>: <span class="ident">bool</span>,
-    <span class="ident">nocopy</span>: <span class="ident">bool</span>,
-    <span class="ident">acquire</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span>(<span class="ident">a</span>: <span class="ident">fli::atom_t</span>)<span class="op">&gt;</span>,
-    <span class="ident">release</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span>(<span class="ident">a</span>: <span class="ident">fli::atom_t</span>) -&gt; <span class="ident">c_int</span><span class="op">&gt;</span>,
-    <span class="ident">compare</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span>(<span class="ident">a</span>: <span class="ident">fli::atom_t</span>, <span class="ident">b</span>: <span class="ident">fli::atom_t</span>) -&gt; <span class="ident">c_int</span><span class="op">&gt;</span>,
-    <span class="ident">write</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span>
-        <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span>(<span class="ident">s</span>: <span class="kw-2">*mut</span> <span class="ident">fli::IOSTREAM</span>, <span class="ident">a</span>: <span class="ident">fli::atom_t</span>, <span class="ident">flags</span>: <span class="ident">c_int</span>) -&gt; <span class="ident">c_int</span>,
-    <span class="op">&gt;</span>,
-    <span class="ident">save</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span>(<span class="ident">a</span>: <span class="ident">fli::atom_t</span>, <span class="ident">s</span>: <span class="kw-2">*mut</span> <span class="ident">fli::IOSTREAM</span>) -&gt; <span class="ident">c_int</span><span class="op">&gt;</span>,
-    <span class="ident">load</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span>(<span class="ident">s</span>: <span class="kw-2">*mut</span> <span class="ident">fli::IOSTREAM</span>) -&gt; <span class="ident">fli::atom_t</span><span class="op">&gt;</span>,
-) -&gt; <span class="ident">fli::PL_blob_t</span> {
-    <span class="kw">let</span> <span class="ident">last_char</span> <span class="op">=</span> <span class="ident">name</span>.<span class="ident">last</span>();
-    <span class="kw">if</span> <span class="ident">last_char</span>.<span class="ident">is_none</span>() <span class="op">|</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">last_char</span>.<span class="ident">unwrap</span>() <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
+<span class="doccomment">/// Create a blob definition for use with the SWI-Prolog fli out of
+/// the given components.
+///
+/// This is used by the various blob macros. You&#39;ll almost never have
+/// to use this directly.
+</span><span class="kw">pub fn </span>create_blob_definition(
+    name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[u8],
+    text: bool,
+    unique: bool,
+    nocopy: bool,
+    acquire: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>(a: fli::atom_t)&gt;,
+    release: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>(a: fli::atom_t) -&gt; c_int&gt;,
+    compare: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>(a: fli::atom_t, b: fli::atom_t) -&gt; c_int&gt;,
+    write: <span class="prelude-ty">Option</span>&lt;
+        <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>(s: <span class="kw-2">*mut </span>fli::IOSTREAM, a: fli::atom_t, flags: c_int) -&gt; c_int,
+    &gt;,
+    save: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>(a: fli::atom_t, s: <span class="kw-2">*mut </span>fli::IOSTREAM) -&gt; c_int&gt;,
+    load: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>(s: <span class="kw-2">*mut </span>fli::IOSTREAM) -&gt; fli::atom_t&gt;,
+) -&gt; fli::PL_blob_t {
+    <span class="kw">let </span>last_char = name.last();
+    <span class="kw">if </span>last_char.is_none() || <span class="kw-2">*</span>last_char.unwrap() != <span class="number">0 </span>{
         <span class="macro">panic!</span>(<span class="string">&quot;tried to register a blob definition with a name that does not end in a NULL&quot;</span>);
     }
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">flags</span> <span class="op">=</span> <span class="number">0</span>;
-    <span class="kw">if</span> <span class="ident">text</span> {
-        <span class="ident">flags</span> <span class="op">|</span><span class="op">=</span> <span class="ident">fli::PL_BLOB_TEXT</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>flags = <span class="number">0</span>;
+    <span class="kw">if </span>text {
+        flags |= fli::PL_BLOB_TEXT;
     }
-    <span class="kw">if</span> <span class="ident">unique</span> {
-        <span class="ident">flags</span> <span class="op">|</span><span class="op">=</span> <span class="ident">fli::PL_BLOB_UNIQUE</span>;
+    <span class="kw">if </span>unique {
+        flags |= fli::PL_BLOB_UNIQUE;
     }
-    <span class="kw">if</span> <span class="ident">nocopy</span> {
-        <span class="ident">flags</span> <span class="op">|</span><span class="op">=</span> <span class="ident">fli::PL_BLOB_NOCOPY</span>;
+    <span class="kw">if </span>nocopy {
+        flags |= fli::PL_BLOB_NOCOPY;
     }
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">std::mem::zeroed</span>::<span class="op">&lt;</span><span class="ident">fli::PL_blob_t</span><span class="op">&gt;</span>() };
-    <span class="ident">result</span>.<span class="ident">magic</span> <span class="op">=</span> <span class="ident">fli::PL_BLOB_MAGIC</span> <span class="kw">as</span> <span class="ident">usize</span>;
-    <span class="ident">result</span>.<span class="ident">flags</span> <span class="op">=</span> <span class="ident">flags</span> <span class="kw">as</span> <span class="ident">usize</span>;
-    <span class="ident">result</span>.<span class="ident">name</span> <span class="op">=</span> <span class="ident">name</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">std::os::raw::c_char</span>;
-    <span class="ident">result</span>.<span class="ident">acquire</span> <span class="op">=</span> <span class="ident">acquire</span>;
-    <span class="ident">result</span>.<span class="ident">release</span> <span class="op">=</span> <span class="ident">release</span>;
-    <span class="ident">result</span>.<span class="ident">compare</span> <span class="op">=</span> <span class="ident">compare</span>;
-    <span class="ident">result</span>.<span class="ident">write</span> <span class="op">=</span> <span class="ident">write</span>;
-    <span class="ident">result</span>.<span class="ident">save</span> <span class="op">=</span> <span class="ident">save</span>;
-    <span class="ident">result</span>.<span class="ident">load</span> <span class="op">=</span> <span class="ident">load</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>result = <span class="kw">unsafe </span>{ std::mem::zeroed::&lt;fli::PL_blob_t&gt;() };
+    result.magic = fli::PL_BLOB_MAGIC <span class="kw">as </span>usize;
+    result.flags = flags <span class="kw">as </span>usize;
+    result.name = name.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>std::os::raw::c_char;
+    result.acquire = acquire;
+    result.release = release;
+    result.compare = compare;
+    result.write = write;
+    result.save = save;
+    result.load = load;
 
-    <span class="ident">result</span>
+    result
 }
 
-<span class="doccomment">/// Base type for [ArcBlob].</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This allows `blob_name` to be available to implementors of</span>
-<span class="doccomment">/// [ArcBlobImpl], which is convenient for allowing auto-generation of</span>
-<span class="doccomment">/// the write function.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">ArcBlobBase</span> {
-    <span class="doccomment">/// Return the name of this blob</span>
-    <span class="kw">fn</span> <span class="ident">blob_name</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>;
+<span class="doccomment">/// Base type for [ArcBlob].
+///
+/// This allows `blob_name` to be available to implementors of
+/// [ArcBlobImpl], which is convenient for allowing auto-generation of
+/// the write function.
+</span><span class="kw">pub trait </span>ArcBlobBase {
+    <span class="doccomment">/// Return the name of this blob
+    </span><span class="kw">fn </span>blob_name() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str;
 }
 
-<span class="doccomment">/// Supertype of [ArcBlob] that allows implementation of `compare` and `write`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// When defining an [ArcBlob] through the</span>
-<span class="doccomment">/// [arc_blob!](crate::prelude::arc_blob) attribute macro without the</span>
-<span class="doccomment">/// &#39;defaults&#39; argument, you&#39;re required to implement this trait for</span>
-<span class="doccomment">/// your type. This allows you to modify how comparison and writing</span>
-<span class="doccomment">/// will happen.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">ArcBlobImpl</span>: <span class="ident">ArcBlobBase</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="ident">Unpin</span> {
-    <span class="doccomment">/// Compare two values, returning an Ordering.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This is used from SWI-Prolog when sorting lists. The default</span>
-    <span class="doccomment">/// implementation returns `Ordering::Equal`, effectively</span>
-    <span class="doccomment">/// providing no sorting information.</span>
-    <span class="kw">fn</span> <span class="ident">compare</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="ident">Ordering</span> {
-        <span class="ident">Ordering::Equal</span>
+<span class="doccomment">/// Supertype of [ArcBlob] that allows implementation of `compare` and `write`.
+///
+/// When defining an [ArcBlob] through the
+/// [arc_blob!](crate::prelude::arc_blob) attribute macro without the
+/// &#39;defaults&#39; argument, you&#39;re required to implement this trait for
+/// your type. This allows you to modify how comparison and writing
+/// will happen.
+</span><span class="kw">pub trait </span>ArcBlobImpl: ArcBlobBase + Send + Sync + Unpin {
+    <span class="doccomment">/// Compare two values, returning an Ordering.
+    ///
+    /// This is used from SWI-Prolog when sorting lists. The default
+    /// implementation returns `Ordering::Equal`, effectively
+    /// providing no sorting information.
+    </span><span class="kw">fn </span>compare(<span class="kw-2">&amp;</span><span class="self">self</span>, _other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; Ordering {
+        Ordering::Equal
     }
 
-    <span class="doccomment">/// Write a description of this ArcBlob.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The given stream implements [Write](std::io::Write), and</span>
-    <span class="doccomment">/// therefore can be used with the [write!](std::write!) macro.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The normal way of implementing this is to print something like</span>
-    <span class="doccomment">/// `&quot;&lt;blob_name ..blob_data..&gt;&quot;`. The default implementation</span>
-    <span class="doccomment">/// simply prints `&quot;&lt;blob_name&gt;&quot;`.</span>
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">stream</span>: <span class="kw-2">&amp;mut</span> <span class="ident">PrologStream</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="macro">write!</span>(<span class="ident">stream</span>, <span class="string">&quot;&lt;{}&gt;&quot;</span>, <span class="ident"><span class="self">Self</span>::blob_name</span>())
+    <span class="doccomment">/// Write a description of this ArcBlob.
+    ///
+    /// The given stream implements [Write](std::io::Write), and
+    /// therefore can be used with the [write!](std::write!) macro.
+    ///
+    /// The normal way of implementing this is to print something like
+    /// `&quot;&lt;blob_name ..blob_data..&gt;&quot;`. The default implementation
+    /// simply prints `&quot;&lt;blob_name&gt;&quot;`.
+    </span><span class="kw">fn </span>write(<span class="kw-2">&amp;</span><span class="self">self</span>, stream: <span class="kw-2">&amp;mut </span>PrologStream) -&gt; io::Result&lt;()&gt; {
+        <span class="macro">write!</span>(stream, <span class="string">&quot;&lt;{}&gt;&quot;</span>, <span class="self">Self</span>::blob_name())
     }
 }
 
-<span class="doccomment">/// A blob type whose data is shared with SWI-Prolog as an atomic</span>
-<span class="doccomment">/// reference-counted pointer.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is unsafe because care has to be taken that the returned</span>
-<span class="doccomment">/// `PL_blob_t` from `get_blob_definition` actually matches the blob</span>
-<span class="doccomment">/// type.</span>
-<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">trait</span> <span class="ident">ArcBlob</span>: <span class="ident">ArcBlobImpl</span> {
-    <span class="doccomment">/// Return a blob definition for this ArcBlob.</span>
-    <span class="kw">fn</span> <span class="ident">get_blob_definition</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">fli::PL_blob_t</span>;
+<span class="doccomment">/// A blob type whose data is shared with SWI-Prolog as an atomic
+/// reference-counted pointer.
+///
+/// This is unsafe because care has to be taken that the returned
+/// `PL_blob_t` from `get_blob_definition` actually matches the blob
+/// type.
+</span><span class="kw">pub unsafe trait </span>ArcBlob: ArcBlobImpl {
+    <span class="doccomment">/// Return a blob definition for this ArcBlob.
+    </span><span class="kw">fn </span>get_blob_definition() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>fli::PL_blob_t;
 }
 
-<span class="doccomment">/// Unify the term with the given `Arc`, using the given blob</span>
-<span class="doccomment">/// definition to do so.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is unsafe cause no attempt is made to ensure that the blob</span>
-<span class="doccomment">/// definition matches the given data.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is used from the arc blob macros.</span>
-<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">unify_with_arc</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(
-    <span class="ident">term</span>: <span class="kw-2">&amp;</span><span class="ident">Term</span>,
-    <span class="ident">blob_definition</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">fli::PL_blob_t</span>,
-    <span class="ident">arc</span>: <span class="kw-2">&amp;</span><span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
-) -&gt; <span class="ident">bool</span> {
-    <span class="ident">term</span>.<span class="ident">assert_term_handling_possible</span>();
+<span class="doccomment">/// Unify the term with the given `Arc`, using the given blob
+/// definition to do so.
+///
+/// This is unsafe cause no attempt is made to ensure that the blob
+/// definition matches the given data.
+///
+/// This is used from the arc blob macros.
+</span><span class="kw">pub unsafe fn </span>unify_with_arc&lt;T&gt;(
+    term: <span class="kw-2">&amp;</span>Term,
+    blob_definition: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>fli::PL_blob_t,
+    arc: <span class="kw-2">&amp;</span>Arc&lt;T&gt;,
+) -&gt; bool {
+    term.assert_term_handling_possible();
 
-    <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">fli::PL_unify_blob</span>(
-        <span class="ident">term</span>.<span class="ident">term_ptr</span>(),
-        <span class="ident">Arc::as_ptr</span>(<span class="ident">arc</span>) <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">c_void</span>,
+    <span class="kw">let </span>result = fli::PL_unify_blob(
+        term.term_ptr(),
+        Arc::as_ptr(arc) <span class="kw">as </span><span class="kw-2">*mut </span>c_void,
         <span class="number">0</span>,
-        <span class="ident">blob_definition</span> <span class="kw">as</span> <span class="kw-2">*const</span> <span class="ident">fli::PL_blob_t</span> <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">fli::PL_blob_t</span>,
+        blob_definition <span class="kw">as </span><span class="kw-2">*const </span>fli::PL_blob_t <span class="kw">as </span><span class="kw-2">*mut </span>fli::PL_blob_t,
     );
 
-    <span class="ident">result</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span>
-}
+    result != <span class="number">0
+</span>}
 
-<span class="doccomment">/// Unify the term with the given Cloneable, using the given blob</span>
-<span class="doccomment">/// definition to do so.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is unsafe cause no attempt is made to ensure that the blob</span>
-<span class="doccomment">/// definition matches the given data.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is used from the clone blob macros.</span>
-<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">unify_with_cloneable</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">Sized</span> <span class="op">+</span> <span class="ident">Unpin</span><span class="op">&gt;</span>(
-    <span class="ident">term</span>: <span class="kw-2">&amp;</span><span class="ident">Term</span>,
-    <span class="ident">blob_definition</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">fli::PL_blob_t</span>,
-    <span class="ident">val</span>: <span class="kw-2">&amp;</span><span class="ident">T</span>,
-) -&gt; <span class="ident">bool</span> {
-    <span class="ident">term</span>.<span class="ident">assert_term_handling_possible</span>();
-    <span class="kw">let</span> <span class="ident">cloned</span> <span class="op">=</span> <span class="ident">val</span>.<span class="ident">clone</span>();
+<span class="doccomment">/// Unify the term with the given Cloneable, using the given blob
+/// definition to do so.
+///
+/// This is unsafe cause no attempt is made to ensure that the blob
+/// definition matches the given data.
+///
+/// This is used from the clone blob macros.
+</span><span class="kw">pub unsafe fn </span>unify_with_cloneable&lt;T: Clone + Sized + Unpin&gt;(
+    term: <span class="kw-2">&amp;</span>Term,
+    blob_definition: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>fli::PL_blob_t,
+    val: <span class="kw-2">&amp;</span>T,
+) -&gt; bool {
+    term.assert_term_handling_possible();
+    <span class="kw">let </span>cloned = val.clone();
 
-    <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">fli::PL_unify_blob</span>(
-        <span class="ident">term</span>.<span class="ident">term_ptr</span>(),
-        <span class="kw-2">&amp;</span><span class="ident">cloned</span> <span class="kw">as</span> <span class="kw-2">*const</span> <span class="ident">T</span> <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">c_void</span>,
-        <span class="ident">std::mem::size_of</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>() <span class="kw">as</span> <span class="ident">fli::size_t</span>,
-        <span class="ident">blob_definition</span> <span class="kw">as</span> <span class="kw-2">*const</span> <span class="ident">fli::PL_blob_t</span> <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">fli::PL_blob_t</span>,
+    <span class="kw">let </span>result = fli::PL_unify_blob(
+        term.term_ptr(),
+        <span class="kw-2">&amp;</span>cloned <span class="kw">as </span><span class="kw-2">*const </span>T <span class="kw">as </span><span class="kw-2">*mut </span>c_void,
+        std::mem::size_of::&lt;T&gt;() <span class="kw">as </span>fli::size_t,
+        blob_definition <span class="kw">as </span><span class="kw-2">*const </span>fli::PL_blob_t <span class="kw">as </span><span class="kw-2">*mut </span>fli::PL_blob_t,
     );
 
-    <span class="kw">if</span> <span class="ident">result</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
-        <span class="ident">std::mem::forget</span>(<span class="ident">cloned</span>);
-        <span class="bool-val">true</span>
-    } <span class="kw">else</span> {
-        <span class="bool-val">false</span>
-    }
+    <span class="kw">if </span>result != <span class="number">0 </span>{
+        std::mem::forget(cloned);
+        <span class="bool-val">true
+    </span>} <span class="kw">else </span>{
+        <span class="bool-val">false
+    </span>}
 }
 
-<span class="doccomment">/// Retrieve an arc from the given term, using the given blob</span>
-<span class="doccomment">/// definition.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is unsafe cause no attempt is made to ensure that the blob</span>
-<span class="doccomment">/// definition matches the given data.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is used from the arc blob macros.</span>
-<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">get_arc_from_term</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(
-    <span class="ident">term</span>: <span class="kw-2">&amp;</span><span class="ident">Term</span>,
-    <span class="ident">blob_definition</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">fli::PL_blob_t</span>,
-) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="ident">term</span>.<span class="ident">assert_term_handling_possible</span>();
+<span class="doccomment">/// Retrieve an arc from the given term, using the given blob
+/// definition.
+///
+/// This is unsafe cause no attempt is made to ensure that the blob
+/// definition matches the given data.
+///
+/// This is used from the arc blob macros.
+</span><span class="kw">pub unsafe fn </span>get_arc_from_term&lt;T&gt;(
+    term: <span class="kw-2">&amp;</span>Term,
+    blob_definition: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>fli::PL_blob_t,
+) -&gt; <span class="prelude-ty">Option</span>&lt;Arc&lt;T&gt;&gt; {
+    term.assert_term_handling_possible();
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">blob_type</span> <span class="op">=</span> <span class="ident">std::ptr::null_mut</span>();
-    <span class="kw">if</span> <span class="ident">fli::PL_is_blob</span>(<span class="ident">term</span>.<span class="ident">term_ptr</span>(), <span class="kw-2">&amp;mut</span> <span class="ident">blob_type</span>) <span class="op">==</span> <span class="number">0</span>
-        <span class="op">|</span><span class="op">|</span> <span class="ident">blob_definition</span> <span class="kw">as</span> <span class="kw-2">*const</span> <span class="ident">fli::PL_blob_t</span> <span class="op">!</span><span class="op">=</span> <span class="ident">blob_type</span>
+    <span class="kw">let </span><span class="kw-2">mut </span>blob_type = std::ptr::null_mut();
+    <span class="kw">if </span>fli::PL_is_blob(term.term_ptr(), <span class="kw-2">&amp;mut </span>blob_type) == <span class="number">0
+        </span>|| blob_definition <span class="kw">as </span><span class="kw-2">*const </span>fli::PL_blob_t != blob_type
     {
-        <span class="kw">return</span> <span class="prelude-val">None</span>;
+        <span class="kw">return </span><span class="prelude-val">None</span>;
     }
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">data</span>: <span class="kw-2">*mut</span> <span class="ident">T</span> <span class="op">=</span> <span class="ident">std::ptr::null_mut</span>();
-    <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">fli::PL_get_blob</span>(
-        <span class="ident">term</span>.<span class="ident">term_ptr</span>(),
-        <span class="kw-2">&amp;mut</span> <span class="ident">data</span> <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="kw-2">*mut</span> <span class="ident">T</span> <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="kw-2">*mut</span> <span class="ident">c_void</span>,
-        <span class="ident">std::ptr::null_mut</span>(),
-        <span class="ident">std::ptr::null_mut</span>(),
+    <span class="kw">let </span><span class="kw-2">mut </span>data: <span class="kw-2">*mut </span>T = std::ptr::null_mut();
+    <span class="kw">let </span>result = fli::PL_get_blob(
+        term.term_ptr(),
+        <span class="kw-2">&amp;mut </span>data <span class="kw">as </span><span class="kw-2">*mut *mut </span>T <span class="kw">as </span><span class="kw-2">*mut *mut </span>c_void,
+        std::ptr::null_mut(),
+        std::ptr::null_mut(),
     );
 
-    <span class="kw">if</span> <span class="ident">result</span> <span class="op">==</span> <span class="number">0</span> {
-        <span class="prelude-val">None</span>
-    } <span class="kw">else</span> {
-        <span class="ident">Arc::increment_strong_count</span>(<span class="ident">data</span>);
-        <span class="kw">let</span> <span class="ident">arc</span> <span class="op">=</span> <span class="ident">Arc::from_raw</span>(<span class="ident">data</span>);
-        <span class="prelude-val">Some</span>(<span class="ident">arc</span>)
+    <span class="kw">if </span>result == <span class="number">0 </span>{
+        <span class="prelude-val">None
+    </span>} <span class="kw">else </span>{
+        Arc::increment_strong_count(data);
+        <span class="kw">let </span>arc = Arc::from_raw(data);
+        <span class="prelude-val">Some</span>(arc)
     }
 }
 
-<span class="doccomment">/// Retrieve a cloneable value from the given term, using the given</span>
-<span class="doccomment">/// blob definition.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is unsafe cause no attempt is made to ensure that the blob</span>
-<span class="doccomment">/// definition matches the given data.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is used from the clone blob macros.</span>
-<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">get_cloned_from_term</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">Sized</span> <span class="op">+</span> <span class="ident">Unpin</span><span class="op">&gt;</span>(
-    <span class="ident">term</span>: <span class="kw-2">&amp;</span><span class="ident">Term</span>,
-    <span class="ident">blob_definition</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">fli::PL_blob_t</span>,
-) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="ident">term</span>.<span class="ident">assert_term_handling_possible</span>();
+<span class="doccomment">/// Retrieve a cloneable value from the given term, using the given
+/// blob definition.
+///
+/// This is unsafe cause no attempt is made to ensure that the blob
+/// definition matches the given data.
+///
+/// This is used from the clone blob macros.
+</span><span class="kw">pub unsafe fn </span>get_cloned_from_term&lt;T: Clone + Sized + Unpin&gt;(
+    term: <span class="kw-2">&amp;</span>Term,
+    blob_definition: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>fli::PL_blob_t,
+) -&gt; <span class="prelude-ty">Option</span>&lt;T&gt; {
+    term.assert_term_handling_possible();
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">blob_type</span> <span class="op">=</span> <span class="ident">std::ptr::null_mut</span>();
-    <span class="kw">if</span> <span class="ident">fli::PL_is_blob</span>(<span class="ident">term</span>.<span class="ident">term_ptr</span>(), <span class="kw-2">&amp;mut</span> <span class="ident">blob_type</span>) <span class="op">==</span> <span class="number">0</span>
-        <span class="op">|</span><span class="op">|</span> <span class="ident">blob_definition</span> <span class="kw">as</span> <span class="kw-2">*const</span> <span class="ident">fli::PL_blob_t</span> <span class="op">!</span><span class="op">=</span> <span class="ident">blob_type</span>
+    <span class="kw">let </span><span class="kw-2">mut </span>blob_type = std::ptr::null_mut();
+    <span class="kw">if </span>fli::PL_is_blob(term.term_ptr(), <span class="kw-2">&amp;mut </span>blob_type) == <span class="number">0
+        </span>|| blob_definition <span class="kw">as </span><span class="kw-2">*const </span>fli::PL_blob_t != blob_type
     {
-        <span class="kw">return</span> <span class="prelude-val">None</span>;
+        <span class="kw">return </span><span class="prelude-val">None</span>;
     }
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">data</span>: <span class="kw-2">*mut</span> <span class="ident">T</span> <span class="op">=</span> <span class="ident">std::ptr::null_mut</span>();
-    <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">fli::PL_get_blob</span>(
-        <span class="ident">term</span>.<span class="ident">term_ptr</span>(),
-        <span class="kw-2">&amp;mut</span> <span class="ident">data</span> <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="kw-2">*mut</span> <span class="ident">T</span> <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="kw-2">*mut</span> <span class="ident">c_void</span>,
-        <span class="ident">std::ptr::null_mut</span>(),
-        <span class="ident">std::ptr::null_mut</span>(),
+    <span class="kw">let </span><span class="kw-2">mut </span>data: <span class="kw-2">*mut </span>T = std::ptr::null_mut();
+    <span class="kw">let </span>result = fli::PL_get_blob(
+        term.term_ptr(),
+        <span class="kw-2">&amp;mut </span>data <span class="kw">as </span><span class="kw-2">*mut *mut </span>T <span class="kw">as </span><span class="kw-2">*mut *mut </span>c_void,
+        std::ptr::null_mut(),
+        std::ptr::null_mut(),
     );
 
-    <span class="kw">if</span> <span class="ident">result</span> <span class="op">==</span> <span class="number">0</span> {
-        <span class="prelude-val">None</span>
-    } <span class="kw">else</span> {
-        <span class="kw">let</span> <span class="ident">cloned</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">data</span>).<span class="ident">clone</span>();
-        <span class="prelude-val">Some</span>(<span class="ident">cloned</span>)
+    <span class="kw">if </span>result == <span class="number">0 </span>{
+        <span class="prelude-val">None
+    </span>} <span class="kw">else </span>{
+        <span class="kw">let </span>cloned = (<span class="kw-2">*</span>data).clone();
+        <span class="prelude-val">Some</span>(cloned)
     }
 }
 
-<span class="doccomment">/// Put an arc into the given term, using the given blob definition.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is unsafe cause no attempt is made to ensure that the blob</span>
-<span class="doccomment">/// definition matches the given data.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is used from the arc blob macros.</span>
-<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">put_arc_in_term</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(
-    <span class="ident">term</span>: <span class="kw-2">&amp;</span><span class="ident">Term</span>,
-    <span class="ident">blob_definition</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">fli::PL_blob_t</span>,
-    <span class="ident">arc</span>: <span class="kw-2">&amp;</span><span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
+<span class="doccomment">/// Put an arc into the given term, using the given blob definition.
+///
+/// This is unsafe cause no attempt is made to ensure that the blob
+/// definition matches the given data.
+///
+/// This is used from the arc blob macros.
+</span><span class="kw">pub unsafe fn </span>put_arc_in_term&lt;T&gt;(
+    term: <span class="kw-2">&amp;</span>Term,
+    blob_definition: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>fli::PL_blob_t,
+    arc: <span class="kw-2">&amp;</span>Arc&lt;T&gt;,
 ) {
-    <span class="ident">term</span>.<span class="ident">assert_term_handling_possible</span>();
+    term.assert_term_handling_possible();
 
-    <span class="ident">fli::PL_put_blob</span>(
-        <span class="ident">term</span>.<span class="ident">term_ptr</span>(),
-        <span class="ident">Arc::as_ptr</span>(<span class="ident">arc</span>) <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">c_void</span>,
+    fli::PL_put_blob(
+        term.term_ptr(),
+        Arc::as_ptr(arc) <span class="kw">as </span><span class="kw-2">*mut </span>c_void,
         <span class="number">0</span>,
-        <span class="ident">blob_definition</span> <span class="kw">as</span> <span class="kw-2">*const</span> <span class="ident">fli::PL_blob_t</span> <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">fli::PL_blob_t</span>,
+        blob_definition <span class="kw">as </span><span class="kw-2">*const </span>fli::PL_blob_t <span class="kw">as </span><span class="kw-2">*mut </span>fli::PL_blob_t,
     );
 }
 
-<span class="doccomment">/// Put a Cloneable into the given term, using the given blob</span>
-<span class="doccomment">/// definition.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is unsafe cause no attempt is made to ensure that the blob</span>
-<span class="doccomment">/// definition matches the given data.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is used from the clone blob macros.</span>
-<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">put_cloneable_in_term</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">Sized</span> <span class="op">+</span> <span class="ident">Unpin</span><span class="op">&gt;</span>(
-    <span class="ident">term</span>: <span class="kw-2">&amp;</span><span class="ident">Term</span>,
-    <span class="ident">blob_definition</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">fli::PL_blob_t</span>,
-    <span class="ident">val</span>: <span class="kw-2">&amp;</span><span class="ident">T</span>,
+<span class="doccomment">/// Put a Cloneable into the given term, using the given blob
+/// definition.
+///
+/// This is unsafe cause no attempt is made to ensure that the blob
+/// definition matches the given data.
+///
+/// This is used from the clone blob macros.
+</span><span class="kw">pub unsafe fn </span>put_cloneable_in_term&lt;T: Clone + Sized + Unpin&gt;(
+    term: <span class="kw-2">&amp;</span>Term,
+    blob_definition: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>fli::PL_blob_t,
+    val: <span class="kw-2">&amp;</span>T,
 ) {
-    <span class="ident">term</span>.<span class="ident">assert_term_handling_possible</span>();
+    term.assert_term_handling_possible();
 
-    <span class="kw">let</span> <span class="ident">cloned</span> <span class="op">=</span> <span class="ident">val</span>.<span class="ident">clone</span>();
+    <span class="kw">let </span>cloned = val.clone();
 
-    <span class="ident">fli::PL_put_blob</span>(
-        <span class="ident">term</span>.<span class="ident">term_ptr</span>(),
-        <span class="kw-2">&amp;</span><span class="ident">cloned</span> <span class="kw">as</span> <span class="kw-2">*const</span> <span class="ident">T</span> <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">c_void</span>,
-        <span class="ident">std::mem::size_of</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>() <span class="kw">as</span> <span class="ident">fli::size_t</span>,
-        <span class="ident">blob_definition</span> <span class="kw">as</span> <span class="kw-2">*const</span> <span class="ident">fli::PL_blob_t</span> <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">fli::PL_blob_t</span>,
+    fli::PL_put_blob(
+        term.term_ptr(),
+        <span class="kw-2">&amp;</span>cloned <span class="kw">as </span><span class="kw-2">*const </span>T <span class="kw">as </span><span class="kw-2">*mut </span>c_void,
+        std::mem::size_of::&lt;T&gt;() <span class="kw">as </span>fli::size_t,
+        blob_definition <span class="kw">as </span><span class="kw-2">*const </span>fli::PL_blob_t <span class="kw">as </span><span class="kw-2">*mut </span>fli::PL_blob_t,
     );
 
-    <span class="ident">std::mem::forget</span>(<span class="ident">cloned</span>);
+    std::mem::forget(cloned);
 }
 
-<span class="doccomment">/// Increment the reference count on an Arc stored in a blob.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is used from the arc blob macros.</span>
-<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">acquire_arc_blob</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">atom</span>: <span class="ident">fli::atom_t</span>) {
-    <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">fli::PL_blob_data</span>(<span class="ident">atom</span>, <span class="ident">std::ptr::null_mut</span>(), <span class="ident">std::ptr::null_mut</span>()) <span class="kw">as</span> <span class="kw-2">*const</span> <span class="ident">T</span>;
+<span class="doccomment">/// Increment the reference count on an Arc stored in a blob.
+///
+/// This is used from the arc blob macros.
+</span><span class="kw">pub unsafe fn </span>acquire_arc_blob&lt;T&gt;(atom: fli::atom_t) {
+    <span class="kw">let </span>data = fli::PL_blob_data(atom, std::ptr::null_mut(), std::ptr::null_mut()) <span class="kw">as </span><span class="kw-2">*const </span>T;
 
-    <span class="ident">Arc::increment_strong_count</span>(<span class="ident">data</span>);
+    Arc::increment_strong_count(data);
 }
 
-<span class="doccomment">/// Decrement the reference count on an Arc stored in a blob.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is used from the arc blob macros.</span>
-<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">release_arc_blob</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">atom</span>: <span class="ident">fli::atom_t</span>) {
-    <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">fli::PL_blob_data</span>(<span class="ident">atom</span>, <span class="ident">std::ptr::null_mut</span>(), <span class="ident">std::ptr::null_mut</span>()) <span class="kw">as</span> <span class="kw-2">*const</span> <span class="ident">T</span>;
+<span class="doccomment">/// Decrement the reference count on an Arc stored in a blob.
+///
+/// This is used from the arc blob macros.
+</span><span class="kw">pub unsafe fn </span>release_arc_blob&lt;T&gt;(atom: fli::atom_t) {
+    <span class="kw">let </span>data = fli::PL_blob_data(atom, std::ptr::null_mut(), std::ptr::null_mut()) <span class="kw">as </span><span class="kw-2">*const </span>T;
 
-    <span class="ident">Arc::decrement_strong_count</span>(<span class="ident">data</span>);
+    Arc::decrement_strong_count(data);
 }
 
-<span class="doccomment">/// Drop the rust value stored in a blob.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is used from the clone blob macros.</span>
-<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">release_clone_blob</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">atom</span>: <span class="ident">fli::atom_t</span>) {
-    <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span>
-        <span class="ident">fli::PL_blob_data</span>(<span class="ident">atom</span>, <span class="ident">std::ptr::null_mut</span>(), <span class="ident">std::ptr::null_mut</span>()) <span class="kw">as</span> <span class="kw-2">*const</span> <span class="ident">T</span> <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">T</span>;
+<span class="doccomment">/// Drop the rust value stored in a blob.
+///
+/// This is used from the clone blob macros.
+</span><span class="kw">pub unsafe fn </span>release_clone_blob&lt;T&gt;(atom: fli::atom_t) {
+    <span class="kw">let </span>data =
+        fli::PL_blob_data(atom, std::ptr::null_mut(), std::ptr::null_mut()) <span class="kw">as </span><span class="kw-2">*const </span>T <span class="kw">as </span><span class="kw-2">*mut </span>T;
 
-    <span class="ident">std::ptr::drop_in_place</span>(<span class="ident">data</span>);
+    std::ptr::drop_in_place(data);
 }
 
-<span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">ArcBlob</span><span class="op">&gt;</span> <span class="ident">Unifiable</span> <span class="kw">for</span> <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">unify</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">term</span>: <span class="kw-2">&amp;</span><span class="ident">Term</span>) -&gt; <span class="ident">bool</span> {
-        <span class="kw">let</span> <span class="ident">blob_definition</span> <span class="op">=</span> <span class="ident">T::get_blob_definition</span>();
-        <span class="kw">unsafe</span> { <span class="ident">unify_with_arc</span>(<span class="ident">term</span>, <span class="ident">blob_definition</span>, <span class="self">self</span>) }
+<span class="kw">unsafe impl</span>&lt;T: ArcBlob&gt; Unifiable <span class="kw">for </span>Arc&lt;T&gt; {
+    <span class="kw">fn </span>unify(<span class="kw-2">&amp;</span><span class="self">self</span>, term: <span class="kw-2">&amp;</span>Term) -&gt; bool {
+        <span class="kw">let </span>blob_definition = T::get_blob_definition();
+        <span class="kw">unsafe </span>{ unify_with_arc(term, blob_definition, <span class="self">self</span>) }
     }
 }
 
-<span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">ArcBlob</span><span class="op">&gt;</span> <span class="ident">TermGetable</span> <span class="kw">for</span> <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">get</span>(<span class="ident">term</span>: <span class="kw-2">&amp;</span><span class="ident">Term</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">blob_definition</span> <span class="op">=</span> <span class="ident">T::get_blob_definition</span>();
-        <span class="kw">unsafe</span> { <span class="ident">get_arc_from_term</span>(<span class="ident">term</span>, <span class="ident">blob_definition</span>) }
+<span class="kw">unsafe impl</span>&lt;T: ArcBlob&gt; TermGetable <span class="kw">for </span>Arc&lt;T&gt; {
+    <span class="kw">fn </span>get(term: <span class="kw-2">&amp;</span>Term) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span>blob_definition = T::get_blob_definition();
+        <span class="kw">unsafe </span>{ get_arc_from_term(term, blob_definition) }
     }
 
-    <span class="kw">fn</span> <span class="ident">name</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
-        <span class="ident">T::blob_name</span>()
-    }
-}
-
-<span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">ArcBlob</span><span class="op">&gt;</span> <span class="ident">TermPutable</span> <span class="kw">for</span> <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">put</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">term</span>: <span class="kw-2">&amp;</span><span class="ident">Term</span>) {
-        <span class="kw">let</span> <span class="ident">blob_definition</span> <span class="op">=</span> <span class="ident">T::get_blob_definition</span>();
-        <span class="kw">unsafe</span> { <span class="ident">put_arc_in_term</span>(<span class="ident">term</span>, <span class="ident">blob_definition</span>, <span class="self">self</span>) }
+    <span class="kw">fn </span>name() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str {
+        T::blob_name()
     }
 }
 
-<span class="doccomment">/// Base type for [WrappedArcBlob].</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This allows `blob_name` to be available to implementors of</span>
-<span class="doccomment">/// [WrappedArcBlobImpl], which is convenient for allowing</span>
-<span class="doccomment">/// auto-generation of the write function.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">WrappedArcBlobBase</span> {
-    <span class="doccomment">/// The type that the `WrappedArcBlob` is wrapping.</span>
-    <span class="kw">type</span> <span class="ident">Inner</span>: <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="ident">Unpin</span>;
-
-    <span class="doccomment">/// Return the name of this blob</span>
-    <span class="kw">fn</span> <span class="ident">blob_name</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>;
-
-    <span class="doccomment">/// return a borrow to the wrapped Arc.</span>
-    <span class="kw">fn</span> <span class="ident">get_arc</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">Arc</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Inner</span><span class="op">&gt;</span>;
-
-    <span class="doccomment">/// Create this wrapper from an Arc.</span>
-    <span class="kw">fn</span> <span class="ident">from_arc</span>(<span class="ident">a</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Inner</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span>;
-}
-
-<span class="doccomment">/// Supertype of [WrappedArcBlob] that allows implementation of</span>
-<span class="doccomment">/// `compare` and `write`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// When defining a [WrappedArcBlob] through the</span>
-<span class="doccomment">/// [wrapped_arc_blob!](crate::prelude::wrapped_arc_blob) macro</span>
-<span class="doccomment">/// without the &#39;defaults&#39; argument, you&#39;re required to implement this</span>
-<span class="doccomment">/// trait for your type. This allows you to modify how comparison and</span>
-<span class="doccomment">/// writing will happen.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">WrappedArcBlobImpl</span>: <span class="ident">WrappedArcBlobBase</span> {
-    <span class="doccomment">/// Compare two values, returning an Ordering.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This is used from SWI-Prolog when sorting lists. The default</span>
-    <span class="doccomment">/// implementation returns `Ordering::Equal`, effectively</span>
-    <span class="doccomment">/// providing no sorting information.</span>
-    <span class="kw">fn</span> <span class="ident">compare</span>(<span class="ident">_this</span>: <span class="kw-2">&amp;</span><span class="ident"><span class="self">Self</span>::Inner</span>, <span class="ident">_other</span>: <span class="kw-2">&amp;</span><span class="ident"><span class="self">Self</span>::Inner</span>) -&gt; <span class="ident">Ordering</span> {
-        <span class="ident">Ordering::Equal</span>
-    }
-
-    <span class="doccomment">/// Write a description of this WrappedArcBlob.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The given stream implements [Write](std::io::Write), and</span>
-    <span class="doccomment">/// therefore can be used with the [write!](std::write!) macro.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The normal way of implementing this is to print something like</span>
-    <span class="doccomment">/// `&quot;&lt;blob_name ..blob_data..&gt;&quot;`. The default implementation</span>
-    <span class="doccomment">/// simply prints `&quot;&lt;blob_name&gt;&quot;`.</span>
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">_this</span>: <span class="kw-2">&amp;</span><span class="ident"><span class="self">Self</span>::Inner</span>, <span class="ident">stream</span>: <span class="kw-2">&amp;mut</span> <span class="ident">PrologStream</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="macro">write!</span>(<span class="ident">stream</span>, <span class="string">&quot;&lt;{}&gt;&quot;</span>, <span class="ident"><span class="self">Self</span>::blob_name</span>())
+<span class="kw">unsafe impl</span>&lt;T: ArcBlob&gt; TermPutable <span class="kw">for </span>Arc&lt;T&gt; {
+    <span class="kw">fn </span>put(<span class="kw-2">&amp;</span><span class="self">self</span>, term: <span class="kw-2">&amp;</span>Term) {
+        <span class="kw">let </span>blob_definition = T::get_blob_definition();
+        <span class="kw">unsafe </span>{ put_arc_in_term(term, blob_definition, <span class="self">self</span>) }
     }
 }
 
-<span class="doccomment">/// A blob type whose data is shared with SWI-Prolog as an atomic</span>
-<span class="doccomment">/// reference-counted pointer, and which is wrapped into a wrapper</span>
-<span class="doccomment">/// type.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is unsafe because care has to be taken that the returned</span>
-<span class="doccomment">/// `PL_blob_t` from `get_blob_definition` actually matches the blob</span>
-<span class="doccomment">/// type.</span>
-<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">trait</span> <span class="ident">WrappedArcBlob</span>: <span class="ident">WrappedArcBlobImpl</span> {
-    <span class="doccomment">/// Return a blob definition for this WrappedArcBlob.</span>
-    <span class="kw">fn</span> <span class="ident">get_blob_definition</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">fli::PL_blob_t</span>;
+<span class="doccomment">/// Base type for [WrappedArcBlob].
+///
+/// This allows `blob_name` to be available to implementors of
+/// [WrappedArcBlobImpl], which is convenient for allowing
+/// auto-generation of the write function.
+</span><span class="kw">pub trait </span>WrappedArcBlobBase {
+    <span class="doccomment">/// The type that the `WrappedArcBlob` is wrapping.
+    </span><span class="kw">type </span>Inner: Send + Sync + Unpin;
+
+    <span class="doccomment">/// Return the name of this blob
+    </span><span class="kw">fn </span>blob_name() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str;
+
+    <span class="doccomment">/// return a borrow to the wrapped Arc.
+    </span><span class="kw">fn </span>get_arc(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Arc&lt;<span class="self">Self</span>::Inner&gt;;
+
+    <span class="doccomment">/// Create this wrapper from an Arc.
+    </span><span class="kw">fn </span>from_arc(a: Arc&lt;<span class="self">Self</span>::Inner&gt;) -&gt; <span class="self">Self</span>;
 }
 
-<span class="doccomment">/// Base type for [CloneBlob].</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This allows `blob_name` to be available to implementors of</span>
-<span class="doccomment">/// [CloneBlobImpl], which is convenient for allowing auto-generation of</span>
-<span class="doccomment">/// the write function.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">CloneBlobBase</span> {
-    <span class="kw">fn</span> <span class="ident">blob_name</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>;
-}
-
-<span class="doccomment">/// Supertype of [CloneBlob] that allows implementation of `compare`</span>
-<span class="doccomment">/// and `write`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// When defining a [CloneBlob] through the</span>
-<span class="doccomment">/// [clone_blob!](crate::prelude::clone_blob) attribute macro without the</span>
-<span class="doccomment">/// &#39;defaults&#39; argument, you&#39;re required to implement this trait for</span>
-<span class="doccomment">/// your type. This allows you to modify how comparison and writing</span>
-<span class="doccomment">/// will happen.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">CloneBlobImpl</span>: <span class="ident">CloneBlobBase</span> <span class="op">+</span> <span class="ident">Sized</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="ident">Clone</span> {
-    <span class="doccomment">/// Compare two values, returning an Ordering.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This is used from SWI-Prolog when sorting lists. The default</span>
-    <span class="doccomment">/// implementation returns `Ordering::Equal`, effectively</span>
-    <span class="doccomment">/// providing no sorting information.</span>
-    <span class="kw">fn</span> <span class="ident">compare</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="ident">Ordering</span> {
-        <span class="ident">Ordering::Equal</span>
+<span class="doccomment">/// Supertype of [WrappedArcBlob] that allows implementation of
+/// `compare` and `write`.
+///
+/// When defining a [WrappedArcBlob] through the
+/// [wrapped_arc_blob!](crate::prelude::wrapped_arc_blob) macro
+/// without the &#39;defaults&#39; argument, you&#39;re required to implement this
+/// trait for your type. This allows you to modify how comparison and
+/// writing will happen.
+</span><span class="kw">pub trait </span>WrappedArcBlobImpl: WrappedArcBlobBase {
+    <span class="doccomment">/// Compare two values, returning an Ordering.
+    ///
+    /// This is used from SWI-Prolog when sorting lists. The default
+    /// implementation returns `Ordering::Equal`, effectively
+    /// providing no sorting information.
+    </span><span class="kw">fn </span>compare(_this: <span class="kw-2">&amp;</span><span class="self">Self</span>::Inner, _other: <span class="kw-2">&amp;</span><span class="self">Self</span>::Inner) -&gt; Ordering {
+        Ordering::Equal
     }
 
-    <span class="doccomment">/// Write a description of this ArcBlob.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The given stream implements [Write](std::io::Write), and</span>
-    <span class="doccomment">/// therefore can be used with the [write!](std::write!) macro.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The normal way of implementing this is to print something like</span>
-    <span class="doccomment">/// `&quot;&lt;blob_name ..blob_data..&gt;&quot;`. The default implementation</span>
-    <span class="doccomment">/// simply prints `&quot;&lt;blob_name&gt;&quot;`.</span>
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">stream</span>: <span class="kw-2">&amp;mut</span> <span class="ident">PrologStream</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="macro">write!</span>(<span class="ident">stream</span>, <span class="string">&quot;&lt;{}&gt;&quot;</span>, <span class="ident"><span class="self">Self</span>::blob_name</span>())
+    <span class="doccomment">/// Write a description of this WrappedArcBlob.
+    ///
+    /// The given stream implements [Write](std::io::Write), and
+    /// therefore can be used with the [write!](std::write!) macro.
+    ///
+    /// The normal way of implementing this is to print something like
+    /// `&quot;&lt;blob_name ..blob_data..&gt;&quot;`. The default implementation
+    /// simply prints `&quot;&lt;blob_name&gt;&quot;`.
+    </span><span class="kw">fn </span>write(_this: <span class="kw-2">&amp;</span><span class="self">Self</span>::Inner, stream: <span class="kw-2">&amp;mut </span>PrologStream) -&gt; io::Result&lt;()&gt; {
+        <span class="macro">write!</span>(stream, <span class="string">&quot;&lt;{}&gt;&quot;</span>, <span class="self">Self</span>::blob_name())
     }
 }
 
-<span class="doccomment">/// A blob type whose data is copied into SWI-Prolog and dropped on</span>
-<span class="doccomment">/// garbage collection.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is unsafe because care has to be taken that the returned</span>
-<span class="doccomment">/// `PL_blob_t` from `get_blob_definition` actually matches the blob</span>
-<span class="doccomment">/// type.</span>
-<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">trait</span> <span class="ident">CloneBlob</span>: <span class="ident">CloneBlobImpl</span> {
-    <span class="doccomment">/// Return a blob definition for this CloneBlob.</span>
-    <span class="kw">fn</span> <span class="ident">get_blob_definition</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">fli::PL_blob_t</span>;
+<span class="doccomment">/// A blob type whose data is shared with SWI-Prolog as an atomic
+/// reference-counted pointer, and which is wrapped into a wrapper
+/// type.
+///
+/// This is unsafe because care has to be taken that the returned
+/// `PL_blob_t` from `get_blob_definition` actually matches the blob
+/// type.
+</span><span class="kw">pub unsafe trait </span>WrappedArcBlob: WrappedArcBlobImpl {
+    <span class="doccomment">/// Return a blob definition for this WrappedArcBlob.
+    </span><span class="kw">fn </span>get_blob_definition() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>fli::PL_blob_t;
+}
+
+<span class="doccomment">/// Base type for [CloneBlob].
+///
+/// This allows `blob_name` to be available to implementors of
+/// [CloneBlobImpl], which is convenient for allowing auto-generation of
+/// the write function.
+</span><span class="kw">pub trait </span>CloneBlobBase {
+    <span class="kw">fn </span>blob_name() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str;
+}
+
+<span class="doccomment">/// Supertype of [CloneBlob] that allows implementation of `compare`
+/// and `write`.
+///
+/// When defining a [CloneBlob] through the
+/// [clone_blob!](crate::prelude::clone_blob) attribute macro without the
+/// &#39;defaults&#39; argument, you&#39;re required to implement this trait for
+/// your type. This allows you to modify how comparison and writing
+/// will happen.
+</span><span class="kw">pub trait </span>CloneBlobImpl: CloneBlobBase + Sized + Sync + Clone {
+    <span class="doccomment">/// Compare two values, returning an Ordering.
+    ///
+    /// This is used from SWI-Prolog when sorting lists. The default
+    /// implementation returns `Ordering::Equal`, effectively
+    /// providing no sorting information.
+    </span><span class="kw">fn </span>compare(<span class="kw-2">&amp;</span><span class="self">self</span>, _other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; Ordering {
+        Ordering::Equal
+    }
+
+    <span class="doccomment">/// Write a description of this ArcBlob.
+    ///
+    /// The given stream implements [Write](std::io::Write), and
+    /// therefore can be used with the [write!](std::write!) macro.
+    ///
+    /// The normal way of implementing this is to print something like
+    /// `&quot;&lt;blob_name ..blob_data..&gt;&quot;`. The default implementation
+    /// simply prints `&quot;&lt;blob_name&gt;&quot;`.
+    </span><span class="kw">fn </span>write(<span class="kw-2">&amp;</span><span class="self">self</span>, stream: <span class="kw-2">&amp;mut </span>PrologStream) -&gt; io::Result&lt;()&gt; {
+        <span class="macro">write!</span>(stream, <span class="string">&quot;&lt;{}&gt;&quot;</span>, <span class="self">Self</span>::blob_name())
+    }
+}
+
+<span class="doccomment">/// A blob type whose data is copied into SWI-Prolog and dropped on
+/// garbage collection.
+///
+/// This is unsafe because care has to be taken that the returned
+/// `PL_blob_t` from `get_blob_definition` actually matches the blob
+/// type.
+</span><span class="kw">pub unsafe trait </span>CloneBlob: CloneBlobImpl {
+    <span class="doccomment">/// Return a blob definition for this CloneBlob.
+    </span><span class="kw">fn </span>get_blob_definition() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>fli::PL_blob_t;
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

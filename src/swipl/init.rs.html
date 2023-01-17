@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl/src/init.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>init.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../swipl/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../swipl/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../swipl/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl/src/init.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>init.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../swipl/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -207,214 +207,214 @@
 <span id="207">207</span>
 <span id="208">208</span>
 <span id="209">209</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Prolog initialization logic.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! When using swipl-rs to embed prolog, you need to ensure that you</span>
-<span class="doccomment">//! initialize SWI-Prolog before you do anything else with</span>
-<span class="doccomment">//! SWI-Prolog. The one exception is registering of foreign</span>
-<span class="doccomment">//! predicates, which you&#39;re allowed to do at any point.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Functions for both prolog initialization as well as foreign</span>
-<span class="doccomment">//! predicate registration are defined here.</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Prolog initialization logic.
+//!
+//! When using swipl-rs to embed prolog, you need to ensure that you
+//! initialize SWI-Prolog before you do anything else with
+//! SWI-Prolog. The one exception is registering of foreign
+//! predicates, which you&#39;re allowed to do at any point.
+//!
+//! Functions for both prolog initialization as well as foreign
+//! predicate registration are defined here.
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::engine</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::fli</span>::<span class="kw-2">*</span>;
+</span><span class="kw">use </span><span class="kw">crate</span>::engine::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">crate</span>::fli::<span class="kw-2">*</span>;
 
-<span class="kw">use</span> <span class="ident">lazy_static</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident">std::convert::TryInto</span>;
-<span class="kw">use</span> <span class="ident">std::ffi::CString</span>;
-<span class="kw">use</span> <span class="ident">std::os::raw::c_int</span>;
-<span class="kw">use</span> <span class="ident">std::sync::RwLockWriteGuard</span>;
-<span class="kw">use</span> <span class="ident">std::sync</span>::{<span class="ident">Arc</span>, <span class="ident">RwLock</span>};
+<span class="kw">use </span>lazy_static::<span class="kw-2">*</span>;
+<span class="kw">use </span>std::convert::TryInto;
+<span class="kw">use </span>std::ffi::CString;
+<span class="kw">use </span>std::os::raw::c_int;
+<span class="kw">use </span>std::sync::RwLockWriteGuard;
+<span class="kw">use </span>std::sync::{Arc, RwLock};
 
-<span class="macro">lazy_static!</span> {
-    <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">INITIALIZATION_STATE</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">RwLock</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Engine</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">RwLock::new</span>(<span class="prelude-val">None</span>));
+<span class="macro">lazy_static! </span>{
+    <span class="kw">static </span><span class="kw-2">ref </span>INITIALIZATION_STATE: Arc&lt;RwLock&lt;<span class="prelude-ty">Option</span>&lt;Engine&gt;&gt;&gt; = Arc::new(RwLock::new(<span class="prelude-val">None</span>));
 }
 
-<span class="doccomment">/// Activate the main prolog engine, or panic if it has alread been activated, or if SWI-Prolog was not initialized yet.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">activate_main</span>() -&gt; <span class="ident">EngineActivation</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">initialized</span> <span class="op">=</span> <span class="ident">INITIALIZATION_STATE</span>.<span class="ident">read</span>().<span class="ident">unwrap</span>();
-    <span class="kw">unsafe</span> { <span class="ident">std::mem::transmute</span>((<span class="kw-2">*</span><span class="ident">initialized</span>).<span class="ident">as_ref</span>().<span class="ident">unwrap</span>().<span class="ident">activate</span>()) }
+<span class="doccomment">/// Activate the main prolog engine, or panic if it has alread been activated, or if SWI-Prolog was not initialized yet.
+</span><span class="kw">pub fn </span>activate_main() -&gt; EngineActivation&lt;<span class="lifetime">&#39;static</span>&gt; {
+    <span class="kw">let </span>initialized = INITIALIZATION_STATE.read().unwrap();
+    <span class="kw">unsafe </span>{ std::mem::transmute((<span class="kw-2">*</span>initialized).as_ref().unwrap().activate()) }
 }
 
-<span class="doccomment">/// Check if SWI-Prolog has been initialized.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_swipl_initialized</span>() -&gt; <span class="ident">bool</span> {
-    <span class="kw">unsafe</span> { <span class="ident">PL_is_initialised</span>(<span class="ident">std::ptr::null_mut</span>(), <span class="ident">std::ptr::null_mut</span>()) <span class="op">!</span><span class="op">=</span> <span class="number">0</span> }
+<span class="doccomment">/// Check if SWI-Prolog has been initialized.
+</span><span class="kw">pub fn </span>is_swipl_initialized() -&gt; bool {
+    <span class="kw">unsafe </span>{ PL_is_initialised(std::ptr::null_mut(), std::ptr::null_mut()) != <span class="number">0 </span>}
 }
 
-<span class="doccomment">/// Panic if SWI-Prolog has not been initialized.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">assert_swipl_is_initialized</span>() {
-    <span class="kw">if</span> <span class="op">!</span><span class="ident">is_swipl_initialized</span>() {
+<span class="doccomment">/// Panic if SWI-Prolog has not been initialized.
+</span><span class="kw">pub fn </span>assert_swipl_is_initialized() {
+    <span class="kw">if </span>!is_swipl_initialized() {
         <span class="macro">panic!</span>(<span class="string">&quot;SWI-Prolog has not yet been initialized&quot;</span>);
     }
 }
 
-<span class="kw">static</span> <span class="ident">ARG0</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [<span class="ident">u8</span>] <span class="op">=</span> <span class="string">b&quot;rust-swipl\0&quot;</span>; <span class="comment">// fake program name</span>
-<span class="kw">static</span> <span class="ident">ARG1</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [<span class="ident">u8</span>] <span class="op">=</span> <span class="string">b&quot;--quiet\0&quot;</span>; <span class="comment">// suppress swipl banner printing</span>
+<span class="kw">static </span>ARG0: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[u8] = <span class="string">b&quot;rust-swipl\0&quot;</span>; <span class="comment">// fake program name
+</span><span class="kw">static </span>ARG1: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[u8] = <span class="string">b&quot;--quiet\0&quot;</span>; <span class="comment">// suppress swipl banner printing
 
-<span class="doccomment">/// Initialize SWI-Prolog.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This requires a borrow to a MainEngineActivator, whose lifetime will be used to</span>
-<span class="doccomment">/// After initializing, the default &#39;main&#39; engine is active on the</span>
-<span class="doccomment">/// calling thread.  If SWI-Prolog was already initialized, this will</span>
-<span class="doccomment">/// do nothing, and None will be returned. Otherwise, An</span>
-<span class="doccomment">/// `EngineActivation` will be returned containing the main prolog</span>
-<span class="doccomment">/// engine.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">initialize_swipl</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">EngineActivation</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="kw">if</span> <span class="ident">is_swipl_initialized</span>() {
-        <span class="kw">return</span> <span class="prelude-val">None</span>;
+</span><span class="doccomment">/// Initialize SWI-Prolog.
+///
+/// This requires a borrow to a MainEngineActivator, whose lifetime will be used to
+/// After initializing, the default &#39;main&#39; engine is active on the
+/// calling thread.  If SWI-Prolog was already initialized, this will
+/// do nothing, and None will be returned. Otherwise, An
+/// `EngineActivation` will be returned containing the main prolog
+/// engine.
+</span><span class="kw">pub fn </span>initialize_swipl() -&gt; <span class="prelude-ty">Option</span>&lt;EngineActivation&lt;<span class="lifetime">&#39;static</span>&gt;&gt; {
+    <span class="kw">if </span>is_swipl_initialized() {
+        <span class="kw">return </span><span class="prelude-val">None</span>;
     }
 
-    <span class="comment">// lock the rest of this initialization function to prevent concurrent initializers. Ideally this should happen in swipl itself, but unfortunately, it doesn&#39;t.</span>
-    <span class="kw">let</span> <span class="ident">initialized</span> <span class="op">=</span> <span class="ident">INITIALIZATION_STATE</span>.<span class="ident">write</span>().<span class="ident">unwrap</span>();
-    <span class="comment">// There&#39;s actually a slight chance that initialization happened just now by some other thread. So check again.</span>
-    <span class="kw">if</span> <span class="ident">initialized</span>.<span class="ident">is_some</span>() {
-        <span class="kw">return</span> <span class="prelude-val">None</span>;
+    <span class="comment">// lock the rest of this initialization function to prevent concurrent initializers. Ideally this should happen in swipl itself, but unfortunately, it doesn&#39;t.
+    </span><span class="kw">let </span>initialized = INITIALIZATION_STATE.write().unwrap();
+    <span class="comment">// There&#39;s actually a slight chance that initialization happened just now by some other thread. So check again.
+    </span><span class="kw">if </span>initialized.is_some() {
+        <span class="kw">return </span><span class="prelude-val">None</span>;
     }
 
-    <span class="ident">initialize_internal</span>(<span class="ident">initialized</span>)
+    initialize_internal(initialized)
 }
 
-<span class="doccomment">/// Initialize SWI-Prolog with a given saved state.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// After initializing, the default &#39;main&#39; engine is active on the</span>
-<span class="doccomment">/// calling thread.  If SWI-Prolog was already initialized, this will</span>
-<span class="doccomment">/// do nothing, and None will be returned. Otherwise, An</span>
-<span class="doccomment">/// `EngineActivation` will be returned containing the main prolog</span>
-<span class="doccomment">/// engine.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">initialize_swipl_with_state</span>(<span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">EngineActivation</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="kw">if</span> <span class="ident">is_swipl_initialized</span>() {
-        <span class="kw">return</span> <span class="prelude-val">None</span>;
+<span class="doccomment">/// Initialize SWI-Prolog with a given saved state.
+///
+/// After initializing, the default &#39;main&#39; engine is active on the
+/// calling thread.  If SWI-Prolog was already initialized, this will
+/// do nothing, and None will be returned. Otherwise, An
+/// `EngineActivation` will be returned containing the main prolog
+/// engine.
+</span><span class="kw">pub fn </span>initialize_swipl_with_state(state: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[u8]) -&gt; <span class="prelude-ty">Option</span>&lt;EngineActivation&lt;<span class="lifetime">&#39;static</span>&gt;&gt; {
+    <span class="kw">if </span>is_swipl_initialized() {
+        <span class="kw">return </span><span class="prelude-val">None</span>;
     }
 
-    <span class="comment">// lock the rest of this initialization function to prevent concurrent initializers. Ideally this should happen in swipl itself, but unfortunately, it doesn&#39;t.</span>
-    <span class="kw">let</span> <span class="ident">initialized</span> <span class="op">=</span> <span class="ident">INITIALIZATION_STATE</span>.<span class="ident">write</span>().<span class="ident">unwrap</span>();
-    <span class="comment">// There&#39;s actually a slight chance that initialization happened just now by some other thread. So check again.</span>
-    <span class="kw">if</span> <span class="ident">initialized</span>.<span class="ident">is_some</span>() {
-        <span class="kw">return</span> <span class="prelude-val">None</span>;
+    <span class="comment">// lock the rest of this initialization function to prevent concurrent initializers. Ideally this should happen in swipl itself, but unfortunately, it doesn&#39;t.
+    </span><span class="kw">let </span>initialized = INITIALIZATION_STATE.write().unwrap();
+    <span class="comment">// There&#39;s actually a slight chance that initialization happened just now by some other thread. So check again.
+    </span><span class="kw">if </span>initialized.is_some() {
+        <span class="kw">return </span><span class="prelude-val">None</span>;
     }
 
-    <span class="comment">// SAFETY: Our slice is valid, thus its pointer and length are valid.</span>
-    <span class="comment">// Also, the &#39;static lifetime ensures that the invariant for</span>
-    <span class="comment">// PL_set_resource_db_mem is upheld:</span>
-    <span class="comment">// &gt; This implies that the data must remain accessible during the lifetime</span>
-    <span class="comment">// &gt; of the process if open_resource/3 is used. Future versions may provide</span>
-    <span class="comment">// &gt; a function to detach the resource database and cause open_resource/3</span>
-    <span class="comment">// &gt; to raise an exception.</span>
-    <span class="comment">// - SWIPL FLI docs (footnote 208)</span>
-    <span class="comment">// https://www.swi-prolog.org/pldoc/doc_for?object=c(%27PL_set_resource_db_mem%27)</span>
-    <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">PL_set_resource_db_mem</span>(<span class="ident">state</span>.<span class="ident">as_ptr</span>(), <span class="ident">state</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">size_t</span>) };
+    <span class="comment">// SAFETY: Our slice is valid, thus its pointer and length are valid.
+    // Also, the &#39;static lifetime ensures that the invariant for
+    // PL_set_resource_db_mem is upheld:
+    // &gt; This implies that the data must remain accessible during the lifetime
+    // &gt; of the process if open_resource/3 is used. Future versions may provide
+    // &gt; a function to detach the resource database and cause open_resource/3
+    // &gt; to raise an exception.
+    // - SWIPL FLI docs (footnote 208)
+    // https://www.swi-prolog.org/pldoc/doc_for?object=c(%27PL_set_resource_db_mem%27)
+    </span><span class="kw">let </span>result = <span class="kw">unsafe </span>{ PL_set_resource_db_mem(state.as_ptr(), state.len() <span class="kw">as </span>size_t) };
 
-    <span class="kw">if</span> <span class="ident">result</span> <span class="op">!</span><span class="op">=</span> <span class="ident">TRUE</span> <span class="kw">as</span> <span class="ident">i32</span> {
-        <span class="kw">return</span> <span class="prelude-val">None</span>;
+    <span class="kw">if </span>result != TRUE <span class="kw">as </span>i32 {
+        <span class="kw">return </span><span class="prelude-val">None</span>;
     }
 
-    <span class="ident">initialize_internal</span>(<span class="ident">initialized</span>)
+    initialize_internal(initialized)
 }
 
-<span class="kw">fn</span> <span class="ident">initialize_internal</span>(
-    <span class="kw-2">mut</span> <span class="ident">initialized</span>: <span class="ident">RwLockWriteGuard</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Engine</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">EngineActivation</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="comment">// TOOD we just pick &quot;rust-swipl&quot; as a fake program name here. This seems to work fine. But what we should really do is pass along the actual argv[0].</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">args</span>: [<span class="kw-2">*mut</span> <span class="ident">std::os::raw::c_char</span>; <span class="number">3</span>] <span class="op">=</span> [
-        <span class="ident">ARG0</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">std::os::raw::c_char</span>,
-        <span class="ident">ARG1</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">std::os::raw::c_char</span>,
-        <span class="ident">std::ptr::null_mut</span>(),
+<span class="kw">fn </span>initialize_internal(
+    <span class="kw-2">mut </span>initialized: RwLockWriteGuard&lt;<span class="prelude-ty">Option</span>&lt;Engine&gt;&gt;,
+) -&gt; <span class="prelude-ty">Option</span>&lt;EngineActivation&lt;<span class="lifetime">&#39;static</span>&gt;&gt; {
+    <span class="comment">// TOOD we just pick &quot;rust-swipl&quot; as a fake program name here. This seems to work fine. But what we should really do is pass along the actual argv[0].
+    </span><span class="kw">let </span><span class="kw-2">mut </span>args: [<span class="kw-2">*mut </span>std::os::raw::c_char; <span class="number">3</span>] = [
+        ARG0.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>std::os::raw::c_char,
+        ARG1.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>std::os::raw::c_char,
+        std::ptr::null_mut(),
     ];
-    <span class="comment">// unsafe justification: this initializes the swipl library and is idempotent</span>
-    <span class="comment">// That said, there is actually a chance that some non-rust code is concurrently initializing prolog, which may lead to errors. There is unfortunately nothing that can be done about this.</span>
-    <span class="kw">unsafe</span> { <span class="ident">PL_initialise</span>(<span class="number">2</span>, <span class="ident">args</span>.<span class="ident">as_mut_ptr</span>()) };
-    <span class="kw-2">*</span><span class="ident">initialized</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="kw">unsafe</span> { <span class="ident">Engine::from_current</span>() });
+    <span class="comment">// unsafe justification: this initializes the swipl library and is idempotent
+    // That said, there is actually a chance that some non-rust code is concurrently initializing prolog, which may lead to errors. There is unfortunately nothing that can be done about this.
+    </span><span class="kw">unsafe </span>{ PL_initialise(<span class="number">2</span>, args.as_mut_ptr()) };
+    <span class="kw-2">*</span>initialized = <span class="prelude-val">Some</span>(<span class="kw">unsafe </span>{ Engine::from_current() });
 
-    <span class="prelude-val">Some</span>(<span class="kw">unsafe</span> { <span class="ident">std::mem::transmute</span>((<span class="kw-2">*</span><span class="ident">initialized</span>).<span class="ident">as_ref</span>().<span class="ident">unwrap</span>().<span class="ident">set_activated</span>()) })
+    <span class="prelude-val">Some</span>(<span class="kw">unsafe </span>{ std::mem::transmute((<span class="kw-2">*</span>initialized).as_ref().unwrap().set_activated()) })
 }
 
-<span class="doccomment">/// Initialize SWI-Prolog and immediately deactivate the main thread engine.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// If SWI-Prolog was already initialized, this will do nothing.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">initialize_swipl_noengine</span>() {
-    <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">initialize_swipl</span>();
-    <span class="comment">// dropping the activation will deactivate the engine</span>
-    <span class="ident">std::mem::drop</span>(<span class="ident">activation</span>);
+<span class="doccomment">/// Initialize SWI-Prolog and immediately deactivate the main thread engine.
+///
+/// If SWI-Prolog was already initialized, this will do nothing.
+</span><span class="kw">pub fn </span>initialize_swipl_noengine() {
+    <span class="kw">let </span>activation = initialize_swipl();
+    <span class="comment">// dropping the activation will deactivate the engine
+    </span>std::mem::drop(activation);
 }
 
-<span class="doccomment">/// Initialize SWI-Prolog with a saved state and immediately deactivate the main thread engine.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// If SWI-Prolog was already initialized, this will do nothing.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">initialize_swipl_with_state_noengine</span>(<span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [<span class="ident">u8</span>]) {
-    <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">initialize_swipl_with_state</span>(<span class="ident">state</span>);
-    <span class="comment">// dropping the activation will deactivate the engine</span>
-    <span class="ident">std::mem::drop</span>(<span class="ident">activation</span>);
+<span class="doccomment">/// Initialize SWI-Prolog with a saved state and immediately deactivate the main thread engine.
+///
+/// If SWI-Prolog was already initialized, this will do nothing.
+</span><span class="kw">pub fn </span>initialize_swipl_with_state_noengine(state: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[u8]) {
+    <span class="kw">let </span>activation = initialize_swipl_with_state(state);
+    <span class="comment">// dropping the activation will deactivate the engine
+    </span>std::mem::drop(activation);
 }
 
-<span class="doccomment">/// Reactivate the main engine.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is only available if the rust library was originally</span>
-<span class="doccomment">/// responsible for initializing the SWI-Prolog environment, and</span>
-<span class="doccomment">/// the main engine has since been deactivated. If initialization</span>
-<span class="doccomment">/// happened external to the library, there is no safe way to get</span>
-<span class="doccomment">/// hold of the main engine. This will result in a panic.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">reactivate_swipl</span>() -&gt; <span class="ident">EngineActivation</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">initialized</span> <span class="op">=</span> <span class="ident">INITIALIZATION_STATE</span>.<span class="ident">read</span>().<span class="ident">unwrap</span>();
+<span class="doccomment">/// Reactivate the main engine.
+///
+/// This is only available if the rust library was originally
+/// responsible for initializing the SWI-Prolog environment, and
+/// the main engine has since been deactivated. If initialization
+/// happened external to the library, there is no safe way to get
+/// hold of the main engine. This will result in a panic.
+</span><span class="kw">pub fn </span>reactivate_swipl() -&gt; EngineActivation&lt;<span class="lifetime">&#39;static</span>&gt; {
+    <span class="kw">let </span>initialized = INITIALIZATION_STATE.read().unwrap();
 
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">engine</span>) <span class="op">=</span> <span class="ident">initialized</span>.<span class="ident">as_ref</span>() {
-        <span class="kw">unsafe</span> { <span class="ident">std::mem::transmute</span>(<span class="ident">engine</span>.<span class="ident">activate</span>()) }
-    } <span class="kw">else</span> {
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(engine) = initialized.as_ref() {
+        <span class="kw">unsafe </span>{ std::mem::transmute(engine.activate()) }
+    } <span class="kw">else </span>{
         <span class="macro">panic!</span>(<span class="string">&quot;swipl-rs cannot reactiate the main engine because SWI-Prolog was not initialized, or initialized externally.&quot;</span>);
     }
 }
 
-<span class="doccomment">/// Register a foreign predicate.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This function is used by the `predicates!` macro to implement</span>
-<span class="doccomment">/// predicate registration.</span>
-<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">register_foreign_in_module</span>(
-    <span class="ident">module</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>,
-    <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-    <span class="ident">arity</span>: <span class="ident">u16</span>,
-    <span class="ident">deterministic</span>: <span class="ident">bool</span>,
-    <span class="ident">meta</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>,
-    <span class="ident">function_ptr</span>: <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span>(<span class="ident">terms</span>: <span class="ident">term_t</span>, <span class="ident">arity</span>: <span class="ident">c_int</span>, <span class="ident">control</span>: <span class="ident">control_t</span>) -&gt; <span class="ident">isize</span>,
-) -&gt; <span class="ident">bool</span> {
-    <span class="kw">if</span> <span class="ident">meta</span>.<span class="ident">is_some</span>() <span class="op">&amp;&amp;</span> <span class="ident">meta</span>.<span class="ident">unwrap</span>().<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">arity</span> <span class="kw">as</span> <span class="ident">usize</span> {
+<span class="doccomment">/// Register a foreign predicate.
+///
+/// This function is used by the `predicates!` macro to implement
+/// predicate registration.
+</span><span class="kw">pub unsafe fn </span>register_foreign_in_module(
+    module: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;,
+    name: <span class="kw-2">&amp;</span>str,
+    arity: u16,
+    deterministic: bool,
+    meta: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;,
+    function_ptr: <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>(terms: term_t, arity: c_int, control: control_t) -&gt; isize,
+) -&gt; bool {
+    <span class="kw">if </span>meta.is_some() &amp;&amp; meta.unwrap().len() != arity <span class="kw">as </span>usize {
         <span class="macro">panic!</span>(<span class="string">&quot;supplied a meta argument that is not of equal length to the arity&quot;</span>);
     }
 
-    <span class="comment">// We get a handle to the read guard of initialization state.</span>
-    <span class="comment">// This ensures that we&#39;re either in the pre-initialization state</span>
-    <span class="comment">// or the post-initialization state, but not currently</span>
-    <span class="comment">// initializing.</span>
-    <span class="comment">// if unitialized, no further checks are needed.</span>
-    <span class="comment">// but if initialized, we need to ensure we&#39;re actually on an engine currently.</span>
-    <span class="kw">if</span> <span class="ident">is_swipl_initialized</span>() <span class="op">&amp;&amp;</span> <span class="ident">current_engine_ptr</span>().<span class="ident">is_null</span>() {
+    <span class="comment">// We get a handle to the read guard of initialization state.
+    // This ensures that we&#39;re either in the pre-initialization state
+    // or the post-initialization state, but not currently
+    // initializing.
+    // if unitialized, no further checks are needed.
+    // but if initialized, we need to ensure we&#39;re actually on an engine currently.
+    </span><span class="kw">if </span>is_swipl_initialized() &amp;&amp; current_engine_ptr().is_null() {
         <span class="macro">panic!</span>(<span class="string">&quot;Tried to register a foreign predicate in a context where swipl is initialized, but no engine is active.&quot;</span>);
     }
 
-    <span class="kw">let</span> <span class="ident">c_module</span> <span class="op">=</span> <span class="ident">module</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">module</span><span class="op">|</span> <span class="ident">CString::new</span>(<span class="ident">module</span>).<span class="ident">unwrap</span>());
-    <span class="kw">let</span> <span class="ident">c_name</span> <span class="op">=</span> <span class="ident">CString::new</span>(<span class="ident">name</span>).<span class="ident">unwrap</span>();
-    <span class="kw">let</span> <span class="ident">c_meta</span> <span class="op">=</span> <span class="ident">meta</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">m</span><span class="op">|</span> <span class="ident">CString::new</span>(<span class="ident">m</span>).<span class="ident">unwrap</span>());
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">PL_FA_VARARGS</span>;
-    <span class="kw">if</span> <span class="op">!</span><span class="ident">deterministic</span> {
-        <span class="ident">flags</span> <span class="op">|</span><span class="op">=</span> <span class="ident">PL_FA_NONDETERMINISTIC</span>;
+    <span class="kw">let </span>c_module = module.map(|module| CString::new(module).unwrap());
+    <span class="kw">let </span>c_name = CString::new(name).unwrap();
+    <span class="kw">let </span>c_meta = meta.map(|m| CString::new(m).unwrap());
+    <span class="kw">let </span><span class="kw-2">mut </span>flags = PL_FA_VARARGS;
+    <span class="kw">if </span>!deterministic {
+        flags |= PL_FA_NONDETERMINISTIC;
     }
 
-    <span class="comment">// an unfortunate need for transmute to make the fli eat the pointer</span>
-    <span class="kw">let</span> <span class="ident">converted_function_ptr</span> <span class="op">=</span> <span class="ident">std::mem::transmute</span>(<span class="ident">function_ptr</span>);
-    <span class="kw">let</span> <span class="ident">c_module_ptr</span> <span class="op">=</span> <span class="ident">c_module</span>
-        .<span class="ident">as_ref</span>()
-        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">m</span><span class="op">|</span> <span class="ident">m</span>.<span class="ident">as_ptr</span>())
-        .<span class="ident">unwrap_or</span>(<span class="ident">std::ptr::null_mut</span>());
+    <span class="comment">// an unfortunate need for transmute to make the fli eat the pointer
+    </span><span class="kw">let </span>converted_function_ptr = std::mem::transmute(function_ptr);
+    <span class="kw">let </span>c_module_ptr = c_module
+        .as_ref()
+        .map(|m| m.as_ptr())
+        .unwrap_or(std::ptr::null_mut());
 
-    <span class="ident">PL_register_foreign_in_module</span>(
-        <span class="ident">c_module_ptr</span>,
-        <span class="ident">c_name</span>.<span class="ident">as_ptr</span>(),
-        <span class="ident">arity</span> <span class="kw">as</span> <span class="ident">c_int</span>,
-        <span class="prelude-val">Some</span>(<span class="ident">converted_function_ptr</span>),
-        <span class="ident">flags</span>.<span class="ident">try_into</span>().<span class="ident">unwrap</span>(),
-        <span class="ident">c_meta</span>
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">m</span><span class="op">|</span> <span class="ident">m</span>.<span class="ident">as_ptr</span>())
-            .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">std::ptr::null</span>()),
-    ) <span class="op">==</span> <span class="number">1</span>
-}
+    PL_register_foreign_in_module(
+        c_module_ptr,
+        c_name.as_ptr(),
+        arity <span class="kw">as </span>c_int,
+        <span class="prelude-val">Some</span>(converted_function_ptr),
+        flags.try_into().unwrap(),
+        c_meta
+            .map(|m| m.as_ptr())
+            .unwrap_or_else(|| std::ptr::null()),
+    ) == <span class="number">1
+</span>}
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

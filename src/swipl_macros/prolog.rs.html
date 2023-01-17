@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl-macros/src/prolog.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>prolog.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../swipl_macros/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../swipl_macros/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../swipl_macros/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl-macros/src/prolog.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>prolog.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../swipl_macros/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -112,119 +112,119 @@
 <span id="112">112</span>
 <span id="113">113</span>
 <span id="114">114</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident">proc_macro</span>;
-<span class="kw">use</span> <span class="ident">proc_macro2</span>::{<span class="self">self</span>, <span class="ident">Span</span>, <span class="ident">TokenStream</span>};
-<span class="kw">use</span> <span class="ident">quote::quote</span>;
-<span class="kw">use</span> <span class="ident">syn::parse</span>::{<span class="ident">Parse</span>, <span class="ident">ParseStream</span>, <span class="prelude-ty">Result</span>};
-<span class="kw">use</span> <span class="ident">syn::punctuated::Punctuated</span>;
-<span class="kw">use</span> <span class="ident">syn</span>::{<span class="ident">parenthesized</span>, <span class="ident">parse_macro_input</span>, <span class="ident">Attribute</span>, <span class="ident">Ident</span>, <span class="ident">LitStr</span>, <span class="ident">Token</span>, <span class="ident">Visibility</span>};
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::util::<span class="kw-2">*</span>;
+<span class="kw">use </span>proc_macro;
+<span class="kw">use </span>proc_macro2::{<span class="self">self</span>, Span, TokenStream};
+<span class="kw">use </span>quote::quote;
+<span class="kw">use </span>syn::parse::{Parse, ParseStream, <span class="prelude-ty">Result</span>};
+<span class="kw">use </span>syn::punctuated::Punctuated;
+<span class="kw">use </span>syn::{parenthesized, parse_macro_input, Attribute, Ident, LitStr, Token, Visibility};
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">prolog_macro</span>(<span class="ident">stream</span>: <span class="ident">proc_macro::TokenStream</span>) -&gt; <span class="ident">proc_macro::TokenStream</span> {
-    <span class="kw">let</span> <span class="ident">predicates</span> <span class="op">=</span> <span class="macro">parse_macro_input!</span>(<span class="ident">stream</span> <span class="kw">as</span> <span class="ident">PrologPredicateBlock</span>);
-    <span class="kw">let</span> <span class="ident">definitions</span> <span class="op">=</span> <span class="ident">predicates</span>
-        .<span class="ident">predicates</span>
-        .<span class="ident">into_iter</span>()
-        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">into_definition</span>());
-    <span class="kw">let</span> <span class="ident">gen</span> <span class="op">=</span> <span class="macro">quote!</span> {#(#<span class="ident">definitions</span>)<span class="kw-2">*</span>};
-    <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">gen</span>.<span class="ident">into</span>();
-    <span class="ident">result</span>
+<span class="kw">pub fn </span>prolog_macro(stream: proc_macro::TokenStream) -&gt; proc_macro::TokenStream {
+    <span class="kw">let </span>predicates = <span class="macro">parse_macro_input!</span>(stream <span class="kw">as </span>PrologPredicateBlock);
+    <span class="kw">let </span>definitions = predicates
+        .predicates
+        .into_iter()
+        .map(|p| p.into_definition());
+    <span class="kw">let </span>gen = <span class="macro">quote! </span>{#(#definitions)<span class="kw-2">*</span>};
+    <span class="kw">let </span>result = gen.into();
+    result
 }
 
-<span class="kw">struct</span> <span class="ident">PrologPredicate</span> {
-    <span class="ident">predicate_rust_name</span>: <span class="ident">Ident</span>,
-    <span class="ident">predicate_name</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">LitStr</span><span class="op">&gt;</span>,
-    <span class="ident">predicate_module</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">LitStr</span><span class="op">&gt;</span>,
-    <span class="ident">doc</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Attribute</span><span class="op">&gt;</span>,
-    <span class="ident">visibility</span>: <span class="ident">Visibility</span>,
-    <span class="ident">params</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Ident</span><span class="op">&gt;</span>,
+<span class="kw">struct </span>PrologPredicate {
+    predicate_rust_name: Ident,
+    predicate_name: <span class="prelude-ty">Option</span>&lt;LitStr&gt;,
+    predicate_module: <span class="prelude-ty">Option</span>&lt;LitStr&gt;,
+    doc: <span class="prelude-ty">Option</span>&lt;Attribute&gt;,
+    visibility: Visibility,
+    params: Vec&lt;Ident&gt;,
 }
 
-<span class="kw">impl</span> <span class="ident">Parse</span> <span class="kw">for</span> <span class="ident">PrologPredicate</span> {
-    <span class="kw">fn</span> <span class="ident">parse</span>(<span class="ident">input</span>: <span class="ident">ParseStream</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">attrs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Attribute</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">call</span>(<span class="ident">Attribute::parse_outer</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">doc</span> <span class="op">=</span> <span class="prelude-val">None</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">predicate_name</span> <span class="op">=</span> <span class="prelude-val">None</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">predicate_module</span> <span class="op">=</span> <span class="prelude-val">None</span>;
-        <span class="kw">for</span> <span class="ident">attr</span> <span class="kw">in</span> <span class="ident">attrs</span> {
-            <span class="kw">if</span> <span class="ident">attr</span>.<span class="ident">path</span>.<span class="ident">is_ident</span>(<span class="string">&quot;doc&quot;</span>) {
-                <span class="ident">doc</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">attr</span>);
-            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">attr</span>.<span class="ident">path</span>.<span class="ident">is_ident</span>(<span class="string">&quot;name&quot;</span>) {
-                <span class="ident">predicate_name</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">attr</span>.<span class="ident">parse_args</span>()<span class="question-mark">?</span>);
-            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">attr</span>.<span class="ident">path</span>.<span class="ident">is_ident</span>(<span class="string">&quot;module&quot;</span>) {
-                <span class="ident">predicate_module</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">attr</span>.<span class="ident">parse_args</span>()<span class="question-mark">?</span>);
+<span class="kw">impl </span>Parse <span class="kw">for </span>PrologPredicate {
+    <span class="kw">fn </span>parse(input: ParseStream) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span>attrs: Vec&lt;Attribute&gt; = input.call(Attribute::parse_outer)<span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>doc = <span class="prelude-val">None</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>predicate_name = <span class="prelude-val">None</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>predicate_module = <span class="prelude-val">None</span>;
+        <span class="kw">for </span>attr <span class="kw">in </span>attrs {
+            <span class="kw">if </span>attr.path.is_ident(<span class="string">&quot;doc&quot;</span>) {
+                doc = <span class="prelude-val">Some</span>(attr);
+            } <span class="kw">else if </span>attr.path.is_ident(<span class="string">&quot;name&quot;</span>) {
+                predicate_name = <span class="prelude-val">Some</span>(attr.parse_args()<span class="question-mark">?</span>);
+            } <span class="kw">else if </span>attr.path.is_ident(<span class="string">&quot;module&quot;</span>) {
+                predicate_module = <span class="prelude-val">Some</span>(attr.parse_args()<span class="question-mark">?</span>);
             }
         }
-        <span class="kw">let</span> <span class="ident">visibility</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
-        <span class="ident">input</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="macro">Token!</span>[<span class="kw">fn</span>]<span class="op">&gt;</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">name</span>: <span class="ident">Ident</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">params_stream</span>;
-        <span class="macro">parenthesized!</span>(<span class="ident">params_stream</span> <span class="kw">in</span> <span class="ident">input</span>);
-        <span class="kw">let</span> <span class="ident">params_punct</span>: <span class="ident">Punctuated</span><span class="op">&lt;</span><span class="ident">Ident</span>, <span class="macro">Token!</span>[,]<span class="op">&gt;</span> <span class="op">=</span>
-            <span class="ident">params_stream</span>.<span class="ident">parse_terminated</span>(<span class="ident">Ident::parse</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">params</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">params_punct</span>.<span class="ident">into_iter</span>().<span class="ident">collect</span>();
+        <span class="kw">let </span>visibility = input.parse()<span class="question-mark">?</span>;
+        input.parse::&lt;<span class="macro">Token!</span>[<span class="kw">fn</span>]&gt;()<span class="question-mark">?</span>;
+        <span class="kw">let </span>name: Ident = input.parse()<span class="question-mark">?</span>;
+        <span class="kw">let </span>params_stream;
+        <span class="macro">parenthesized!</span>(params_stream <span class="kw">in </span>input);
+        <span class="kw">let </span>params_punct: Punctuated&lt;Ident, <span class="macro">Token!</span>[,]&gt; =
+            params_stream.parse_terminated(Ident::parse)<span class="question-mark">?</span>;
+        <span class="kw">let </span>params: Vec&lt;<span class="kw">_</span>&gt; = params_punct.into_iter().collect();
 
-        <span class="prelude-val">Ok</span>(<span class="self">Self</span> {
-            <span class="ident">predicate_rust_name</span>: <span class="ident">name</span>,
-            <span class="ident">predicate_name</span>,
-            <span class="ident">predicate_module</span>,
-            <span class="ident">doc</span>,
-            <span class="ident">visibility</span>,
-            <span class="ident">params</span>,
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+            predicate_rust_name: name,
+            predicate_name,
+            predicate_module,
+            doc,
+            visibility,
+            params,
         })
     }
 }
 
-<span class="kw">impl</span> <span class="ident">PrologPredicate</span> {
-    <span class="kw">fn</span> <span class="ident">into_definition</span>(<span class="self">self</span>) -&gt; <span class="ident">TokenStream</span> {
-        <span class="comment">// look up the swipl crate. if it doesn&#39;t exist, assume we are actually the swipl crate itself and we can use the special &#39;crate&#39; namespace.</span>
-        <span class="kw">let</span> <span class="ident">crt</span> <span class="op">=</span> <span class="ident">crate_token</span>();
-        <span class="kw">let</span> <span class="ident">pred_static_ident</span> <span class="op">=</span> <span class="ident">Ident::new</span>(
-            <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_pred_ptr&quot;</span>, <span class="self">self</span>.<span class="ident">predicate_rust_name</span>),
-            <span class="ident">Span::call_site</span>(),
+<span class="kw">impl </span>PrologPredicate {
+    <span class="kw">fn </span>into_definition(<span class="self">self</span>) -&gt; TokenStream {
+        <span class="comment">// look up the swipl crate. if it doesn&#39;t exist, assume we are actually the swipl crate itself and we can use the special &#39;crate&#39; namespace.
+        </span><span class="kw">let </span>crt = crate_token();
+        <span class="kw">let </span>pred_static_ident = Ident::new(
+            <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_pred_ptr&quot;</span>, <span class="self">self</span>.predicate_rust_name),
+            Span::call_site(),
         );
-        <span class="kw">let</span> <span class="ident">rust_name</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">predicate_rust_name</span>;
-        <span class="kw">let</span> <span class="ident">params</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">params</span>;
-        <span class="kw">let</span> <span class="ident">params_len</span> <span class="op">=</span> <span class="ident">params</span>.<span class="ident">len</span>();
-        <span class="kw">let</span> <span class="ident">doc</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">doc</span>;
-        <span class="kw">let</span> <span class="ident">predicate_name</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">predicate_name</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">name</span>) =&gt; <span class="ident">name</span>.<span class="ident">value</span>(),
-            <span class="prelude-val">None</span> =&gt; <span class="ident">rust_name</span>.<span class="ident">to_string</span>(),
+        <span class="kw">let </span>rust_name = <span class="self">self</span>.predicate_rust_name;
+        <span class="kw">let </span>params = <span class="self">self</span>.params;
+        <span class="kw">let </span>params_len = params.len();
+        <span class="kw">let </span>doc = <span class="self">self</span>.doc;
+        <span class="kw">let </span>predicate_name = <span class="kw">match </span><span class="self">self</span>.predicate_name {
+            <span class="prelude-val">Some</span>(name) =&gt; name.value(),
+            <span class="prelude-val">None </span>=&gt; rust_name.to_string(),
         };
-        <span class="kw">let</span> <span class="ident">predicate_module</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">predicate_module</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">module</span>) =&gt; <span class="ident">module</span>.<span class="ident">value</span>(),
-            <span class="prelude-val">None</span> =&gt; <span class="string">&quot;user&quot;</span>.<span class="ident">to_string</span>(),
+        <span class="kw">let </span>predicate_module = <span class="kw">match </span><span class="self">self</span>.predicate_module {
+            <span class="prelude-val">Some</span>(module) =&gt; module.value(),
+            <span class="prelude-val">None </span>=&gt; <span class="string">&quot;user&quot;</span>.to_string(),
         };
-        <span class="kw">let</span> <span class="ident">visibility</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">visibility</span>;
-        <span class="kw">let</span> <span class="ident">gen</span> <span class="op">=</span> <span class="macro">quote!</span> {
-            <span class="kw">static</span> #<span class="ident">pred_static_ident</span>: #<span class="ident">crt::callable::LazyCallablePredicate</span><span class="op">&lt;</span>#<span class="ident">params_len</span><span class="op">&gt;</span> <span class="op">=</span> #<span class="ident">crt::callable::LazyCallablePredicate::new</span>(<span class="prelude-val">Some</span>(#<span class="ident">predicate_module</span>), #<span class="ident">predicate_name</span>);
+        <span class="kw">let </span>visibility = <span class="self">self</span>.visibility;
+        <span class="kw">let </span>gen = <span class="macro">quote! </span>{
+            <span class="kw">static </span>#pred_static_ident: #crt::callable::LazyCallablePredicate&lt;#params_len&gt; = #crt::callable::LazyCallablePredicate::new(<span class="prelude-val">Some</span>(#predicate_module), #predicate_name);
 
-            #<span class="ident">doc</span>
-            #<span class="ident">visibility</span> <span class="kw">fn</span> #<span class="ident">rust_name</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>:#<span class="ident">crt::context::QueryableContextType</span><span class="op">&gt;</span>(<span class="ident">swipl_context</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> #<span class="ident">crt::context::Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span>, #(#<span class="ident">params</span>: <span class="kw-2">&amp;</span>#<span class="ident">crt::term::Term</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>),<span class="kw-2">*</span>) -&gt; #<span class="ident">crt::context::Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="kw">impl</span> #<span class="ident">crt::callable::OpenCall</span><span class="op">&gt;</span> {
-                <span class="ident">swipl_context</span>.<span class="ident">assert_activated</span>();
-                <span class="kw">let</span> <span class="ident">swipl_call_args</span> <span class="op">=</span> [#(#<span class="ident">params</span>),<span class="kw-2">*</span>];
+            #doc
+            #visibility <span class="kw">fn </span>#rust_name&lt;<span class="lifetime">&#39;a</span>, T:#crt::context::QueryableContextType&gt;(swipl_context: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>#crt::context::Context&lt;<span class="lifetime">&#39;a</span>, T&gt;, #(#params: <span class="kw-2">&amp;</span>#crt::term::Term&lt;<span class="lifetime">&#39;a</span>&gt;),<span class="kw-2">*</span>) -&gt; #crt::context::Context&lt;<span class="lifetime">&#39;a</span>, <span class="kw">impl </span>#crt::callable::OpenCall&gt; {
+                swipl_context.assert_activated();
+                <span class="kw">let </span>swipl_call_args = [#(#params),<span class="kw-2">*</span>];
 
 
-                <span class="comment">// TODO figure out what to do with that context module</span>
-                <span class="ident">swipl_context</span>.<span class="ident">open</span>(#<span class="ident">pred_static_ident</span>.<span class="ident">as_callable</span>(), <span class="ident">swipl_call_args</span>)
+                <span class="comment">// TODO figure out what to do with that context module
+                </span>swipl_context.open(#pred_static_ident.as_callable(), swipl_call_args)
             }
         };
 
-        <span class="ident">gen</span>
+        gen
     }
 }
 
-<span class="kw">struct</span> <span class="ident">PrologPredicateBlock</span> {
-    <span class="ident">predicates</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrologPredicate</span><span class="op">&gt;</span>,
+<span class="kw">struct </span>PrologPredicateBlock {
+    predicates: Vec&lt;PrologPredicate&gt;,
 }
 
-<span class="kw">impl</span> <span class="ident">Parse</span> <span class="kw">for</span> <span class="ident">PrologPredicateBlock</span> {
-    <span class="kw">fn</span> <span class="ident">parse</span>(<span class="ident">input</span>: <span class="ident">ParseStream</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">punct</span>: <span class="ident">Punctuated</span><span class="op">&lt;</span><span class="ident">PrologPredicate</span>, <span class="macro">Token!</span>[;]<span class="op">&gt;</span> <span class="op">=</span>
-            <span class="ident">input</span>.<span class="ident">parse_terminated</span>(<span class="ident">PrologPredicate::parse</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">predicates</span> <span class="op">=</span> <span class="ident">punct</span>.<span class="ident">into_iter</span>().<span class="ident">collect</span>();
-        <span class="prelude-val">Ok</span>(<span class="self">Self</span> { <span class="ident">predicates</span> })
+<span class="kw">impl </span>Parse <span class="kw">for </span>PrologPredicateBlock {
+    <span class="kw">fn </span>parse(input: ParseStream) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span>punct: Punctuated&lt;PrologPredicate, <span class="macro">Token!</span>[;]&gt; =
+            input.parse_terminated(PrologPredicate::parse)<span class="question-mark">?</span>;
+        <span class="kw">let </span>predicates = punct.into_iter().collect();
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{ predicates })
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

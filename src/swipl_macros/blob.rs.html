@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl-macros/src/blob.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>blob.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../swipl_macros/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../swipl_macros/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../swipl_macros/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl-macros/src/blob.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>blob.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../swipl_macros/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -601,608 +601,608 @@
 <span id="601">601</span>
 <span id="602">602</span>
 <span id="603">603</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::kw</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util</span>::<span class="kw-2">*</span>;
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::kw;
+<span class="kw">use </span><span class="kw">crate</span>::util::<span class="kw-2">*</span>;
 
-<span class="kw">use</span> <span class="ident">proc_macro</span>;
-<span class="kw">use</span> <span class="ident">proc_macro2</span>::{<span class="ident">Span</span>, <span class="ident">TokenStream</span>};
-<span class="kw">use</span> <span class="ident">quote</span>::{<span class="ident">quote</span>, <span class="ident">ToTokens</span>};
-<span class="kw">use</span> <span class="ident">syn::parse</span>::{<span class="ident">Parse</span>, <span class="ident">ParseStream</span>, <span class="prelude-ty">Result</span>};
-<span class="kw">use</span> <span class="ident">syn</span>::{
-    <span class="ident">parse_macro_input</span>, <span class="ident">Ident</span>, <span class="ident">Item</span>, <span class="ident">ItemEnum</span>, <span class="ident">ItemStruct</span>, <span class="ident">LitByteStr</span>, <span class="ident">LitStr</span>, <span class="ident">Path</span>, <span class="ident">Token</span>,
-    <span class="ident">Visibility</span>,
+<span class="kw">use </span>proc_macro;
+<span class="kw">use </span>proc_macro2::{Span, TokenStream};
+<span class="kw">use </span>quote::{quote, ToTokens};
+<span class="kw">use </span>syn::parse::{Parse, ParseStream, <span class="prelude-ty">Result</span>};
+<span class="kw">use </span>syn::{
+    parse_macro_input, Ident, Item, ItemEnum, ItemStruct, LitByteStr, LitStr, Path, Token,
+    Visibility,
 };
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">arc_blob_macro</span>(
-    <span class="ident">attr</span>: <span class="ident">proc_macro::TokenStream</span>,
-    <span class="ident">item</span>: <span class="ident">proc_macro::TokenStream</span>,
-) -&gt; <span class="ident">proc_macro::TokenStream</span> {
-    <span class="kw">let</span> <span class="ident">crt</span> <span class="op">=</span> <span class="ident">crate_token</span>();
-    <span class="kw">let</span> <span class="ident">attr_def</span> <span class="op">=</span> <span class="macro">parse_macro_input!</span>(<span class="ident">attr</span> <span class="kw">as</span> <span class="ident">ArcBlobAttr</span>);
+<span class="kw">pub fn </span>arc_blob_macro(
+    attr: proc_macro::TokenStream,
+    item: proc_macro::TokenStream,
+) -&gt; proc_macro::TokenStream {
+    <span class="kw">let </span>crt = crate_token();
+    <span class="kw">let </span>attr_def = <span class="macro">parse_macro_input!</span>(attr <span class="kw">as </span>ArcBlobAttr);
 
-    <span class="kw">let</span> <span class="ident">name_lit</span> <span class="op">=</span> <span class="ident">attr_def</span>.<span class="ident">name</span>;
-    <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">name_lit</span>.<span class="ident">value</span>();
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">name_bytes</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">name</span>.<span class="ident">as_bytes</span>().<span class="ident">len</span>() <span class="op">+</span> <span class="number">1</span>);
-    <span class="ident">name_bytes</span>.<span class="ident">extend_from_slice</span>(<span class="ident">name</span>.<span class="ident">as_bytes</span>());
-    <span class="ident">name_bytes</span>.<span class="ident">push</span>(<span class="number">0</span>);
-    <span class="kw">let</span> <span class="ident">name_bytes_lit</span> <span class="op">=</span> <span class="ident">LitByteStr::new</span>(<span class="kw-2">&amp;</span><span class="ident">name_bytes</span>, <span class="ident">Span::call_site</span>());
+    <span class="kw">let </span>name_lit = attr_def.name;
+    <span class="kw">let </span>name = name_lit.value();
+    <span class="kw">let </span><span class="kw-2">mut </span>name_bytes = Vec::with_capacity(name.as_bytes().len() + <span class="number">1</span>);
+    name_bytes.extend_from_slice(name.as_bytes());
+    name_bytes.push(<span class="number">0</span>);
+    <span class="kw">let </span>name_bytes_lit = LitByteStr::new(<span class="kw-2">&amp;</span>name_bytes, Span::call_site());
 
-    <span class="kw">let</span> <span class="ident">item_def</span> <span class="op">=</span> <span class="macro">parse_macro_input!</span>(<span class="ident">item</span> <span class="kw">as</span> <span class="ident">ArcBlobItem</span>);
-    <span class="kw">let</span> <span class="ident">item_name</span> <span class="op">=</span> <span class="ident">item_def</span>.<span class="ident">name_ident</span>();
+    <span class="kw">let </span>item_def = <span class="macro">parse_macro_input!</span>(item <span class="kw">as </span>ArcBlobItem);
+    <span class="kw">let </span>item_name = item_def.name_ident();
 
-    <span class="kw">let</span> <span class="ident">blob_definition_ident</span> <span class="op">=</span> <span class="ident">Ident::new</span>(
-        <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_definition&quot;</span>, <span class="ident">item_name</span>),
-        <span class="ident">Span::call_site</span>(),
+    <span class="kw">let </span>blob_definition_ident = Ident::new(
+        <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_definition&quot;</span>, item_name),
+        Span::call_site(),
     );
 
-    <span class="kw">let</span> <span class="ident">blob_acquire</span> <span class="op">=</span> <span class="ident">Ident::new</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_acquire&quot;</span>, <span class="ident">item_name</span>), <span class="ident">Span::call_site</span>());
-    <span class="kw">let</span> <span class="ident">blob_release</span> <span class="op">=</span> <span class="ident">Ident::new</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_release&quot;</span>, <span class="ident">item_name</span>), <span class="ident">Span::call_site</span>());
-    <span class="kw">let</span> <span class="ident">blob_compare</span> <span class="op">=</span> <span class="ident">Ident::new</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_compare&quot;</span>, <span class="ident">item_name</span>), <span class="ident">Span::call_site</span>());
-    <span class="kw">let</span> <span class="ident">blob_write</span> <span class="op">=</span> <span class="ident">Ident::new</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_write&quot;</span>, <span class="ident">item_name</span>), <span class="ident">Span::call_site</span>());
+    <span class="kw">let </span>blob_acquire = Ident::new(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_acquire&quot;</span>, item_name), Span::call_site());
+    <span class="kw">let </span>blob_release = Ident::new(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_release&quot;</span>, item_name), Span::call_site());
+    <span class="kw">let </span>blob_compare = Ident::new(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_compare&quot;</span>, item_name), Span::call_site());
+    <span class="kw">let </span>blob_write = Ident::new(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_write&quot;</span>, item_name), Span::call_site());
 
-    <span class="kw">let</span> <span class="ident">default_implementation</span>;
-    <span class="kw">if</span> <span class="ident">attr_def</span>.<span class="ident">defaults</span> {
-        <span class="ident">default_implementation</span> <span class="op">=</span> <span class="macro">quote!</span> {
-            <span class="kw">impl</span> #<span class="ident">crt::blob::ArcBlobImpl</span> <span class="kw">for</span> #<span class="ident">item_name</span> {}
+    <span class="kw">let </span>default_implementation;
+    <span class="kw">if </span>attr_def.defaults {
+        default_implementation = <span class="macro">quote! </span>{
+            <span class="kw">impl </span>#crt::blob::ArcBlobImpl <span class="kw">for </span>#item_name {}
         };
-    } <span class="kw">else</span> {
-        <span class="ident">default_implementation</span> <span class="op">=</span> <span class="macro">quote!</span> {};
+    } <span class="kw">else </span>{
+        default_implementation = <span class="macro">quote! </span>{};
     }
 
-    <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="macro">quote!</span> {
-        #<span class="ident">item_def</span>
+    <span class="kw">let </span>result = <span class="macro">quote! </span>{
+        #item_def
 
-        <span class="kw">impl</span> <span class="ident">ArcBlobBase</span> <span class="kw">for</span> #<span class="ident">item_name</span> {
-            <span class="kw">fn</span> <span class="ident">blob_name</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
-                #<span class="ident">name_lit</span>
+        <span class="kw">impl </span>ArcBlobBase <span class="kw">for </span>#item_name {
+            <span class="kw">fn </span>blob_name() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str {
+                #name_lit
             }
         }
 
-        <span class="kw">static</span> #<span class="ident">blob_definition_ident</span>: <span class="ident">std::sync::atomic::AtomicPtr</span><span class="op">&lt;</span>#<span class="ident">crt::fli::PL_blob_t</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">std::sync::atomic::AtomicPtr::new</span>(<span class="ident">std::ptr::null_mut</span>());
+        <span class="kw">static </span>#blob_definition_ident: std::sync::atomic::AtomicPtr&lt;#crt::fli::PL_blob_t&gt; = std::sync::atomic::AtomicPtr::new(std::ptr::null_mut());
 
-        <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> #<span class="ident">blob_acquire</span>(<span class="ident">a</span>: #<span class="ident">crt::fli::atom_t</span>) {
-            #<span class="ident">crt::blob::acquire_arc_blob</span>::<span class="op">&lt;</span>#<span class="ident">item_name</span><span class="op">&gt;</span>(<span class="ident">a</span>);
+        <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_acquire(a: #crt::fli::atom_t) {
+            #crt::blob::acquire_arc_blob::&lt;#item_name&gt;(a);
         }
 
-        <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> #<span class="ident">blob_release</span>(<span class="ident">a</span>: #<span class="ident">crt::fli::atom_t</span>) -&gt; <span class="ident">std::os::raw::c_int</span> {
-            #<span class="ident">crt::blob::release_arc_blob</span>::<span class="op">&lt;</span>#<span class="ident">item_name</span><span class="op">&gt;</span>(<span class="ident">a</span>);
+        <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_release(a: #crt::fli::atom_t) -&gt; std::os::raw::c_int {
+            #crt::blob::release_arc_blob::&lt;#item_name&gt;(a);
 
-            <span class="number">1</span>
-        }
+            <span class="number">1
+        </span>}
 
-        <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> #<span class="ident">blob_compare</span>(<span class="ident">a</span>: #<span class="ident">crt::fli::atom_t</span>, <span class="ident">b</span>: #<span class="ident">crt::fli::atom_t</span>)-&gt;<span class="ident">std::os::raw::c_int</span> {
-            <span class="kw">match</span> #<span class="ident">crt::context::prolog_catch_unwind</span>(<span class="op">|</span><span class="op">|</span>{
-                <span class="kw">let</span> <span class="ident">a_val</span> <span class="op">=</span> #<span class="ident">crt::fli::PL_blob_data</span>(<span class="ident">a</span>,
-                                                    <span class="ident">std::ptr::null_mut</span>(),
-                                                    <span class="ident">std::ptr::null_mut</span>())
-                    <span class="kw">as</span> <span class="kw-2">*const</span> #<span class="ident">item_name</span>;
-                <span class="kw">let</span> <span class="ident">b_val</span> <span class="op">=</span> #<span class="ident">crt::fli::PL_blob_data</span>(<span class="ident">b</span>,
-                                                    <span class="ident">std::ptr::null_mut</span>(),
-                                                    <span class="ident">std::ptr::null_mut</span>())
-                    <span class="kw">as</span> <span class="kw-2">*const</span> #<span class="ident">item_name</span>;
-                #<span class="ident">crt::blob::ArcBlobImpl::compare</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">a_val</span>, <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">b_val</span>)
+        <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_compare(a: #crt::fli::atom_t, b: #crt::fli::atom_t)-&gt;std::os::raw::c_int {
+            <span class="kw">match </span>#crt::context::prolog_catch_unwind(||{
+                <span class="kw">let </span>a_val = #crt::fli::PL_blob_data(a,
+                                                    std::ptr::null_mut(),
+                                                    std::ptr::null_mut())
+                    <span class="kw">as </span><span class="kw-2">*const </span>#item_name;
+                <span class="kw">let </span>b_val = #crt::fli::PL_blob_data(b,
+                                                    std::ptr::null_mut(),
+                                                    std::ptr::null_mut())
+                    <span class="kw">as </span><span class="kw-2">*const </span>#item_name;
+                #crt::blob::ArcBlobImpl::compare(<span class="kw-2">&amp;*</span>a_val, <span class="kw-2">&amp;*</span>b_val)
             }) {
-                <span class="prelude-val">Ok</span>(<span class="ident">std::cmp::Ordering::Less</span>) =&gt; <span class="op">-</span><span class="number">1</span>,
-                <span class="prelude-val">Ok</span>(<span class="ident">std::cmp::Ordering::Equal</span>) =&gt; <span class="number">0</span>,
-                <span class="prelude-val">Ok</span>(<span class="ident">std::cmp::Ordering::Greater</span>) =&gt; <span class="number">1</span>,
-                <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="number">0</span>
-            }
+                <span class="prelude-val">Ok</span>(std::cmp::Ordering::Less) =&gt; -<span class="number">1</span>,
+                <span class="prelude-val">Ok</span>(std::cmp::Ordering::Equal) =&gt; <span class="number">0</span>,
+                <span class="prelude-val">Ok</span>(std::cmp::Ordering::Greater) =&gt; <span class="number">1</span>,
+                <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="number">0
+            </span>}
         }
 
-        <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> #<span class="ident">blob_write</span>(<span class="ident">s</span>: <span class="kw-2">*mut</span> #<span class="ident">crt::fli::IOSTREAM</span>,
-                                         <span class="ident">a</span>: #<span class="ident">crt::fli::atom_t</span>,
-                                         <span class="ident">_flags</span>: <span class="ident">std::os::raw::c_int</span>)
-                                         -&gt; <span class="ident">std::os::raw::c_int</span> {
-            <span class="kw">match</span> #<span class="ident">crt::context::prolog_catch_unwind</span>(<span class="op">|</span><span class="op">|</span> {
-                <span class="kw">let</span> <span class="ident">a_val</span> <span class="op">=</span> #<span class="ident">crt::fli::PL_blob_data</span>(<span class="ident">a</span>,
-                                                    <span class="ident">std::ptr::null_mut</span>(),
-                                                    <span class="ident">std::ptr::null_mut</span>())
-                    <span class="kw">as</span> <span class="kw-2">*const</span> #<span class="ident">item_name</span>;
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stream</span> <span class="op">=</span> #<span class="ident">crt::stream::PrologStream::wrap</span>(<span class="ident">s</span>);
-                #<span class="ident">crt::blob::ArcBlobImpl::write</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">a_val</span>, <span class="kw-2">&amp;mut</span> <span class="ident">stream</span>)
+        <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_write(s: <span class="kw-2">*mut </span>#crt::fli::IOSTREAM,
+                                         a: #crt::fli::atom_t,
+                                         _flags: std::os::raw::c_int)
+                                         -&gt; std::os::raw::c_int {
+            <span class="kw">match </span>#crt::context::prolog_catch_unwind(|| {
+                <span class="kw">let </span>a_val = #crt::fli::PL_blob_data(a,
+                                                    std::ptr::null_mut(),
+                                                    std::ptr::null_mut())
+                    <span class="kw">as </span><span class="kw-2">*const </span>#item_name;
+                <span class="kw">let </span><span class="kw-2">mut </span>stream = #crt::stream::PrologStream::wrap(s);
+                #crt::blob::ArcBlobImpl::write(<span class="kw-2">&amp;*</span>a_val, <span class="kw-2">&amp;mut </span>stream)
             }) {
                 <span class="prelude-val">Ok</span>(<span class="prelude-val">Ok</span>(<span class="kw">_</span>)) =&gt; <span class="number">1</span>,
-                <span class="kw">_</span> =&gt; <span class="number">0</span>,
+                <span class="kw">_ </span>=&gt; <span class="number">0</span>,
             }
         }
 
-        <span class="kw">unsafe</span> <span class="kw">impl</span> #<span class="ident">crt::blob::ArcBlob</span> <span class="kw">for</span> #<span class="ident">item_name</span> {
-            <span class="kw">fn</span> <span class="ident">get_blob_definition</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> #<span class="ident">crt::fli::PL_blob_t</span> {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">definition</span> <span class="op">=</span> #<span class="ident">blob_definition_ident</span>.<span class="ident">load</span>(<span class="ident">std::sync::atomic::Ordering::Relaxed</span>);
-                <span class="kw">if</span> <span class="ident">definition</span>.<span class="ident">is_null</span>() {
-                    <span class="kw">let</span> <span class="ident">new_definition</span> <span class="op">=</span> <span class="ident">Box::new</span>(#<span class="ident">crt::blob::create_blob_definition</span>(
-                        #<span class="ident">name_bytes_lit</span>,
+        <span class="kw">unsafe impl </span>#crt::blob::ArcBlob <span class="kw">for </span>#item_name {
+            <span class="kw">fn </span>get_blob_definition() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>#crt::fli::PL_blob_t {
+                <span class="kw">let </span><span class="kw-2">mut </span>definition = #blob_definition_ident.load(std::sync::atomic::Ordering::Relaxed);
+                <span class="kw">if </span>definition.is_null() {
+                    <span class="kw">let </span>new_definition = Box::new(#crt::blob::create_blob_definition(
+                        #name_bytes_lit,
                         <span class="bool-val">false</span>,
                         <span class="bool-val">true</span>,
                         <span class="bool-val">true</span>,
-                        <span class="prelude-val">Some</span>(#<span class="ident">blob_acquire</span>),
-                        <span class="prelude-val">Some</span>(#<span class="ident">blob_release</span>),
-                        <span class="prelude-val">Some</span>(#<span class="ident">blob_compare</span>),
-                        <span class="prelude-val">Some</span>(#<span class="ident">blob_write</span>),
+                        <span class="prelude-val">Some</span>(#blob_acquire),
+                        <span class="prelude-val">Some</span>(#blob_release),
+                        <span class="prelude-val">Some</span>(#blob_compare),
+                        <span class="prelude-val">Some</span>(#blob_write),
                         <span class="prelude-val">None</span>,
                         <span class="prelude-val">None</span>));
 
-                    <span class="kw">let</span> <span class="ident">new_definition_ptr</span> <span class="op">=</span> <span class="ident">Box::into_raw</span>(<span class="ident">new_definition</span>);
-                    <span class="kw">if</span> #<span class="ident">blob_definition_ident</span>.<span class="ident">compare_exchange</span>(
-                        <span class="ident">std::ptr::null_mut</span>(),
-                        <span class="ident">new_definition_ptr</span>,
-                        <span class="ident">std::sync::atomic::Ordering::Relaxed</span>,
-                        <span class="ident">std::sync::atomic::Ordering::Relaxed</span>,
-                    ).<span class="ident">is_err</span>() {
-                        <span class="comment">// swap failed, so someone beat us to creating the definition.</span>
-                        <span class="comment">// We have to forget what we created.</span>
-                        <span class="ident">std::mem::drop</span>(<span class="kw">unsafe</span> { <span class="ident">Box::from_raw</span>(<span class="ident">new_definition_ptr</span>) });
+                    <span class="kw">let </span>new_definition_ptr = Box::into_raw(new_definition);
+                    <span class="kw">if </span>#blob_definition_ident.compare_exchange(
+                        std::ptr::null_mut(),
+                        new_definition_ptr,
+                        std::sync::atomic::Ordering::Relaxed,
+                        std::sync::atomic::Ordering::Relaxed,
+                    ).is_err() {
+                        <span class="comment">// swap failed, so someone beat us to creating the definition.
+                        // We have to forget what we created.
+                        </span>std::mem::drop(<span class="kw">unsafe </span>{ Box::from_raw(new_definition_ptr) });
                     }
 
-                    <span class="ident">definition</span> <span class="op">=</span> #<span class="ident">blob_definition_ident</span>.<span class="ident">load</span>(<span class="ident">std::sync::atomic::Ordering::Relaxed</span>);
+                    definition = #blob_definition_ident.load(std::sync::atomic::Ordering::Relaxed);
                 }
 
-                <span class="kw">unsafe</span> { <span class="ident">std::mem::transmute</span>(<span class="ident">definition</span>) }
+                <span class="kw">unsafe </span>{ std::mem::transmute(definition) }
             }
         }
 
-        #<span class="ident">default_implementation</span>
+        #default_implementation
     };
 
-    <span class="ident">result</span>.<span class="ident">into</span>()
+    result.into()
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">wrapped_arc_blob_macro</span>(<span class="ident">item</span>: <span class="ident">proc_macro::TokenStream</span>) -&gt; <span class="ident">proc_macro::TokenStream</span> {
-    <span class="kw">let</span> <span class="ident">crt</span> <span class="op">=</span> <span class="ident">crate_token</span>();
+<span class="kw">pub fn </span>wrapped_arc_blob_macro(item: proc_macro::TokenStream) -&gt; proc_macro::TokenStream {
+    <span class="kw">let </span>crt = crate_token();
 
-    <span class="kw">let</span> <span class="ident">item_def</span> <span class="op">=</span> <span class="macro">parse_macro_input!</span>(<span class="ident">item</span> <span class="kw">as</span> <span class="ident">WrappedArcBlobItem</span>);
-    <span class="kw">let</span> <span class="ident">name_lit</span> <span class="op">=</span> <span class="ident">item_def</span>.<span class="ident">name</span>;
-    <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">name_lit</span>.<span class="ident">value</span>();
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">name_bytes</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">name</span>.<span class="ident">as_bytes</span>().<span class="ident">len</span>() <span class="op">+</span> <span class="number">1</span>);
-    <span class="ident">name_bytes</span>.<span class="ident">extend_from_slice</span>(<span class="ident">name</span>.<span class="ident">as_bytes</span>());
-    <span class="ident">name_bytes</span>.<span class="ident">push</span>(<span class="number">0</span>);
-    <span class="kw">let</span> <span class="ident">name_bytes_lit</span> <span class="op">=</span> <span class="ident">LitByteStr::new</span>(<span class="kw-2">&amp;</span><span class="ident">name_bytes</span>, <span class="ident">Span::call_site</span>());
+    <span class="kw">let </span>item_def = <span class="macro">parse_macro_input!</span>(item <span class="kw">as </span>WrappedArcBlobItem);
+    <span class="kw">let </span>name_lit = item_def.name;
+    <span class="kw">let </span>name = name_lit.value();
+    <span class="kw">let </span><span class="kw-2">mut </span>name_bytes = Vec::with_capacity(name.as_bytes().len() + <span class="number">1</span>);
+    name_bytes.extend_from_slice(name.as_bytes());
+    name_bytes.push(<span class="number">0</span>);
+    <span class="kw">let </span>name_bytes_lit = LitByteStr::new(<span class="kw-2">&amp;</span>name_bytes, Span::call_site());
 
-    <span class="kw">let</span> <span class="ident">item_name</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">item_def</span>.<span class="ident">wrap_type</span>;
-    <span class="kw">let</span> <span class="ident">visibility</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">item_def</span>.<span class="ident">visibility</span>;
-    <span class="kw">let</span> <span class="ident">inner_type_name</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">item_def</span>.<span class="ident">inner_type</span>;
+    <span class="kw">let </span>item_name = <span class="kw-2">&amp;</span>item_def.wrap_type;
+    <span class="kw">let </span>visibility = <span class="kw-2">&amp;</span>item_def.visibility;
+    <span class="kw">let </span>inner_type_name = <span class="kw-2">&amp;</span>item_def.inner_type;
 
-    <span class="kw">let</span> <span class="ident">blob_definition_ident</span> <span class="op">=</span> <span class="ident">Ident::new</span>(
-        <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_definition&quot;</span>, <span class="ident">item_name</span>),
-        <span class="ident">Span::call_site</span>(),
+    <span class="kw">let </span>blob_definition_ident = Ident::new(
+        <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_definition&quot;</span>, item_name),
+        Span::call_site(),
     );
 
-    <span class="kw">let</span> <span class="ident">blob_acquire</span> <span class="op">=</span> <span class="ident">Ident::new</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_acquire&quot;</span>, <span class="ident">item_name</span>), <span class="ident">Span::call_site</span>());
-    <span class="kw">let</span> <span class="ident">blob_release</span> <span class="op">=</span> <span class="ident">Ident::new</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_release&quot;</span>, <span class="ident">item_name</span>), <span class="ident">Span::call_site</span>());
-    <span class="kw">let</span> <span class="ident">blob_compare</span> <span class="op">=</span> <span class="ident">Ident::new</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_compare&quot;</span>, <span class="ident">item_name</span>), <span class="ident">Span::call_site</span>());
-    <span class="kw">let</span> <span class="ident">blob_write</span> <span class="op">=</span> <span class="ident">Ident::new</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_write&quot;</span>, <span class="ident">item_name</span>), <span class="ident">Span::call_site</span>());
+    <span class="kw">let </span>blob_acquire = Ident::new(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_acquire&quot;</span>, item_name), Span::call_site());
+    <span class="kw">let </span>blob_release = Ident::new(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_release&quot;</span>, item_name), Span::call_site());
+    <span class="kw">let </span>blob_compare = Ident::new(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_compare&quot;</span>, item_name), Span::call_site());
+    <span class="kw">let </span>blob_write = Ident::new(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_write&quot;</span>, item_name), Span::call_site());
 
-    <span class="kw">let</span> <span class="ident">default_implementation</span>;
-    <span class="kw">if</span> <span class="ident">item_def</span>.<span class="ident">defaults</span> {
-        <span class="ident">default_implementation</span> <span class="op">=</span> <span class="macro">quote!</span> {
-            <span class="kw">impl</span> #<span class="ident">crt::blob::WrappedArcBlobImpl</span> <span class="kw">for</span> #<span class="ident">item_name</span> {}
+    <span class="kw">let </span>default_implementation;
+    <span class="kw">if </span>item_def.defaults {
+        default_implementation = <span class="macro">quote! </span>{
+            <span class="kw">impl </span>#crt::blob::WrappedArcBlobImpl <span class="kw">for </span>#item_name {}
         };
-    } <span class="kw">else</span> {
-        <span class="ident">default_implementation</span> <span class="op">=</span> <span class="macro">quote!</span> {};
+    } <span class="kw">else </span>{
+        default_implementation = <span class="macro">quote! </span>{};
     }
 
-    <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="macro">quote!</span> {
-        #<span class="ident">visibility</span> <span class="kw">struct</span> #<span class="ident">item_name</span>(#<span class="ident">visibility</span> <span class="ident">Arc</span><span class="op">&lt;</span>#<span class="ident">inner_type_name</span><span class="op">&gt;</span>);
+    <span class="kw">let </span>result = <span class="macro">quote! </span>{
+        #visibility <span class="kw">struct </span>#item_name(#visibility Arc&lt;#inner_type_name&gt;);
 
-        <span class="kw">impl</span> <span class="ident">std::ops::Deref</span> <span class="kw">for</span> #<span class="ident">item_name</span> {
-            <span class="kw">type</span> <span class="ident">Target</span> <span class="op">=</span> #<span class="ident">inner_type_name</span>;
+        <span class="kw">impl </span>std::ops::Deref <span class="kw">for </span>#item_name {
+            <span class="kw">type </span>Target = #inner_type_name;
 
-            <span class="kw">fn</span> <span class="ident">deref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>#<span class="ident">inner_type_name</span> {
-                <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>
-            }
+            <span class="kw">fn </span>deref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>#inner_type_name {
+                <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0
+            </span>}
         }
 
 
-        <span class="kw">impl</span> <span class="ident">WrappedArcBlobBase</span> <span class="kw">for</span> #<span class="ident">item_name</span> {
-            <span class="kw">type</span> <span class="ident">Inner</span> <span class="op">=</span> #<span class="ident">inner_type_name</span>;
+        <span class="kw">impl </span>WrappedArcBlobBase <span class="kw">for </span>#item_name {
+            <span class="kw">type </span>Inner = #inner_type_name;
 
-            <span class="kw">fn</span> <span class="ident">blob_name</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
-                #<span class="ident">name_lit</span>
+            <span class="kw">fn </span>blob_name() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str {
+                #name_lit
             }
 
-            <span class="kw">fn</span> <span class="ident">get_arc</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">std::sync::Arc</span><span class="op">&lt;</span>#<span class="ident">inner_type_name</span><span class="op">&gt;</span> {
-                <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>
-            }
+            <span class="kw">fn </span>get_arc(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>std::sync::Arc&lt;#inner_type_name&gt; {
+                <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0
+            </span>}
 
-            <span class="kw">fn</span> <span class="ident">from_arc</span>(<span class="ident">arc</span>: <span class="ident">std::sync::Arc</span><span class="op">&lt;</span>#<span class="ident">inner_type_name</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
-                <span class="self">Self</span>(<span class="ident">arc</span>)
+            <span class="kw">fn </span>from_arc(arc: std::sync::Arc&lt;#inner_type_name&gt;) -&gt; <span class="self">Self </span>{
+                <span class="self">Self</span>(arc)
             }
         }
 
-        <span class="kw">static</span> #<span class="ident">blob_definition_ident</span>: <span class="ident">std::sync::atomic::AtomicPtr</span><span class="op">&lt;</span>#<span class="ident">crt::fli::PL_blob_t</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">std::sync::atomic::AtomicPtr::new</span>(<span class="ident">std::ptr::null_mut</span>());
+        <span class="kw">static </span>#blob_definition_ident: std::sync::atomic::AtomicPtr&lt;#crt::fli::PL_blob_t&gt; = std::sync::atomic::AtomicPtr::new(std::ptr::null_mut());
 
-        <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> #<span class="ident">blob_acquire</span>(<span class="ident">a</span>: #<span class="ident">crt::fli::atom_t</span>) {
-            #<span class="ident">crt::blob::acquire_arc_blob</span>::<span class="op">&lt;</span>#<span class="ident">inner_type_name</span><span class="op">&gt;</span>(<span class="ident">a</span>);
+        <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_acquire(a: #crt::fli::atom_t) {
+            #crt::blob::acquire_arc_blob::&lt;#inner_type_name&gt;(a);
         }
 
-        <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> #<span class="ident">blob_release</span>(<span class="ident">a</span>: #<span class="ident">crt::fli::atom_t</span>) -&gt; <span class="ident">std::os::raw::c_int</span> {
-            #<span class="ident">crt::blob::release_arc_blob</span>::<span class="op">&lt;</span>#<span class="ident">inner_type_name</span><span class="op">&gt;</span>(<span class="ident">a</span>);
+        <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_release(a: #crt::fli::atom_t) -&gt; std::os::raw::c_int {
+            #crt::blob::release_arc_blob::&lt;#inner_type_name&gt;(a);
 
-            <span class="number">1</span>
-        }
+            <span class="number">1
+        </span>}
 
-        <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> #<span class="ident">blob_compare</span>(<span class="ident">a</span>: #<span class="ident">crt::fli::atom_t</span>, <span class="ident">b</span>: #<span class="ident">crt::fli::atom_t</span>)-&gt;<span class="ident">std::os::raw::c_int</span> {
-            <span class="kw">match</span> #<span class="ident">crt::context::prolog_catch_unwind</span>(<span class="op">|</span><span class="op">|</span>{
-                <span class="kw">let</span> <span class="ident">a_val</span> <span class="op">=</span> #<span class="ident">crt::fli::PL_blob_data</span>(<span class="ident">a</span>,
-                                                    <span class="ident">std::ptr::null_mut</span>(),
-                                                    <span class="ident">std::ptr::null_mut</span>())
-                    <span class="kw">as</span> <span class="kw-2">*const</span> #<span class="ident">inner_type_name</span>;
-                <span class="kw">let</span> <span class="ident">b_val</span> <span class="op">=</span> #<span class="ident">crt::fli::PL_blob_data</span>(<span class="ident">b</span>,
-                                                    <span class="ident">std::ptr::null_mut</span>(),
-                                                    <span class="ident">std::ptr::null_mut</span>())
-                    <span class="kw">as</span> <span class="kw-2">*const</span> #<span class="ident">inner_type_name</span>;
-                <span class="op">&lt;</span>#<span class="ident">item_name</span> <span class="kw">as</span> #<span class="ident">crt::blob::WrappedArcBlobImpl</span><span class="op">&gt;</span><span class="ident">::compare</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">a_val</span>, <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">b_val</span>)
+        <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_compare(a: #crt::fli::atom_t, b: #crt::fli::atom_t)-&gt;std::os::raw::c_int {
+            <span class="kw">match </span>#crt::context::prolog_catch_unwind(||{
+                <span class="kw">let </span>a_val = #crt::fli::PL_blob_data(a,
+                                                    std::ptr::null_mut(),
+                                                    std::ptr::null_mut())
+                    <span class="kw">as </span><span class="kw-2">*const </span>#inner_type_name;
+                <span class="kw">let </span>b_val = #crt::fli::PL_blob_data(b,
+                                                    std::ptr::null_mut(),
+                                                    std::ptr::null_mut())
+                    <span class="kw">as </span><span class="kw-2">*const </span>#inner_type_name;
+                &lt;#item_name <span class="kw">as </span>#crt::blob::WrappedArcBlobImpl&gt;::compare(<span class="kw-2">&amp;*</span>a_val, <span class="kw-2">&amp;*</span>b_val)
             }) {
-                <span class="prelude-val">Ok</span>(<span class="ident">std::cmp::Ordering::Less</span>) =&gt; <span class="op">-</span><span class="number">1</span>,
-                <span class="prelude-val">Ok</span>(<span class="ident">std::cmp::Ordering::Equal</span>) =&gt; <span class="number">0</span>,
-                <span class="prelude-val">Ok</span>(<span class="ident">std::cmp::Ordering::Greater</span>) =&gt; <span class="number">1</span>,
-                <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="number">0</span>
-            }
+                <span class="prelude-val">Ok</span>(std::cmp::Ordering::Less) =&gt; -<span class="number">1</span>,
+                <span class="prelude-val">Ok</span>(std::cmp::Ordering::Equal) =&gt; <span class="number">0</span>,
+                <span class="prelude-val">Ok</span>(std::cmp::Ordering::Greater) =&gt; <span class="number">1</span>,
+                <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="number">0
+            </span>}
         }
 
-        <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> #<span class="ident">blob_write</span>(<span class="ident">s</span>: <span class="kw-2">*mut</span> #<span class="ident">crt::fli::IOSTREAM</span>,
-                                         <span class="ident">a</span>: #<span class="ident">crt::fli::atom_t</span>,
-                                         <span class="ident">_flags</span>: <span class="ident">std::os::raw::c_int</span>)
-                                         -&gt; <span class="ident">std::os::raw::c_int</span> {
-            <span class="kw">match</span> #<span class="ident">crt::context::prolog_catch_unwind</span>(<span class="op">|</span><span class="op">|</span> {
-                <span class="kw">let</span> <span class="ident">a_val</span> <span class="op">=</span> #<span class="ident">crt::fli::PL_blob_data</span>(<span class="ident">a</span>,
-                                                    <span class="ident">std::ptr::null_mut</span>(),
-                                                    <span class="ident">std::ptr::null_mut</span>())
-                    <span class="kw">as</span> <span class="kw-2">*const</span> #<span class="ident">inner_type_name</span>;
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stream</span> <span class="op">=</span> #<span class="ident">crt::stream::PrologStream::wrap</span>(<span class="ident">s</span>);
-                <span class="op">&lt;</span>#<span class="ident">item_name</span> <span class="kw">as</span> #<span class="ident">crt::blob::WrappedArcBlobImpl</span><span class="op">&gt;</span><span class="ident">::write</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">a_val</span>, <span class="kw-2">&amp;mut</span> <span class="ident">stream</span>)
+        <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_write(s: <span class="kw-2">*mut </span>#crt::fli::IOSTREAM,
+                                         a: #crt::fli::atom_t,
+                                         _flags: std::os::raw::c_int)
+                                         -&gt; std::os::raw::c_int {
+            <span class="kw">match </span>#crt::context::prolog_catch_unwind(|| {
+                <span class="kw">let </span>a_val = #crt::fli::PL_blob_data(a,
+                                                    std::ptr::null_mut(),
+                                                    std::ptr::null_mut())
+                    <span class="kw">as </span><span class="kw-2">*const </span>#inner_type_name;
+                <span class="kw">let </span><span class="kw-2">mut </span>stream = #crt::stream::PrologStream::wrap(s);
+                &lt;#item_name <span class="kw">as </span>#crt::blob::WrappedArcBlobImpl&gt;::write(<span class="kw-2">&amp;*</span>a_val, <span class="kw-2">&amp;mut </span>stream)
             }) {
                 <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; <span class="number">1</span>,
-                <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="number">0</span>
-            }
+                <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="number">0
+            </span>}
         }
 
-        <span class="kw">unsafe</span> <span class="kw">impl</span> #<span class="ident">crt::blob::WrappedArcBlob</span> <span class="kw">for</span> #<span class="ident">item_name</span> {
-            <span class="kw">fn</span> <span class="ident">get_blob_definition</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> #<span class="ident">crt::fli::PL_blob_t</span> {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">definition</span> <span class="op">=</span> #<span class="ident">blob_definition_ident</span>.<span class="ident">load</span>(<span class="ident">std::sync::atomic::Ordering::Relaxed</span>);
-                <span class="kw">if</span> <span class="ident">definition</span>.<span class="ident">is_null</span>() {
-                    <span class="kw">let</span> <span class="ident">new_definition</span> <span class="op">=</span> <span class="ident">Box::new</span>(#<span class="ident">crt::blob::create_blob_definition</span>(
-                        #<span class="ident">name_bytes_lit</span>,
+        <span class="kw">unsafe impl </span>#crt::blob::WrappedArcBlob <span class="kw">for </span>#item_name {
+            <span class="kw">fn </span>get_blob_definition() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>#crt::fli::PL_blob_t {
+                <span class="kw">let </span><span class="kw-2">mut </span>definition = #blob_definition_ident.load(std::sync::atomic::Ordering::Relaxed);
+                <span class="kw">if </span>definition.is_null() {
+                    <span class="kw">let </span>new_definition = Box::new(#crt::blob::create_blob_definition(
+                        #name_bytes_lit,
                         <span class="bool-val">false</span>,
                         <span class="bool-val">true</span>,
                         <span class="bool-val">true</span>,
-                        <span class="prelude-val">Some</span>(#<span class="ident">blob_acquire</span>),
-                        <span class="prelude-val">Some</span>(#<span class="ident">blob_release</span>),
-                        <span class="prelude-val">Some</span>(#<span class="ident">blob_compare</span>),
-                        <span class="prelude-val">Some</span>(#<span class="ident">blob_write</span>),
+                        <span class="prelude-val">Some</span>(#blob_acquire),
+                        <span class="prelude-val">Some</span>(#blob_release),
+                        <span class="prelude-val">Some</span>(#blob_compare),
+                        <span class="prelude-val">Some</span>(#blob_write),
                         <span class="prelude-val">None</span>,
                         <span class="prelude-val">None</span>));
 
-                    <span class="kw">let</span> <span class="ident">new_definition_ptr</span> <span class="op">=</span> <span class="ident">Box::into_raw</span>(<span class="ident">new_definition</span>);
-                    <span class="kw">if</span> #<span class="ident">blob_definition_ident</span>.<span class="ident">compare_exchange</span>(
-                        <span class="ident">std::ptr::null_mut</span>(),
-                        <span class="ident">new_definition_ptr</span>,
-                        <span class="ident">std::sync::atomic::Ordering::Relaxed</span>,
-                        <span class="ident">std::sync::atomic::Ordering::Relaxed</span>,
-                    ).<span class="ident">is_err</span>() {
-                        <span class="comment">// swap failed, so someone beat us to creating the definition.</span>
-                        <span class="comment">// We have to forget what we created.</span>
-                        <span class="ident">std::mem::drop</span>(<span class="kw">unsafe</span> { <span class="ident">Box::from_raw</span>(<span class="ident">new_definition_ptr</span>) });
+                    <span class="kw">let </span>new_definition_ptr = Box::into_raw(new_definition);
+                    <span class="kw">if </span>#blob_definition_ident.compare_exchange(
+                        std::ptr::null_mut(),
+                        new_definition_ptr,
+                        std::sync::atomic::Ordering::Relaxed,
+                        std::sync::atomic::Ordering::Relaxed,
+                    ).is_err() {
+                        <span class="comment">// swap failed, so someone beat us to creating the definition.
+                        // We have to forget what we created.
+                        </span>std::mem::drop(<span class="kw">unsafe </span>{ Box::from_raw(new_definition_ptr) });
                     }
 
-                    <span class="ident">definition</span> <span class="op">=</span> #<span class="ident">blob_definition_ident</span>.<span class="ident">load</span>(<span class="ident">std::sync::atomic::Ordering::Relaxed</span>);
+                    definition = #blob_definition_ident.load(std::sync::atomic::Ordering::Relaxed);
                 }
 
-                <span class="kw">unsafe</span> { <span class="ident">std::mem::transmute</span>(<span class="ident">definition</span>) }
+                <span class="kw">unsafe </span>{ std::mem::transmute(definition) }
             }
         }
 
-        <span class="kw">unsafe</span> <span class="kw">impl</span> #<span class="ident">crt::term::Unifiable</span> <span class="kw">for</span> #<span class="ident">item_name</span> {
-            <span class="kw">fn</span> <span class="ident">unify</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">term</span>: <span class="kw-2">&amp;</span>#<span class="ident">crt::term::Term</span>) -&gt; <span class="ident">bool</span> {
-                <span class="kw">let</span> <span class="ident">blob_definition</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::get_blob_definition</span>();
-                <span class="kw">unsafe</span> { #<span class="ident">crt::blob::unify_with_arc</span>(<span class="ident">term</span>, <span class="ident">blob_definition</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>) }
+        <span class="kw">unsafe impl </span>#crt::term::Unifiable <span class="kw">for </span>#item_name {
+            <span class="kw">fn </span>unify(<span class="kw-2">&amp;</span><span class="self">self</span>, term: <span class="kw-2">&amp;</span>#crt::term::Term) -&gt; bool {
+                <span class="kw">let </span>blob_definition = <span class="self">Self</span>::get_blob_definition();
+                <span class="kw">unsafe </span>{ #crt::blob::unify_with_arc(term, blob_definition, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>) }
             }
         }
 
-        <span class="kw">unsafe</span> <span class="kw">impl</span> #<span class="ident">crt::term::TermGetable</span> <span class="kw">for</span> #<span class="ident">item_name</span> {
-            <span class="kw">fn</span> <span class="ident">get</span>(<span class="ident">term</span>: <span class="kw-2">&amp;</span>#<span class="ident">crt::term::Term</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="ident">blob_definition</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::get_blob_definition</span>();
-                <span class="kw">let</span> <span class="ident">arc_opt</span> <span class="op">=</span> <span class="kw">unsafe</span> { #<span class="ident">crt::blob::get_arc_from_term</span>(<span class="ident">term</span>, <span class="ident">blob_definition</span>) };
-                <span class="ident">arc_opt</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">a</span><span class="op">|</span><span class="self">Self</span>(<span class="ident">a</span>))
+        <span class="kw">unsafe impl </span>#crt::term::TermGetable <span class="kw">for </span>#item_name {
+            <span class="kw">fn </span>get(term: <span class="kw-2">&amp;</span>#crt::term::Term) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt; {
+                <span class="kw">let </span>blob_definition = <span class="self">Self</span>::get_blob_definition();
+                <span class="kw">let </span>arc_opt = <span class="kw">unsafe </span>{ #crt::blob::get_arc_from_term(term, blob_definition) };
+                arc_opt.map(|a|<span class="self">Self</span>(a))
             }
 
-            <span class="kw">fn</span> <span class="ident">name</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
-                <span class="ident"><span class="self">Self</span>::blob_name</span>()
-            }
-        }
-
-        <span class="kw">unsafe</span> <span class="kw">impl</span> #<span class="ident">crt::term::TermPutable</span> <span class="kw">for</span> #<span class="ident">item_name</span> {
-            <span class="kw">fn</span> <span class="ident">put</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">term</span>: <span class="kw-2">&amp;</span>#<span class="ident">crt::term::Term</span>) {
-                <span class="kw">let</span> <span class="ident">blob_definition</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::get_blob_definition</span>();
-                <span class="kw">unsafe</span> { #<span class="ident">crt::blob::put_arc_in_term</span>(<span class="ident">term</span>, <span class="ident">blob_definition</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>) }
+            <span class="kw">fn </span>name() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str {
+                <span class="self">Self</span>::blob_name()
             }
         }
 
+        <span class="kw">unsafe impl </span>#crt::term::TermPutable <span class="kw">for </span>#item_name {
+            <span class="kw">fn </span>put(<span class="kw-2">&amp;</span><span class="self">self</span>, term: <span class="kw-2">&amp;</span>#crt::term::Term) {
+                <span class="kw">let </span>blob_definition = <span class="self">Self</span>::get_blob_definition();
+                <span class="kw">unsafe </span>{ #crt::blob::put_arc_in_term(term, blob_definition, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>) }
+            }
+        }
 
-        #<span class="ident">default_implementation</span>
+
+        #default_implementation
     };
 
-    <span class="ident">result</span>.<span class="ident">into</span>()
+    result.into()
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">clone_blob_macro</span>(
-    <span class="ident">attr</span>: <span class="ident">proc_macro::TokenStream</span>,
-    <span class="ident">item</span>: <span class="ident">proc_macro::TokenStream</span>,
-) -&gt; <span class="ident">proc_macro::TokenStream</span> {
-    <span class="kw">let</span> <span class="ident">crt</span> <span class="op">=</span> <span class="ident">crate_token</span>();
-    <span class="kw">let</span> <span class="ident">attr_def</span> <span class="op">=</span> <span class="macro">parse_macro_input!</span>(<span class="ident">attr</span> <span class="kw">as</span> <span class="ident">ArcBlobAttr</span>);
+<span class="kw">pub fn </span>clone_blob_macro(
+    attr: proc_macro::TokenStream,
+    item: proc_macro::TokenStream,
+) -&gt; proc_macro::TokenStream {
+    <span class="kw">let </span>crt = crate_token();
+    <span class="kw">let </span>attr_def = <span class="macro">parse_macro_input!</span>(attr <span class="kw">as </span>ArcBlobAttr);
 
-    <span class="kw">let</span> <span class="ident">name_lit</span> <span class="op">=</span> <span class="ident">attr_def</span>.<span class="ident">name</span>;
-    <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">name_lit</span>.<span class="ident">value</span>();
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">name_bytes</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">name</span>.<span class="ident">as_bytes</span>().<span class="ident">len</span>() <span class="op">+</span> <span class="number">1</span>);
-    <span class="ident">name_bytes</span>.<span class="ident">extend_from_slice</span>(<span class="ident">name</span>.<span class="ident">as_bytes</span>());
-    <span class="ident">name_bytes</span>.<span class="ident">push</span>(<span class="number">0</span>);
-    <span class="kw">let</span> <span class="ident">name_bytes_lit</span> <span class="op">=</span> <span class="ident">LitByteStr::new</span>(<span class="kw-2">&amp;</span><span class="ident">name_bytes</span>, <span class="ident">Span::call_site</span>());
+    <span class="kw">let </span>name_lit = attr_def.name;
+    <span class="kw">let </span>name = name_lit.value();
+    <span class="kw">let </span><span class="kw-2">mut </span>name_bytes = Vec::with_capacity(name.as_bytes().len() + <span class="number">1</span>);
+    name_bytes.extend_from_slice(name.as_bytes());
+    name_bytes.push(<span class="number">0</span>);
+    <span class="kw">let </span>name_bytes_lit = LitByteStr::new(<span class="kw-2">&amp;</span>name_bytes, Span::call_site());
 
-    <span class="kw">let</span> <span class="ident">item_def</span> <span class="op">=</span> <span class="macro">parse_macro_input!</span>(<span class="ident">item</span> <span class="kw">as</span> <span class="ident">ArcBlobItem</span>);
-    <span class="kw">let</span> <span class="ident">item_name</span> <span class="op">=</span> <span class="ident">item_def</span>.<span class="ident">name_ident</span>();
+    <span class="kw">let </span>item_def = <span class="macro">parse_macro_input!</span>(item <span class="kw">as </span>ArcBlobItem);
+    <span class="kw">let </span>item_name = item_def.name_ident();
 
-    <span class="kw">let</span> <span class="ident">blob_definition_ident</span> <span class="op">=</span> <span class="ident">Ident::new</span>(
-        <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_definition&quot;</span>, <span class="ident">item_name</span>),
-        <span class="ident">Span::call_site</span>(),
+    <span class="kw">let </span>blob_definition_ident = Ident::new(
+        <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_definition&quot;</span>, item_name),
+        Span::call_site(),
     );
 
-    <span class="kw">let</span> <span class="ident">blob_release</span> <span class="op">=</span> <span class="ident">Ident::new</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_release&quot;</span>, <span class="ident">item_name</span>), <span class="ident">Span::call_site</span>());
-    <span class="kw">let</span> <span class="ident">blob_compare</span> <span class="op">=</span> <span class="ident">Ident::new</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_compare&quot;</span>, <span class="ident">item_name</span>), <span class="ident">Span::call_site</span>());
-    <span class="kw">let</span> <span class="ident">blob_write</span> <span class="op">=</span> <span class="ident">Ident::new</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_write&quot;</span>, <span class="ident">item_name</span>), <span class="ident">Span::call_site</span>());
+    <span class="kw">let </span>blob_release = Ident::new(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_release&quot;</span>, item_name), Span::call_site());
+    <span class="kw">let </span>blob_compare = Ident::new(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_compare&quot;</span>, item_name), Span::call_site());
+    <span class="kw">let </span>blob_write = Ident::new(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_write&quot;</span>, item_name), Span::call_site());
 
-    <span class="kw">let</span> <span class="ident">default_implementation</span>;
-    <span class="kw">if</span> <span class="ident">attr_def</span>.<span class="ident">defaults</span> {
-        <span class="ident">default_implementation</span> <span class="op">=</span> <span class="macro">quote!</span> {
-            <span class="kw">impl</span> #<span class="ident">crt::blob::CloneBlobImpl</span> <span class="kw">for</span> #<span class="ident">item_name</span> {}
+    <span class="kw">let </span>default_implementation;
+    <span class="kw">if </span>attr_def.defaults {
+        default_implementation = <span class="macro">quote! </span>{
+            <span class="kw">impl </span>#crt::blob::CloneBlobImpl <span class="kw">for </span>#item_name {}
         };
-    } <span class="kw">else</span> {
-        <span class="ident">default_implementation</span> <span class="op">=</span> <span class="macro">quote!</span> {};
+    } <span class="kw">else </span>{
+        default_implementation = <span class="macro">quote! </span>{};
     }
 
-    <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="macro">quote!</span> {
-        #<span class="ident">item_def</span>
+    <span class="kw">let </span>result = <span class="macro">quote! </span>{
+        #item_def
 
-        <span class="kw">impl</span> <span class="ident">CloneBlobBase</span> <span class="kw">for</span> #<span class="ident">item_name</span> {
-            <span class="kw">fn</span> <span class="ident">blob_name</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
-                #<span class="ident">name_lit</span>
+        <span class="kw">impl </span>CloneBlobBase <span class="kw">for </span>#item_name {
+            <span class="kw">fn </span>blob_name() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str {
+                #name_lit
             }
         }
 
-        <span class="kw">static</span> #<span class="ident">blob_definition_ident</span>: <span class="ident">std::sync::atomic::AtomicPtr</span><span class="op">&lt;</span>#<span class="ident">crt::fli::PL_blob_t</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">std::sync::atomic::AtomicPtr::new</span>(<span class="ident">std::ptr::null_mut</span>());
+        <span class="kw">static </span>#blob_definition_ident: std::sync::atomic::AtomicPtr&lt;#crt::fli::PL_blob_t&gt; = std::sync::atomic::AtomicPtr::new(std::ptr::null_mut());
 
-        <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> #<span class="ident">blob_release</span>(<span class="ident">a</span>: #<span class="ident">crt::fli::atom_t</span>) -&gt; <span class="ident">std::os::raw::c_int</span> {
-            #<span class="ident">crt::blob::release_clone_blob</span>::<span class="op">&lt;</span>#<span class="ident">item_name</span><span class="op">&gt;</span>(<span class="ident">a</span>);
+        <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_release(a: #crt::fli::atom_t) -&gt; std::os::raw::c_int {
+            #crt::blob::release_clone_blob::&lt;#item_name&gt;(a);
 
-            <span class="number">1</span>
-        }
+            <span class="number">1
+        </span>}
 
-        <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> #<span class="ident">blob_compare</span>(<span class="ident">a</span>: #<span class="ident">crt::fli::atom_t</span>, <span class="ident">b</span>: #<span class="ident">crt::fli::atom_t</span>)-&gt;<span class="ident">std::os::raw::c_int</span> {
-            <span class="kw">match</span> #<span class="ident">crt::context::prolog_catch_unwind</span>(<span class="op">|</span><span class="op">|</span> {
-                <span class="kw">let</span> <span class="ident">a_val</span> <span class="op">=</span> #<span class="ident">crt::fli::PL_blob_data</span>(<span class="ident">a</span>,
-                                                    <span class="ident">std::ptr::null_mut</span>(),
-                                                    <span class="ident">std::ptr::null_mut</span>())
-                    <span class="kw">as</span> <span class="kw-2">*const</span> #<span class="ident">item_name</span>;
-                <span class="kw">let</span> <span class="ident">b_val</span> <span class="op">=</span> #<span class="ident">crt::fli::PL_blob_data</span>(<span class="ident">b</span>,
-                                                    <span class="ident">std::ptr::null_mut</span>(),
-                                                    <span class="ident">std::ptr::null_mut</span>())
-                    <span class="kw">as</span> <span class="kw-2">*const</span> #<span class="ident">item_name</span>;
-                #<span class="ident">crt::blob::CloneBlobImpl::compare</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">a_val</span>, <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">b_val</span>)
+        <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_compare(a: #crt::fli::atom_t, b: #crt::fli::atom_t)-&gt;std::os::raw::c_int {
+            <span class="kw">match </span>#crt::context::prolog_catch_unwind(|| {
+                <span class="kw">let </span>a_val = #crt::fli::PL_blob_data(a,
+                                                    std::ptr::null_mut(),
+                                                    std::ptr::null_mut())
+                    <span class="kw">as </span><span class="kw-2">*const </span>#item_name;
+                <span class="kw">let </span>b_val = #crt::fli::PL_blob_data(b,
+                                                    std::ptr::null_mut(),
+                                                    std::ptr::null_mut())
+                    <span class="kw">as </span><span class="kw-2">*const </span>#item_name;
+                #crt::blob::CloneBlobImpl::compare(<span class="kw-2">&amp;*</span>a_val, <span class="kw-2">&amp;*</span>b_val)
             }) {
-                <span class="prelude-val">Ok</span>(<span class="ident">std::cmp::Ordering::Less</span>) =&gt; <span class="op">-</span><span class="number">1</span>,
-                <span class="prelude-val">Ok</span>(<span class="ident">std::cmp::Ordering::Equal</span>) =&gt; <span class="number">0</span>,
-                <span class="prelude-val">Ok</span>(<span class="ident">std::cmp::Ordering::Greater</span>) =&gt; <span class="number">1</span>,
-                <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="number">0</span>
-            }
+                <span class="prelude-val">Ok</span>(std::cmp::Ordering::Less) =&gt; -<span class="number">1</span>,
+                <span class="prelude-val">Ok</span>(std::cmp::Ordering::Equal) =&gt; <span class="number">0</span>,
+                <span class="prelude-val">Ok</span>(std::cmp::Ordering::Greater) =&gt; <span class="number">1</span>,
+                <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="number">0
+            </span>}
         }
 
-        <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> #<span class="ident">blob_write</span>(<span class="ident">s</span>: <span class="kw-2">*mut</span> #<span class="ident">crt::fli::IOSTREAM</span>,
-                                         <span class="ident">a</span>: #<span class="ident">crt::fli::atom_t</span>,
-                                         <span class="ident">_flags</span>: <span class="ident">std::os::raw::c_int</span>)
-                                         -&gt; <span class="ident">std::os::raw::c_int</span> {
-            <span class="kw">match</span> #<span class="ident">crt::context::prolog_catch_unwind</span>(<span class="op">|</span><span class="op">|</span>{
-                <span class="kw">let</span> <span class="ident">a_val</span> <span class="op">=</span> #<span class="ident">crt::fli::PL_blob_data</span>(<span class="ident">a</span>,
-                                                    <span class="ident">std::ptr::null_mut</span>(),
-                                                    <span class="ident">std::ptr::null_mut</span>())
-                    <span class="kw">as</span> <span class="kw-2">*const</span> #<span class="ident">item_name</span>;
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stream</span> <span class="op">=</span> #<span class="ident">crt::stream::PrologStream::wrap</span>(<span class="ident">s</span>);
-                #<span class="ident">crt::blob::CloneBlobImpl::write</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">a_val</span>, <span class="kw-2">&amp;mut</span> <span class="ident">stream</span>)
+        <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_write(s: <span class="kw-2">*mut </span>#crt::fli::IOSTREAM,
+                                         a: #crt::fli::atom_t,
+                                         _flags: std::os::raw::c_int)
+                                         -&gt; std::os::raw::c_int {
+            <span class="kw">match </span>#crt::context::prolog_catch_unwind(||{
+                <span class="kw">let </span>a_val = #crt::fli::PL_blob_data(a,
+                                                    std::ptr::null_mut(),
+                                                    std::ptr::null_mut())
+                    <span class="kw">as </span><span class="kw-2">*const </span>#item_name;
+                <span class="kw">let </span><span class="kw-2">mut </span>stream = #crt::stream::PrologStream::wrap(s);
+                #crt::blob::CloneBlobImpl::write(<span class="kw-2">&amp;*</span>a_val, <span class="kw-2">&amp;mut </span>stream)
             }) {
                 <span class="prelude-val">Ok</span>(<span class="prelude-val">Ok</span>(<span class="kw">_</span>)) =&gt; <span class="number">1</span>,
-                <span class="kw">_</span> =&gt; <span class="number">0</span>
-            }
+                <span class="kw">_ </span>=&gt; <span class="number">0
+            </span>}
         }
 
-        <span class="kw">unsafe</span> <span class="kw">impl</span> #<span class="ident">crt::blob::CloneBlob</span> <span class="kw">for</span> #<span class="ident">item_name</span> {
-            <span class="kw">fn</span> <span class="ident">get_blob_definition</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> #<span class="ident">crt::fli::PL_blob_t</span> {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">definition</span> <span class="op">=</span> #<span class="ident">blob_definition_ident</span>.<span class="ident">load</span>(<span class="ident">std::sync::atomic::Ordering::Relaxed</span>);
-                <span class="kw">if</span> <span class="ident">definition</span>.<span class="ident">is_null</span>() {
-                    <span class="kw">let</span> <span class="ident">new_definition</span> <span class="op">=</span> <span class="ident">Box::new</span>(#<span class="ident">crt::blob::create_blob_definition</span>(
-                        #<span class="ident">name_bytes_lit</span>,
+        <span class="kw">unsafe impl </span>#crt::blob::CloneBlob <span class="kw">for </span>#item_name {
+            <span class="kw">fn </span>get_blob_definition() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>#crt::fli::PL_blob_t {
+                <span class="kw">let </span><span class="kw-2">mut </span>definition = #blob_definition_ident.load(std::sync::atomic::Ordering::Relaxed);
+                <span class="kw">if </span>definition.is_null() {
+                    <span class="kw">let </span>new_definition = Box::new(#crt::blob::create_blob_definition(
+                        #name_bytes_lit,
                         <span class="bool-val">false</span>,
                         <span class="bool-val">false</span>,
                         <span class="bool-val">false</span>,
                         <span class="prelude-val">None</span>,
-                        <span class="prelude-val">Some</span>(#<span class="ident">blob_release</span>),
-                        <span class="prelude-val">Some</span>(#<span class="ident">blob_compare</span>),
-                        <span class="prelude-val">Some</span>(#<span class="ident">blob_write</span>),
+                        <span class="prelude-val">Some</span>(#blob_release),
+                        <span class="prelude-val">Some</span>(#blob_compare),
+                        <span class="prelude-val">Some</span>(#blob_write),
                         <span class="prelude-val">None</span>,
                         <span class="prelude-val">None</span>));
 
-                    <span class="kw">let</span> <span class="ident">new_definition_ptr</span> <span class="op">=</span> <span class="ident">Box::into_raw</span>(<span class="ident">new_definition</span>);
-                    <span class="kw">if</span> #<span class="ident">blob_definition_ident</span>.<span class="ident">compare_exchange</span>(
-                        <span class="ident">std::ptr::null_mut</span>(),
-                        <span class="ident">new_definition_ptr</span>,
-                        <span class="ident">std::sync::atomic::Ordering::Relaxed</span>,
-                        <span class="ident">std::sync::atomic::Ordering::Relaxed</span>,
-                    ).<span class="ident">is_err</span>() {
-                        <span class="comment">// swap failed, so someone beat us to creating the definition.</span>
-                        <span class="comment">// We have to forget what we created.</span>
-                        <span class="ident">std::mem::drop</span>(<span class="kw">unsafe</span> { <span class="ident">Box::from_raw</span>(<span class="ident">new_definition_ptr</span>) });
+                    <span class="kw">let </span>new_definition_ptr = Box::into_raw(new_definition);
+                    <span class="kw">if </span>#blob_definition_ident.compare_exchange(
+                        std::ptr::null_mut(),
+                        new_definition_ptr,
+                        std::sync::atomic::Ordering::Relaxed,
+                        std::sync::atomic::Ordering::Relaxed,
+                    ).is_err() {
+                        <span class="comment">// swap failed, so someone beat us to creating the definition.
+                        // We have to forget what we created.
+                        </span>std::mem::drop(<span class="kw">unsafe </span>{ Box::from_raw(new_definition_ptr) });
                     }
 
-                    <span class="ident">definition</span> <span class="op">=</span> #<span class="ident">blob_definition_ident</span>.<span class="ident">load</span>(<span class="ident">std::sync::atomic::Ordering::Relaxed</span>);
+                    definition = #blob_definition_ident.load(std::sync::atomic::Ordering::Relaxed);
                 }
 
-                <span class="kw">unsafe</span> { <span class="ident">std::mem::transmute</span>(<span class="ident">definition</span>) }
+                <span class="kw">unsafe </span>{ std::mem::transmute(definition) }
             }
         }
 
-        <span class="kw">unsafe</span> <span class="kw">impl</span> #<span class="ident">crt::term::Unifiable</span> <span class="kw">for</span> #<span class="ident">item_name</span> {
-            <span class="kw">fn</span> <span class="ident">unify</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">term</span>: <span class="kw-2">&amp;</span>#<span class="ident">crt::term::Term</span>) -&gt; <span class="ident">bool</span> {
-                <span class="kw">let</span> <span class="ident">blob_definition</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::get_blob_definition</span>();
-                <span class="kw">unsafe</span> { #<span class="ident">crt::blob::unify_with_cloneable</span>(<span class="ident">term</span>, <span class="ident">blob_definition</span>, <span class="self">self</span>) }
+        <span class="kw">unsafe impl </span>#crt::term::Unifiable <span class="kw">for </span>#item_name {
+            <span class="kw">fn </span>unify(<span class="kw-2">&amp;</span><span class="self">self</span>, term: <span class="kw-2">&amp;</span>#crt::term::Term) -&gt; bool {
+                <span class="kw">let </span>blob_definition = <span class="self">Self</span>::get_blob_definition();
+                <span class="kw">unsafe </span>{ #crt::blob::unify_with_cloneable(term, blob_definition, <span class="self">self</span>) }
             }
         }
 
-        <span class="kw">unsafe</span> <span class="kw">impl</span> #<span class="ident">crt::term::TermGetable</span> <span class="kw">for</span> #<span class="ident">item_name</span> {
-            <span class="kw">fn</span> <span class="ident">get</span>(<span class="ident">term</span>: <span class="kw-2">&amp;</span>#<span class="ident">crt::term::Term</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="ident">blob_definition</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::get_blob_definition</span>();
-                <span class="kw">let</span> <span class="ident">cloned_opt</span> <span class="op">=</span> <span class="kw">unsafe</span> { #<span class="ident">crt::blob::get_cloned_from_term</span>(<span class="ident">term</span>, <span class="ident">blob_definition</span>) };
-                <span class="ident">cloned_opt</span>
+        <span class="kw">unsafe impl </span>#crt::term::TermGetable <span class="kw">for </span>#item_name {
+            <span class="kw">fn </span>get(term: <span class="kw-2">&amp;</span>#crt::term::Term) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt; {
+                <span class="kw">let </span>blob_definition = <span class="self">Self</span>::get_blob_definition();
+                <span class="kw">let </span>cloned_opt = <span class="kw">unsafe </span>{ #crt::blob::get_cloned_from_term(term, blob_definition) };
+                cloned_opt
             }
 
-            <span class="kw">fn</span> <span class="ident">name</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
-                <span class="ident"><span class="self">Self</span>::blob_name</span>()
-            }
-        }
-
-        <span class="kw">unsafe</span> <span class="kw">impl</span> #<span class="ident">crt::term::TermPutable</span> <span class="kw">for</span> #<span class="ident">item_name</span> {
-            <span class="kw">fn</span> <span class="ident">put</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">term</span>: <span class="kw-2">&amp;</span>#<span class="ident">crt::term::Term</span>) {
-                <span class="kw">let</span> <span class="ident">blob_definition</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::get_blob_definition</span>();
-                <span class="kw">unsafe</span> { #<span class="ident">crt::blob::put_cloneable_in_term</span>(<span class="ident">term</span>, <span class="ident">blob_definition</span>, <span class="self">self</span>) }
+            <span class="kw">fn </span>name() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str {
+                <span class="self">Self</span>::blob_name()
             }
         }
 
-        #<span class="ident">default_implementation</span>
+        <span class="kw">unsafe impl </span>#crt::term::TermPutable <span class="kw">for </span>#item_name {
+            <span class="kw">fn </span>put(<span class="kw-2">&amp;</span><span class="self">self</span>, term: <span class="kw-2">&amp;</span>#crt::term::Term) {
+                <span class="kw">let </span>blob_definition = <span class="self">Self</span>::get_blob_definition();
+                <span class="kw">unsafe </span>{ #crt::blob::put_cloneable_in_term(term, blob_definition, <span class="self">self</span>) }
+            }
+        }
+
+        #default_implementation
     };
 
-    <span class="ident">result</span>.<span class="ident">into</span>()
+    result.into()
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">wrapped_clone_blob_macro</span>(<span class="ident">item</span>: <span class="ident">proc_macro::TokenStream</span>) -&gt; <span class="ident">proc_macro::TokenStream</span> {
-    <span class="kw">let</span> <span class="ident">item_def</span> <span class="op">=</span> <span class="macro">parse_macro_input!</span>(<span class="ident">item</span> <span class="kw">as</span> <span class="ident">WrappedArcBlobItem</span>);
-    <span class="kw">let</span> <span class="ident">name_lit</span> <span class="op">=</span> <span class="ident">item_def</span>.<span class="ident">name</span>;
-    <span class="kw">let</span> <span class="ident">item_name</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">item_def</span>.<span class="ident">wrap_type</span>;
-    <span class="kw">let</span> <span class="ident">visibility</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">item_def</span>.<span class="ident">visibility</span>;
-    <span class="kw">let</span> <span class="ident">inner_type_name</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">item_def</span>.<span class="ident">inner_type</span>;
+<span class="kw">pub fn </span>wrapped_clone_blob_macro(item: proc_macro::TokenStream) -&gt; proc_macro::TokenStream {
+    <span class="kw">let </span>item_def = <span class="macro">parse_macro_input!</span>(item <span class="kw">as </span>WrappedArcBlobItem);
+    <span class="kw">let </span>name_lit = item_def.name;
+    <span class="kw">let </span>item_name = <span class="kw-2">&amp;</span>item_def.wrap_type;
+    <span class="kw">let </span>visibility = <span class="kw-2">&amp;</span>item_def.visibility;
+    <span class="kw">let </span>inner_type_name = <span class="kw-2">&amp;</span>item_def.inner_type;
 
-    <span class="kw">let</span> <span class="ident">attr</span>;
-    <span class="kw">if</span> <span class="ident">item_def</span>.<span class="ident">defaults</span> {
-        <span class="ident">attr</span> <span class="op">=</span> <span class="macro">quote!</span> {<span class="attribute">#[<span class="ident">clone_blob</span>(#<span class="ident">name_lit</span>, <span class="ident">defaults</span>)]</span>};
-    } <span class="kw">else</span> {
-        <span class="ident">attr</span> <span class="op">=</span> <span class="macro">quote!</span> {<span class="attribute">#[<span class="ident">clone_blob</span>(#<span class="ident">name_lit</span>)]</span>};
+    <span class="kw">let </span>attr;
+    <span class="kw">if </span>item_def.defaults {
+        attr = <span class="macro">quote! </span>{<span class="attribute">#[clone_blob(#name_lit, defaults)]</span>};
+    } <span class="kw">else </span>{
+        attr = <span class="macro">quote! </span>{<span class="attribute">#[clone_blob(#name_lit)]</span>};
     }
 
-    <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="macro">quote!</span> {
-        #<span class="ident">attr</span>
-        <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
-        #<span class="ident">visibility</span> <span class="kw">struct</span> #<span class="ident">item_name</span>(#<span class="ident">visibility</span> #<span class="ident">inner_type_name</span>);
+    <span class="kw">let </span>result = <span class="macro">quote! </span>{
+        #attr
+        <span class="attribute">#[derive(Clone)]
+        </span>#visibility <span class="kw">struct </span>#item_name(#visibility #inner_type_name);
 
-        <span class="kw">impl</span> <span class="ident">std::ops::Deref</span> <span class="kw">for</span> #<span class="ident">item_name</span> {
-            <span class="kw">type</span> <span class="ident">Target</span> <span class="op">=</span> #<span class="ident">inner_type_name</span>;
+        <span class="kw">impl </span>std::ops::Deref <span class="kw">for </span>#item_name {
+            <span class="kw">type </span>Target = #inner_type_name;
 
-            <span class="kw">fn</span> <span class="ident">deref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>#<span class="ident">inner_type_name</span> {
-                <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>
-            }
+            <span class="kw">fn </span>deref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>#inner_type_name {
+                <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0
+            </span>}
         }
     };
 
-    <span class="ident">result</span>.<span class="ident">into</span>()
+    result.into()
 }
 
-<span class="kw">struct</span> <span class="ident">ArcBlobAttr</span> {
-    <span class="ident">name</span>: <span class="ident">LitStr</span>,
-    <span class="ident">defaults</span>: <span class="ident">bool</span>,
+<span class="kw">struct </span>ArcBlobAttr {
+    name: LitStr,
+    defaults: bool,
 }
 
-<span class="kw">impl</span> <span class="ident">Parse</span> <span class="kw">for</span> <span class="ident">ArcBlobAttr</span> {
-    <span class="kw">fn</span> <span class="ident">parse</span>(<span class="ident">input</span>: <span class="ident">ParseStream</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
+<span class="kw">impl </span>Parse <span class="kw">for </span>ArcBlobAttr {
+    <span class="kw">fn </span>parse(input: ParseStream) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span>name = input.parse()<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="ident">defaults</span>;
-        <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">peek</span>(<span class="macro">Token!</span>[,]) {
-            <span class="ident">input</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="macro">Token!</span>[,]<span class="op">&gt;</span>()<span class="question-mark">?</span>;
-            <span class="ident">input</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">kw::defaults</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
-            <span class="ident">defaults</span> <span class="op">=</span> <span class="bool-val">true</span>;
-        } <span class="kw">else</span> {
-            <span class="ident">defaults</span> <span class="op">=</span> <span class="bool-val">false</span>;
+        <span class="kw">let </span>defaults;
+        <span class="kw">if </span>input.peek(<span class="macro">Token!</span>[,]) {
+            input.parse::&lt;<span class="macro">Token!</span>[,]&gt;()<span class="question-mark">?</span>;
+            input.parse::&lt;kw::defaults&gt;()<span class="question-mark">?</span>;
+            defaults = <span class="bool-val">true</span>;
+        } <span class="kw">else </span>{
+            defaults = <span class="bool-val">false</span>;
         }
 
-        <span class="prelude-val">Ok</span>(<span class="self">Self</span> { <span class="ident">name</span>, <span class="ident">defaults</span> })
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{ name, defaults })
     }
 }
 
-<span class="kw">enum</span> <span class="ident">ArcBlobItem</span> {
-    <span class="ident">Struct</span>(<span class="ident">ItemStruct</span>),
-    <span class="ident">Enum</span>(<span class="ident">ItemEnum</span>),
+<span class="kw">enum </span>ArcBlobItem {
+    Struct(ItemStruct),
+    Enum(ItemEnum),
 }
 
-<span class="kw">impl</span> <span class="ident">ArcBlobItem</span> {
-    <span class="kw">fn</span> <span class="ident">name_ident</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">Ident</span> {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident"><span class="self">Self</span>::Struct</span>(<span class="ident">s</span>) =&gt; <span class="kw-2">&amp;</span><span class="ident">s</span>.<span class="ident">ident</span>,
-            <span class="ident"><span class="self">Self</span>::Enum</span>(<span class="ident">e</span>) =&gt; <span class="kw-2">&amp;</span><span class="ident">e</span>.<span class="ident">ident</span>,
+<span class="kw">impl </span>ArcBlobItem {
+    <span class="kw">fn </span>name_ident(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Ident {
+        <span class="kw">match </span><span class="self">self </span>{
+            <span class="self">Self</span>::Struct(s) =&gt; <span class="kw-2">&amp;</span>s.ident,
+            <span class="self">Self</span>::Enum(e) =&gt; <span class="kw-2">&amp;</span>e.ident,
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Parse</span> <span class="kw">for</span> <span class="ident">ArcBlobItem</span> {
-    <span class="kw">fn</span> <span class="ident">parse</span>(<span class="ident">input</span>: <span class="ident">ParseStream</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">item</span>: <span class="ident">Item</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
-        <span class="kw">match</span> <span class="ident">item</span> {
-            <span class="ident">Item::Struct</span>(<span class="ident">s</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="ident"><span class="self">Self</span>::Struct</span>(<span class="ident">s</span>)),
-            <span class="ident">Item::Enum</span>(<span class="ident">e</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="ident"><span class="self">Self</span>::Enum</span>(<span class="ident">e</span>)),
-            <span class="kw">_</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">syn::Error::new</span>(
-                <span class="ident">Span::call_site</span>(),
+<span class="kw">impl </span>Parse <span class="kw">for </span>ArcBlobItem {
+    <span class="kw">fn </span>parse(input: ParseStream) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span>item: Item = input.parse()<span class="question-mark">?</span>;
+        <span class="kw">match </span>item {
+            Item::Struct(s) =&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Struct(s)),
+            Item::Enum(e) =&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Enum(e)),
+            <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(syn::Error::new(
+                Span::call_site(),
                 <span class="string">&quot;arc blob attributes are only supported with struct or enum&quot;</span>,
             )),
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ArcBlobItem</span> {
-    <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">stream</span>: <span class="kw-2">&amp;mut</span> <span class="ident">TokenStream</span>) {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident"><span class="self">Self</span>::Struct</span>(<span class="ident">s</span>) =&gt; <span class="ident">s</span>.<span class="ident">to_tokens</span>(<span class="ident">stream</span>),
-            <span class="ident"><span class="self">Self</span>::Enum</span>(<span class="ident">e</span>) =&gt; <span class="ident">e</span>.<span class="ident">to_tokens</span>(<span class="ident">stream</span>),
+<span class="kw">impl </span>ToTokens <span class="kw">for </span>ArcBlobItem {
+    <span class="kw">fn </span>to_tokens(<span class="kw-2">&amp;</span><span class="self">self</span>, stream: <span class="kw-2">&amp;mut </span>TokenStream) {
+        <span class="kw">match </span><span class="self">self </span>{
+            <span class="self">Self</span>::Struct(s) =&gt; s.to_tokens(stream),
+            <span class="self">Self</span>::Enum(e) =&gt; e.to_tokens(stream),
         }
     }
 }
 
-<span class="kw">struct</span> <span class="ident">WrappedArcBlobItem</span> {
-    <span class="ident">visibility</span>: <span class="ident">Visibility</span>,
-    <span class="ident">name</span>: <span class="ident">LitStr</span>,
-    <span class="ident">wrap_type</span>: <span class="ident">Ident</span>,
-    <span class="ident">inner_type</span>: <span class="ident">Path</span>,
-    <span class="ident">defaults</span>: <span class="ident">bool</span>,
+<span class="kw">struct </span>WrappedArcBlobItem {
+    visibility: Visibility,
+    name: LitStr,
+    wrap_type: Ident,
+    inner_type: Path,
+    defaults: bool,
 }
-<span class="kw">impl</span> <span class="ident">Parse</span> <span class="kw">for</span> <span class="ident">WrappedArcBlobItem</span> {
-    <span class="kw">fn</span> <span class="ident">parse</span>(<span class="ident">input</span>: <span class="ident">ParseStream</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
-        <span class="ident">input</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="macro">Token!</span>[,]<span class="op">&gt;</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">visibility</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">wrap_type</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
-        <span class="ident">input</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="macro">Token!</span>[,]<span class="op">&gt;</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">inner_type</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
+<span class="kw">impl </span>Parse <span class="kw">for </span>WrappedArcBlobItem {
+    <span class="kw">fn </span>parse(input: ParseStream) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span>name = input.parse()<span class="question-mark">?</span>;
+        input.parse::&lt;<span class="macro">Token!</span>[,]&gt;()<span class="question-mark">?</span>;
+        <span class="kw">let </span>visibility = input.parse()<span class="question-mark">?</span>;
+        <span class="kw">let </span>wrap_type = input.parse()<span class="question-mark">?</span>;
+        input.parse::&lt;<span class="macro">Token!</span>[,]&gt;()<span class="question-mark">?</span>;
+        <span class="kw">let </span>inner_type = input.parse()<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="ident">defaults</span>;
-        <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">peek</span>(<span class="macro">Token!</span>[,]) {
-            <span class="ident">input</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="macro">Token!</span>[,]<span class="op">&gt;</span>()<span class="question-mark">?</span>;
-            <span class="ident">input</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">kw::defaults</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
-            <span class="ident">defaults</span> <span class="op">=</span> <span class="bool-val">true</span>;
-        } <span class="kw">else</span> {
-            <span class="ident">defaults</span> <span class="op">=</span> <span class="bool-val">false</span>;
+        <span class="kw">let </span>defaults;
+        <span class="kw">if </span>input.peek(<span class="macro">Token!</span>[,]) {
+            input.parse::&lt;<span class="macro">Token!</span>[,]&gt;()<span class="question-mark">?</span>;
+            input.parse::&lt;kw::defaults&gt;()<span class="question-mark">?</span>;
+            defaults = <span class="bool-val">true</span>;
+        } <span class="kw">else </span>{
+            defaults = <span class="bool-val">false</span>;
         }
 
-        <span class="prelude-val">Ok</span>(<span class="self">Self</span> {
-            <span class="ident">visibility</span>,
-            <span class="ident">name</span>,
-            <span class="ident">wrap_type</span>,
-            <span class="ident">inner_type</span>,
-            <span class="ident">defaults</span>,
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+            visibility,
+            name,
+            wrap_type,
+            inner_type,
+            defaults,
         })
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

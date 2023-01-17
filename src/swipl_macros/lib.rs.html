@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl-macros/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../swipl_macros/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../swipl_macros/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../swipl_macros/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl-macros/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../swipl_macros/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -319,326 +319,326 @@
 <span id="319">319</span>
 <span id="320">320</span>
 <span id="321">321</span>
-</pre><pre class="rust"><code><span class="doccomment">//! swipl-macros provides procedural macros for the swipl crate.</span>
-<span class="attribute">#![<span class="ident">doc</span>(<span class="ident">html_root_url</span> <span class="op">=</span> <span class="string">&quot;https://terminusdb-labs.github.io/swipl-rs/swipl_macros/&quot;</span>)]</span>
+</pre><pre class="rust"><code><span class="doccomment">//! swipl-macros provides procedural macros for the swipl crate.
+</span><span class="attribute">#![doc(html_root_url = <span class="string">&quot;https://terminusdb-labs.github.io/swipl-rs/swipl_macros/&quot;</span>)]
 
-<span class="kw">mod</span> <span class="ident">kw</span>;
-<span class="kw">mod</span> <span class="ident">util</span>;
+</span><span class="kw">mod </span>kw;
+<span class="kw">mod </span>util;
 
-<span class="kw">mod</span> <span class="ident">atom</span>;
-<span class="kw">mod</span> <span class="ident">blob</span>;
-<span class="kw">mod</span> <span class="ident">functor</span>;
-<span class="kw">mod</span> <span class="ident">pred</span>;
-<span class="kw">mod</span> <span class="ident">predicate</span>;
-<span class="kw">mod</span> <span class="ident">prolog</span>;
-<span class="kw">mod</span> <span class="ident">term</span>;
+<span class="kw">mod </span>atom;
+<span class="kw">mod </span>blob;
+<span class="kw">mod </span>functor;
+<span class="kw">mod </span>pred;
+<span class="kw">mod </span>predicate;
+<span class="kw">mod </span>prolog;
+<span class="kw">mod </span>term;
 
-<span class="kw">use</span> <span class="ident">proc_macro::TokenStream</span>;
+<span class="kw">use </span>proc_macro::TokenStream;
 
-<span class="doccomment">/// Define prolog predicates to be used from rust code.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The `prolog!` macro takes a block of function declaration. Each</span>
-<span class="doccomment">/// declaration is of the format `fn &lt;predicate&gt;(..args..);`, where</span>
-<span class="doccomment">/// args is a list of argument names. Optionally, a visibility</span>
-<span class="doccomment">/// specifier like `pub` may be used. This much like an ordinary rust</span>
-<span class="doccomment">/// function declaration, except that the arguments are typeless.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Each function may be annotated with a `#[name(&quot;..name..&quot;)]`</span>
-<span class="doccomment">/// attribute, which specifies what the name of this predicate is in</span>
-<span class="doccomment">/// prolog. When omitted, the function name will be used.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Each function may be annotated with a `#[module(&quot;..module..&quot;)]`</span>
-<span class="doccomment">/// attribute, which specifies what prolog module this predicate is</span>
-<span class="doccomment">/// in.  When omitted, no module is assumed.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// For each function declaration, a function will be generated which</span>
-<span class="doccomment">/// takes a context argument, followed by all declared arguments, and</span>
-<span class="doccomment">/// returns a query opened in that context.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Example:</span>
-<span class="doccomment">/// ```ignore</span>
-<span class="doccomment">/// prolog! {</span>
-<span class="doccomment">///     fn writeq(term);</span>
-<span class="doccomment">///     #[name(&quot;nl&quot;)]</span>
-<span class="doccomment">///     fn print_a_newline();</span>
-<span class="doccomment">///     #[module(&quot;zlib&quot;)]</span>
-<span class="doccomment">///     pub fn zopen(stream, zstream, options);</span>
-<span class="doccomment">/// }</span>
-<span class="doccomment">/// ```</span>
-<span class="attribute">#[<span class="ident">proc_macro</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">prolog</span>(<span class="ident">stream</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
-    <span class="ident">prolog::prolog_macro</span>(<span class="ident">stream</span>).<span class="ident">into</span>()
+<span class="doccomment">/// Define prolog predicates to be used from rust code.
+///
+/// The `prolog!` macro takes a block of function declaration. Each
+/// declaration is of the format `fn &lt;predicate&gt;(..args..);`, where
+/// args is a list of argument names. Optionally, a visibility
+/// specifier like `pub` may be used. This much like an ordinary rust
+/// function declaration, except that the arguments are typeless.
+///
+/// Each function may be annotated with a `#[name(&quot;..name..&quot;)]`
+/// attribute, which specifies what the name of this predicate is in
+/// prolog. When omitted, the function name will be used.
+///
+/// Each function may be annotated with a `#[module(&quot;..module..&quot;)]`
+/// attribute, which specifies what prolog module this predicate is
+/// in.  When omitted, no module is assumed.
+///
+/// For each function declaration, a function will be generated which
+/// takes a context argument, followed by all declared arguments, and
+/// returns a query opened in that context.
+///
+/// Example:
+/// ```ignore
+/// prolog! {
+///     fn writeq(term);
+///     #[name(&quot;nl&quot;)]
+///     fn print_a_newline();
+///     #[module(&quot;zlib&quot;)]
+///     pub fn zopen(stream, zstream, options);
+/// }
+/// ```
+</span><span class="attribute">#[proc_macro]
+</span><span class="kw">pub fn </span>prolog(stream: TokenStream) -&gt; TokenStream {
+    prolog::prolog_macro(stream).into()
 }
 
-<span class="doccomment">/// Generate an inline callable predicate.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Predicates are specified in prolog style. You can either use the</span>
-<span class="doccomment">/// syntax `predicate/arity` or `module:predicate/arity`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This macro will generate code that generates a `CallablePredicate`</span>
-<span class="doccomment">/// object. The actual prolog predicate is only looked up at first</span>
-<span class="doccomment">/// call of this generated code. Each subsequent call will reuse the</span>
-<span class="doccomment">/// lookup.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// example:</span>
-<span class="doccomment">/// ```ignore</span>
-<span class="doccomment">/// let writeq = pred!(writeq/1);</span>
-<span class="doccomment">/// context.call_once(writeq, [&amp;term])?;</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// ```ignore</span>
-<span class="doccomment">/// context.call_once(pred!(user:nl/0), [])?;</span>
-<span class="doccomment">/// ```</span>
-<span class="attribute">#[<span class="ident">proc_macro</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pred</span>(<span class="ident">stream</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
-    <span class="ident">pred::pred_macro</span>(<span class="ident">stream</span>).<span class="ident">into</span>()
+<span class="doccomment">/// Generate an inline callable predicate.
+///
+/// Predicates are specified in prolog style. You can either use the
+/// syntax `predicate/arity` or `module:predicate/arity`.
+///
+/// This macro will generate code that generates a `CallablePredicate`
+/// object. The actual prolog predicate is only looked up at first
+/// call of this generated code. Each subsequent call will reuse the
+/// lookup.
+///
+/// example:
+/// ```ignore
+/// let writeq = pred!(writeq/1);
+/// context.call_once(writeq, [&amp;term])?;
+/// ```
+/// ```ignore
+/// context.call_once(pred!(user:nl/0), [])?;
+/// ```
+</span><span class="attribute">#[proc_macro]
+</span><span class="kw">pub fn </span>pred(stream: TokenStream) -&gt; TokenStream {
+    pred::pred_macro(stream).into()
 }
 
-<span class="doccomment">/// Define foreign predicates written in rust for use in prolog.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The `predicates!` macro takes an arbitrary amount of predicate</span>
-<span class="doccomment">/// definitions. These definitions may be semidet or</span>
-<span class="doccomment">/// nondet. Optionally, a visibility specifier like `pub` may be used</span>
-<span class="doccomment">/// to change the visibility of the generated functions. These</span>
-<span class="doccomment">/// definitions look somewhat like ordinary rust functions. However,</span>
-<span class="doccomment">/// their argument list is completely untyped, as each argument is</span>
-<span class="doccomment">/// known to be a `&amp;Term`, except for the first argument which is a</span>
-<span class="doccomment">/// context object. As there always needs to be a context to call a</span>
-<span class="doccomment">/// predicate, this first argument is required, even if it is unused.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// For each definition, a registration function will be</span>
-<span class="doccomment">/// generated. This function will be named `register_&lt;name&gt;`, where</span>
-<span class="doccomment">/// name is the name of the defined predicate, and this function will</span>
-<span class="doccomment">/// take zero arguments. After calling this function, the predicate is</span>
-<span class="doccomment">/// registered and may be used from prolog code.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Each definition may optionally be annotated with</span>
-<span class="doccomment">/// `#[module(&quot;&lt;module&gt;&quot;)]` and/or `#[name(&quot;&lt;name&gt;&quot;)]` To change the</span>
-<span class="doccomment">/// module this predicate will be registered in, or the name of the</span>
-<span class="doccomment">/// predicate in prolog. By default, the predicate name will be the</span>
-<span class="doccomment">/// definition name, and the module will be the context module at the</span>
-<span class="doccomment">/// time of generation. For foreign libraries, this context module is</span>
-<span class="doccomment">/// whatever module did the first import of this library. Otherwise</span>
-<span class="doccomment">/// it&#39;s usually &#39;user&#39;.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Semideterministic predicates</span>
-<span class="doccomment">/// The first kind of predicate that you can define is a semidet</span>
-<span class="doccomment">/// predicate. Semidet, or semideterministic, means that this</span>
-<span class="doccomment">/// predicate is only going to have one result, and it could either be</span>
-<span class="doccomment">/// success or failure. Note that this also covers the deterministic</span>
-<span class="doccomment">/// case - to implement a deterministic predicate, just ensure that</span>
-<span class="doccomment">/// your predicate does not fail.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Semidet predicates return a `PrologResult&lt;()&gt;`, which also happens</span>
-<span class="doccomment">/// to be the type returned by most of the functions in the `swipl`</span>
-<span class="doccomment">/// library. This means you can easily handle failure and exception of</span>
-<span class="doccomment">/// things you call using rust&#39;s `?` syntax, or make use of the various combinators that are defined on `context` objects and in the `result` module.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ## Examples</span>
-<span class="doccomment">/// ```ignore</span>
-<span class="doccomment">/// predicates! {</span>
-<span class="doccomment">///     semidet fn unify_with_foo(context, term) {</span>
-<span class="doccomment">///         let atom = context.new_atom(&quot;foo&quot;);</span>
-<span class="doccomment">///         term.unify(&amp;atom)</span>
-<span class="doccomment">///     }</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///     #[module(&quot;some_module&quot;)]</span>
-<span class="doccomment">///     #[name(&quot;some_alternate_name&quot;)]</span>
-<span class="doccomment">///     pub semidet fn term_is_42(_context, term) {</span>
-<span class="doccomment">///         let num: u64 = term.get::&lt;u64&gt;()?;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///         into_prolog_result(num == 42)</span>
-<span class="doccomment">///     }</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///     semidet fn just_fail(_context) {</span>
-<span class="doccomment">///         Err(PrologError::Failure)</span>
-<span class="doccomment">///     }</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///     pub semidet fn throw_if_not_42(_context, term) {</span>
-<span class="doccomment">///         let num: u64 = term.get::&lt;u64&gt;()?;</span>
-<span class="doccomment">///         if num != 42 {</span>
-<span class="doccomment">///             context.raise_exception(&amp;term!{context: error(this_is_not_the_answer, _)})</span>
-<span class="doccomment">///         } else {</span>
-<span class="doccomment">///             Ok(())</span>
-<span class="doccomment">///         }</span>
-<span class="doccomment">///     }</span>
-<span class="doccomment">/// }</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// To register these defined predicates, their register function has to be called:</span>
-<span class="doccomment">/// ```ignore</span>
-<span class="doccomment">/// register_unify_with_foo();</span>
-<span class="doccomment">/// register_term_is_42();</span>
-<span class="doccomment">/// register_just_fail();</span>
-<span class="doccomment">/// register_throw_if_not_42();</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Nondeterministic predicates</span>
-<span class="doccomment">/// Nondet or nondeterministic predicates are a bit more complex to</span>
-<span class="doccomment">/// implement. Instead of just one block which returns success or</span>
-<span class="doccomment">/// failure, nondet predicates are implemented with two bodies, a</span>
-<span class="doccomment">/// setup block and a call block.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// In the setup block, you create a state object which will be</span>
-<span class="doccomment">/// available in the call block. The call block is then called with</span>
-<span class="doccomment">/// this state object. As long as the call block returns true, the</span>
-<span class="doccomment">/// predicate call is considered to still have choice points and will</span>
-<span class="doccomment">/// be called unless the caller does a cut, which will clean up the</span>
-<span class="doccomment">/// state object automatically.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ## The state type</span>
-<span class="doccomment">/// Nondeterministic predicate definitions require you to specify a</span>
-<span class="doccomment">/// type argument as part of the function signature. This specifies</span>
-<span class="doccomment">/// the type of the state object, and is required to implement the</span>
-<span class="doccomment">/// auto-traits `Send` and `Unpin`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ## Setup</span>
-<span class="doccomment">/// The setup block is called at the start of a predicate</span>
-<span class="doccomment">/// invocation. It is to return a `PrologResult&lt;Option&lt;StateObject&gt;&gt;`,</span>
-<span class="doccomment">/// where `StateObject` is your state object type.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// You can return from this block in three ways:</span>
-<span class="doccomment">/// - Return an exception or failure. The predicate will error or fail accordingly and the call block will not be invoked.</span>
-<span class="doccomment">/// - Return `None`. The call block will also not be invoked, but the</span>
-<span class="doccomment">/// predicate will return success. This is useful to handle predicate</span>
-<span class="doccomment">/// inputs which allow your predicate to behave in a semidet manner.</span>
-<span class="doccomment">/// - Return `Some(object)`. This returns a state object for use in</span>
-<span class="doccomment">/// the call block. After this, the call block will be invoked.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ## Call</span>
-<span class="doccomment">/// The call block is called each time the next result is required from this predicate. This happens on the first call to this predicate (except if the setup returned early as described above), and subsequently upon backtracking. The call block is given a mutable borrow of the state object, and is therefore able to both inspect and modify it.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// you can return from this block in three ways:</span>
-<span class="doccomment">/// - Return an exception or failure. Thep redicate will error or fail accordingly, and the call block will not be invoked again.</span>
-<span class="doccomment">/// - Return false, signaling that this was the last succesful call to this predicate.</span>
-<span class="doccomment">/// - Return true, signaling that there&#39;s more results available upon backtracking.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// After exception, failure or returning false to signal the last succesful call, the state object will be cleaned up automatically.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ## Examples</span>
-<span class="doccomment">/// ```ignore</span>
-<span class="doccomment">/// predicates!{</span>
-<span class="doccomment">///     nondet fn unify_with_bar_baz&lt;Vec&lt;String&gt;&gt;(context, term) {</span>
-<span class="doccomment">///         setup =&gt; {</span>
-<span class="doccomment">///             Ok(Some(vec![&quot;bar&quot;, &quot;baz&quot;]))</span>
-<span class="doccomment">///         },</span>
-<span class="doccomment">///         call(v) =&gt; {</span>
-<span class="doccomment">///             let next = v.pop().unwrap();</span>
-<span class="doccomment">///             let atom = context.new_atom(next);</span>
-<span class="doccomment">///             term.unify(&amp;atom)?;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///             Ok(!v.is_empty())</span>
-<span class="doccomment">///         }</span>
-<span class="doccomment">///     }</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///     nondet fn fail_early&lt;()&gt;(_context) {</span>
-<span class="doccomment">///         setup =&gt; {</span>
-<span class="doccomment">///             Err(PrologError::Failure)</span>
-<span class="doccomment">///         },</span>
-<span class="doccomment">///         call(_) =&gt; {</span>
-<span class="doccomment">///             // We never get here</span>
-<span class="doccomment">///         }</span>
-<span class="doccomment">///     }</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///     nondet fn succeed_early&lt;()&gt;(_context) {</span>
-<span class="doccomment">///         setup =&gt; {</span>
-<span class="doccomment">///             Ok(None)</span>
-<span class="doccomment">///         },</span>
-<span class="doccomment">///         call(_) =&gt; {</span>
-<span class="doccomment">///             // We never get here</span>
-<span class="doccomment">///         }</span>
-<span class="doccomment">///     }</span>
-<span class="doccomment">/// }</span>
-<span class="doccomment">/// ```</span>
-<span class="attribute">#[<span class="ident">proc_macro</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">predicates</span>(<span class="ident">stream</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
-    <span class="ident">predicate::predicates_macro</span>(<span class="ident">stream</span>).<span class="ident">into</span>()
+<span class="doccomment">/// Define foreign predicates written in rust for use in prolog.
+///
+/// The `predicates!` macro takes an arbitrary amount of predicate
+/// definitions. These definitions may be semidet or
+/// nondet. Optionally, a visibility specifier like `pub` may be used
+/// to change the visibility of the generated functions. These
+/// definitions look somewhat like ordinary rust functions. However,
+/// their argument list is completely untyped, as each argument is
+/// known to be a `&amp;Term`, except for the first argument which is a
+/// context object. As there always needs to be a context to call a
+/// predicate, this first argument is required, even if it is unused.
+///
+/// For each definition, a registration function will be
+/// generated. This function will be named `register_&lt;name&gt;`, where
+/// name is the name of the defined predicate, and this function will
+/// take zero arguments. After calling this function, the predicate is
+/// registered and may be used from prolog code.
+///
+/// Each definition may optionally be annotated with
+/// `#[module(&quot;&lt;module&gt;&quot;)]` and/or `#[name(&quot;&lt;name&gt;&quot;)]` To change the
+/// module this predicate will be registered in, or the name of the
+/// predicate in prolog. By default, the predicate name will be the
+/// definition name, and the module will be the context module at the
+/// time of generation. For foreign libraries, this context module is
+/// whatever module did the first import of this library. Otherwise
+/// it&#39;s usually &#39;user&#39;.
+///
+/// # Semideterministic predicates
+/// The first kind of predicate that you can define is a semidet
+/// predicate. Semidet, or semideterministic, means that this
+/// predicate is only going to have one result, and it could either be
+/// success or failure. Note that this also covers the deterministic
+/// case - to implement a deterministic predicate, just ensure that
+/// your predicate does not fail.
+///
+/// Semidet predicates return a `PrologResult&lt;()&gt;`, which also happens
+/// to be the type returned by most of the functions in the `swipl`
+/// library. This means you can easily handle failure and exception of
+/// things you call using rust&#39;s `?` syntax, or make use of the various combinators that are defined on `context` objects and in the `result` module.
+///
+/// ## Examples
+/// ```ignore
+/// predicates! {
+///     semidet fn unify_with_foo(context, term) {
+///         let atom = context.new_atom(&quot;foo&quot;);
+///         term.unify(&amp;atom)
+///     }
+///
+///     #[module(&quot;some_module&quot;)]
+///     #[name(&quot;some_alternate_name&quot;)]
+///     pub semidet fn term_is_42(_context, term) {
+///         let num: u64 = term.get::&lt;u64&gt;()?;
+///
+///         into_prolog_result(num == 42)
+///     }
+///
+///     semidet fn just_fail(_context) {
+///         Err(PrologError::Failure)
+///     }
+///
+///     pub semidet fn throw_if_not_42(_context, term) {
+///         let num: u64 = term.get::&lt;u64&gt;()?;
+///         if num != 42 {
+///             context.raise_exception(&amp;term!{context: error(this_is_not_the_answer, _)})
+///         } else {
+///             Ok(())
+///         }
+///     }
+/// }
+/// ```
+/// To register these defined predicates, their register function has to be called:
+/// ```ignore
+/// register_unify_with_foo();
+/// register_term_is_42();
+/// register_just_fail();
+/// register_throw_if_not_42();
+/// ```
+///
+/// # Nondeterministic predicates
+/// Nondet or nondeterministic predicates are a bit more complex to
+/// implement. Instead of just one block which returns success or
+/// failure, nondet predicates are implemented with two bodies, a
+/// setup block and a call block.
+///
+/// In the setup block, you create a state object which will be
+/// available in the call block. The call block is then called with
+/// this state object. As long as the call block returns true, the
+/// predicate call is considered to still have choice points and will
+/// be called unless the caller does a cut, which will clean up the
+/// state object automatically.
+///
+/// ## The state type
+/// Nondeterministic predicate definitions require you to specify a
+/// type argument as part of the function signature. This specifies
+/// the type of the state object, and is required to implement the
+/// auto-traits `Send` and `Unpin`.
+///
+/// ## Setup
+/// The setup block is called at the start of a predicate
+/// invocation. It is to return a `PrologResult&lt;Option&lt;StateObject&gt;&gt;`,
+/// where `StateObject` is your state object type.
+///
+/// You can return from this block in three ways:
+/// - Return an exception or failure. The predicate will error or fail accordingly and the call block will not be invoked.
+/// - Return `None`. The call block will also not be invoked, but the
+/// predicate will return success. This is useful to handle predicate
+/// inputs which allow your predicate to behave in a semidet manner.
+/// - Return `Some(object)`. This returns a state object for use in
+/// the call block. After this, the call block will be invoked.
+///
+/// ## Call
+/// The call block is called each time the next result is required from this predicate. This happens on the first call to this predicate (except if the setup returned early as described above), and subsequently upon backtracking. The call block is given a mutable borrow of the state object, and is therefore able to both inspect and modify it.
+///
+/// you can return from this block in three ways:
+/// - Return an exception or failure. Thep redicate will error or fail accordingly, and the call block will not be invoked again.
+/// - Return false, signaling that this was the last succesful call to this predicate.
+/// - Return true, signaling that there&#39;s more results available upon backtracking.
+///
+/// After exception, failure or returning false to signal the last succesful call, the state object will be cleaned up automatically.
+///
+/// ## Examples
+/// ```ignore
+/// predicates!{
+///     nondet fn unify_with_bar_baz&lt;Vec&lt;String&gt;&gt;(context, term) {
+///         setup =&gt; {
+///             Ok(Some(vec![&quot;bar&quot;, &quot;baz&quot;]))
+///         },
+///         call(v) =&gt; {
+///             let next = v.pop().unwrap();
+///             let atom = context.new_atom(next);
+///             term.unify(&amp;atom)?;
+///
+///             Ok(!v.is_empty())
+///         }
+///     }
+///
+///     nondet fn fail_early&lt;()&gt;(_context) {
+///         setup =&gt; {
+///             Err(PrologError::Failure)
+///         },
+///         call(_) =&gt; {
+///             // We never get here
+///         }
+///     }
+///
+///     nondet fn succeed_early&lt;()&gt;(_context) {
+///         setup =&gt; {
+///             Ok(None)
+///         },
+///         call(_) =&gt; {
+///             // We never get here
+///         }
+///     }
+/// }
+/// ```
+</span><span class="attribute">#[proc_macro]
+</span><span class="kw">pub fn </span>predicates(stream: TokenStream) -&gt; TokenStream {
+    predicate::predicates_macro(stream).into()
 }
 
-<span class="doccomment">/// Generate a term from a rust expression.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This macro takes two arguments, a context to generate the term in,</span>
-<span class="doccomment">/// and a rust expression representing the prolog term to generate..</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The macro returns a `PrologResult&lt;Term&gt;` containing new term,</span>
-<span class="doccomment">/// created through `context.new_term_ref()`, which contains a prolog</span>
-<span class="doccomment">/// term corresponding to the description. The `term!` macro cannot</span>
-<span class="doccomment">/// actually fail with a PrologFailure, but it is possible for a</span>
-<span class="doccomment">/// resource limit exception to be triggered by one of the underlying</span>
-<span class="doccomment">/// calls into prolog.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Examples</span>
-<span class="doccomment">/// Generate a nested functor term:</span>
-<span class="doccomment">/// ```ignore</span>
-<span class="doccomment">/// let term = term!{context: foo(bar(baz, quux))}?;</span>
-<span class="doccomment">///```</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Embed a value in the term:</span>
-<span class="doccomment">/// ```ignore</span>
-<span class="doccomment">/// let num = 42;</span>
-<span class="doccomment">/// let term = term!{context: foo(#42)}?;</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Embed a term in the term:</span>
-<span class="doccomment">/// ```ignore</span>
-<span class="doccomment">/// let inner = context.new_term_ref();</span>
-<span class="doccomment">/// let term = term!{context: foo(#&amp;inner)}?;</span>
-<span class="doccomment">/// ```</span>
-<span class="attribute">#[<span class="ident">proc_macro</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">term</span>(<span class="ident">stream</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
-    <span class="ident">term::term_macro</span>(<span class="ident">stream</span>).<span class="ident">into</span>()
+<span class="doccomment">/// Generate a term from a rust expression.
+///
+/// This macro takes two arguments, a context to generate the term in,
+/// and a rust expression representing the prolog term to generate..
+///
+/// The macro returns a `PrologResult&lt;Term&gt;` containing new term,
+/// created through `context.new_term_ref()`, which contains a prolog
+/// term corresponding to the description. The `term!` macro cannot
+/// actually fail with a PrologFailure, but it is possible for a
+/// resource limit exception to be triggered by one of the underlying
+/// calls into prolog.
+///
+/// # Examples
+/// Generate a nested functor term:
+/// ```ignore
+/// let term = term!{context: foo(bar(baz, quux))}?;
+///```
+///
+/// Embed a value in the term:
+/// ```ignore
+/// let num = 42;
+/// let term = term!{context: foo(#42)}?;
+/// ```
+///
+/// Embed a term in the term:
+/// ```ignore
+/// let inner = context.new_term_ref();
+/// let term = term!{context: foo(#&amp;inner)}?;
+/// ```
+</span><span class="attribute">#[proc_macro]
+</span><span class="kw">pub fn </span>term(stream: TokenStream) -&gt; TokenStream {
+    term::term_macro(stream).into()
 }
 
-<span class="doccomment">/// Define an arc blob.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See the [swipl::blob](https://terminusdb-labs.github.io/swipl-rs/swipl/blob/index.html) module documentation for more details.</span>
-<span class="attribute">#[<span class="ident">proc_macro_attribute</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">arc_blob</span>(<span class="ident">attr</span>: <span class="ident">TokenStream</span>, <span class="ident">item</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
-    <span class="ident">blob::arc_blob_macro</span>(<span class="ident">attr</span>, <span class="ident">item</span>)
+<span class="doccomment">/// Define an arc blob.
+///
+/// See the [swipl::blob](https://terminusdb-labs.github.io/swipl-rs/swipl/blob/index.html) module documentation for more details.
+</span><span class="attribute">#[proc_macro_attribute]
+</span><span class="kw">pub fn </span>arc_blob(attr: TokenStream, item: TokenStream) -&gt; TokenStream {
+    blob::arc_blob_macro(attr, item)
 }
 
-<span class="doccomment">/// Define a wrapped arc blob.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See the [swipl::blob](https://terminusdb-labs.github.io/swipl-rs/swipl/blob/index.html) module documentation for more details.</span>
-<span class="attribute">#[<span class="ident">proc_macro</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">wrapped_arc_blob</span>(<span class="ident">item</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
-    <span class="ident">blob::wrapped_arc_blob_macro</span>(<span class="ident">item</span>)
+<span class="doccomment">/// Define a wrapped arc blob.
+///
+/// See the [swipl::blob](https://terminusdb-labs.github.io/swipl-rs/swipl/blob/index.html) module documentation for more details.
+</span><span class="attribute">#[proc_macro]
+</span><span class="kw">pub fn </span>wrapped_arc_blob(item: TokenStream) -&gt; TokenStream {
+    blob::wrapped_arc_blob_macro(item)
 }
 
-<span class="doccomment">/// Define a clone blob.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See the [swipl::blob](https://terminusdb-labs.github.io/swipl-rs/swipl/blob/index.html) module documentation for more details.</span>
-<span class="attribute">#[<span class="ident">proc_macro_attribute</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">clone_blob</span>(<span class="ident">attr</span>: <span class="ident">TokenStream</span>, <span class="ident">item</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
-    <span class="ident">blob::clone_blob_macro</span>(<span class="ident">attr</span>, <span class="ident">item</span>)
+<span class="doccomment">/// Define a clone blob.
+///
+/// See the [swipl::blob](https://terminusdb-labs.github.io/swipl-rs/swipl/blob/index.html) module documentation for more details.
+</span><span class="attribute">#[proc_macro_attribute]
+</span><span class="kw">pub fn </span>clone_blob(attr: TokenStream, item: TokenStream) -&gt; TokenStream {
+    blob::clone_blob_macro(attr, item)
 }
 
-<span class="doccomment">/// Define a wrapped clone blob.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See the [swipl::blob](https://terminusdb-labs.github.io/swipl-rs/swipl/blob/index.html) module documentation for more details.</span>
-<span class="attribute">#[<span class="ident">proc_macro</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">wrapped_clone_blob</span>(<span class="ident">item</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
-    <span class="ident">blob::wrapped_clone_blob_macro</span>(<span class="ident">item</span>)
+<span class="doccomment">/// Define a wrapped clone blob.
+///
+/// See the [swipl::blob](https://terminusdb-labs.github.io/swipl-rs/swipl/blob/index.html) module documentation for more details.
+</span><span class="attribute">#[proc_macro]
+</span><span class="kw">pub fn </span>wrapped_clone_blob(item: TokenStream) -&gt; TokenStream {
+    blob::wrapped_clone_blob_macro(item)
 }
 
-<span class="doccomment">/// Create a static atom.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The atom will only actually be created on first invocation. Each</span>
-<span class="doccomment">/// subsequent invocation will reuse the earlier retrieved atom. This</span>
-<span class="doccomment">/// is convenient for code that uses the exact same atom on repeated</span>
-<span class="doccomment">/// invocations.</span>
-<span class="attribute">#[<span class="ident">proc_macro</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">atom</span>(<span class="ident">item</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
-    <span class="ident">atom::atom_macro</span>(<span class="ident">item</span>)
+<span class="doccomment">/// Create a static atom.
+///
+/// The atom will only actually be created on first invocation. Each
+/// subsequent invocation will reuse the earlier retrieved atom. This
+/// is convenient for code that uses the exact same atom on repeated
+/// invocations.
+</span><span class="attribute">#[proc_macro]
+</span><span class="kw">pub fn </span>atom(item: TokenStream) -&gt; TokenStream {
+    atom::atom_macro(item)
 }
 
-<span class="doccomment">/// Create a static functor.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The functor will only actually be created on first</span>
-<span class="doccomment">/// invocation. Each subsequent invocation will reuse the earlier</span>
-<span class="doccomment">/// retrieved functor. This is convenient for code that uses the exact</span>
-<span class="doccomment">/// same functor on repeated invocations.</span>
-<span class="attribute">#[<span class="ident">proc_macro</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">functor</span>(<span class="ident">item</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
-    <span class="ident">functor::functor_macro</span>(<span class="ident">item</span>)
+<span class="doccomment">/// Create a static functor.
+///
+/// The functor will only actually be created on first
+/// invocation. Each subsequent invocation will reuse the earlier
+/// retrieved functor. This is convenient for code that uses the exact
+/// same functor on repeated invocations.
+</span><span class="attribute">#[proc_macro]
+</span><span class="kw">pub fn </span>functor(item: TokenStream) -&gt; TokenStream {
+    functor::functor_macro(item)
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

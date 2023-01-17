@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl/src/text.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>text.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../swipl/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../swipl/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../swipl/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl/src/text.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>text.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../swipl/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -52,59 +52,59 @@
 <span id="52">52</span>
 <span id="53">53</span>
 <span id="54">54</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Support for easy text extraction from prolog.</span>
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::fli</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::term</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::term_getable</span>;
+</pre><pre class="rust"><code><span class="doccomment">//! Support for easy text extraction from prolog.
+</span><span class="kw">use </span><span class="kw">crate</span>::fli;
+<span class="kw">use </span><span class="kw">crate</span>::term::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">crate</span>::term_getable;
 
-<span class="kw">use</span> <span class="ident">std::os::raw::c_char</span>;
+<span class="kw">use </span>std::os::raw::c_char;
 
-<span class="doccomment">/// A wrapper around an owned string for which [TermGetable](crate::term::TermGetable)</span>
-<span class="doccomment">/// has been implemented.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This can be used to extract text both from atoms and from</span>
-<span class="doccomment">/// strings. This is useful for contexts where we wish to accept</span>
-<span class="doccomment">/// either one as an argument.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// `PrologText` can be derefed to an `&amp;String`, which means it&#39;s</span>
-<span class="doccomment">/// automatically usable in most contexts that require one of those.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>, <span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PrologText</span>(<span class="ident">String</span>);
+<span class="doccomment">/// A wrapper around an owned string for which [TermGetable](crate::term::TermGetable)
+/// has been implemented.
+///
+/// This can be used to extract text both from atoms and from
+/// strings. This is useful for contexts where we wish to accept
+/// either one as an argument.
+///
+/// `PrologText` can be derefed to an `&amp;String`, which means it&#39;s
+/// automatically usable in most contexts that require one of those.
+</span><span class="attribute">#[derive(PartialEq, Eq, PartialOrd, Ord, Clone)]
+</span><span class="kw">pub struct </span>PrologText(String);
 
-<span class="kw">impl</span> <span class="ident">PrologText</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_inner</span>(<span class="self">self</span>) -&gt; <span class="ident">String</span> {
-        <span class="self">self</span>.<span class="number">0</span>
-    }
+<span class="kw">impl </span>PrologText {
+    <span class="kw">pub fn </span>into_inner(<span class="self">self</span>) -&gt; String {
+        <span class="self">self</span>.<span class="number">0
+    </span>}
 }
 
-<span class="kw">impl</span> <span class="ident">std::ops::Deref</span> <span class="kw">for</span> <span class="ident">PrologText</span> {
-    <span class="kw">type</span> <span class="ident">Target</span> <span class="op">=</span> <span class="ident">String</span>;
-    <span class="kw">fn</span> <span class="ident">deref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">String</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>
-    }
+<span class="kw">impl </span>std::ops::Deref <span class="kw">for </span>PrologText {
+    <span class="kw">type </span>Target = String;
+    <span class="kw">fn </span>deref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>String {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0
+    </span>}
 }
 
-<span class="macro">term_getable!</span> {
-    (<span class="ident">PrologText</span>, <span class="string">&quot;text&quot;</span>, <span class="ident">term</span>) =&gt; {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">len</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">0</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span>: <span class="kw-2">*mut</span> <span class="ident">c_char</span> <span class="op">=</span> <span class="ident">std::ptr::null_mut</span>();
-        <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">fli::CVT_ATOM</span><span class="op">|</span><span class="ident">fli::CVT_STRING</span><span class="op">|</span><span class="ident">fli::BUF_DISCARDABLE</span><span class="op">|</span><span class="ident">fli::REP_UTF8</span>;
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">fli::PL_get_nchars</span>(<span class="ident">term</span>.<span class="ident">term_ptr</span>(),
-                                                 <span class="kw-2">&amp;mut</span> <span class="ident">len</span> <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">usize</span> <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">fli::size_t</span>,
-                                                 <span class="kw-2">&amp;mut</span> <span class="ident">s</span>,
-                                                 <span class="ident">flags</span>) };
+<span class="macro">term_getable! </span>{
+    (PrologText, <span class="string">&quot;text&quot;</span>, term) =&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>len: usize = <span class="number">0</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>s: <span class="kw-2">*mut </span>c_char = std::ptr::null_mut();
+        <span class="kw">let </span>flags = fli::CVT_ATOM|fli::CVT_STRING|fli::BUF_DISCARDABLE|fli::REP_UTF8;
+        <span class="kw">let </span>result = <span class="kw">unsafe </span>{ fli::PL_get_nchars(term.term_ptr(),
+                                                 <span class="kw-2">&amp;mut </span>len <span class="kw">as </span><span class="kw-2">*mut </span>usize <span class="kw">as </span><span class="kw-2">*mut </span>fli::size_t,
+                                                 <span class="kw-2">&amp;mut </span>s,
+                                                 flags) };
 
 
-        <span class="kw">if</span> <span class="ident">result</span> <span class="op">==</span> <span class="number">0</span> {
-            <span class="prelude-val">None</span>
-        }
-        <span class="kw">else</span> {
-            <span class="kw">let</span> <span class="ident">slice</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">std::slice::from_raw_parts</span>(<span class="ident">s</span> <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">u8</span>, <span class="ident">len</span>) };
-            <span class="kw">let</span> <span class="ident">string</span> <span class="op">=</span> <span class="ident">std::str::from_utf8</span>(<span class="ident">slice</span>).<span class="ident">unwrap</span>().<span class="ident">to_string</span>();
+        <span class="kw">if </span>result == <span class="number">0 </span>{
+            <span class="prelude-val">None
+        </span>}
+        <span class="kw">else </span>{
+            <span class="kw">let </span>slice = <span class="kw">unsafe </span>{ std::slice::from_raw_parts(s <span class="kw">as </span><span class="kw-2">*mut </span>u8, len) };
+            <span class="kw">let </span>string = std::str::from_utf8(slice).unwrap().to_string();
 
-            <span class="prelude-val">Some</span>(<span class="ident">PrologText</span>(<span class="ident">string</span>))
+            <span class="prelude-val">Some</span>(PrologText(string))
         }
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

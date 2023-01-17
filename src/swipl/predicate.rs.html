@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl/src/predicate.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>predicate.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../swipl/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../swipl/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../swipl/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl/src/predicate.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>predicate.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../swipl/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -132,139 +132,139 @@
 <span id="132">132</span>
 <span id="133">133</span>
 <span id="134">134</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Prolog predicates.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! A prolog predicate is a core datatype in prolog. It is a</span>
-<span class="doccomment">//! combination of a functor and a module. Just like functors and</span>
-<span class="doccomment">//! modules, predicates are not reference-counted and are never</span>
-<span class="doccomment">//! garbage collected.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! This module provides functors and types for intearcting with</span>
-<span class="doccomment">//! prolog predicates.</span>
-<span class="kw">use</span> <span class="ident">std::convert::TryInto</span>;
+</pre><pre class="rust"><code><span class="doccomment">//! Prolog predicates.
+//!
+//! A prolog predicate is a core datatype in prolog. It is a
+//! combination of a functor and a module. Just like functors and
+//! modules, predicates are not reference-counted and are never
+//! garbage collected.
+//!
+//! This module provides functors and types for intearcting with
+//! prolog predicates.
+</span><span class="kw">use </span>std::convert::TryInto;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::atom</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::engine</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::fli</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::functor</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::module</span>::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">super</span>::atom::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">super</span>::engine::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">super</span>::fli::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">super</span>::functor::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">super</span>::module::<span class="kw-2">*</span>;
 
-<span class="doccomment">/// A wrapper for a prolog predicate.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Predicate</span> {
-    <span class="ident">predicate</span>: <span class="ident">predicate_t</span>,
+<span class="doccomment">/// A wrapper for a prolog predicate.
+</span><span class="attribute">#[derive(Clone, Copy)]
+</span><span class="kw">pub struct </span>Predicate {
+    predicate: predicate_t,
 }
 
-<span class="comment">// a `predicate_t` is a pointer which is normally not send or</span>
-<span class="comment">// sync. SWI-Prolog however guarantees that this pointer will remain</span>
-<span class="comment">// valid.</span>
-<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">Send</span> <span class="kw">for</span> <span class="ident">Predicate</span> {}
-<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">Sync</span> <span class="kw">for</span> <span class="ident">Predicate</span> {}
+<span class="comment">// a `predicate_t` is a pointer which is normally not send or
+// sync. SWI-Prolog however guarantees that this pointer will remain
+// valid.
+</span><span class="kw">unsafe impl </span>Send <span class="kw">for </span>Predicate {}
+<span class="kw">unsafe impl </span>Sync <span class="kw">for </span>Predicate {}
 
-<span class="kw">impl</span> <span class="ident">Predicate</span> {
-    <span class="doccomment">/// Wrap a `predicate_t`, which is how the SWI-Prolog fli represents predicates.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This is unsafe because no check is done to ensure that the</span>
-    <span class="doccomment">/// predicate_t indeed points at a valid predicate. The caller</span>
-    <span class="doccomment">/// will have to ensure that this is the case.</span>
-    <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">wrap</span>(<span class="ident">predicate</span>: <span class="ident">predicate_t</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> { <span class="ident">predicate</span> }
+<span class="kw">impl </span>Predicate {
+    <span class="doccomment">/// Wrap a `predicate_t`, which is how the SWI-Prolog fli represents predicates.
+    ///
+    /// This is unsafe because no check is done to ensure that the
+    /// predicate_t indeed points at a valid predicate. The caller
+    /// will have to ensure that this is the case.
+    </span><span class="kw">pub unsafe fn </span>wrap(predicate: predicate_t) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{ predicate }
     }
 
-    <span class="doccomment">/// Create a new predicate from the given functor and module.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This will panic if no prolog engine is active on this thread.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">functor</span>: <span class="ident">Functor</span>, <span class="ident">module</span>: <span class="ident">Module</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">assert_some_engine_is_active</span>();
-        <span class="kw">let</span> <span class="ident">predicate</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">PL_pred</span>(<span class="ident">functor</span>.<span class="ident">functor_ptr</span>(), <span class="ident">module</span>.<span class="ident">module_ptr</span>()) };
+    <span class="doccomment">/// Create a new predicate from the given functor and module.
+    ///
+    /// This will panic if no prolog engine is active on this thread.
+    </span><span class="kw">pub fn </span>new(functor: Functor, module: Module) -&gt; <span class="self">Self </span>{
+        assert_some_engine_is_active();
+        <span class="kw">let </span>predicate = <span class="kw">unsafe </span>{ PL_pred(functor.functor_ptr(), module.module_ptr()) };
 
-        <span class="kw">unsafe</span> { <span class="ident"><span class="self">Self</span>::wrap</span>(<span class="ident">predicate</span>) }
+        <span class="kw">unsafe </span>{ <span class="self">Self</span>::wrap(predicate) }
     }
 
-    <span class="doccomment">/// Return the underlying `predicate_t` which SWI-Prolog uses to refer to the predicate.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">predicate_ptr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">predicate_t</span> {
-        <span class="self">self</span>.<span class="ident">predicate</span>
+    <span class="doccomment">/// Return the underlying `predicate_t` which SWI-Prolog uses to refer to the predicate.
+    </span><span class="kw">pub fn </span>predicate_ptr(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; predicate_t {
+        <span class="self">self</span>.predicate
     }
 
-    <span class="doccomment">/// Retrieve the name of this predicate as an atom and pass it into the given function.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The atom does not outlive this call, and the reference count</span>
-    <span class="doccomment">/// is never incremented. This may be slightly faster in some</span>
-    <span class="doccomment">/// cases than returning the name directly.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This will panic if no prolog engine is active on this thread.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_name</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">func</span>: <span class="ident">F</span>) -&gt; <span class="ident">R</span>
-    <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">Atom</span>) -&gt; <span class="ident">R</span>,
+    <span class="doccomment">/// Retrieve the name of this predicate as an atom and pass it into the given function.
+    ///
+    /// The atom does not outlive this call, and the reference count
+    /// is never incremented. This may be slightly faster in some
+    /// cases than returning the name directly.
+    ///
+    /// This will panic if no prolog engine is active on this thread.
+    </span><span class="kw">pub fn </span>with_name&lt;F, R&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, func: F) -&gt; R
+    <span class="kw">where
+        </span>F: Fn(<span class="kw-2">&amp;</span>Atom) -&gt; R,
     {
-        <span class="ident">assert_some_engine_is_active</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">atom</span>: <span class="ident">atom_t</span> <span class="op">=</span> <span class="number">0</span>;
-        <span class="kw">unsafe</span> {
-            <span class="ident">PL_predicate_info</span>(
-                <span class="self">self</span>.<span class="ident">predicate</span>,
-                <span class="kw-2">&amp;mut</span> <span class="ident">atom</span>,
-                <span class="ident">std::ptr::null_mut</span>(),
-                <span class="ident">std::ptr::null_mut</span>(),
+        assert_some_engine_is_active();
+        <span class="kw">let </span><span class="kw-2">mut </span>atom: atom_t = <span class="number">0</span>;
+        <span class="kw">unsafe </span>{
+            PL_predicate_info(
+                <span class="self">self</span>.predicate,
+                <span class="kw-2">&amp;mut </span>atom,
+                std::ptr::null_mut(),
+                std::ptr::null_mut(),
             );
         }
-        <span class="kw">let</span> <span class="ident">atom</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">Atom::wrap</span>(<span class="ident">atom</span>) };
+        <span class="kw">let </span>atom = <span class="kw">unsafe </span>{ Atom::wrap(atom) };
 
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">func</span>(<span class="kw-2">&amp;</span><span class="ident">atom</span>);
+        <span class="kw">let </span>result = func(<span class="kw-2">&amp;</span>atom);
 
-        <span class="ident">std::mem::forget</span>(<span class="ident">atom</span>);
+        std::mem::forget(atom);
 
-        <span class="ident">result</span>
+        result
     }
 
-    <span class="doccomment">/// Retrieve the name of this predicate as an atom.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This will panic if no prolog engine is active on this thread.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Atom</span> {
-        <span class="self">self</span>.<span class="ident">with_name</span>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="ident">n</span>.<span class="ident">clone</span>())
+    <span class="doccomment">/// Retrieve the name of this predicate as an atom.
+    ///
+    /// This will panic if no prolog engine is active on this thread.
+    </span><span class="kw">pub fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Atom {
+        <span class="self">self</span>.with_name(|n| n.clone())
     }
 
-    <span class="doccomment">/// Retrieve the name of this predicate as a string.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This will panic if no prolog engine is active on this thread.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name_string</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">String</span> {
-        <span class="self">self</span>.<span class="ident">with_name</span>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="ident">n</span>.<span class="ident">name</span>())
+    <span class="doccomment">/// Retrieve the name of this predicate as a string.
+    ///
+    /// This will panic if no prolog engine is active on this thread.
+    </span><span class="kw">pub fn </span>name_string(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+        <span class="self">self</span>.with_name(|n| n.name())
     }
 
-    <span class="doccomment">/// Retrieve the arity of this predicate.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This will panic if no prolog engine is active on this thread.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">arity</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u16</span> {
-        <span class="ident">assert_some_engine_is_active</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">arity</span> <span class="op">=</span> <span class="number">0</span>;
-        <span class="kw">unsafe</span> {
-            <span class="ident">PL_predicate_info</span>(
-                <span class="self">self</span>.<span class="ident">predicate</span>,
-                <span class="ident">std::ptr::null_mut</span>(),
-                <span class="kw-2">&amp;mut</span> <span class="ident">arity</span>,
-                <span class="ident">std::ptr::null_mut</span>(),
+    <span class="doccomment">/// Retrieve the arity of this predicate.
+    ///
+    /// This will panic if no prolog engine is active on this thread.
+    </span><span class="kw">pub fn </span>arity(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u16 {
+        assert_some_engine_is_active();
+        <span class="kw">let </span><span class="kw-2">mut </span>arity = <span class="number">0</span>;
+        <span class="kw">unsafe </span>{
+            PL_predicate_info(
+                <span class="self">self</span>.predicate,
+                std::ptr::null_mut(),
+                <span class="kw-2">&amp;mut </span>arity,
+                std::ptr::null_mut(),
             );
         }
 
-        <span class="ident">arity</span>.<span class="ident">try_into</span>().<span class="ident">unwrap</span>()
+        arity.try_into().unwrap()
     }
 
-    <span class="doccomment">/// Retrieve the module of this predicate.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// this will panic if no prolog engine is active on this thread.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">module</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Module</span> {
-        <span class="ident">assert_some_engine_is_active</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">module</span>: <span class="ident">module_t</span> <span class="op">=</span> <span class="ident">std::ptr::null_mut</span>();
-        <span class="kw">unsafe</span> {
-            <span class="ident">PL_predicate_info</span>(
-                <span class="self">self</span>.<span class="ident">predicate</span>,
-                <span class="ident">std::ptr::null_mut</span>(),
-                <span class="ident">std::ptr::null_mut</span>(),
-                <span class="kw-2">&amp;mut</span> <span class="ident">module</span>,
+    <span class="doccomment">/// Retrieve the module of this predicate.
+    ///
+    /// this will panic if no prolog engine is active on this thread.
+    </span><span class="kw">pub fn </span>module(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Module {
+        assert_some_engine_is_active();
+        <span class="kw">let </span><span class="kw-2">mut </span>module: module_t = std::ptr::null_mut();
+        <span class="kw">unsafe </span>{
+            PL_predicate_info(
+                <span class="self">self</span>.predicate,
+                std::ptr::null_mut(),
+                std::ptr::null_mut(),
+                <span class="kw-2">&amp;mut </span>module,
             );
 
-            <span class="ident">Module::wrap</span>(<span class="ident">module</span>)
+            Module::wrap(module)
         }
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

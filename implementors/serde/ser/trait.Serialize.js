@@ -1,3 +1,3 @@
-(function() {var implementors = {};
-implementors["swipl"] = [{"text":"impl <a class=\"trait\" href=\"https://docs.rs/serde/1.0.147/serde/ser/trait.Serialize.html\" title=\"trait serde::ser::Serialize\">Serialize</a> for <a class=\"struct\" href=\"swipl/atom/struct.Atom.html\" title=\"struct swipl::atom::Atom\">Atom</a>","synthetic":false,"types":["swipl::atom::Atom"]}];
-if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
+(function() {var implementors = {
+"swipl":[["impl <a class=\"trait\" href=\"https://docs.rs/serde/1.0.152/serde/ser/trait.Serialize.html\" title=\"trait serde::ser::Serialize\">Serialize</a> for <a class=\"struct\" href=\"swipl/atom/struct.Atom.html\" title=\"struct swipl::atom::Atom\">Atom</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

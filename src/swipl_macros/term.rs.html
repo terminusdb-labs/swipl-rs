@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl-macros/src/term.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>term.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../swipl_macros/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../swipl_macros/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../swipl_macros/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl-macros/src/term.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>term.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../swipl_macros/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -486,493 +486,493 @@
 <span id="486">486</span>
 <span id="487">487</span>
 <span id="488">488</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">proc_macro</span>;
-<span class="kw">use</span> <span class="ident">proc_macro2</span>::{<span class="ident">Span</span>, <span class="ident">TokenStream</span>};
-<span class="kw">use</span> <span class="ident">quote::quote</span>;
-<span class="kw">use</span> <span class="ident">std::collections::HashMap</span>;
-<span class="kw">use</span> <span class="ident">syn::ext::IdentExt</span>;
-<span class="kw">use</span> <span class="ident">syn::parse</span>::{<span class="ident">Parse</span>, <span class="ident">ParseBuffer</span>, <span class="prelude-ty">Result</span>};
-<span class="kw">use</span> <span class="ident">syn::punctuated::Punctuated</span>;
-<span class="kw">use</span> <span class="ident">syn::token</span>::{<span class="ident">Bracket</span>, <span class="ident">Paren</span>};
-<span class="kw">use</span> <span class="ident">syn</span>::{
-    <span class="ident">bracketed</span>, <span class="ident">parenthesized</span>, <span class="ident">parse_macro_input</span>, <span class="ident">Expr</span>, <span class="ident">Ident</span>, <span class="ident">LitBool</span>, <span class="ident">LitFloat</span>, <span class="ident">LitInt</span>, <span class="ident">LitStr</span>,
-    <span class="ident">Token</span>,
+</pre><pre class="rust"><code><span class="kw">use </span>proc_macro;
+<span class="kw">use </span>proc_macro2::{Span, TokenStream};
+<span class="kw">use </span>quote::quote;
+<span class="kw">use </span>std::collections::HashMap;
+<span class="kw">use </span>syn::ext::IdentExt;
+<span class="kw">use </span>syn::parse::{Parse, ParseBuffer, <span class="prelude-ty">Result</span>};
+<span class="kw">use </span>syn::punctuated::Punctuated;
+<span class="kw">use </span>syn::token::{Bracket, Paren};
+<span class="kw">use </span>syn::{
+    bracketed, parenthesized, parse_macro_input, Expr, Ident, LitBool, LitFloat, LitInt, LitStr,
+    Token,
 };
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util</span>::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">crate</span>::util::<span class="kw-2">*</span>;
 
-<span class="kw">fn</span> <span class="ident">term_ident_from_id</span>(<span class="ident">id</span>: <span class="ident">usize</span>) -&gt; <span class="ident">Ident</span> {
-    <span class="ident">Ident::new</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__swipl_term_ref_{}&quot;</span>, <span class="ident">id</span>), <span class="ident">Span::call_site</span>())
+<span class="kw">fn </span>term_ident_from_id(id: usize) -&gt; Ident {
+    Ident::new(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__swipl_term_ref_{}&quot;</span>, id), Span::call_site())
 }
 
-<span class="doccomment">/// expand into a series of term puts</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">term_macro</span>(<span class="ident">stream</span>: <span class="ident">proc_macro::TokenStream</span>) -&gt; <span class="ident">proc_macro::TokenStream</span> {
-    <span class="comment">//let stream: TokenStream = stream.into();</span>
-    <span class="comment">//println!(&quot;{:#?}&quot;, stream);</span>
-    <span class="kw">let</span> <span class="ident">definition</span> <span class="op">=</span> <span class="macro">parse_macro_input!</span>(<span class="ident">stream</span> <span class="kw">as</span> <span class="ident">OuterTerm</span>);
+<span class="doccomment">/// expand into a series of term puts
+</span><span class="kw">pub fn </span>term_macro(stream: proc_macro::TokenStream) -&gt; proc_macro::TokenStream {
+    <span class="comment">//let stream: TokenStream = stream.into();
+    //println!(&quot;{:#?}&quot;, stream);
+    </span><span class="kw">let </span>definition = <span class="macro">parse_macro_input!</span>(stream <span class="kw">as </span>OuterTerm);
 
-    <span class="kw">let</span> <span class="ident">context</span> <span class="op">=</span> <span class="ident">definition</span>.<span class="ident">context</span>;
+    <span class="kw">let </span>context = definition.context;
 
-    <span class="kw">let</span> <span class="ident">term_ident</span> <span class="op">=</span> <span class="ident">term_ident_from_id</span>(<span class="number">0</span>);
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vars</span> <span class="op">=</span> <span class="ident">HashMap::new</span>();
-    <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">code</span>) <span class="op">=</span> <span class="ident">definition</span>.<span class="ident">term</span>.<span class="ident">generate</span>(<span class="number">0</span>, <span class="number">1</span>, <span class="kw-2">&amp;mut</span> <span class="ident">vars</span>);
+    <span class="kw">let </span>term_ident = term_ident_from_id(<span class="number">0</span>);
+    <span class="kw">let </span><span class="kw-2">mut </span>vars = HashMap::new();
+    <span class="kw">let </span>(<span class="kw">_</span>, code) = definition.term.generate(<span class="number">0</span>, <span class="number">1</span>, <span class="kw-2">&amp;mut </span>vars);
 
-    <span class="kw">let</span> <span class="ident">crt</span> <span class="op">=</span> <span class="ident">crate_token</span>();
-    <span class="kw">let</span> <span class="ident">gen</span> <span class="op">=</span> <span class="macro">quote!</span> {
+    <span class="kw">let </span>crt = crate_token();
+    <span class="kw">let </span>gen = <span class="macro">quote! </span>{
         {
-           <span class="kw">let</span> #<span class="ident">term_ident</span> <span class="op">=</span> #<span class="ident">context</span>.<span class="ident">new_term_ref</span>();
+           <span class="kw">let </span>#term_ident = #context.new_term_ref();
 
-            <span class="kw">let</span> <span class="ident">__swipl_frame</span> <span class="op">=</span> #<span class="ident">context</span>.<span class="ident">open_frame</span>();
+            <span class="kw">let </span>__swipl_frame = #context.open_frame();
 
-            <span class="kw">let</span> <span class="ident">result</span>: #<span class="ident">crt::result::PrologResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> <span class="op">=</span> (<span class="op">|</span><span class="op">|</span>{ #<span class="ident">code</span> <span class="prelude-val">Ok</span>(()) })();
+            <span class="kw">let </span>result: #crt::result::PrologResult&lt;()&gt; = (||{ #code <span class="prelude-val">Ok</span>(()) })();
 
-            <span class="kw">match</span> <span class="ident">result</span> {
+            <span class="kw">match </span>result {
                 <span class="prelude-val">Ok</span>(()) =&gt; {
-                    <span class="ident">__swipl_frame</span>.<span class="ident">close</span>();
-                    <span class="prelude-val">Ok</span>(#<span class="ident">term_ident</span>)
+                    __swipl_frame.close();
+                    <span class="prelude-val">Ok</span>(#term_ident)
                 },
-                <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; {
-                    <span class="ident">__swipl_frame</span>.<span class="ident">discard</span>();
-                    <span class="prelude-val">Err</span>(<span class="ident">e</span>)
+                <span class="prelude-val">Err</span>(e) =&gt; {
+                    __swipl_frame.discard();
+                    <span class="prelude-val">Err</span>(e)
                 }
             }
         }
     };
-    <span class="comment">//println!(&quot;{:#?}&quot;, gen);</span>
-    <span class="ident">gen</span>.<span class="ident">into</span>()
+    <span class="comment">//println!(&quot;{:#?}&quot;, gen);
+    </span>gen.into()
 }
 
-<span class="kw">struct</span> <span class="ident">OuterTerm</span> {
-    <span class="ident">context</span>: <span class="ident">Ident</span>,
-    <span class="ident">term</span>: <span class="ident">Term</span>,
+<span class="kw">struct </span>OuterTerm {
+    context: Ident,
+    term: Term,
 }
 
-<span class="kw">impl</span> <span class="ident">Parse</span> <span class="kw">for</span> <span class="ident">OuterTerm</span> {
-    <span class="kw">fn</span> <span class="ident">parse</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">ParseBuffer</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">context</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
-        <span class="ident">input</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="macro">Token!</span>[:]<span class="op">&gt;</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">term</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
+<span class="kw">impl </span>Parse <span class="kw">for </span>OuterTerm {
+    <span class="kw">fn </span>parse(input: <span class="kw-2">&amp;</span>ParseBuffer) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span>context = input.parse()<span class="question-mark">?</span>;
+        input.parse::&lt;<span class="macro">Token!</span>[:]&gt;()<span class="question-mark">?</span>;
+        <span class="kw">let </span>term = input.parse()<span class="question-mark">?</span>;
 
-        <span class="prelude-val">Ok</span>(<span class="self">Self</span> { <span class="ident">context</span>, <span class="ident">term</span> })
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{ context, term })
     }
 }
 
-<span class="kw">enum</span> <span class="ident">Term</span> {
-    <span class="ident">Functor</span>(<span class="ident">Functor</span>),
-    <span class="ident">List</span>(<span class="ident">List</span>),
-    <span class="ident">Tuple</span>(<span class="ident">Tuple</span>),
-    <span class="ident">Leaf</span>(<span class="ident">Leaf</span>),
+<span class="kw">enum </span>Term {
+    Functor(Functor),
+    List(List),
+    Tuple(Tuple),
+    Leaf(Leaf),
 }
 
-<span class="kw">impl</span> <span class="ident">Term</span> {
-    <span class="kw">fn</span> <span class="ident">generate</span>(
+<span class="kw">impl </span>Term {
+    <span class="kw">fn </span>generate(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">into_id</span>: <span class="ident">usize</span>,
-        <span class="ident">top</span>: <span class="ident">usize</span>,
-        <span class="ident">var_map</span>: <span class="kw-2">&amp;mut</span> <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">usize</span><span class="op">&gt;</span>,
-    ) -&gt; (<span class="ident">usize</span>, <span class="ident">TokenStream</span>) {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident"><span class="self">Self</span>::Functor</span>(<span class="ident">f</span>) =&gt; <span class="ident">f</span>.<span class="ident">generate</span>(<span class="ident">into_id</span>, <span class="ident">top</span>, <span class="ident">var_map</span>),
-            <span class="ident"><span class="self">Self</span>::List</span>(<span class="ident">l</span>) =&gt; <span class="ident">l</span>.<span class="ident">generate</span>(<span class="ident">into_id</span>, <span class="ident">top</span>, <span class="ident">var_map</span>),
-            <span class="ident"><span class="self">Self</span>::Tuple</span>(<span class="ident">c</span>) =&gt; <span class="ident">c</span>.<span class="ident">generate</span>(<span class="ident">into_id</span>, <span class="ident">top</span>, <span class="ident">var_map</span>),
-            <span class="ident"><span class="self">Self</span>::Leaf</span>(<span class="ident">l</span>) =&gt; <span class="ident">l</span>.<span class="ident">generate</span>(<span class="ident">into_id</span>, <span class="ident">top</span>, <span class="ident">var_map</span>),
+        into_id: usize,
+        top: usize,
+        var_map: <span class="kw-2">&amp;mut </span>HashMap&lt;String, usize&gt;,
+    ) -&gt; (usize, TokenStream) {
+        <span class="kw">match </span><span class="self">self </span>{
+            <span class="self">Self</span>::Functor(f) =&gt; f.generate(into_id, top, var_map),
+            <span class="self">Self</span>::List(l) =&gt; l.generate(into_id, top, var_map),
+            <span class="self">Self</span>::Tuple(c) =&gt; c.generate(into_id, top, var_map),
+            <span class="self">Self</span>::Leaf(l) =&gt; l.generate(into_id, top, var_map),
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Parse</span> <span class="kw">for</span> <span class="ident">Term</span> {
-    <span class="kw">fn</span> <span class="ident">parse</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">ParseBuffer</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">peek</span>(<span class="ident">Ident</span>) <span class="op">&amp;&amp;</span> <span class="ident">input</span>.<span class="ident">peek2</span>(<span class="ident">Paren</span>) {
-            <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">Functor</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
-            <span class="prelude-val">Ok</span>(<span class="ident"><span class="self">Self</span>::Functor</span>(<span class="ident">f</span>))
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">peek</span>(<span class="ident">Bracket</span>) {
-            <span class="kw">let</span> <span class="ident">l</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">List</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
-            <span class="prelude-val">Ok</span>(<span class="ident"><span class="self">Self</span>::List</span>(<span class="ident">l</span>))
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">peek</span>(<span class="ident">Paren</span>) {
-            <span class="kw">let</span> <span class="ident">c</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">Tuple</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
-            <span class="prelude-val">Ok</span>(<span class="ident"><span class="self">Self</span>::Tuple</span>(<span class="ident">c</span>))
-        } <span class="kw">else</span> {
-            <span class="kw">let</span> <span class="ident">l</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">Leaf</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
-            <span class="prelude-val">Ok</span>(<span class="ident"><span class="self">Self</span>::Leaf</span>(<span class="ident">l</span>))
+<span class="kw">impl </span>Parse <span class="kw">for </span>Term {
+    <span class="kw">fn </span>parse(input: <span class="kw-2">&amp;</span>ParseBuffer) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">if </span>input.peek(Ident) &amp;&amp; input.peek2(Paren) {
+            <span class="kw">let </span>f = input.parse::&lt;Functor&gt;()<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Functor(f))
+        } <span class="kw">else if </span>input.peek(Bracket) {
+            <span class="kw">let </span>l = input.parse::&lt;List&gt;()<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(<span class="self">Self</span>::List(l))
+        } <span class="kw">else if </span>input.peek(Paren) {
+            <span class="kw">let </span>c = input.parse::&lt;Tuple&gt;()<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Tuple(c))
+        } <span class="kw">else </span>{
+            <span class="kw">let </span>l = input.parse::&lt;Leaf&gt;()<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Leaf(l))
         }
     }
 }
 
-<span class="kw">enum</span> <span class="ident">Leaf</span> {
-    <span class="ident">Atom</span>(<span class="ident">Ident</span>),
-    <span class="ident">String</span>(<span class="ident">LitStr</span>),
-    <span class="ident">Int</span>(<span class="ident">LitInt</span>),
-    <span class="ident">Float</span>(<span class="ident">LitFloat</span>),
-    <span class="ident">Bool</span>(<span class="ident">LitBool</span>),
-    <span class="ident">Variable</span>(<span class="ident">Ident</span>),
-    <span class="ident">TemplateExpr</span>(<span class="ident">Expr</span>),
+<span class="kw">enum </span>Leaf {
+    Atom(Ident),
+    String(LitStr),
+    Int(LitInt),
+    Float(LitFloat),
+    Bool(LitBool),
+    Variable(Ident),
+    TemplateExpr(Expr),
 }
 
-<span class="kw">impl</span> <span class="ident">Leaf</span> {
-    <span class="kw">fn</span> <span class="ident">generate</span>(
+<span class="kw">impl </span>Leaf {
+    <span class="kw">fn </span>generate(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">into_id</span>: <span class="ident">usize</span>,
-        <span class="ident">top</span>: <span class="ident">usize</span>,
-        <span class="ident">vars</span>: <span class="kw-2">&amp;mut</span> <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">usize</span><span class="op">&gt;</span>,
-    ) -&gt; (<span class="ident">usize</span>, <span class="ident">TokenStream</span>) {
-        <span class="kw">let</span> <span class="ident">into</span> <span class="op">=</span> <span class="ident">term_ident_from_id</span>(<span class="ident">into_id</span>);
-        <span class="kw">let</span> <span class="ident">crt</span> <span class="op">=</span> <span class="ident">crate_token</span>();
+        into_id: usize,
+        top: usize,
+        vars: <span class="kw-2">&amp;mut </span>HashMap&lt;String, usize&gt;,
+    ) -&gt; (usize, TokenStream) {
+        <span class="kw">let </span>into = term_ident_from_id(into_id);
+        <span class="kw">let </span>crt = crate_token();
         (
-            <span class="ident">top</span>, <span class="comment">// no term allocations happen here, so return same</span>
-            <span class="kw">match</span> <span class="self">self</span> {
-                <span class="ident"><span class="self">Self</span>::Atom</span>(<span class="ident">ident</span>) =&gt; {
-                    <span class="kw">let</span> <span class="ident">ident_str</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">ident</span>);
-                    <span class="macro">quote!</span> {#<span class="ident">into</span>.<span class="ident">unify</span>(<span class="kw-2">&amp;</span>#<span class="ident">crt::atom::atomable</span>(#<span class="ident">ident_str</span>))<span class="question-mark">?</span>;}
+            top, <span class="comment">// no term allocations happen here, so return same
+            </span><span class="kw">match </span><span class="self">self </span>{
+                <span class="self">Self</span>::Atom(ident) =&gt; {
+                    <span class="kw">let </span>ident_str = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, ident);
+                    <span class="macro">quote! </span>{#into.unify(<span class="kw-2">&amp;</span>#crt::atom::atomable(#ident_str))<span class="question-mark">?</span>;}
                 }
-                <span class="ident"><span class="self">Self</span>::String</span>(<span class="ident">s</span>) =&gt; {
-                    <span class="macro">quote!</span> {#<span class="ident">into</span>.<span class="ident">unify</span>(#<span class="ident">s</span>)<span class="question-mark">?</span>;}
+                <span class="self">Self</span>::String(s) =&gt; {
+                    <span class="macro">quote! </span>{#into.unify(#s)<span class="question-mark">?</span>;}
                 }
-                <span class="ident"><span class="self">Self</span>::Int</span>(<span class="ident">i</span>) =&gt; {
-                    <span class="comment">// terrible, but necessary?</span>
-                    <span class="kw">let</span> <span class="ident">int_str</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">i</span>);
-                    <span class="kw">if</span> <span class="ident">int_str</span>.<span class="ident">chars</span>().<span class="ident">next</span>().<span class="ident">unwrap</span>() <span class="op">==</span> <span class="string">&#39;-&#39;</span> {
-                        <span class="macro">quote!</span> {#<span class="ident">into</span>.<span class="ident">unify</span>(#<span class="ident">i</span> <span class="kw">as</span> <span class="ident">i64</span>)<span class="question-mark">?</span>;}
-                    } <span class="kw">else</span> {
-                        <span class="macro">quote!</span> {#<span class="ident">into</span>.<span class="ident">unify</span>(#<span class="ident">i</span> <span class="kw">as</span> <span class="ident">u64</span>)<span class="question-mark">?</span>;}
+                <span class="self">Self</span>::Int(i) =&gt; {
+                    <span class="comment">// terrible, but necessary?
+                    </span><span class="kw">let </span>int_str = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, i);
+                    <span class="kw">if </span>int_str.chars().next().unwrap() == <span class="string">&#39;-&#39; </span>{
+                        <span class="macro">quote! </span>{#into.unify(#i <span class="kw">as </span>i64)<span class="question-mark">?</span>;}
+                    } <span class="kw">else </span>{
+                        <span class="macro">quote! </span>{#into.unify(#i <span class="kw">as </span>u64)<span class="question-mark">?</span>;}
                     }
                 }
-                <span class="ident"><span class="self">Self</span>::Float</span>(<span class="ident">f</span>) =&gt; {
-                    <span class="macro">quote!</span> {#<span class="ident">into</span>.<span class="ident">unify</span>(#<span class="ident">f</span> <span class="kw">as</span> <span class="ident">f64</span>)<span class="question-mark">?</span>;}
+                <span class="self">Self</span>::Float(f) =&gt; {
+                    <span class="macro">quote! </span>{#into.unify(#f <span class="kw">as </span>f64)<span class="question-mark">?</span>;}
                 }
-                <span class="ident"><span class="self">Self</span>::Bool</span>(<span class="ident">b</span>) =&gt; {
-                    <span class="macro">quote!</span> {#<span class="ident">into</span>.<span class="ident">unify</span>(#<span class="ident">b</span>)<span class="question-mark">?</span>;}
+                <span class="self">Self</span>::Bool(b) =&gt; {
+                    <span class="macro">quote! </span>{#into.unify(#b)<span class="question-mark">?</span>;}
                 }
-                <span class="ident"><span class="self">Self</span>::Variable</span>(<span class="ident">v</span>) =&gt; {
-                    <span class="kw">let</span> <span class="ident">var_name</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">v</span>);
-                    <span class="kw">if</span> <span class="ident">var_name</span> <span class="op">==</span> <span class="string">&quot;_&quot;</span> {
-                        <span class="comment">// fully anonymous, should always yield a new var</span>
-                        <span class="comment">// so we don&#39;t actually have to do anything, as that is what it already is.</span>
-                        <span class="macro">quote!</span> {}
-                    } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">var_id</span>) <span class="op">=</span> <span class="ident">vars</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">var_name</span>) {
-                        <span class="kw">let</span> <span class="ident">var_ident</span> <span class="op">=</span> <span class="ident">term_ident_from_id</span>(<span class="kw-2">*</span><span class="ident">var_id</span>);
-                        <span class="macro">quote!</span> {#<span class="ident">into</span>.<span class="ident">unify</span>(<span class="kw-2">&amp;</span>#<span class="ident">var_ident</span>)<span class="question-mark">?</span>;}
-                    } <span class="kw">else</span> {
-                        <span class="ident">vars</span>.<span class="ident">insert</span>(<span class="ident">var_name</span>, <span class="ident">into_id</span>);
-                        <span class="comment">// this term is already a variable. No need to do anything.</span>
-                        <span class="macro">quote!</span> {}
+                <span class="self">Self</span>::Variable(v) =&gt; {
+                    <span class="kw">let </span>var_name = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, v);
+                    <span class="kw">if </span>var_name == <span class="string">&quot;_&quot; </span>{
+                        <span class="comment">// fully anonymous, should always yield a new var
+                        // so we don&#39;t actually have to do anything, as that is what it already is.
+                        </span><span class="macro">quote! </span>{}
+                    } <span class="kw">else if let </span><span class="prelude-val">Some</span>(var_id) = vars.get(<span class="kw-2">&amp;</span>var_name) {
+                        <span class="kw">let </span>var_ident = term_ident_from_id(<span class="kw-2">*</span>var_id);
+                        <span class="macro">quote! </span>{#into.unify(<span class="kw-2">&amp;</span>#var_ident)<span class="question-mark">?</span>;}
+                    } <span class="kw">else </span>{
+                        vars.insert(var_name, into_id);
+                        <span class="comment">// this term is already a variable. No need to do anything.
+                        </span><span class="macro">quote! </span>{}
                     }
                 }
-                <span class="ident"><span class="self">Self</span>::TemplateExpr</span>(<span class="ident">expr</span>) =&gt; {
-                    <span class="macro">quote!</span> {#<span class="ident">into</span>.<span class="ident">unify</span>(#<span class="ident">expr</span>)<span class="question-mark">?</span>;}
+                <span class="self">Self</span>::TemplateExpr(expr) =&gt; {
+                    <span class="macro">quote! </span>{#into.unify(#expr)<span class="question-mark">?</span>;}
                 }
             },
         )
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Parse</span> <span class="kw">for</span> <span class="ident">Leaf</span> {
-    <span class="kw">fn</span> <span class="ident">parse</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">ParseBuffer</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">peek</span>(<span class="macro">Token!</span>[#]) {
-            <span class="comment">// templating!</span>
-            <span class="ident">input</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="macro">Token!</span>[#]<span class="op">&gt;</span>().<span class="ident">unwrap</span>();
+<span class="kw">impl </span>Parse <span class="kw">for </span>Leaf {
+    <span class="kw">fn </span>parse(input: <span class="kw-2">&amp;</span>ParseBuffer) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">if </span>input.peek(<span class="macro">Token!</span>[#]) {
+            <span class="comment">// templating!
+            </span>input.parse::&lt;<span class="macro">Token!</span>[#]&gt;().unwrap();
 
-            <span class="kw">let</span> <span class="ident">expr</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">Expr</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
-            <span class="prelude-val">Ok</span>(<span class="ident"><span class="self">Self</span>::TemplateExpr</span>(<span class="ident">expr</span>))
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">peek</span>(<span class="macro">Token!</span>[<span class="kw">_</span>]) {
-            <span class="prelude-val">Ok</span>(<span class="ident"><span class="self">Self</span>::Variable</span>(<span class="ident">input</span>.<span class="ident">call</span>(<span class="ident">Ident::parse_any</span>)<span class="question-mark">?</span>))
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">peek</span>(<span class="ident">Ident</span>) {
-            <span class="kw">let</span> <span class="ident">ident</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">Ident</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">ident</span>);
-            <span class="kw">let</span> <span class="ident">first_char</span> <span class="op">=</span> <span class="ident">name</span>.<span class="ident">chars</span>().<span class="ident">next</span>().<span class="ident">unwrap</span>();
-            <span class="kw">if</span> <span class="ident">first_char</span> <span class="op">==</span> <span class="string">&#39;_&#39;</span> <span class="op">|</span><span class="op">|</span> <span class="ident">first_char</span>.<span class="ident">is_uppercase</span>() {
-                <span class="prelude-val">Ok</span>(<span class="ident"><span class="self">Self</span>::Variable</span>(<span class="ident">ident</span>))
-            } <span class="kw">else</span> {
-                <span class="prelude-val">Ok</span>(<span class="ident"><span class="self">Self</span>::Atom</span>(<span class="ident">ident</span>))
+            <span class="kw">let </span>expr = input.parse::&lt;Expr&gt;()<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(<span class="self">Self</span>::TemplateExpr(expr))
+        } <span class="kw">else if </span>input.peek(<span class="macro">Token!</span>[<span class="kw">_</span>]) {
+            <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Variable(input.call(Ident::parse_any)<span class="question-mark">?</span>))
+        } <span class="kw">else if </span>input.peek(Ident) {
+            <span class="kw">let </span>ident = input.parse::&lt;Ident&gt;()<span class="question-mark">?</span>;
+            <span class="kw">let </span>name = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, ident);
+            <span class="kw">let </span>first_char = name.chars().next().unwrap();
+            <span class="kw">if </span>first_char == <span class="string">&#39;_&#39; </span>|| first_char.is_uppercase() {
+                <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Variable(ident))
+            } <span class="kw">else </span>{
+                <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Atom(ident))
             }
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">peek</span>(<span class="ident">LitStr</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident"><span class="self">Self</span>::String</span>(<span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>))
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">peek</span>(<span class="ident">LitInt</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident"><span class="self">Self</span>::Int</span>(<span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>))
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">peek</span>(<span class="ident">LitFloat</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident"><span class="self">Self</span>::Float</span>(<span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>))
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">peek</span>(<span class="ident">LitBool</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident"><span class="self">Self</span>::Bool</span>(<span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>))
-        } <span class="kw">else</span> {
-            <span class="prelude-val">Err</span>(<span class="ident">input</span>.<span class="ident">error</span>(<span class="string">&quot;unknown leaf type&quot;</span>))
+        } <span class="kw">else if </span>input.peek(LitStr) {
+            <span class="prelude-val">Ok</span>(<span class="self">Self</span>::String(input.parse()<span class="question-mark">?</span>))
+        } <span class="kw">else if </span>input.peek(LitInt) {
+            <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Int(input.parse()<span class="question-mark">?</span>))
+        } <span class="kw">else if </span>input.peek(LitFloat) {
+            <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Float(input.parse()<span class="question-mark">?</span>))
+        } <span class="kw">else if </span>input.peek(LitBool) {
+            <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Bool(input.parse()<span class="question-mark">?</span>))
+        } <span class="kw">else </span>{
+            <span class="prelude-val">Err</span>(input.error(<span class="string">&quot;unknown leaf type&quot;</span>))
         }
     }
 }
 
-<span class="kw">struct</span> <span class="ident">Functor</span> {
-    <span class="ident">head</span>: <span class="ident">Ident</span>,
-    <span class="ident">params</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Term</span><span class="op">&gt;</span>,
+<span class="kw">struct </span>Functor {
+    head: Ident,
+    params: Vec&lt;Term&gt;,
 }
 
-<span class="kw">impl</span> <span class="ident">Functor</span> {
-    <span class="kw">fn</span> <span class="ident">generate</span>(
+<span class="kw">impl </span>Functor {
+    <span class="kw">fn </span>generate(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">into_id</span>: <span class="ident">usize</span>,
-        <span class="kw-2">mut</span> <span class="ident">top</span>: <span class="ident">usize</span>,
-        <span class="ident">vars</span>: <span class="kw-2">&amp;mut</span> <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">usize</span><span class="op">&gt;</span>,
-    ) -&gt; (<span class="ident">usize</span>, <span class="ident">TokenStream</span>) {
-        <span class="kw">let</span> <span class="ident">crt</span> <span class="op">=</span> <span class="ident">crate_token</span>();
-        <span class="kw">let</span> <span class="ident">into</span> <span class="op">=</span> <span class="ident">term_ident_from_id</span>(<span class="ident">into_id</span>);
-        <span class="kw">let</span> <span class="ident">arity</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">len</span>();
-        <span class="kw">let</span> <span class="ident">head_str</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="self">self</span>.<span class="ident">head</span>);
+        into_id: usize,
+        <span class="kw-2">mut </span>top: usize,
+        vars: <span class="kw-2">&amp;mut </span>HashMap&lt;String, usize&gt;,
+    ) -&gt; (usize, TokenStream) {
+        <span class="kw">let </span>crt = crate_token();
+        <span class="kw">let </span>into = term_ident_from_id(into_id);
+        <span class="kw">let </span>arity = <span class="self">self</span>.params.len();
+        <span class="kw">let </span>head_str = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="self">self</span>.head);
 
-        <span class="kw">let</span> <span class="ident">functor_put</span> <span class="op">=</span> <span class="macro">quote!</span> {
+        <span class="kw">let </span>functor_put = <span class="macro">quote! </span>{
             {
-                <span class="kw">let</span> <span class="ident">functor</span> <span class="op">=</span> #<span class="ident">crt::functor::Functor::new</span>(#<span class="ident">head_str</span>, <span class="ident">std::convert::TryInto::try_into</span>(#<span class="ident">arity</span>).<span class="ident">unwrap</span>());
-                #<span class="ident">into</span>.<span class="ident">unify</span>(<span class="kw-2">&amp;</span><span class="ident">functor</span>)<span class="question-mark">?</span>;
+                <span class="kw">let </span>functor = #crt::functor::Functor::new(#head_str, std::convert::TryInto::try_into(#arity).unwrap());
+                #into.unify(<span class="kw-2">&amp;</span>functor)<span class="question-mark">?</span>;
             }
         };
 
-        <span class="kw">let</span> <span class="ident">param_assign</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">arity</span> <span class="op">&gt;</span> <span class="number">0</span> {
-            <span class="bool-val">true</span> =&gt; {
-                <span class="kw">let</span> <span class="ident">term_id_ident</span> <span class="op">=</span> <span class="ident">Ident::new</span>(
-                    <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__swipl_ident_refs_{}&quot;</span>, <span class="ident">top</span> <span class="op">+</span> <span class="number">1</span>),
-                    <span class="ident">Span::call_site</span>(),
+        <span class="kw">let </span>param_assign = <span class="kw">match </span>arity &gt; <span class="number">0 </span>{
+            <span class="bool-val">true </span>=&gt; {
+                <span class="kw">let </span>term_id_ident = Ident::new(
+                    <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__swipl_ident_refs_{}&quot;</span>, top + <span class="number">1</span>),
+                    Span::call_site(),
                 );
-                <span class="kw">let</span> <span class="ident">term_id</span> <span class="op">=</span> <span class="ident">top</span> <span class="op">+</span> <span class="number">1</span>;
-                <span class="kw">let</span> <span class="ident">term_idents</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> (<span class="number">0</span>..<span class="ident">arity</span>)
-                    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">term_id</span> <span class="op">+</span> <span class="ident">i</span>)
-                    .<span class="ident">map</span>(<span class="ident">term_ident_from_id</span>)
-                    .<span class="ident">collect</span>();
+                <span class="kw">let </span>term_id = top + <span class="number">1</span>;
+                <span class="kw">let </span>term_idents: Vec&lt;<span class="kw">_</span>&gt; = (<span class="number">0</span>..arity)
+                    .map(|i| term_id + i)
+                    .map(term_ident_from_id)
+                    .collect();
 
-                <span class="ident">top</span> <span class="op">+</span><span class="op">=</span> <span class="ident">arity</span> <span class="op">+</span> <span class="number">1</span>;
-                <span class="kw">let</span> <span class="ident">terms_init</span> <span class="op">=</span> <span class="ident">term_idents</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>().<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">ix</span>, <span class="ident">ident</span>)<span class="op">|</span> {
-                    <span class="macro">quote!</span> {
-                        <span class="kw">let</span> #<span class="ident">ident</span> <span class="op">=</span> <span class="kw">unsafe</span> {<span class="ident">__swipl_frame</span>.<span class="ident">wrap_term_ref</span>(#<span class="ident">term_id_ident</span> <span class="op">+</span> #<span class="ident">ix</span>)};
-                        #<span class="ident">into</span>.<span class="ident">unify_arg</span>(#<span class="ident">ix</span><span class="op">+</span><span class="number">1</span>, <span class="kw-2">&amp;</span>#<span class="ident">ident</span>)<span class="question-mark">?</span>;
+                top += arity + <span class="number">1</span>;
+                <span class="kw">let </span>terms_init = term_idents.iter().enumerate().map(|(ix, ident)| {
+                    <span class="macro">quote! </span>{
+                        <span class="kw">let </span>#ident = <span class="kw">unsafe </span>{__swipl_frame.wrap_term_ref(#term_id_ident + #ix)};
+                        #into.unify_arg(#ix+<span class="number">1</span>, <span class="kw-2">&amp;</span>#ident)<span class="question-mark">?</span>;
                     }
                 });
 
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">terms_fill</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">arity</span>);
-                <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">p</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
-                    <span class="kw">let</span> (<span class="ident">new_top</span>, <span class="ident">gen</span>) <span class="op">=</span> <span class="ident">p</span>.<span class="ident">generate</span>(<span class="ident">term_id</span> <span class="op">+</span> <span class="ident">i</span>, <span class="ident">top</span>, <span class="ident">vars</span>);
-                    <span class="ident">top</span> <span class="op">=</span> <span class="ident">new_top</span>;
-                    <span class="ident">terms_fill</span>.<span class="ident">push</span>(<span class="ident">gen</span>);
+                <span class="kw">let </span><span class="kw-2">mut </span>terms_fill = Vec::with_capacity(arity);
+                <span class="kw">for </span>(i, p) <span class="kw">in </span><span class="self">self</span>.params.iter().enumerate() {
+                    <span class="kw">let </span>(new_top, gen) = p.generate(term_id + i, top, vars);
+                    top = new_top;
+                    terms_fill.push(gen);
                 }
 
-                <span class="macro">quote!</span> {
-                    <span class="kw">let</span> #<span class="ident">term_id_ident</span> <span class="op">=</span> <span class="kw">unsafe</span> { #<span class="ident">crt::fli::PL_new_term_refs</span>(<span class="ident">std::convert::TryInto::try_into</span>(#<span class="ident">arity</span>).<span class="ident">unwrap</span>()) };
-                    #(#<span class="ident">terms_init</span>)<span class="op">*</span>
+                <span class="macro">quote! </span>{
+                    <span class="kw">let </span>#term_id_ident = <span class="kw">unsafe </span>{ #crt::fli::PL_new_term_refs(std::convert::TryInto::try_into(#arity).unwrap()) };
+                    #(#terms_init)*
 
-                    #(#<span class="ident">terms_fill</span>)<span class="op">*</span>
+                    #(#terms_fill)*
                 }
             }
-            <span class="bool-val">false</span> =&gt; <span class="macro">quote!</span> {},
+            <span class="bool-val">false </span>=&gt; <span class="macro">quote! </span>{},
         };
 
         (
-            <span class="ident">top</span>,
-            <span class="macro">quote!</span> {
-                #<span class="ident">functor_put</span>
-                #<span class="ident">param_assign</span>
+            top,
+            <span class="macro">quote! </span>{
+                #functor_put
+                #param_assign
             },
         )
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Parse</span> <span class="kw">for</span> <span class="ident">Functor</span> {
-    <span class="kw">fn</span> <span class="ident">parse</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">ParseBuffer</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">head</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
+<span class="kw">impl </span>Parse <span class="kw">for </span>Functor {
+    <span class="kw">fn </span>parse(input: <span class="kw-2">&amp;</span>ParseBuffer) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span>head = input.parse()<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="ident">params_stream</span>;
-        <span class="macro">parenthesized!</span>(<span class="ident">params_stream</span> <span class="kw">in</span> <span class="ident">input</span>);
-        <span class="kw">let</span> <span class="ident">params_punct</span>: <span class="ident">Punctuated</span><span class="op">&lt;</span><span class="ident">Term</span>, <span class="macro">Token!</span>[,]<span class="op">&gt;</span> <span class="op">=</span>
-            <span class="ident">params_stream</span>.<span class="ident">parse_terminated</span>(<span class="ident">Term::parse</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">params</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">params_punct</span>.<span class="ident">into_iter</span>().<span class="ident">collect</span>();
+        <span class="kw">let </span>params_stream;
+        <span class="macro">parenthesized!</span>(params_stream <span class="kw">in </span>input);
+        <span class="kw">let </span>params_punct: Punctuated&lt;Term, <span class="macro">Token!</span>[,]&gt; =
+            params_stream.parse_terminated(Term::parse)<span class="question-mark">?</span>;
+        <span class="kw">let </span>params: Vec&lt;<span class="kw">_</span>&gt; = params_punct.into_iter().collect();
 
-        <span class="prelude-val">Ok</span>(<span class="self">Self</span> { <span class="ident">head</span>, <span class="ident">params</span> })
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{ head, params })
     }
 }
 
-<span class="kw">struct</span> <span class="ident">List</span> {
-    <span class="ident">elements</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Term</span><span class="op">&gt;</span>,
+<span class="kw">struct </span>List {
+    elements: Vec&lt;Term&gt;,
 }
 
-<span class="kw">impl</span> <span class="ident">List</span> {
-    <span class="kw">fn</span> <span class="ident">generate</span>(
+<span class="kw">impl </span>List {
+    <span class="kw">fn </span>generate(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">into_id</span>: <span class="ident">usize</span>,
-        <span class="kw-2">mut</span> <span class="ident">top</span>: <span class="ident">usize</span>,
-        <span class="ident">vars</span>: <span class="kw-2">&amp;mut</span> <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">usize</span><span class="op">&gt;</span>,
-    ) -&gt; (<span class="ident">usize</span>, <span class="ident">TokenStream</span>) {
-        <span class="kw">let</span> <span class="ident">crt</span> <span class="op">=</span> <span class="ident">crate_token</span>();
-        <span class="kw">let</span> <span class="ident">into</span> <span class="op">=</span> <span class="ident">term_ident_from_id</span>(<span class="ident">into_id</span>);
-        <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">elements</span>.<span class="ident">len</span>();
+        into_id: usize,
+        <span class="kw-2">mut </span>top: usize,
+        vars: <span class="kw-2">&amp;mut </span>HashMap&lt;String, usize&gt;,
+    ) -&gt; (usize, TokenStream) {
+        <span class="kw">let </span>crt = crate_token();
+        <span class="kw">let </span>into = term_ident_from_id(into_id);
+        <span class="kw">let </span>len = <span class="self">self</span>.elements.len();
 
-        <span class="comment">// create term names for all the elements</span>
-        <span class="kw">let</span> <span class="ident">term_id_ident</span> <span class="op">=</span> <span class="ident">Ident::new</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__swipl_ident_refs_{}&quot;</span>, <span class="ident">top</span>), <span class="ident">Span::call_site</span>());
-        <span class="kw">let</span> <span class="ident">term_id</span> <span class="op">=</span> <span class="ident">top</span> <span class="op">+</span> <span class="number">1</span>;
-        <span class="kw">let</span> <span class="ident">term_idents</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> (<span class="number">0</span>..<span class="ident">len</span>)
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">term_id</span> <span class="op">+</span> <span class="ident">i</span>)
-            .<span class="ident">map</span>(<span class="ident">term_ident_from_id</span>)
-            .<span class="ident">collect</span>();
+        <span class="comment">// create term names for all the elements
+        </span><span class="kw">let </span>term_id_ident = Ident::new(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__swipl_ident_refs_{}&quot;</span>, top), Span::call_site());
+        <span class="kw">let </span>term_id = top + <span class="number">1</span>;
+        <span class="kw">let </span>term_idents: Vec&lt;<span class="kw">_</span>&gt; = (<span class="number">0</span>..len)
+            .map(|i| term_id + i)
+            .map(term_ident_from_id)
+            .collect();
 
-        <span class="ident">top</span> <span class="op">+</span><span class="op">=</span> <span class="ident">len</span>;
+        top += len;
 
-        <span class="kw">let</span> <span class="ident">elements_assign</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">len</span> <span class="op">&gt;</span> <span class="number">0</span> {
-            <span class="bool-val">true</span> =&gt; {
-                <span class="comment">// initialize terms</span>
-                <span class="kw">let</span> <span class="ident">terms_init</span> <span class="op">=</span> <span class="ident">term_idents</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>().<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">ix</span>, <span class="ident">ident</span>)<span class="op">|</span> {
-                    <span class="macro">quote!</span> {
-                        <span class="kw">let</span> #<span class="ident">ident</span> <span class="op">=</span> <span class="kw">unsafe</span> {<span class="ident">__swipl_frame</span>.<span class="ident">wrap_term_ref</span>(#<span class="ident">term_id_ident</span> <span class="op">+</span> #<span class="ident">ix</span>)};
+        <span class="kw">let </span>elements_assign = <span class="kw">match </span>len &gt; <span class="number">0 </span>{
+            <span class="bool-val">true </span>=&gt; {
+                <span class="comment">// initialize terms
+                </span><span class="kw">let </span>terms_init = term_idents.iter().enumerate().map(|(ix, ident)| {
+                    <span class="macro">quote! </span>{
+                        <span class="kw">let </span>#ident = <span class="kw">unsafe </span>{__swipl_frame.wrap_term_ref(#term_id_ident + #ix)};
                     }
                 });
 
-                <span class="comment">// one extra for the term_id_ident ref</span>
-                <span class="ident">top</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+                <span class="comment">// one extra for the term_id_ident ref
+                </span>top += <span class="number">1</span>;
 
-                <span class="comment">// generate code for term construction</span>
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">terms_fill</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">len</span>);
-                <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">e</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">elements</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
-                    <span class="kw">let</span> (<span class="ident">new_top</span>, <span class="ident">gen</span>) <span class="op">=</span> <span class="ident">e</span>.<span class="ident">generate</span>(<span class="ident">term_id</span> <span class="op">+</span> <span class="ident">i</span>, <span class="ident">top</span>, <span class="ident">vars</span>);
-                    <span class="ident">top</span> <span class="op">=</span> <span class="ident">new_top</span>;
-                    <span class="ident">terms_fill</span>.<span class="ident">push</span>(<span class="ident">gen</span>);
+                <span class="comment">// generate code for term construction
+                </span><span class="kw">let </span><span class="kw-2">mut </span>terms_fill = Vec::with_capacity(len);
+                <span class="kw">for </span>(i, e) <span class="kw">in </span><span class="self">self</span>.elements.iter().enumerate() {
+                    <span class="kw">let </span>(new_top, gen) = e.generate(term_id + i, top, vars);
+                    top = new_top;
+                    terms_fill.push(gen);
                 }
 
-                <span class="macro">quote!</span> {
-                    <span class="kw">let</span> #<span class="ident">term_id_ident</span> <span class="op">=</span> <span class="kw">unsafe</span> { #<span class="ident">crt::fli::PL_new_term_refs</span>(<span class="ident">std::convert::TryInto::try_into</span>(#<span class="ident">len</span>).<span class="ident">unwrap</span>()) };
-                    #(#<span class="ident">terms_init</span>)<span class="op">*</span>
+                <span class="macro">quote! </span>{
+                    <span class="kw">let </span>#term_id_ident = <span class="kw">unsafe </span>{ #crt::fli::PL_new_term_refs(std::convert::TryInto::try_into(#len).unwrap()) };
+                    #(#terms_init)*
 
-                    #(#<span class="ident">terms_fill</span>)<span class="op">*</span>
+                    #(#terms_fill)*
                 }
             }
-            <span class="bool-val">false</span> =&gt; <span class="macro">quote!</span> {},
+            <span class="bool-val">false </span>=&gt; <span class="macro">quote! </span>{},
         };
 
-        <span class="comment">// build up list</span>
-        (
-            <span class="ident">top</span>,
-            <span class="macro">quote!</span> {
-                #<span class="ident">elements_assign</span>
+        <span class="comment">// build up list
+        </span>(
+            top,
+            <span class="macro">quote! </span>{
+                #elements_assign
 
-                <span class="kw">let</span> <span class="ident">arr</span> <span class="op">=</span> [#(<span class="kw-2">&amp;</span>#<span class="ident">term_idents</span>),<span class="kw-2">*</span>];
-                #<span class="ident">into</span>.<span class="ident">unify</span>(<span class="ident">arr</span>.<span class="ident">as_ref</span>())<span class="question-mark">?</span>;
+                <span class="kw">let </span>arr = [#(<span class="kw-2">&amp;</span>#term_idents),<span class="kw-2">*</span>];
+                #into.unify(arr.as_ref())<span class="question-mark">?</span>;
             },
         )
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Parse</span> <span class="kw">for</span> <span class="ident">List</span> {
-    <span class="kw">fn</span> <span class="ident">parse</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">ParseBuffer</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">elements_stream</span>;
-        <span class="macro">bracketed!</span>(<span class="ident">elements_stream</span> <span class="kw">in</span> <span class="ident">input</span>);
-        <span class="kw">let</span> <span class="ident">elements_punct</span>: <span class="ident">Punctuated</span><span class="op">&lt;</span><span class="ident">Term</span>, <span class="macro">Token!</span>[,]<span class="op">&gt;</span> <span class="op">=</span>
-            <span class="ident">elements_stream</span>.<span class="ident">parse_terminated</span>(<span class="ident">Term::parse</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">elements</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">elements_punct</span>.<span class="ident">into_iter</span>().<span class="ident">collect</span>();
+<span class="kw">impl </span>Parse <span class="kw">for </span>List {
+    <span class="kw">fn </span>parse(input: <span class="kw-2">&amp;</span>ParseBuffer) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span>elements_stream;
+        <span class="macro">bracketed!</span>(elements_stream <span class="kw">in </span>input);
+        <span class="kw">let </span>elements_punct: Punctuated&lt;Term, <span class="macro">Token!</span>[,]&gt; =
+            elements_stream.parse_terminated(Term::parse)<span class="question-mark">?</span>;
+        <span class="kw">let </span>elements: Vec&lt;<span class="kw">_</span>&gt; = elements_punct.into_iter().collect();
 
-        <span class="prelude-val">Ok</span>(<span class="self">Self</span> { <span class="ident">elements</span> })
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{ elements })
     }
 }
 
-<span class="kw">struct</span> <span class="ident">Tuple</span> {
-    <span class="ident">terms</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Term</span><span class="op">&gt;</span>,
+<span class="kw">struct </span>Tuple {
+    terms: Vec&lt;Term&gt;,
 }
 
-<span class="kw">impl</span> <span class="ident">Tuple</span> {
-    <span class="kw">fn</span> <span class="ident">generate</span>(
+<span class="kw">impl </span>Tuple {
+    <span class="kw">fn </span>generate(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">into_id</span>: <span class="ident">usize</span>,
-        <span class="kw-2">mut</span> <span class="ident">top</span>: <span class="ident">usize</span>,
-        <span class="ident">vars</span>: <span class="kw-2">&amp;mut</span> <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">usize</span><span class="op">&gt;</span>,
-    ) -&gt; (<span class="ident">usize</span>, <span class="ident">TokenStream</span>) {
-        <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">terms</span>.<span class="ident">len</span>();
+        into_id: usize,
+        <span class="kw-2">mut </span>top: usize,
+        vars: <span class="kw-2">&amp;mut </span>HashMap&lt;String, usize&gt;,
+    ) -&gt; (usize, TokenStream) {
+        <span class="kw">let </span>len = <span class="self">self</span>.terms.len();
 
-        <span class="kw">if</span> <span class="ident">len</span> <span class="op">==</span> <span class="number">1</span> {
-            <span class="comment">// this is not actually a tuple. Just chain into generating the term</span>
-            <span class="kw">return</span> <span class="self">self</span>.<span class="ident">terms</span>[<span class="number">0</span>].<span class="ident">generate</span>(<span class="ident">into_id</span>, <span class="ident">top</span>, <span class="ident">vars</span>);
+        <span class="kw">if </span>len == <span class="number">1 </span>{
+            <span class="comment">// this is not actually a tuple. Just chain into generating the term
+            </span><span class="kw">return </span><span class="self">self</span>.terms[<span class="number">0</span>].generate(into_id, top, vars);
         }
 
-        <span class="kw">let</span> <span class="ident">crt</span> <span class="op">=</span> <span class="ident">crate_token</span>();
-        <span class="kw">let</span> <span class="ident">into</span> <span class="op">=</span> <span class="ident">term_ident_from_id</span>(<span class="ident">into_id</span>);
+        <span class="kw">let </span>crt = crate_token();
+        <span class="kw">let </span>into = term_ident_from_id(into_id);
 
-        <span class="comment">// create term names for all the elements</span>
-        <span class="kw">let</span> <span class="ident">term_id_ident</span> <span class="op">=</span> <span class="ident">Ident::new</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__swipl_ident_refs_{}&quot;</span>, <span class="ident">top</span>), <span class="ident">Span::call_site</span>());
-        <span class="kw">let</span> <span class="ident">term_id</span> <span class="op">=</span> <span class="ident">top</span> <span class="op">+</span> <span class="number">1</span>;
-        <span class="kw">let</span> <span class="ident">term_idents</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> (<span class="number">0</span>..<span class="ident">len</span>)
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">term_id</span> <span class="op">+</span> <span class="ident">i</span>)
-            .<span class="ident">map</span>(<span class="ident">term_ident_from_id</span>)
-            .<span class="ident">collect</span>();
+        <span class="comment">// create term names for all the elements
+        </span><span class="kw">let </span>term_id_ident = Ident::new(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__swipl_ident_refs_{}&quot;</span>, top), Span::call_site());
+        <span class="kw">let </span>term_id = top + <span class="number">1</span>;
+        <span class="kw">let </span>term_idents: Vec&lt;<span class="kw">_</span>&gt; = (<span class="number">0</span>..len)
+            .map(|i| term_id + i)
+            .map(term_ident_from_id)
+            .collect();
 
-        <span class="comment">// initialize terms</span>
-        <span class="kw">let</span> <span class="ident">terms_init</span> <span class="op">=</span> <span class="ident">term_idents</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>().<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">ix</span>, <span class="ident">ident</span>)<span class="op">|</span> {
-            <span class="macro">quote!</span> {
-                <span class="kw">let</span> #<span class="ident">ident</span> <span class="op">=</span> <span class="kw">unsafe</span> {<span class="ident">__swipl_frame</span>.<span class="ident">wrap_term_ref</span>(#<span class="ident">term_id_ident</span> <span class="op">+</span> #<span class="ident">ix</span>)};
+        <span class="comment">// initialize terms
+        </span><span class="kw">let </span>terms_init = term_idents.iter().enumerate().map(|(ix, ident)| {
+            <span class="macro">quote! </span>{
+                <span class="kw">let </span>#ident = <span class="kw">unsafe </span>{__swipl_frame.wrap_term_ref(#term_id_ident + #ix)};
             }
         });
 
-        <span class="ident">top</span> <span class="op">+</span><span class="op">=</span> <span class="ident">len</span> <span class="op">+</span> <span class="number">1</span>;
+        top += len + <span class="number">1</span>;
 
-        <span class="comment">// generate code for term construction</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">terms_fill</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">len</span>);
-        <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">e</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">terms</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
-            <span class="kw">let</span> (<span class="ident">new_top</span>, <span class="ident">gen</span>) <span class="op">=</span> <span class="ident">e</span>.<span class="ident">generate</span>(<span class="ident">term_id</span> <span class="op">+</span> <span class="ident">i</span>, <span class="ident">top</span>, <span class="ident">vars</span>);
-            <span class="ident">top</span> <span class="op">=</span> <span class="ident">new_top</span>;
-            <span class="ident">terms_fill</span>.<span class="ident">push</span>(<span class="ident">gen</span>);
+        <span class="comment">// generate code for term construction
+        </span><span class="kw">let </span><span class="kw-2">mut </span>terms_fill = Vec::with_capacity(len);
+        <span class="kw">for </span>(i, e) <span class="kw">in </span><span class="self">self</span>.terms.iter().enumerate() {
+            <span class="kw">let </span>(new_top, gen) = e.generate(term_id + i, top, vars);
+            top = new_top;
+            terms_fill.push(gen);
         }
 
-        <span class="kw">let</span> <span class="ident">terms_assign</span> <span class="op">=</span> <span class="macro">quote!</span> {
-            <span class="kw">let</span> #<span class="ident">term_id_ident</span> <span class="op">=</span> <span class="kw">unsafe</span> { #<span class="ident">crt::fli::PL_new_term_refs</span>(<span class="ident">std::convert::TryInto::try_into</span>(#<span class="ident">len</span>).<span class="ident">unwrap</span>()) };
-            #(#<span class="ident">terms_init</span>)<span class="op">*</span>
+        <span class="kw">let </span>terms_assign = <span class="macro">quote! </span>{
+            <span class="kw">let </span>#term_id_ident = <span class="kw">unsafe </span>{ #crt::fli::PL_new_term_refs(std::convert::TryInto::try_into(#len).unwrap()) };
+            #(#terms_init)*
 
-            #(#<span class="ident">terms_fill</span>)<span class="op">*</span>
+            #(#terms_fill)*
         };
 
-        <span class="kw">let</span> <span class="ident">final_setup</span> <span class="op">=</span> <span class="macro">quote!</span> {
-            <span class="kw">let</span> <span class="ident">cur_ident</span> <span class="op">=</span> <span class="ident">__swipl_frame</span>.<span class="ident">new_term_ref</span>();
-            <span class="ident">cur_ident</span>.<span class="ident">unify</span>(<span class="kw-2">&amp;</span>#<span class="ident">into</span>)<span class="question-mark">?</span>;
+        <span class="kw">let </span>final_setup = <span class="macro">quote! </span>{
+            <span class="kw">let </span>cur_ident = __swipl_frame.new_term_ref();
+            cur_ident.unify(<span class="kw-2">&amp;</span>#into)<span class="question-mark">?</span>;
 
-            <span class="kw">let</span> <span class="ident">comma_functor</span> <span class="op">=</span> #<span class="ident">crt::functor::Functor::new</span>(<span class="string">&quot;,&quot;</span>, <span class="number">2</span>);
-            <span class="ident">cur_ident</span>.<span class="ident">unify</span>(<span class="kw-2">&amp;</span><span class="ident">comma_functor</span>)<span class="question-mark">?</span>;
+            <span class="kw">let </span>comma_functor = #crt::functor::Functor::new(<span class="string">&quot;,&quot;</span>, <span class="number">2</span>);
+            cur_ident.unify(<span class="kw-2">&amp;</span>comma_functor)<span class="question-mark">?</span>;
         };
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">terms_chain</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">len</span>);
-        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..(<span class="ident">len</span> <span class="op">-</span> <span class="number">1</span>) {
-            <span class="comment">// for each element except the last one, we need to</span>
-            <span class="comment">// - unify comma functor with current</span>
-            <span class="comment">// - unify element with first</span>
-            <span class="comment">// - make current the second element</span>
-            <span class="kw">let</span> <span class="ident">term_ident</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">term_idents</span>[<span class="ident">i</span>];
-            <span class="ident">terms_chain</span>.<span class="ident">push</span>(<span class="macro">quote!</span> {
-                <span class="ident">cur_ident</span>.<span class="ident">unify</span>(<span class="kw-2">&amp;</span><span class="ident">comma_functor</span>)<span class="question-mark">?</span>;
-                <span class="ident">cur_ident</span>.<span class="ident">unify_arg</span>(<span class="number">1</span>, <span class="kw-2">&amp;</span>#<span class="ident">term_ident</span>)<span class="question-mark">?</span>;
-                <span class="kw">let</span> <span class="ident">next_ident</span> <span class="op">=</span> <span class="ident">__swipl_frame</span>.<span class="ident">new_term_ref</span>();
-                <span class="ident">cur_ident</span>.<span class="ident">unify_arg</span>(<span class="number">2</span>, <span class="kw-2">&amp;</span><span class="ident">next_ident</span>)<span class="question-mark">?</span>;
-                <span class="ident">cur_ident</span>.<span class="ident">put</span>(<span class="kw-2">&amp;</span><span class="ident">next_ident</span>)<span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>terms_chain = Vec::with_capacity(len);
+        <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..(len - <span class="number">1</span>) {
+            <span class="comment">// for each element except the last one, we need to
+            // - unify comma functor with current
+            // - unify element with first
+            // - make current the second element
+            </span><span class="kw">let </span>term_ident = <span class="kw-2">&amp;</span>term_idents[i];
+            terms_chain.push(<span class="macro">quote! </span>{
+                cur_ident.unify(<span class="kw-2">&amp;</span>comma_functor)<span class="question-mark">?</span>;
+                cur_ident.unify_arg(<span class="number">1</span>, <span class="kw-2">&amp;</span>#term_ident)<span class="question-mark">?</span>;
+                <span class="kw">let </span>next_ident = __swipl_frame.new_term_ref();
+                cur_ident.unify_arg(<span class="number">2</span>, <span class="kw-2">&amp;</span>next_ident)<span class="question-mark">?</span>;
+                cur_ident.put(<span class="kw-2">&amp;</span>next_ident)<span class="question-mark">?</span>;
             });
         }
 
-        <span class="comment">// for the last element, we only need to put it in the second position</span>
-        <span class="kw">let</span> <span class="ident">last_elt</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">term_idents</span>[<span class="ident">len</span> <span class="op">-</span> <span class="number">1</span>];
-        <span class="ident">terms_chain</span>.<span class="ident">push</span>(<span class="macro">quote!</span> {
-            <span class="ident">cur_ident</span>.<span class="ident">unify</span>(<span class="kw-2">&amp;</span>#<span class="ident">last_elt</span>)<span class="question-mark">?</span>;
+        <span class="comment">// for the last element, we only need to put it in the second position
+        </span><span class="kw">let </span>last_elt = <span class="kw-2">&amp;</span>term_idents[len - <span class="number">1</span>];
+        terms_chain.push(<span class="macro">quote! </span>{
+            cur_ident.unify(<span class="kw-2">&amp;</span>#last_elt)<span class="question-mark">?</span>;
         });
 
-        <span class="comment">// build up tuple</span>
-        (
-            <span class="ident">top</span>,
-            <span class="macro">quote!</span> {
-                #<span class="ident">terms_assign</span>
+        <span class="comment">// build up tuple
+        </span>(
+            top,
+            <span class="macro">quote! </span>{
+                #terms_assign
 
-                #<span class="ident">final_setup</span>
-                #(#<span class="ident">terms_chain</span>)<span class="op">*</span>
+                #final_setup
+                #(#terms_chain)*
             },
         )
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Parse</span> <span class="kw">for</span> <span class="ident">Tuple</span> {
-    <span class="kw">fn</span> <span class="ident">parse</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">ParseBuffer</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">terms_stream</span>;
-        <span class="macro">parenthesized!</span>(<span class="ident">terms_stream</span> <span class="kw">in</span> <span class="ident">input</span>);
-        <span class="kw">let</span> <span class="ident">terms_punct</span>: <span class="ident">Punctuated</span><span class="op">&lt;</span><span class="ident">Term</span>, <span class="macro">Token!</span>[,]<span class="op">&gt;</span> <span class="op">=</span>
-            <span class="ident">terms_stream</span>.<span class="ident">parse_terminated</span>(<span class="ident">Term::parse</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">terms</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">terms_punct</span>.<span class="ident">into_iter</span>().<span class="ident">collect</span>();
-        <span class="kw">if</span> <span class="ident">terms</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span> {
-            <span class="ident">terms_stream</span>
-                .<span class="ident">error</span>(<span class="string">&quot;parenthesized list of expressions should contain at least one element&quot;</span>);
+<span class="kw">impl </span>Parse <span class="kw">for </span>Tuple {
+    <span class="kw">fn </span>parse(input: <span class="kw-2">&amp;</span>ParseBuffer) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span>terms_stream;
+        <span class="macro">parenthesized!</span>(terms_stream <span class="kw">in </span>input);
+        <span class="kw">let </span>terms_punct: Punctuated&lt;Term, <span class="macro">Token!</span>[,]&gt; =
+            terms_stream.parse_terminated(Term::parse)<span class="question-mark">?</span>;
+        <span class="kw">let </span>terms: Vec&lt;<span class="kw">_</span>&gt; = terms_punct.into_iter().collect();
+        <span class="kw">if </span>terms.len() == <span class="number">0 </span>{
+            terms_stream
+                .error(<span class="string">&quot;parenthesized list of expressions should contain at least one element&quot;</span>);
         }
 
-        <span class="prelude-val">Ok</span>(<span class="self">Self</span> { <span class="ident">terms</span> })
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{ terms })
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

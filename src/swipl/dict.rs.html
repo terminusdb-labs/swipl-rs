@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl/src/dict.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>dict.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../swipl/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../swipl/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../swipl/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl/src/dict.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>dict.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../swipl/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -701,708 +701,708 @@
 <span id="701">701</span>
 <span id="702">702</span>
 <span id="703">703</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Prolog dictionaries.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! SWI-Prolog has a very convenient dictionary implementation. This</span>
-<span class="doccomment">//! module allows one to create dictionaries, as well as extract them.</span>
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::fli</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::prelude</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident">std::collections::HashMap</span>;
+</pre><pre class="rust"><code><span class="doccomment">//! Prolog dictionaries.
+//!
+//! SWI-Prolog has a very convenient dictionary implementation. This
+//! module allows one to create dictionaries, as well as extract them.
+</span><span class="kw">use </span><span class="kw">super</span>::fli;
+<span class="kw">use </span><span class="kw">super</span>::prelude::<span class="kw-2">*</span>;
+<span class="kw">use </span>std::collections::HashMap;
 
-<span class="doccomment">/// A key in a prolog dictionary.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Hash</span>, <span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Key</span> {
-    <span class="ident">Int</span>(<span class="ident">u64</span>),
-    <span class="ident">Atom</span>(<span class="ident">Atom</span>),
+<span class="doccomment">/// A key in a prolog dictionary.
+</span><span class="attribute">#[derive(PartialEq, Eq, Hash, Debug, Clone)]
+</span><span class="kw">pub enum </span>Key {
+    Int(u64),
+    Atom(Atom),
 }
 
-<span class="kw">enum</span> <span class="ident">DictTag</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="ident">Atom</span>(<span class="ident">Atom</span>),
-    <span class="ident">Term</span>(<span class="ident">Term</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>),
-    <span class="ident">Var</span>,
+<span class="kw">enum </span>DictTag&lt;<span class="lifetime">&#39;a</span>&gt; {
+    Atom(Atom),
+    Term(Term&lt;<span class="lifetime">&#39;a</span>&gt;),
+    Var,
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Key</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">val</span>: <span class="ident">u64</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::Int</span>(<span class="ident">val</span>)
+<span class="kw">impl </span>From&lt;u64&gt; <span class="kw">for </span>Key {
+    <span class="kw">fn </span>from(val: u64) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::Int(val)
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="ident">IntoAtom</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Key</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">val</span>: <span class="ident">A</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::Atom</span>(<span class="ident">val</span>.<span class="ident">into_atom</span>())
+<span class="kw">impl</span>&lt;A: IntoAtom&gt; From&lt;A&gt; <span class="kw">for </span>Key {
+    <span class="kw">fn </span>from(val: A) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::Atom(val.into_atom())
     }
 }
 
-<span class="kw">const</span> <span class="ident">INT_SHIFT</span>: <span class="ident">u8</span> <span class="op">=</span> (<span class="ident">std::mem::size_of</span>::<span class="op">&lt;</span><span class="ident">fli::atom_t</span><span class="op">&gt;</span>() <span class="op">*</span> <span class="number">8</span> <span class="op">-</span> <span class="number">7</span>) <span class="kw">as</span> <span class="ident">u8</span>;
+<span class="kw">const </span>INT_SHIFT: u8 = (std::mem::size_of::&lt;fli::atom_t&gt;() * <span class="number">8 </span>- <span class="number">7</span>) <span class="kw">as </span>u8;
 
-<span class="kw">fn</span> <span class="ident">int_to_atom_t</span>(<span class="ident">val</span>: <span class="ident">u64</span>) -&gt; <span class="ident">fli::atom_t</span> {
-    <span class="kw">if</span> (<span class="ident">val</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">INT_SHIFT</span>) <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
-        <span class="macro">panic!</span>(<span class="string">&quot;val {} is too large to be converted to an atom_t&quot;</span>, <span class="ident">val</span>);
+<span class="kw">fn </span>int_to_atom_t(val: u64) -&gt; fli::atom_t {
+    <span class="kw">if </span>(val &gt;&gt; INT_SHIFT) != <span class="number">0 </span>{
+        <span class="macro">panic!</span>(<span class="string">&quot;val {} is too large to be converted to an atom_t&quot;</span>, val);
     }
 
-    (<span class="ident">val</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">7</span> <span class="op">|</span> <span class="number">0x3</span>) <span class="kw">as</span> <span class="ident">fli::atom_t</span>
+    (val &lt;&lt; <span class="number">7 </span>| <span class="number">0x3</span>) <span class="kw">as </span>fli::atom_t
 }
 
-<span class="kw">impl</span> <span class="ident">Key</span> {
-    <span class="kw">fn</span> <span class="ident">atom_ptr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">fli::atom_t</span> {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">Key::Int</span>(<span class="ident">i</span>) =&gt; <span class="ident">int_to_atom_t</span>(<span class="kw-2">*</span><span class="ident">i</span>),
-            <span class="ident">Key::Atom</span>(<span class="ident">a</span>) =&gt; <span class="ident">a</span>.<span class="ident">atom_ptr</span>(),
+<span class="kw">impl </span>Key {
+    <span class="kw">fn </span>atom_ptr(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; fli::atom_t {
+        <span class="kw">match </span><span class="self">self </span>{
+            Key::Int(i) =&gt; int_to_atom_t(<span class="kw-2">*</span>i),
+            Key::Atom(a) =&gt; a.atom_ptr(),
         }
     }
 }
 
-<span class="doccomment">/// Trait for things that can behave as a key for the purpose of</span>
-<span class="doccomment">/// retrieving values from a prolog dictionary.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// A prolog dictionary key can either be an atom or an integer. In</span>
-<span class="doccomment">/// addition, various things can be automatically converted to</span>
-<span class="doccomment">/// atoms. This trait provides an implementation which facilitates</span>
-<span class="doccomment">/// this.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">IntoKey</span> {
-    <span class="doccomment">/// Returns the `atom_t` corresponding to this key, plus an allocation.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// As long as the allocation remains in scope, the atom_t can be</span>
-    <span class="doccomment">/// considered safe to use in unsafe code.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This is used by dict querying code to efficiently get hold of</span>
-    <span class="doccomment">/// dictionary keys (which internally are always atom_t).</span>
-    <span class="kw">fn</span> <span class="ident">atom_ptr</span>(<span class="self">self</span>) -&gt; (<span class="ident">fli::atom_t</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Atom</span><span class="op">&gt;</span>);
+<span class="doccomment">/// Trait for things that can behave as a key for the purpose of
+/// retrieving values from a prolog dictionary.
+///
+/// A prolog dictionary key can either be an atom or an integer. In
+/// addition, various things can be automatically converted to
+/// atoms. This trait provides an implementation which facilitates
+/// this.
+</span><span class="kw">pub trait </span>IntoKey {
+    <span class="doccomment">/// Returns the `atom_t` corresponding to this key, plus an allocation.
+    ///
+    /// As long as the allocation remains in scope, the atom_t can be
+    /// considered safe to use in unsafe code.
+    ///
+    /// This is used by dict querying code to efficiently get hold of
+    /// dictionary keys (which internally are always atom_t).
+    </span><span class="kw">fn </span>atom_ptr(<span class="self">self</span>) -&gt; (fli::atom_t, <span class="prelude-ty">Option</span>&lt;Atom&gt;);
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>: <span class="ident">AsAtom</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span> <span class="ident">IntoKey</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">A</span> {
-    <span class="kw">fn</span> <span class="ident">atom_ptr</span>(<span class="self">self</span>) -&gt; (<span class="ident">fli::atom_t</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Atom</span><span class="op">&gt;</span>) {
-        <span class="self">self</span>.<span class="ident">as_atom_ptr</span>()
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, A: AsAtom + <span class="question-mark">?</span>Sized&gt; IntoKey <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>A {
+    <span class="kw">fn </span>atom_ptr(<span class="self">self</span>) -&gt; (fli::atom_t, <span class="prelude-ty">Option</span>&lt;Atom&gt;) {
+        <span class="self">self</span>.as_atom_ptr()
     }
 }
 
-<span class="kw">impl</span> <span class="ident">IntoKey</span> <span class="kw">for</span> <span class="ident">u64</span> {
-    <span class="kw">fn</span> <span class="ident">atom_ptr</span>(<span class="self">self</span>) -&gt; (<span class="ident">fli::atom_t</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Atom</span><span class="op">&gt;</span>) {
-        (<span class="ident">int_to_atom_t</span>(<span class="self">self</span>), <span class="prelude-val">None</span>)
+<span class="kw">impl </span>IntoKey <span class="kw">for </span>u64 {
+    <span class="kw">fn </span>atom_ptr(<span class="self">self</span>) -&gt; (fli::atom_t, <span class="prelude-ty">Option</span>&lt;Atom&gt;) {
+        (int_to_atom_t(<span class="self">self</span>), <span class="prelude-val">None</span>)
     }
 }
 
-<span class="doccomment">/// A builder for prolog dictionaries.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// A dictionary can be constructed by first using the various builder</span>
-<span class="doccomment">/// functions on this type, and then either putting or unifying the</span>
-<span class="doccomment">/// builder with a term.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Example:</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// # use swipl::prelude::*;</span>
-<span class="doccomment">/// fn build_example_dict(term: &amp;Term) -&gt; PrologResult&lt;()&gt; {</span>
-<span class="doccomment">///     let dict = DictBuilder::new()</span>
-<span class="doccomment">///         .tag(&quot;some_tag&quot;)</span>
-<span class="doccomment">///         .entry(&quot;foo&quot;, 42_u64)</span>
-<span class="doccomment">///         .entry(&quot;bar&quot;, &quot;hello&quot;.to_owned());</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///     term.put(&amp;dict)?;</span>
-<span class="doccomment">///     Ok(())</span>
-<span class="doccomment">/// }</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This will create a prolog dictionary which looks like this:</span>
-<span class="doccomment">/// ```prolog</span>
-<span class="doccomment">/// some_tag{</span>
-<span class="doccomment">///     foo: 42,</span>
-<span class="doccomment">///     bar: &quot;hello&quot;</span>
-<span class="doccomment">/// }</span>
-<span class="doccomment">/// ```</span>
+<span class="doccomment">/// A builder for prolog dictionaries.
+///
+/// A dictionary can be constructed by first using the various builder
+/// functions on this type, and then either putting or unifying the
+/// builder with a term.
+///
+/// Example:
+/// ```
+/// # use swipl::prelude::*;
+/// fn build_example_dict(term: &amp;Term) -&gt; PrologResult&lt;()&gt; {
+///     let dict = DictBuilder::new()
+///         .tag(&quot;some_tag&quot;)
+///         .entry(&quot;foo&quot;, 42_u64)
+///         .entry(&quot;bar&quot;, &quot;hello&quot;.to_owned());
+///
+///     term.put(&amp;dict)?;
+///     Ok(())
+/// }
+/// ```
+///
+/// This will create a prolog dictionary which looks like this:
+/// ```prolog
+/// some_tag{
+///     foo: 42,
+///     bar: &quot;hello&quot;
+/// }
+/// ```
 
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DictBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="ident">tag</span>: <span class="ident">DictTag</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
-    <span class="ident">entries</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">Key</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">TermPutable</span> <span class="op">+</span> <span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+</span><span class="kw">pub struct </span>DictBuilder&lt;<span class="lifetime">&#39;a</span>&gt; {
+    tag: DictTag&lt;<span class="lifetime">&#39;a</span>&gt;,
+    entries: HashMap&lt;Key, <span class="prelude-ty">Option</span>&lt;Box&lt;<span class="kw">dyn </span>TermPutable + <span class="lifetime">&#39;a</span>&gt;&gt;&gt;,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">DictBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Create a new dictionary builder.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">tag</span>: <span class="ident">DictTag::Var</span>,
-            <span class="ident">entries</span>: <span class="ident">HashMap::new</span>(),
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; DictBuilder&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="doccomment">/// Create a new dictionary builder.
+    </span><span class="kw">pub fn </span>new() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            tag: DictTag::Var,
+            entries: HashMap::new(),
         }
     }
 
-    <span class="doccomment">/// Set the dictionary tag to the given atom.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_tag</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="ident">IntoAtom</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">tag</span>: <span class="ident">A</span>) {
-        <span class="self">self</span>.<span class="ident">tag</span> <span class="op">=</span> <span class="ident">DictTag::Atom</span>(<span class="ident">tag</span>.<span class="ident">into_atom</span>());
+    <span class="doccomment">/// Set the dictionary tag to the given atom.
+    </span><span class="kw">pub fn </span>set_tag&lt;A: IntoAtom&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, tag: A) {
+        <span class="self">self</span>.tag = DictTag::Atom(tag.into_atom());
     }
 
-    <span class="doccomment">/// Set the dictionary tag to the given atom.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">tag</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="ident">IntoAtom</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">tag</span>: <span class="ident">A</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">set_tag</span>(<span class="ident">tag</span>);
+    <span class="doccomment">/// Set the dictionary tag to the given atom.
+    </span><span class="kw">pub fn </span>tag&lt;A: IntoAtom&gt;(<span class="kw-2">mut </span><span class="self">self</span>, tag: A) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.set_tag(tag);
 
-        <span class="self">self</span>
+        <span class="self">self
+    </span>}
+
+    <span class="doccomment">/// Set the dictionary tag to the given term.
+    </span><span class="kw">pub fn </span>set_tag_term(<span class="kw-2">&amp;mut </span><span class="self">self</span>, term: Term&lt;<span class="lifetime">&#39;a</span>&gt;) {
+        <span class="self">self</span>.tag = DictTag::Term(term);
     }
 
-    <span class="doccomment">/// Set the dictionary tag to the given term.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_tag_term</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">term</span>: <span class="ident">Term</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>) {
-        <span class="self">self</span>.<span class="ident">tag</span> <span class="op">=</span> <span class="ident">DictTag::Term</span>(<span class="ident">term</span>);
+    <span class="doccomment">/// Set the dictionary tag to the given term.
+    </span><span class="kw">pub fn </span>tag_term(<span class="kw-2">mut </span><span class="self">self</span>, term: Term&lt;<span class="lifetime">&#39;a</span>&gt;) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.set_tag_term(term);
+
+        <span class="self">self
+    </span>}
+
+    <span class="doccomment">/// add an entry with the given key to the dictionary. The value
+    /// is implied to be a variable.
+    ///
+    /// If the entry already exists, this will overwrite it.
+    ///
+    /// The key can either be an atom (or something that can be turned
+    /// into an atom), or an integer.
+    </span><span class="kw">pub fn </span>add_entry_key&lt;K: Into&lt;Key&gt;&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, key: K) {
+        <span class="self">self</span>.entries.insert(key.into(), <span class="prelude-val">None</span>);
     }
 
-    <span class="doccomment">/// Set the dictionary tag to the given term.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">tag_term</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">term</span>: <span class="ident">Term</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">set_tag_term</span>(<span class="ident">term</span>);
+    <span class="doccomment">/// add an entry with the given key to the dictionary. The value
+    /// is implied to be a variable.
+    ///
+    /// If the entry already exists, this will overwrite it.
+    ///
+    /// The key can either be an atom (or something that can be turned
+    /// into an atom), or an integer.
+    </span><span class="kw">pub fn </span>entry_key&lt;K: Into&lt;Key&gt;&gt;(<span class="kw-2">mut </span><span class="self">self</span>, key: K) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.add_entry_key(key);
 
-        <span class="self">self</span>
+        <span class="self">self
+    </span>}
+
+    <span class="doccomment">/// Add an entry with the given key and value to the dictionary.
+    ///
+    /// If the entry already exists, this will overwrite it.
+    ///
+    /// The key can either be an atom (or something that can be turned
+    /// into an atom), or an integer.
+    </span><span class="kw">pub fn </span>add_entry&lt;K: Into&lt;Key&gt;, P: TermPutable + <span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, key: K, val: P) {
+        <span class="self">self</span>.entries.insert(key.into(), <span class="prelude-val">Some</span>(Box::new(val)));
     }
 
-    <span class="doccomment">/// add an entry with the given key to the dictionary. The value</span>
-    <span class="doccomment">/// is implied to be a variable.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If the entry already exists, this will overwrite it.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The key can either be an atom (or something that can be turned</span>
-    <span class="doccomment">/// into an atom), or an integer.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_entry_key</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Key</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="ident">K</span>) {
-        <span class="self">self</span>.<span class="ident">entries</span>.<span class="ident">insert</span>(<span class="ident">key</span>.<span class="ident">into</span>(), <span class="prelude-val">None</span>);
-    }
+    <span class="doccomment">/// Add an entry with the given key and value to the dictionary.
+    ///
+    /// If the entry already exists, this will overwrite it.
+    ///
+    /// The key can either be an atom (or something that can be turned
+    /// into an atom), or an integer.
+    </span><span class="kw">pub fn </span>entry&lt;K: Into&lt;Key&gt;, P: TermPutable + <span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">mut </span><span class="self">self</span>, key: K, val: P) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.add_entry(key, val);
 
-    <span class="doccomment">/// add an entry with the given key to the dictionary. The value</span>
-    <span class="doccomment">/// is implied to be a variable.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If the entry already exists, this will overwrite it.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The key can either be an atom (or something that can be turned</span>
-    <span class="doccomment">/// into an atom), or an integer.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">entry_key</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Key</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="ident">K</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">add_entry_key</span>(<span class="ident">key</span>);
-
-        <span class="self">self</span>
-    }
-
-    <span class="doccomment">/// Add an entry with the given key and value to the dictionary.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If the entry already exists, this will overwrite it.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The key can either be an atom (or something that can be turned</span>
-    <span class="doccomment">/// into an atom), or an integer.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_entry</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Key</span><span class="op">&gt;</span>, <span class="ident">P</span>: <span class="ident">TermPutable</span> <span class="op">+</span> <span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="ident">K</span>, <span class="ident">val</span>: <span class="ident">P</span>) {
-        <span class="self">self</span>.<span class="ident">entries</span>.<span class="ident">insert</span>(<span class="ident">key</span>.<span class="ident">into</span>(), <span class="prelude-val">Some</span>(<span class="ident">Box::new</span>(<span class="ident">val</span>)));
-    }
-
-    <span class="doccomment">/// Add an entry with the given key and value to the dictionary.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If the entry already exists, this will overwrite it.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The key can either be an atom (or something that can be turned</span>
-    <span class="doccomment">/// into an atom), or an integer.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">entry</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Key</span><span class="op">&gt;</span>, <span class="ident">P</span>: <span class="ident">TermPutable</span> <span class="op">+</span> <span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="ident">K</span>, <span class="ident">val</span>: <span class="ident">P</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">add_entry</span>(<span class="ident">key</span>, <span class="ident">val</span>);
-
-        <span class="self">self</span>
-    }
+        <span class="self">self
+    </span>}
 }
 
-<span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">TermPutable</span> <span class="kw">for</span> <span class="ident">DictBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">put</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">term</span>: <span class="kw-2">&amp;</span><span class="ident">Term</span>) {
-        <span class="ident">term</span>.<span class="ident">assert_term_handling_possible</span>();
-        <span class="kw">let</span> <span class="ident">context</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">unmanaged_engine_context</span>() };
+<span class="kw">unsafe impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; TermPutable <span class="kw">for </span>DictBuilder&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="kw">fn </span>put(<span class="kw-2">&amp;</span><span class="self">self</span>, term: <span class="kw-2">&amp;</span>Term) {
+        term.assert_term_handling_possible();
+        <span class="kw">let </span>context = <span class="kw">unsafe </span>{ unmanaged_engine_context() };
 
-        <span class="kw">let</span> <span class="ident">tag_term</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_term_ref</span>();
-        <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">entries</span>.<span class="ident">len</span>();
-        <span class="comment">// TODO assert len is not too big</span>
-        <span class="kw">let</span> <span class="ident">value_terms</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">fli::PL_new_term_refs</span>(<span class="ident">len</span> <span class="kw">as</span> <span class="ident">i32</span>) };
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">value_term</span> <span class="op">=</span> <span class="ident">value_terms</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">key_atoms</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">len</span>);
+        <span class="kw">let </span>tag_term = context.new_term_ref();
+        <span class="kw">let </span>len = <span class="self">self</span>.entries.len();
+        <span class="comment">// TODO assert len is not too big
+        </span><span class="kw">let </span>value_terms = <span class="kw">unsafe </span>{ fli::PL_new_term_refs(len <span class="kw">as </span>i32) };
+        <span class="kw">let </span><span class="kw-2">mut </span>value_term = value_terms;
+        <span class="kw">let </span><span class="kw-2">mut </span>key_atoms = Vec::with_capacity(len);
 
-        <span class="kw">for</span> (<span class="ident">key</span>, <span class="ident">value</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">entries</span>.<span class="ident">iter</span>() {
-            <span class="ident">key_atoms</span>.<span class="ident">push</span>(<span class="ident">key</span>.<span class="ident">atom_ptr</span>());
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">value</span>) <span class="op">=</span> <span class="ident">value</span> {
-                <span class="kw">let</span> <span class="ident">term</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">Term::new</span>(<span class="ident">value_term</span>, <span class="ident">context</span>.<span class="ident">as_term_origin</span>()) };
-                <span class="ident">term</span>.<span class="ident">put</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">value</span>)
-                    .<span class="ident">expect</span>(<span class="string">&quot;term put errored while building dict&quot;</span>);
-                <span class="ident">value_term</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+        <span class="kw">for </span>(key, value) <span class="kw">in </span><span class="self">self</span>.entries.iter() {
+            key_atoms.push(key.atom_ptr());
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(value) = value {
+                <span class="kw">let </span>term = <span class="kw">unsafe </span>{ Term::new(value_term, context.as_term_origin()) };
+                term.put(<span class="kw-2">&amp;**</span>value)
+                    .expect(<span class="string">&quot;term put errored while building dict&quot;</span>);
+                value_term += <span class="number">1</span>;
             }
         }
 
-        <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">tag</span> {
-            <span class="ident">DictTag::Atom</span>(<span class="ident">t</span>) =&gt; <span class="ident">t</span>.<span class="ident">put</span>(<span class="kw-2">&amp;</span><span class="ident">tag_term</span>),
-            <span class="ident">DictTag::Var</span> =&gt; {}
-            <span class="ident">DictTag::Term</span>(<span class="ident">t</span>) =&gt; <span class="ident">TermPutable::put</span>(<span class="ident">t</span>, <span class="kw-2">&amp;</span><span class="ident">tag_term</span>),
+        <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self</span>.tag {
+            DictTag::Atom(t) =&gt; t.put(<span class="kw-2">&amp;</span>tag_term),
+            DictTag::Var =&gt; {}
+            DictTag::Term(t) =&gt; TermPutable::put(t, <span class="kw-2">&amp;</span>tag_term),
         };
 
-        <span class="kw">unsafe</span> {
-            <span class="ident">fli::PL_put_dict</span>(
-                <span class="ident">term</span>.<span class="ident">term_ptr</span>(),
+        <span class="kw">unsafe </span>{
+            fli::PL_put_dict(
+                term.term_ptr(),
                 <span class="number">0</span>,
-                <span class="ident">len</span> <span class="kw">as</span> <span class="ident">fli::size_t</span>,
-                <span class="ident">key_atoms</span>.<span class="ident">as_ptr</span>(),
-                <span class="ident">value_terms</span>,
+                len <span class="kw">as </span>fli::size_t,
+                key_atoms.as_ptr(),
+                value_terms,
             );
 
-            <span class="ident">fli::PL_unify_arg</span>(<span class="number">1</span>, <span class="ident">term</span>.<span class="ident">term_ptr</span>(), <span class="ident">tag_term</span>.<span class="ident">term_ptr</span>());
+            fli::PL_unify_arg(<span class="number">1</span>, term.term_ptr(), tag_term.term_ptr());
 
-            <span class="ident">tag_term</span>.<span class="ident">reset</span>();
+            tag_term.reset();
         }
     }
 }
 
-<span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Unifiable</span> <span class="kw">for</span> <span class="ident">DictBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">unify</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">term</span>: <span class="kw-2">&amp;</span><span class="ident">Term</span>) -&gt; <span class="ident">bool</span> {
-        <span class="ident">term</span>.<span class="ident">assert_term_handling_possible</span>();
-        <span class="kw">let</span> <span class="ident">context</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">unmanaged_engine_context</span>() };
+<span class="kw">unsafe impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Unifiable <span class="kw">for </span>DictBuilder&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="kw">fn </span>unify(<span class="kw-2">&amp;</span><span class="self">self</span>, term: <span class="kw-2">&amp;</span>Term) -&gt; bool {
+        term.assert_term_handling_possible();
+        <span class="kw">let </span>context = <span class="kw">unsafe </span>{ unmanaged_engine_context() };
 
-        <span class="kw">let</span> <span class="ident">dict_term</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_term_ref</span>();
-        <span class="self">self</span>.<span class="ident">put</span>(<span class="kw-2">&amp;</span><span class="ident">dict_term</span>);
+        <span class="kw">let </span>dict_term = context.new_term_ref();
+        <span class="self">self</span>.put(<span class="kw-2">&amp;</span>dict_term);
 
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">fli::PL_unify</span>(<span class="ident">dict_term</span>.<span class="ident">term_ptr</span>(), <span class="ident">term</span>.<span class="ident">term_ptr</span>()) <span class="op">!</span><span class="op">=</span> <span class="number">0</span> };
-        <span class="kw">unsafe</span> {
-            <span class="ident">dict_term</span>.<span class="ident">reset</span>();
+        <span class="kw">let </span>result = <span class="kw">unsafe </span>{ fli::PL_unify(dict_term.term_ptr(), term.term_ptr()) != <span class="number">0 </span>};
+        <span class="kw">unsafe </span>{
+            dict_term.reset();
         };
 
-        <span class="ident">result</span>
+        result
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Term</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Get the value of the given key in the dictionary contained in</span>
-    <span class="doccomment">/// the dictionary contained in this term.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If the dictionary doesn&#39;t contain the key, or if the expected</span>
-    <span class="doccomment">/// type is different, this will fail. If the given term doesn&#39;t</span>
-    <span class="doccomment">/// contain a dictionary, this will always fail. Otherwise, the</span>
-    <span class="doccomment">/// value corresponding to the given key is returned.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_dict_key</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">IntoKey</span>, <span class="ident">G</span>: <span class="ident">TermGetable</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="ident">K</span>) -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span><span class="ident">G</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">assert_term_handling_possible</span>();
-        <span class="kw">let</span> <span class="ident">context</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">unmanaged_engine_context</span>() };
-        <span class="kw">let</span> (<span class="ident">key_atom</span>, <span class="ident">alloc</span>) <span class="op">=</span> <span class="ident">key</span>.<span class="ident">atom_ptr</span>();
-        <span class="kw">let</span> <span class="ident">term</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_term_ref</span>();
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Term&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="doccomment">/// Get the value of the given key in the dictionary contained in
+    /// the dictionary contained in this term.
+    ///
+    /// If the dictionary doesn&#39;t contain the key, or if the expected
+    /// type is different, this will fail. If the given term doesn&#39;t
+    /// contain a dictionary, this will always fail. Otherwise, the
+    /// value corresponding to the given key is returned.
+    </span><span class="kw">pub fn </span>get_dict_key&lt;K: IntoKey, G: TermGetable&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, key: K) -&gt; PrologResult&lt;G&gt; {
+        <span class="self">self</span>.assert_term_handling_possible();
+        <span class="kw">let </span>context = <span class="kw">unsafe </span>{ unmanaged_engine_context() };
+        <span class="kw">let </span>(key_atom, alloc) = key.atom_ptr();
+        <span class="kw">let </span>term = context.new_term_ref();
 
-        <span class="kw">let</span> <span class="ident">get_result</span> <span class="op">=</span>
-            <span class="kw">unsafe</span> { <span class="ident">fli::PL_get_dict_key</span>(<span class="ident">key_atom</span>, <span class="self">self</span>.<span class="ident">term_ptr</span>(), <span class="ident">term</span>.<span class="ident">term_ptr</span>()) <span class="op">!</span><span class="op">=</span> <span class="number">0</span> };
-        <span class="ident">std::mem::drop</span>(<span class="ident">alloc</span>); <span class="comment">// purely to get rid of the never-read warning</span>
+        <span class="kw">let </span>get_result =
+            <span class="kw">unsafe </span>{ fli::PL_get_dict_key(key_atom, <span class="self">self</span>.term_ptr(), term.term_ptr()) != <span class="number">0 </span>};
+        std::mem::drop(alloc); <span class="comment">// purely to get rid of the never-read warning
 
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">unsafe</span> { <span class="ident">fli::pl_default_exception</span>() <span class="op">!</span><span class="op">=</span> <span class="number">0</span> } {
-            <span class="prelude-val">Err</span>(<span class="ident">PrologError::Exception</span>)
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">get_result</span> {
-            <span class="ident">term</span>.<span class="ident">get</span>()
-        } <span class="kw">else</span> {
-            <span class="prelude-val">Err</span>(<span class="ident">PrologError::Failure</span>)
+        </span><span class="kw">let </span>result = <span class="kw">if unsafe </span>{ fli::pl_default_exception() != <span class="number">0 </span>} {
+            <span class="prelude-val">Err</span>(PrologError::Exception)
+        } <span class="kw">else if </span>get_result {
+            term.get()
+        } <span class="kw">else </span>{
+            <span class="prelude-val">Err</span>(PrologError::Failure)
         };
 
-        <span class="kw">unsafe</span> {
-            <span class="ident">term</span>.<span class="ident">reset</span>();
+        <span class="kw">unsafe </span>{
+            term.reset();
         }
 
-        <span class="ident">result</span>
+        result
     }
 
-    <span class="doccomment">/// Get the value of the given key in the dictionary contained in</span>
-    <span class="doccomment">/// the dictionary contained in this term.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If the dictionary doesn&#39;t contain the key, this will fail. If</span>
-    <span class="doccomment">/// the given term doesn&#39;t contain a dictionary, this will always</span>
-    <span class="doccomment">/// fail. Otherwise, the term argument will be overwritten with</span>
-    <span class="doccomment">/// the value corresponding to the key.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_dict_key_term</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">IntoKey</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="ident">K</span>, <span class="ident">term</span>: <span class="kw-2">&amp;</span><span class="ident">Term</span>) -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">assert_term_handling_possible</span>();
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">origin_engine_ptr</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">term</span>.<span class="ident">origin_engine_ptr</span>() {
+    <span class="doccomment">/// Get the value of the given key in the dictionary contained in
+    /// the dictionary contained in this term.
+    ///
+    /// If the dictionary doesn&#39;t contain the key, this will fail. If
+    /// the given term doesn&#39;t contain a dictionary, this will always
+    /// fail. Otherwise, the term argument will be overwritten with
+    /// the value corresponding to the key.
+    </span><span class="kw">pub fn </span>get_dict_key_term&lt;K: IntoKey&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, key: K, term: <span class="kw-2">&amp;</span>Term) -&gt; PrologResult&lt;()&gt; {
+        <span class="self">self</span>.assert_term_handling_possible();
+        <span class="kw">if </span><span class="self">self</span>.origin_engine_ptr() != term.origin_engine_ptr() {
             <span class="macro">panic!</span>(<span class="string">&quot;terms being unified are not part of the same engine&quot;</span>);
         }
-        <span class="kw">let</span> (<span class="ident">key_atom</span>, <span class="ident">alloc</span>) <span class="op">=</span> <span class="ident">key</span>.<span class="ident">atom_ptr</span>();
+        <span class="kw">let </span>(key_atom, alloc) = key.atom_ptr();
 
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span>
-            <span class="kw">unsafe</span> { <span class="ident">fli::PL_get_dict_key</span>(<span class="ident">key_atom</span>, <span class="self">self</span>.<span class="ident">term_ptr</span>(), <span class="ident">term</span>.<span class="ident">term_ptr</span>()) <span class="op">!</span><span class="op">=</span> <span class="number">0</span> };
-        <span class="ident">std::mem::drop</span>(<span class="ident">alloc</span>); <span class="comment">// purely to get rid of the never-read warning</span>
+        <span class="kw">let </span>result =
+            <span class="kw">unsafe </span>{ fli::PL_get_dict_key(key_atom, <span class="self">self</span>.term_ptr(), term.term_ptr()) != <span class="number">0 </span>};
+        std::mem::drop(alloc); <span class="comment">// purely to get rid of the never-read warning
 
-        <span class="kw">if</span> <span class="kw">unsafe</span> { <span class="ident">fli::pl_default_exception</span>() <span class="op">!</span><span class="op">=</span> <span class="number">0</span> } {
-            <span class="prelude-val">Err</span>(<span class="ident">PrologError::Exception</span>)
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">result</span> {
+        </span><span class="kw">if unsafe </span>{ fli::pl_default_exception() != <span class="number">0 </span>} {
+            <span class="prelude-val">Err</span>(PrologError::Exception)
+        } <span class="kw">else if </span>result {
             <span class="prelude-val">Ok</span>(())
-        } <span class="kw">else</span> {
-            <span class="prelude-val">Err</span>(<span class="ident">PrologError::Failure</span>)
+        } <span class="kw">else </span>{
+            <span class="prelude-val">Err</span>(PrologError::Failure)
         }
     }
 
-    <span class="doccomment">/// Get the tag of this dictionary.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Tag is assumed to be an atom. If it isn&#39;t (because it is</span>
-    <span class="doccomment">/// either a variable or some other kind of term), None will be</span>
-    <span class="doccomment">/// returned. Otherwise Some(atom) will be returned.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If this is not a dictionary, this method will fail.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If tag could be a non-atom term, consider using</span>
-    <span class="doccomment">/// [get_dict_tag_term](Term::get_dict_tag_term) instead.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_dict_tag</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Atom</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">assert_term_handling_possible</span>();
+    <span class="doccomment">/// Get the tag of this dictionary.
+    ///
+    /// Tag is assumed to be an atom. If it isn&#39;t (because it is
+    /// either a variable or some other kind of term), None will be
+    /// returned. Otherwise Some(atom) will be returned.
+    ///
+    /// If this is not a dictionary, this method will fail.
+    ///
+    /// If tag could be a non-atom term, consider using
+    /// [get_dict_tag_term](Term::get_dict_tag_term) instead.
+    </span><span class="kw">pub fn </span>get_dict_tag(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; PrologResult&lt;<span class="prelude-ty">Option</span>&lt;Atom&gt;&gt; {
+        <span class="self">self</span>.assert_term_handling_possible();
 
-        <span class="kw">if</span> <span class="kw">unsafe</span> { <span class="ident">fli::PL_is_dict</span>(<span class="self">self</span>.<span class="ident">term_ptr</span>()) <span class="op">==</span> <span class="number">0</span> } {
-            <span class="prelude-val">Err</span>(<span class="ident">PrologError::Failure</span>)
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">atom</span>) <span class="op">=</span> <span class="ident">attempt_opt</span>(<span class="self">self</span>.<span class="ident">get_arg</span>(<span class="number">1</span>))<span class="question-mark">?</span> {
-            <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">atom</span>))
-        } <span class="kw">else</span> {
+        <span class="kw">if unsafe </span>{ fli::PL_is_dict(<span class="self">self</span>.term_ptr()) == <span class="number">0 </span>} {
+            <span class="prelude-val">Err</span>(PrologError::Failure)
+        } <span class="kw">else if let </span><span class="prelude-val">Some</span>(atom) = attempt_opt(<span class="self">self</span>.get_arg(<span class="number">1</span>))<span class="question-mark">? </span>{
+            <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(atom))
+        } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
         }
     }
 
-    <span class="doccomment">/// Get the tag of this dictionary and put it in the given term.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Unlike [get_dict_tag](Term::get_dict_tag), this is able to</span>
-    <span class="doccomment">/// extract complex dictionary tags. Though uncommon, a dictionary</span>
-    <span class="doccomment">/// tag can actually be any valid prolog term. This method helps</span>
-    <span class="doccomment">/// in extracting that.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If this is not a dictionary, this method will fail.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_dict_tag_term</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">term</span>: <span class="kw-2">&amp;</span><span class="ident">Term</span>) -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">assert_term_handling_possible</span>();
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">origin_engine_ptr</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">term</span>.<span class="ident">origin_engine_ptr</span>() {
+    <span class="doccomment">/// Get the tag of this dictionary and put it in the given term.
+    ///
+    /// Unlike [get_dict_tag](Term::get_dict_tag), this is able to
+    /// extract complex dictionary tags. Though uncommon, a dictionary
+    /// tag can actually be any valid prolog term. This method helps
+    /// in extracting that.
+    ///
+    /// If this is not a dictionary, this method will fail.
+    </span><span class="kw">pub fn </span>get_dict_tag_term(<span class="kw-2">&amp;</span><span class="self">self</span>, term: <span class="kw-2">&amp;</span>Term) -&gt; PrologResult&lt;()&gt; {
+        <span class="self">self</span>.assert_term_handling_possible();
+        <span class="kw">if </span><span class="self">self</span>.origin_engine_ptr() != term.origin_engine_ptr() {
             <span class="macro">panic!</span>(<span class="string">&quot;terms being unified are not part of the same engine&quot;</span>);
         }
 
-        <span class="kw">if</span> <span class="kw">unsafe</span> { <span class="ident">fli::PL_is_dict</span>(<span class="self">self</span>.<span class="ident">term_ptr</span>()) <span class="op">==</span> <span class="number">0</span> } {
-            <span class="prelude-val">Err</span>(<span class="ident">PrologError::Failure</span>)
-        } <span class="kw">else</span> {
-            <span class="self">self</span>.<span class="ident">unify_arg</span>(<span class="number">1</span>, <span class="ident">term</span>)
+        <span class="kw">if unsafe </span>{ fli::PL_is_dict(<span class="self">self</span>.term_ptr()) == <span class="number">0 </span>} {
+            <span class="prelude-val">Err</span>(PrologError::Failure)
+        } <span class="kw">else </span>{
+            <span class="self">self</span>.unify_arg(<span class="number">1</span>, term)
         }
     }
 
-    <span class="doccomment">/// Returns true if this term reference holds a dictionary.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_dict</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">assert_term_handling_possible</span>();
-        <span class="kw">unsafe</span> { <span class="ident">fli::PL_is_dict</span>(<span class="self">self</span>.<span class="ident">term_ptr</span>()) <span class="op">!</span><span class="op">=</span> <span class="number">0</span> }
+    <span class="doccomment">/// Returns true if this term reference holds a dictionary.
+    </span><span class="kw">pub fn </span>is_dict(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.assert_term_handling_possible();
+        <span class="kw">unsafe </span>{ fli::PL_is_dict(<span class="self">self</span>.term_ptr()) != <span class="number">0 </span>}
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">QueryableContextType</span><span class="op">&gt;</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Iterate over the entries in the dictionary referred to by this term.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This will return key-value pairs, where the key is either an</span>
-    <span class="doccomment">/// atom or an integer, and the value is a term. The term will be</span>
-    <span class="doccomment">/// created in the current context. A consequence of this is that</span>
-    <span class="doccomment">/// the iterator will panic if this context is not active.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Created terms will not be automatically unallocated when the</span>
-    <span class="doccomment">/// iterator moves on. It is the responsibility of the caller to</span>
-    <span class="doccomment">/// clear them if desired using either a frame or by resetting.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If `dict_entries` is called on a term that does not contain a</span>
-    <span class="doccomment">/// dictionary, the iterator is still created but will not return</span>
-    <span class="doccomment">/// any elements.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dict_entries</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="self">self</span>, <span class="ident">term</span>: <span class="kw-2">&amp;</span><span class="ident">Term</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span><span class="op">&gt;</span>) -&gt; <span class="ident">DictIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, <span class="ident">T</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">assert_activated</span>();
-        <span class="kw">let</span> <span class="ident">count</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">term</span>.<span class="ident">is_dict</span>() {
-            <span class="bool-val">false</span> =&gt; <span class="prelude-val">None</span>,
-            <span class="bool-val">true</span> =&gt; {
-                <span class="kw">let</span> <span class="ident">functor</span>: <span class="ident">Functor</span> <span class="op">=</span> <span class="ident">term</span>
-                    .<span class="ident">get</span>()
-                    .<span class="ident">expect</span>(<span class="string">&quot;Expected to be able to get a functor out of a dict term&quot;</span>);
-                <span class="prelude-val">Some</span>((<span class="ident">functor</span>.<span class="ident">arity</span>() <span class="kw">as</span> <span class="ident">usize</span> <span class="op">-</span> <span class="number">1</span>) <span class="op">/</span> <span class="number">2</span>)
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, T: QueryableContextType&gt; Context&lt;<span class="lifetime">&#39;a</span>, T&gt; {
+    <span class="doccomment">/// Iterate over the entries in the dictionary referred to by this term.
+    ///
+    /// This will return key-value pairs, where the key is either an
+    /// atom or an integer, and the value is a term. The term will be
+    /// created in the current context. A consequence of this is that
+    /// the iterator will panic if this context is not active.
+    ///
+    /// Created terms will not be automatically unallocated when the
+    /// iterator moves on. It is the responsibility of the caller to
+    /// clear them if desired using either a frame or by resetting.
+    ///
+    /// If `dict_entries` is called on a term that does not contain a
+    /// dictionary, the iterator is still created but will not return
+    /// any elements.
+    </span><span class="kw">pub fn </span>dict_entries&lt;<span class="lifetime">&#39;b</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;b </span><span class="self">self</span>, term: <span class="kw-2">&amp;</span>Term&lt;<span class="lifetime">&#39;b</span>&gt;) -&gt; DictIterator&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, T&gt; {
+        <span class="self">self</span>.assert_activated();
+        <span class="kw">let </span>count = <span class="kw">match </span>term.is_dict() {
+            <span class="bool-val">false </span>=&gt; <span class="prelude-val">None</span>,
+            <span class="bool-val">true </span>=&gt; {
+                <span class="kw">let </span>functor: Functor = term
+                    .get()
+                    .expect(<span class="string">&quot;Expected to be able to get a functor out of a dict term&quot;</span>);
+                <span class="prelude-val">Some</span>((functor.arity() <span class="kw">as </span>usize - <span class="number">1</span>) / <span class="number">2</span>)
             }
         };
 
-        <span class="ident">DictIterator</span> {
-            <span class="ident">context</span>: <span class="self">self</span>,
-            <span class="ident">term</span>: <span class="ident">term</span>.<span class="ident">clone</span>(),
-            <span class="ident">count</span>,
-            <span class="ident">index</span>: <span class="number">0</span>,
+        DictIterator {
+            context: <span class="self">self</span>,
+            term: term.clone(),
+            count,
+            index: <span class="number">0</span>,
         }
     }
 }
 
-<span class="doccomment">/// An iterator over the entries of a dict term.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See [dict_entries](Context::dict_entries) for more information.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DictIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, <span class="ident">T</span>: <span class="ident">QueryableContextType</span><span class="op">&gt;</span> {
-    <span class="ident">context</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span>, <span class="ident">T</span><span class="op">&gt;</span>,
-    <span class="ident">term</span>: <span class="ident">Term</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
-    <span class="ident">count</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>,
-    <span class="ident">index</span>: <span class="ident">usize</span>,
+<span class="doccomment">/// An iterator over the entries of a dict term.
+///
+/// See [dict_entries](Context::dict_entries) for more information.
+</span><span class="kw">pub struct </span>DictIterator&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, T: QueryableContextType&gt; {
+    context: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Context&lt;<span class="lifetime">&#39;b</span>, T&gt;,
+    term: Term&lt;<span class="lifetime">&#39;a</span>&gt;,
+    count: <span class="prelude-ty">Option</span>&lt;usize&gt;,
+    index: usize,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, <span class="ident">T</span>: <span class="ident">QueryableContextType</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">DictIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, <span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> (<span class="ident">Key</span>, <span class="ident">Term</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>);
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, T: QueryableContextType&gt; Iterator <span class="kw">for </span>DictIterator&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, T&gt; {
+    <span class="kw">type </span>Item = (Key, Term&lt;<span class="lifetime">&#39;a</span>&gt;);
 
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Item</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">count</span> {
-            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">None</span>,
-            <span class="prelude-val">Some</span>(<span class="ident">count</span>) =&gt; {
-                <span class="kw">if</span> <span class="self">self</span>.<span class="ident">index</span> <span class="op">&lt;</span> <span class="ident">count</span> {
-                    <span class="kw">let</span> [<span class="ident">val_term</span>, <span class="ident">key_term</span>] <span class="op">=</span> <span class="self">self</span>.<span class="ident">context</span>.<span class="ident">new_term_refs</span>();
-                    <span class="self">self</span>.<span class="ident">term</span>
-                        .<span class="ident">unify_arg</span>(<span class="self">self</span>.<span class="ident">index</span> <span class="op">*</span> <span class="number">2</span> <span class="op">+</span> <span class="number">2</span>, <span class="kw-2">&amp;</span><span class="ident">val_term</span>)
-                        .<span class="ident">expect</span>(<span class="string">&quot;unify dict val arg failed&quot;</span>);
-                    <span class="self">self</span>.<span class="ident">term</span>
-                        .<span class="ident">unify_arg</span>(<span class="self">self</span>.<span class="ident">index</span> <span class="op">*</span> <span class="number">2</span> <span class="op">+</span> <span class="number">3</span>, <span class="kw-2">&amp;</span><span class="ident">key_term</span>)
-                        .<span class="ident">expect</span>(<span class="string">&quot;unify dict val arg failed&quot;</span>);
+    <span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>::Item&gt; {
+        <span class="kw">match </span><span class="self">self</span>.count {
+            <span class="prelude-val">None </span>=&gt; <span class="prelude-val">None</span>,
+            <span class="prelude-val">Some</span>(count) =&gt; {
+                <span class="kw">if </span><span class="self">self</span>.index &lt; count {
+                    <span class="kw">let </span>[val_term, key_term] = <span class="self">self</span>.context.new_term_refs();
+                    <span class="self">self</span>.term
+                        .unify_arg(<span class="self">self</span>.index * <span class="number">2 </span>+ <span class="number">2</span>, <span class="kw-2">&amp;</span>val_term)
+                        .expect(<span class="string">&quot;unify dict val arg failed&quot;</span>);
+                    <span class="self">self</span>.term
+                        .unify_arg(<span class="self">self</span>.index * <span class="number">2 </span>+ <span class="number">3</span>, <span class="kw-2">&amp;</span>key_term)
+                        .expect(<span class="string">&quot;unify dict val arg failed&quot;</span>);
 
-                    <span class="kw">let</span> <span class="ident">key</span>;
-                    <span class="kw">if</span> <span class="ident">key_term</span>.<span class="ident">is_atom</span>() {
-                        <span class="ident">key</span> <span class="op">=</span> <span class="ident">Key::Atom</span>(<span class="ident">key_term</span>.<span class="ident">get</span>().<span class="ident">unwrap</span>());
-                    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">key_term</span>.<span class="ident">is_integer</span>() {
-                        <span class="ident">key</span> <span class="op">=</span> <span class="ident">Key::Int</span>(<span class="ident">key_term</span>.<span class="ident">get</span>().<span class="ident">unwrap</span>());
-                    } <span class="kw">else</span> {
+                    <span class="kw">let </span>key;
+                    <span class="kw">if </span>key_term.is_atom() {
+                        key = Key::Atom(key_term.get().unwrap());
+                    } <span class="kw">else if </span>key_term.is_integer() {
+                        key = Key::Int(key_term.get().unwrap());
+                    } <span class="kw">else </span>{
                         <span class="macro">panic!</span>(<span class="string">&quot;Encountered term key that was neither an atom nor an integer&quot;</span>);
                     }
 
-                    <span class="comment">// we don&#39;t need the key term after this, so no</span>
-                    <span class="comment">// point in letting it hang around on the stack.</span>
-                    <span class="kw">unsafe</span> {
-                        <span class="ident">key_term</span>.<span class="ident">reset</span>();
+                    <span class="comment">// we don&#39;t need the key term after this, so no
+                    // point in letting it hang around on the stack.
+                    </span><span class="kw">unsafe </span>{
+                        key_term.reset();
                     }
 
-                    <span class="self">self</span>.<span class="ident">index</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+                    <span class="self">self</span>.index += <span class="number">1</span>;
 
-                    <span class="prelude-val">Some</span>((<span class="ident">key</span>, <span class="ident">val_term</span>))
-                } <span class="kw">else</span> {
-                    <span class="prelude-val">None</span>
-                }
+                    <span class="prelude-val">Some</span>((key, val_term))
+                } <span class="kw">else </span>{
+                    <span class="prelude-val">None
+                </span>}
             }
         }
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">construct_dict</span>() {
-        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
-        <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
-        <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>construct_dict() {
+        <span class="kw">let </span>engine = Engine::new();
+        <span class="kw">let </span>activation = engine.activate();
+        <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let</span> <span class="ident">dict</span> <span class="op">=</span> <span class="ident">DictBuilder::new</span>()
-            .<span class="ident">tag</span>(<span class="string">&quot;foo&quot;</span>)
-            .<span class="ident">entry</span>(<span class="string">&quot;a&quot;</span>, <span class="number">42_u64</span>)
-            .<span class="ident">entry</span>(<span class="string">&quot;b&quot;</span>, <span class="number">10_u64</span>);
+        <span class="kw">let </span>dict = DictBuilder::new()
+            .tag(<span class="string">&quot;foo&quot;</span>)
+            .entry(<span class="string">&quot;a&quot;</span>, <span class="number">42_u64</span>)
+            .entry(<span class="string">&quot;b&quot;</span>, <span class="number">10_u64</span>);
 
-        <span class="kw">let</span> <span class="ident">dict_term</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_term_ref</span>();
-        <span class="kw">let</span> [<span class="ident">val1</span>, <span class="ident">val2</span>, <span class="ident">val3</span>] <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_term_refs</span>();
-        <span class="ident">dict_term</span>.<span class="ident">put</span>(<span class="kw-2">&amp;</span><span class="ident">dict</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let </span>dict_term = context.new_term_ref();
+        <span class="kw">let </span>[val1, val2, val3] = context.new_term_refs();
+        dict_term.put(<span class="kw-2">&amp;</span>dict).unwrap();
 
-        <span class="macro">assert!</span>(<span class="ident">attempt</span>(<span class="ident">dict_term</span>.<span class="ident">get_dict_key_term</span>(<span class="string">&quot;a&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">val1</span>)).<span class="ident">unwrap</span>());
-        <span class="macro">assert!</span>(<span class="ident">attempt</span>(<span class="ident">dict_term</span>.<span class="ident">get_dict_key_term</span>(<span class="string">&quot;b&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">val2</span>)).<span class="ident">unwrap</span>());
-        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">attempt</span>(<span class="ident">dict_term</span>.<span class="ident">get_dict_key_term</span>(<span class="string">&quot;c&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">val3</span>)).<span class="ident">unwrap</span>());
+        <span class="macro">assert!</span>(attempt(dict_term.get_dict_key_term(<span class="string">&quot;a&quot;</span>, <span class="kw-2">&amp;</span>val1)).unwrap());
+        <span class="macro">assert!</span>(attempt(dict_term.get_dict_key_term(<span class="string">&quot;b&quot;</span>, <span class="kw-2">&amp;</span>val2)).unwrap());
+        <span class="macro">assert!</span>(!attempt(dict_term.get_dict_key_term(<span class="string">&quot;c&quot;</span>, <span class="kw-2">&amp;</span>val3)).unwrap());
 
-        <span class="macro">assert_eq!</span>(<span class="number">42</span>, <span class="ident">val1</span>.<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>());
-        <span class="macro">assert_eq!</span>(<span class="number">10</span>, <span class="ident">val2</span>.<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>());
+        <span class="macro">assert_eq!</span>(<span class="number">42</span>, val1.get::&lt;u64&gt;().unwrap());
+        <span class="macro">assert_eq!</span>(<span class="number">10</span>, val2.get::&lt;u64&gt;().unwrap());
 
-        <span class="kw">let</span> <span class="ident">string_term</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_term_ref</span>();
-        <span class="ident">context</span>
-            .<span class="ident">call_once</span>(<span class="macro">pred!</span> {<span class="ident">term_string</span><span class="op">/</span><span class="number">2</span>}, [<span class="kw-2">&amp;</span><span class="ident">dict_term</span>, <span class="kw-2">&amp;</span><span class="ident">string_term</span>])
-            .<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">string</span> <span class="op">=</span> <span class="ident">string_term</span>.<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;foo{a:42,b:10}&quot;</span>, <span class="ident">string</span>);
+        <span class="kw">let </span>string_term = context.new_term_ref();
+        context
+            .call_once(<span class="macro">pred! </span>{term_string/<span class="number">2</span>}, [<span class="kw-2">&amp;</span>dict_term, <span class="kw-2">&amp;</span>string_term])
+            .unwrap();
+        <span class="kw">let </span>string = string_term.get::&lt;String&gt;().unwrap();
+        <span class="macro">assert_eq!</span>(<span class="string">&quot;foo{a:42,b:10}&quot;</span>, string);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">get_dict_key_term_for_nondict</span>() {
-        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
-        <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
-        <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>get_dict_key_term_for_nondict() {
+        <span class="kw">let </span>engine = Engine::new();
+        <span class="kw">let </span>activation = engine.activate();
+        <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let</span> <span class="ident">nondict</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_term_ref</span>();
-        <span class="ident">nondict</span>.<span class="ident">put_val</span>(<span class="number">42_u64</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let </span>nondict = context.new_term_ref();
+        nondict.put_val(<span class="number">42_u64</span>).unwrap();
 
-        <span class="kw">let</span> <span class="ident">query</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_term_ref</span>();
+        <span class="kw">let </span>query = context.new_term_ref();
 
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">nondict</span>.<span class="ident">get_dict_key_term</span>(<span class="string">&quot;a&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">query</span>).<span class="ident">unwrap_err</span>();
-        <span class="macro">assert!</span>(<span class="ident">result</span>.<span class="ident">is_failure</span>());
+        <span class="kw">let </span>result = nondict.get_dict_key_term(<span class="string">&quot;a&quot;</span>, <span class="kw-2">&amp;</span>query).unwrap_err();
+        <span class="macro">assert!</span>(result.is_failure());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">construct_dict_with_smallints</span>() {
-        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
-        <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
-        <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>construct_dict_with_smallints() {
+        <span class="kw">let </span>engine = Engine::new();
+        <span class="kw">let </span>activation = engine.activate();
+        <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let</span> <span class="ident">dict</span> <span class="op">=</span> <span class="ident">DictBuilder::new</span>()
-            .<span class="ident">tag</span>(<span class="string">&quot;foo&quot;</span>)
-            .<span class="ident">entry</span>(<span class="number">42</span>, <span class="ident">atomable</span>(<span class="string">&quot;foo&quot;</span>))
-            .<span class="ident">entry</span>(<span class="number">11</span>, <span class="ident">atomable</span>(<span class="string">&quot;bar&quot;</span>));
+        <span class="kw">let </span>dict = DictBuilder::new()
+            .tag(<span class="string">&quot;foo&quot;</span>)
+            .entry(<span class="number">42</span>, atomable(<span class="string">&quot;foo&quot;</span>))
+            .entry(<span class="number">11</span>, atomable(<span class="string">&quot;bar&quot;</span>));
 
-        <span class="kw">let</span> <span class="ident">dict_term</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_term_ref</span>();
-        <span class="kw">let</span> [<span class="ident">val1</span>, <span class="ident">val2</span>, <span class="ident">val3</span>] <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_term_refs</span>();
-        <span class="ident">dict_term</span>.<span class="ident">put</span>(<span class="kw-2">&amp;</span><span class="ident">dict</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let </span>dict_term = context.new_term_ref();
+        <span class="kw">let </span>[val1, val2, val3] = context.new_term_refs();
+        dict_term.put(<span class="kw-2">&amp;</span>dict).unwrap();
 
-        <span class="macro">assert!</span>(<span class="ident">attempt</span>(<span class="ident">dict_term</span>.<span class="ident">get_dict_key_term</span>(<span class="number">11</span>, <span class="kw-2">&amp;</span><span class="ident">val1</span>)).<span class="ident">unwrap</span>());
-        <span class="macro">assert!</span>(<span class="ident">attempt</span>(<span class="ident">dict_term</span>.<span class="ident">get_dict_key_term</span>(<span class="number">42</span>, <span class="kw-2">&amp;</span><span class="ident">val2</span>)).<span class="ident">unwrap</span>());
-        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">attempt</span>(<span class="ident">dict_term</span>.<span class="ident">get_dict_key_term</span>(<span class="number">50</span>, <span class="kw-2">&amp;</span><span class="ident">val3</span>)).<span class="ident">unwrap</span>());
+        <span class="macro">assert!</span>(attempt(dict_term.get_dict_key_term(<span class="number">11</span>, <span class="kw-2">&amp;</span>val1)).unwrap());
+        <span class="macro">assert!</span>(attempt(dict_term.get_dict_key_term(<span class="number">42</span>, <span class="kw-2">&amp;</span>val2)).unwrap());
+        <span class="macro">assert!</span>(!attempt(dict_term.get_dict_key_term(<span class="number">50</span>, <span class="kw-2">&amp;</span>val3)).unwrap());
 
-        <span class="macro">assert_eq!</span>(<span class="ident">Atom::new</span>(<span class="string">&quot;bar&quot;</span>), <span class="ident">val1</span>.<span class="ident">get</span>().<span class="ident">unwrap</span>());
-        <span class="macro">assert_eq!</span>(<span class="ident">Atom::new</span>(<span class="string">&quot;foo&quot;</span>), <span class="ident">val2</span>.<span class="ident">get</span>().<span class="ident">unwrap</span>());
+        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">&quot;bar&quot;</span>), val1.get().unwrap());
+        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">&quot;foo&quot;</span>), val2.get().unwrap());
 
-        <span class="kw">let</span> <span class="ident">string_term</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_term_ref</span>();
-        <span class="ident">context</span>
-            .<span class="ident">call_once</span>(<span class="macro">pred!</span> {<span class="ident">term_string</span><span class="op">/</span><span class="number">2</span>}, [<span class="kw-2">&amp;</span><span class="ident">dict_term</span>, <span class="kw-2">&amp;</span><span class="ident">string_term</span>])
-            .<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">string</span> <span class="op">=</span> <span class="ident">string_term</span>.<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;foo{11:bar,42:foo}&quot;</span>, <span class="ident">string</span>);
+        <span class="kw">let </span>string_term = context.new_term_ref();
+        context
+            .call_once(<span class="macro">pred! </span>{term_string/<span class="number">2</span>}, [<span class="kw-2">&amp;</span>dict_term, <span class="kw-2">&amp;</span>string_term])
+            .unwrap();
+        <span class="kw">let </span>string = string_term.get::&lt;String&gt;().unwrap();
+        <span class="macro">assert_eq!</span>(<span class="string">&quot;foo{11:bar,42:foo}&quot;</span>, string);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">unify_dicts</span>() {
-        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
-        <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
-        <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>unify_dicts() {
+        <span class="kw">let </span>engine = Engine::new();
+        <span class="kw">let </span>activation = engine.activate();
+        <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let</span> [<span class="ident">dict1</span>, <span class="ident">dict2</span>, <span class="ident">dict3</span>] <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_term_refs</span>();
+        <span class="kw">let </span>[dict1, dict2, dict3] = context.new_term_refs();
 
-        <span class="kw">let</span> <span class="ident">dict1_builder</span> <span class="op">=</span> <span class="ident">DictBuilder::new</span>()
-            .<span class="ident">tag</span>(<span class="string">&quot;foo&quot;</span>)
-            .<span class="ident">entry</span>(<span class="string">&quot;a&quot;</span>, <span class="number">42_u64</span>)
-            .<span class="ident">entry</span>(<span class="string">&quot;b&quot;</span>, <span class="number">10_u64</span>);
-        <span class="kw">let</span> <span class="ident">dict2_builder</span> <span class="op">=</span> <span class="ident">DictBuilder::new</span>()
-            .<span class="ident">tag</span>(<span class="string">&quot;foo&quot;</span>)
-            .<span class="ident">entry</span>(<span class="string">&quot;a&quot;</span>, <span class="number">42_u64</span>)
-            .<span class="ident">entry</span>(<span class="string">&quot;c&quot;</span>, <span class="number">11_u64</span>);
+        <span class="kw">let </span>dict1_builder = DictBuilder::new()
+            .tag(<span class="string">&quot;foo&quot;</span>)
+            .entry(<span class="string">&quot;a&quot;</span>, <span class="number">42_u64</span>)
+            .entry(<span class="string">&quot;b&quot;</span>, <span class="number">10_u64</span>);
+        <span class="kw">let </span>dict2_builder = DictBuilder::new()
+            .tag(<span class="string">&quot;foo&quot;</span>)
+            .entry(<span class="string">&quot;a&quot;</span>, <span class="number">42_u64</span>)
+            .entry(<span class="string">&quot;c&quot;</span>, <span class="number">11_u64</span>);
 
-        <span class="ident">dict1</span>.<span class="ident">put</span>(<span class="kw-2">&amp;</span><span class="ident">dict1_builder</span>).<span class="ident">unwrap</span>();
-        <span class="ident">dict2</span>.<span class="ident">put</span>(<span class="kw-2">&amp;</span><span class="ident">dict1_builder</span>).<span class="ident">unwrap</span>();
-        <span class="ident">dict3</span>.<span class="ident">put</span>(<span class="kw-2">&amp;</span><span class="ident">dict2_builder</span>).<span class="ident">unwrap</span>();
+        dict1.put(<span class="kw-2">&amp;</span>dict1_builder).unwrap();
+        dict2.put(<span class="kw-2">&amp;</span>dict1_builder).unwrap();
+        dict3.put(<span class="kw-2">&amp;</span>dict2_builder).unwrap();
 
-        <span class="macro">assert!</span>(<span class="ident">attempt</span>(<span class="ident">dict1</span>.<span class="ident">unify</span>(<span class="kw-2">&amp;</span><span class="ident">dict2</span>)).<span class="ident">unwrap</span>());
-        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">attempt</span>(<span class="ident">dict1</span>.<span class="ident">unify</span>(<span class="kw-2">&amp;</span><span class="ident">dict3</span>)).<span class="ident">unwrap</span>());
+        <span class="macro">assert!</span>(attempt(dict1.unify(<span class="kw-2">&amp;</span>dict2)).unwrap());
+        <span class="macro">assert!</span>(!attempt(dict1.unify(<span class="kw-2">&amp;</span>dict3)).unwrap());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">iterate_dict</span>() {
-        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
-        <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
-        <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>iterate_dict() {
+        <span class="kw">let </span>engine = Engine::new();
+        <span class="kw">let </span>activation = engine.activate();
+        <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">DictBuilder::new</span>()
-            .<span class="ident">entry</span>(<span class="number">8</span>, <span class="ident">atomable</span>(<span class="string">&quot;foo&quot;</span>))
-            .<span class="ident">entry</span>(<span class="number">2</span>, <span class="ident">atomable</span>(<span class="string">&quot;bar&quot;</span>))
-            .<span class="ident">entry</span>(<span class="number">7</span>, <span class="ident">atomable</span>(<span class="string">&quot;baz&quot;</span>))
-            .<span class="ident">entry</span>(<span class="number">11</span>, <span class="ident">atomable</span>(<span class="string">&quot;quux&quot;</span>));
+        <span class="kw">let </span>builder = DictBuilder::new()
+            .entry(<span class="number">8</span>, atomable(<span class="string">&quot;foo&quot;</span>))
+            .entry(<span class="number">2</span>, atomable(<span class="string">&quot;bar&quot;</span>))
+            .entry(<span class="number">7</span>, atomable(<span class="string">&quot;baz&quot;</span>))
+            .entry(<span class="number">11</span>, atomable(<span class="string">&quot;quux&quot;</span>));
 
-        <span class="kw">let</span> <span class="ident">term</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_term_ref</span>();
-        <span class="ident">term</span>.<span class="ident">unify</span>(<span class="kw-2">&amp;</span><span class="ident">builder</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let </span>term = context.new_term_ref();
+        term.unify(<span class="kw-2">&amp;</span>builder).unwrap();
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">iter</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">dict_entries</span>(<span class="kw-2">&amp;</span><span class="ident">term</span>);
-        <span class="kw">let</span> (<span class="ident">key1</span>, <span class="ident">val1</span>) <span class="op">=</span> <span class="ident">iter</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> (<span class="ident">key2</span>, <span class="ident">val2</span>) <span class="op">=</span> <span class="ident">iter</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> (<span class="ident">key3</span>, <span class="ident">val3</span>) <span class="op">=</span> <span class="ident">iter</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> (<span class="ident">key4</span>, <span class="ident">val4</span>) <span class="op">=</span> <span class="ident">iter</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let </span><span class="kw-2">mut </span>iter = context.dict_entries(<span class="kw-2">&amp;</span>term);
+        <span class="kw">let </span>(key1, val1) = iter.next().unwrap();
+        <span class="kw">let </span>(key2, val2) = iter.next().unwrap();
+        <span class="kw">let </span>(key3, val3) = iter.next().unwrap();
+        <span class="kw">let </span>(key4, val4) = iter.next().unwrap();
 
-        <span class="macro">assert!</span>(<span class="ident">iter</span>.<span class="ident">next</span>().<span class="ident">is_none</span>());
+        <span class="macro">assert!</span>(iter.next().is_none());
 
-        <span class="macro">assert_eq!</span>(<span class="ident">Key::Int</span>(<span class="number">2</span>), <span class="ident">key1</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">Key::Int</span>(<span class="number">7</span>), <span class="ident">key2</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">Key::Int</span>(<span class="number">8</span>), <span class="ident">key3</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">Key::Int</span>(<span class="number">11</span>), <span class="ident">key4</span>);
+        <span class="macro">assert_eq!</span>(Key::Int(<span class="number">2</span>), key1);
+        <span class="macro">assert_eq!</span>(Key::Int(<span class="number">7</span>), key2);
+        <span class="macro">assert_eq!</span>(Key::Int(<span class="number">8</span>), key3);
+        <span class="macro">assert_eq!</span>(Key::Int(<span class="number">11</span>), key4);
 
-        <span class="macro">assert_eq!</span>(<span class="ident">Atom::new</span>(<span class="string">&quot;bar&quot;</span>), <span class="ident">val1</span>.<span class="ident">get</span>().<span class="ident">unwrap</span>());
-        <span class="macro">assert_eq!</span>(<span class="ident">Atom::new</span>(<span class="string">&quot;baz&quot;</span>), <span class="ident">val2</span>.<span class="ident">get</span>().<span class="ident">unwrap</span>());
-        <span class="macro">assert_eq!</span>(<span class="ident">Atom::new</span>(<span class="string">&quot;foo&quot;</span>), <span class="ident">val3</span>.<span class="ident">get</span>().<span class="ident">unwrap</span>());
-        <span class="macro">assert_eq!</span>(<span class="ident">Atom::new</span>(<span class="string">&quot;quux&quot;</span>), <span class="ident">val4</span>.<span class="ident">get</span>().<span class="ident">unwrap</span>());
+        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">&quot;bar&quot;</span>), val1.get().unwrap());
+        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">&quot;baz&quot;</span>), val2.get().unwrap());
+        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">&quot;foo&quot;</span>), val3.get().unwrap());
+        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">&quot;quux&quot;</span>), val4.get().unwrap());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">iterate_nondict_as_dict</span>() {
-        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
-        <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
-        <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>iterate_nondict_as_dict() {
+        <span class="kw">let </span>engine = Engine::new();
+        <span class="kw">let </span>activation = engine.activate();
+        <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let</span> <span class="ident">term</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_term_ref</span>();
-        <span class="ident">term</span>.<span class="ident">unify</span>(<span class="number">42_u64</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let </span>term = context.new_term_ref();
+        term.unify(<span class="number">42_u64</span>).unwrap();
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">iter</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">dict_entries</span>(<span class="kw-2">&amp;</span><span class="ident">term</span>);
-        <span class="macro">assert!</span>(<span class="ident">iter</span>.<span class="ident">next</span>().<span class="ident">is_none</span>());
+        <span class="kw">let </span><span class="kw-2">mut </span>iter = context.dict_entries(<span class="kw-2">&amp;</span>term);
+        <span class="macro">assert!</span>(iter.next().is_none());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">get_dict_tag_var</span>() {
-        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
-        <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
-        <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>get_dict_tag_var() {
+        <span class="kw">let </span>engine = Engine::new();
+        <span class="kw">let </span>activation = engine.activate();
+        <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">DictBuilder::new</span>();
+        <span class="kw">let </span>builder = DictBuilder::new();
 
-        <span class="kw">let</span> <span class="ident">term</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_term_ref</span>();
-        <span class="ident">term</span>.<span class="ident">unify</span>(<span class="kw-2">&amp;</span><span class="ident">builder</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let </span>term = context.new_term_ref();
+        term.unify(<span class="kw-2">&amp;</span>builder).unwrap();
 
-        <span class="macro">assert!</span>(<span class="ident">term</span>.<span class="ident">get_dict_tag</span>().<span class="ident">unwrap</span>().<span class="ident">is_none</span>());
+        <span class="macro">assert!</span>(term.get_dict_tag().unwrap().is_none());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">get_dict_tag_atom</span>() {
-        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
-        <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
-        <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>get_dict_tag_atom() {
+        <span class="kw">let </span>engine = Engine::new();
+        <span class="kw">let </span>activation = engine.activate();
+        <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">DictBuilder::new</span>().<span class="ident">tag</span>(<span class="string">&quot;foo&quot;</span>);
+        <span class="kw">let </span>builder = DictBuilder::new().tag(<span class="string">&quot;foo&quot;</span>);
 
-        <span class="kw">let</span> <span class="ident">term</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_term_ref</span>();
-        <span class="ident">term</span>.<span class="ident">unify</span>(<span class="kw-2">&amp;</span><span class="ident">builder</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let </span>term = context.new_term_ref();
+        term.unify(<span class="kw-2">&amp;</span>builder).unwrap();
 
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="ident">Atom::new</span>(<span class="string">&quot;foo&quot;</span>)), <span class="ident">term</span>.<span class="ident">get_dict_tag</span>().<span class="ident">unwrap</span>());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(Atom::new(<span class="string">&quot;foo&quot;</span>)), term.get_dict_tag().unwrap());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">get_nondict_tag</span>() {
-        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
-        <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
-        <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>get_nondict_tag() {
+        <span class="kw">let </span>engine = Engine::new();
+        <span class="kw">let </span>activation = engine.activate();
+        <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let</span> <span class="ident">term</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_term_ref</span>();
-        <span class="ident">term</span>.<span class="ident">unify</span>(<span class="number">42_u64</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let </span>term = context.new_term_ref();
+        term.unify(<span class="number">42_u64</span>).unwrap();
 
-        <span class="macro">assert!</span>(<span class="ident">term</span>.<span class="ident">get_dict_tag</span>().<span class="ident">unwrap_err</span>().<span class="ident">is_failure</span>());
+        <span class="macro">assert!</span>(term.get_dict_tag().unwrap_err().is_failure());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">get_dict_tag_term</span>() {
-        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
-        <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
-        <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>get_dict_tag_term() {
+        <span class="kw">let </span>engine = Engine::new();
+        <span class="kw">let </span>activation = engine.activate();
+        <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let</span> [<span class="ident">dict</span>, <span class="ident">tag</span>, <span class="ident">tag2</span>] <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_term_refs</span>();
-        <span class="ident">tag</span>.<span class="ident">unify</span>(<span class="number">42_u64</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">DictBuilder::new</span>().<span class="ident">tag_term</span>(<span class="ident">tag</span>.<span class="ident">clone</span>());
+        <span class="kw">let </span>[dict, tag, tag2] = context.new_term_refs();
+        tag.unify(<span class="number">42_u64</span>).unwrap();
+        <span class="kw">let </span>builder = DictBuilder::new().tag_term(tag.clone());
 
-        <span class="ident">dict</span>.<span class="ident">unify</span>(<span class="kw-2">&amp;</span><span class="ident">builder</span>).<span class="ident">unwrap</span>();
+        dict.unify(<span class="kw-2">&amp;</span>builder).unwrap();
 
-        <span class="ident">dict</span>.<span class="ident">get_dict_tag_term</span>(<span class="kw-2">&amp;</span><span class="ident">tag2</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="number">42_u64</span>, <span class="ident">tag2</span>.<span class="ident">get</span>().<span class="ident">unwrap</span>());
-        <span class="ident">tag</span>.<span class="ident">unify</span>(<span class="kw-2">&amp;</span><span class="ident">tag2</span>).<span class="ident">unwrap</span>();
+        dict.get_dict_tag_term(<span class="kw-2">&amp;</span>tag2).unwrap();
+        <span class="macro">assert_eq!</span>(<span class="number">42_u64</span>, tag2.get().unwrap());
+        tag.unify(<span class="kw-2">&amp;</span>tag2).unwrap();
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">get_dict_key</span>() {
-        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
-        <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
-        <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>get_dict_key() {
+        <span class="kw">let </span>engine = Engine::new();
+        <span class="kw">let </span>activation = engine.activate();
+        <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let</span> <span class="ident">dict</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_term_ref</span>();
-        <span class="kw">let</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">DictBuilder::new</span>()
-            .<span class="ident">entry</span>(<span class="string">&quot;foo&quot;</span>, <span class="number">42_u64</span>)
-            .<span class="ident">entry</span>(<span class="string">&quot;bar&quot;</span>, <span class="string">&quot;hello&quot;</span>.<span class="ident">to_owned</span>());
+        <span class="kw">let </span>dict = context.new_term_ref();
+        <span class="kw">let </span>builder = DictBuilder::new()
+            .entry(<span class="string">&quot;foo&quot;</span>, <span class="number">42_u64</span>)
+            .entry(<span class="string">&quot;bar&quot;</span>, <span class="string">&quot;hello&quot;</span>.to_owned());
 
-        <span class="ident">dict</span>.<span class="ident">unify</span>(<span class="kw-2">&amp;</span><span class="ident">builder</span>).<span class="ident">unwrap</span>();
+        dict.unify(<span class="kw-2">&amp;</span>builder).unwrap();
 
-        <span class="macro">assert_eq!</span>(<span class="number">42_u64</span>, <span class="ident">dict</span>.<span class="ident">get_dict_key</span>(<span class="string">&quot;foo&quot;</span>).<span class="ident">unwrap</span>());
-        <span class="kw">let</span> <span class="ident">hello_str</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">dict</span>.<span class="ident">get_dict_key</span>(<span class="string">&quot;bar&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;hello&quot;</span>, <span class="ident">hello_str</span>);
+        <span class="macro">assert_eq!</span>(<span class="number">42_u64</span>, dict.get_dict_key(<span class="string">&quot;foo&quot;</span>).unwrap());
+        <span class="kw">let </span>hello_str: String = dict.get_dict_key(<span class="string">&quot;bar&quot;</span>).unwrap();
+        <span class="macro">assert_eq!</span>(<span class="string">&quot;hello&quot;</span>, hello_str);
 
-        <span class="comment">// getting a dict key for the wrong type fails</span>
-        <span class="macro">assert!</span>(<span class="ident">attempt_opt</span>(<span class="ident">dict</span>.<span class="ident">get_dict_key</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">String</span><span class="op">&gt;</span>(<span class="string">&quot;foo&quot;</span>))
-            .<span class="ident">unwrap</span>()
-            .<span class="ident">is_none</span>());
-        <span class="comment">// getting a dict key that is not in there fails</span>
-        <span class="macro">assert!</span>(<span class="ident">attempt_opt</span>(<span class="ident">dict</span>.<span class="ident">get_dict_key</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">bool</span><span class="op">&gt;</span>(<span class="string">&quot;moo&quot;</span>))
-            .<span class="ident">unwrap</span>()
-            .<span class="ident">is_none</span>());
+        <span class="comment">// getting a dict key for the wrong type fails
+        </span><span class="macro">assert!</span>(attempt_opt(dict.get_dict_key::&lt;<span class="kw">_</span>, String&gt;(<span class="string">&quot;foo&quot;</span>))
+            .unwrap()
+            .is_none());
+        <span class="comment">// getting a dict key that is not in there fails
+        </span><span class="macro">assert!</span>(attempt_opt(dict.get_dict_key::&lt;<span class="kw">_</span>, bool&gt;(<span class="string">&quot;moo&quot;</span>))
+            .unwrap()
+            .is_none());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">get_dict_key_for_nondict</span>() {
-        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
-        <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
-        <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>get_dict_key_for_nondict() {
+        <span class="kw">let </span>engine = Engine::new();
+        <span class="kw">let </span>activation = engine.activate();
+        <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let</span> <span class="ident">nondict</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">new_term_ref</span>();
-        <span class="ident">nondict</span>.<span class="ident">put_val</span>(<span class="number">42_u64</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let </span>nondict = context.new_term_ref();
+        nondict.put_val(<span class="number">42_u64</span>).unwrap();
 
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">nondict</span>.<span class="ident">get_dict_key</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">String</span><span class="op">&gt;</span>(<span class="string">&quot;a&quot;</span>).<span class="ident">unwrap_err</span>();
+        <span class="kw">let </span>result = nondict.get_dict_key::&lt;<span class="kw">_</span>, String&gt;(<span class="string">&quot;a&quot;</span>).unwrap_err();
 
-        <span class="macro">assert!</span>(<span class="ident">result</span>.<span class="ident">is_failure</span>());
+        <span class="macro">assert!</span>(result.is_failure());
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl/src/callable.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>callable.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../swipl/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../swipl/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../swipl/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl/src/callable.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>callable.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../swipl/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -384,391 +384,391 @@
 <span id="384">384</span>
 <span id="385">385</span>
 <span id="386">386</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Support for calling into prolog or prolog-like code.</span>
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::context</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::engine</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::fli</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::functor</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::module</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::predicate</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::result</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::term</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident">std::convert::TryInto</span>;
-<span class="kw">use</span> <span class="ident">std::os::raw::c_void</span>;
-<span class="kw">use</span> <span class="ident">std::sync::atomic</span>::{<span class="ident">AtomicPtr</span>, <span class="ident">Ordering</span>};
-<span class="kw">use</span> <span class="ident">thiserror::Error</span>;
+</pre><pre class="rust"><code><span class="doccomment">//! Support for calling into prolog or prolog-like code.
+</span><span class="kw">use </span><span class="kw">crate</span>::context::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">crate</span>::engine::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">crate</span>::fli::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">crate</span>::functor::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">crate</span>::module::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">crate</span>::predicate::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">crate</span>::result::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">crate</span>::term::<span class="kw-2">*</span>;
+<span class="kw">use </span>std::convert::TryInto;
+<span class="kw">use </span>std::os::raw::c_void;
+<span class="kw">use </span>std::sync::atomic::{AtomicPtr, Ordering};
+<span class="kw">use </span>thiserror::Error;
 
-<span class="doccomment">/// Looks up a predicate on first call to `as_callable` and keeps it cached afterwards.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is used by both the `prolog!` macro and the `pred!` macro to</span>
-<span class="doccomment">/// only look up a predicate once.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LazyCallablePredicate</span><span class="op">&lt;</span><span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> {
-    <span class="ident">module</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span>,
-    <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>,
-    <span class="ident">predicate</span>: <span class="ident">AtomicPtr</span><span class="op">&lt;</span><span class="ident">c_void</span><span class="op">&gt;</span>,
+<span class="doccomment">/// Looks up a predicate on first call to `as_callable` and keeps it cached afterwards.
+///
+/// This is used by both the `prolog!` macro and the `pred!` macro to
+/// only look up a predicate once.
+</span><span class="kw">pub struct </span>LazyCallablePredicate&lt;<span class="kw">const </span>N: usize&gt; {
+    module: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str&gt;,
+    name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+    predicate: AtomicPtr&lt;c_void&gt;,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> <span class="ident">LazyCallablePredicate</span><span class="op">&lt;</span><span class="ident">N</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Create a new `LazyCallablepredicate` from a module, a name, and the const type argument which is used as arity.</span>
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">module</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">module</span>,
-            <span class="ident">name</span>,
-            <span class="ident">predicate</span>: <span class="ident">AtomicPtr::new</span>(<span class="ident">std::ptr::null_mut</span>()),
+<span class="kw">impl</span>&lt;<span class="kw">const </span>N: usize&gt; LazyCallablePredicate&lt;N&gt; {
+    <span class="doccomment">/// Create a new `LazyCallablepredicate` from a module, a name, and the const type argument which is used as arity.
+    </span><span class="kw">pub const fn </span>new(module: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str&gt;, name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            module,
+            name,
+            predicate: AtomicPtr::new(std::ptr::null_mut()),
         }
     }
 
-    <span class="doccomment">/// Return a `CallablePredicate` from the information in this struct.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If this was previously called for this struct, it&#39;ll return</span>
-    <span class="doccomment">/// what it previously looked up. Otherwise, it&#39;ll do the lookup.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_callable</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">CallablePredicate</span><span class="op">&lt;</span><span class="ident">N</span><span class="op">&gt;</span> {
-        <span class="ident">assert_some_engine_is_active</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">loaded</span>: <span class="ident">predicate_t</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">predicate</span>.<span class="ident">load</span>(<span class="ident">Ordering::Relaxed</span>) <span class="kw">as</span> <span class="ident">predicate_t</span>;
-        <span class="kw">if</span> <span class="ident">loaded</span>.<span class="ident">is_null</span>() {
-            <span class="kw">let</span> <span class="ident">functor</span> <span class="op">=</span> <span class="ident">Functor::new</span>(<span class="self">self</span>.<span class="ident">name</span>, <span class="ident">N</span> <span class="kw">as</span> <span class="ident">u16</span>);
-            <span class="kw">let</span> <span class="ident">module_name</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">module</span>.<span class="ident">unwrap_or</span>(<span class="string">&quot;&quot;</span>);
-            <span class="kw">let</span> <span class="ident">module</span> <span class="op">=</span> <span class="ident">Module::new</span>(<span class="ident">module_name</span>);
+    <span class="doccomment">/// Return a `CallablePredicate` from the information in this struct.
+    ///
+    /// If this was previously called for this struct, it&#39;ll return
+    /// what it previously looked up. Otherwise, it&#39;ll do the lookup.
+    </span><span class="kw">pub fn </span>as_callable(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; CallablePredicate&lt;N&gt; {
+        assert_some_engine_is_active();
+        <span class="kw">let </span><span class="kw-2">mut </span>loaded: predicate_t = <span class="self">self</span>.predicate.load(Ordering::Relaxed) <span class="kw">as </span>predicate_t;
+        <span class="kw">if </span>loaded.is_null() {
+            <span class="kw">let </span>functor = Functor::new(<span class="self">self</span>.name, N <span class="kw">as </span>u16);
+            <span class="kw">let </span>module_name = <span class="self">self</span>.module.unwrap_or(<span class="string">&quot;&quot;</span>);
+            <span class="kw">let </span>module = Module::new(module_name);
 
-            <span class="ident">loaded</span> <span class="op">=</span> <span class="ident">Predicate::new</span>(<span class="ident">functor</span>, <span class="ident">module</span>).<span class="ident">predicate_ptr</span>();
+            loaded = Predicate::new(functor, module).predicate_ptr();
 
-            <span class="self">self</span>.<span class="ident">predicate</span>
-                .<span class="ident">store</span>(<span class="ident">loaded</span> <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">c_void</span>, <span class="ident">std::sync::atomic::Ordering::Relaxed</span>);
+            <span class="self">self</span>.predicate
+                .store(loaded <span class="kw">as </span><span class="kw-2">*mut </span>c_void, std::sync::atomic::Ordering::Relaxed);
         }
 
-        <span class="kw">unsafe</span> { <span class="ident">CallablePredicate::wrap</span>(<span class="ident">loaded</span>) }
+        <span class="kw">unsafe </span>{ CallablePredicate::wrap(loaded) }
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> <span class="ident">Callable</span><span class="op">&lt;</span><span class="ident">N</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">LazyCallablePredicate</span><span class="op">&lt;</span><span class="ident">N</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">ContextType</span> <span class="op">=</span> <span class="ident">OpenQuery</span>;
+<span class="kw">impl</span>&lt;<span class="kw">const </span>N: usize&gt; Callable&lt;N&gt; <span class="kw">for </span>LazyCallablePredicate&lt;N&gt; {
+    <span class="kw">type </span>ContextType = OpenQuery;
 
-    <span class="kw">fn</span> <span class="ident">open</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">C</span>: <span class="ident">ContextType</span><span class="op">&gt;</span>(
+    <span class="kw">fn </span>open&lt;<span class="lifetime">&#39;a</span>, C: ContextType&gt;(
         <span class="self">self</span>,
-        <span class="ident">context</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>,
-        <span class="ident">module</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Module</span><span class="op">&gt;</span>,
-        <span class="ident">args</span>: [<span class="kw-2">&amp;</span><span class="ident">Term</span>; <span class="ident">N</span>],
-    ) -&gt; <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">OpenQuery</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">as_callable</span>().<span class="ident">open</span>(<span class="ident">context</span>, <span class="ident">module</span>, <span class="ident">args</span>)
+        context: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Context&lt;C&gt;,
+        module: <span class="prelude-ty">Option</span>&lt;Module&gt;,
+        args: [<span class="kw-2">&amp;</span>Term; N],
+    ) -&gt; Context&lt;<span class="lifetime">&#39;a</span>, OpenQuery&gt; {
+        <span class="self">self</span>.as_callable().open(context, module, args)
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> <span class="ident">Callable</span><span class="op">&lt;</span><span class="ident">N</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">LazyCallablePredicate</span><span class="op">&lt;</span><span class="ident">N</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">ContextType</span> <span class="op">=</span> <span class="ident">OpenQuery</span>;
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="kw">const </span>N: usize&gt; Callable&lt;N&gt; <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>LazyCallablePredicate&lt;N&gt; {
+    <span class="kw">type </span>ContextType = OpenQuery;
 
-    <span class="kw">fn</span> <span class="ident">open</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span>, <span class="ident">C</span>: <span class="ident">ContextType</span><span class="op">&gt;</span>(
+    <span class="kw">fn </span>open&lt;<span class="lifetime">&#39;b</span>, C: ContextType&gt;(
         <span class="self">self</span>,
-        <span class="ident">context</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>,
-        <span class="ident">module</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Module</span><span class="op">&gt;</span>,
-        <span class="ident">args</span>: [<span class="kw-2">&amp;</span><span class="ident">Term</span>; <span class="ident">N</span>],
-    ) -&gt; <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span>, <span class="ident">OpenQuery</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">as_callable</span>().<span class="ident">open</span>(<span class="ident">context</span>, <span class="ident">module</span>, <span class="ident">args</span>)
+        context: <span class="kw-2">&amp;</span><span class="lifetime">&#39;b </span>Context&lt;C&gt;,
+        module: <span class="prelude-ty">Option</span>&lt;Module&gt;,
+        args: [<span class="kw-2">&amp;</span>Term; N],
+    ) -&gt; Context&lt;<span class="lifetime">&#39;b</span>, OpenQuery&gt; {
+        <span class="self">self</span>.as_callable().open(context, module, args)
     }
 }
 
-<span class="doccomment">/// Error type for turning a [Predicate](crate::predicate::Predicate) into a [CallablePredicate].</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Error</span>, <span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">PredicateWrapError</span> {
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;predicate has arity {actual} but {expected} was required&quot;</span>)]</span>
-    <span class="ident">WrongArity</span> { <span class="ident">expected</span>: <span class="ident">u16</span>, <span class="ident">actual</span>: <span class="ident">u16</span> },
+<span class="doccomment">/// Error type for turning a [Predicate](crate::predicate::Predicate) into a [CallablePredicate].
+</span><span class="attribute">#[derive(Error, Debug)]
+</span><span class="kw">pub enum </span>PredicateWrapError {
+    <span class="attribute">#[error(<span class="string">&quot;predicate has arity {actual} but {expected} was required&quot;</span>)]
+    </span>WrongArity { expected: u16, actual: u16 },
 }
 
-<span class="doccomment">/// A prolog predicate which is ready to be called.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">CallablePredicate</span><span class="op">&lt;</span><span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> {
-    <span class="ident">predicate</span>: <span class="ident">predicate_t</span>,
+<span class="doccomment">/// A prolog predicate which is ready to be called.
+</span><span class="attribute">#[derive(Clone, Copy)]
+</span><span class="kw">pub struct </span>CallablePredicate&lt;<span class="kw">const </span>N: usize&gt; {
+    predicate: predicate_t,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> <span class="ident">CallablePredicate</span><span class="op">&lt;</span><span class="ident">N</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Wrap a `predicate_t` from the SWI-Prolog fli, not checking if arity matches.</span>
-    <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">wrap</span>(<span class="ident">predicate</span>: <span class="ident">predicate_t</span>) -&gt; <span class="self">Self</span> {
-        <span class="comment">// no check for arity or if the predicate even exists!</span>
-        <span class="self">Self</span> { <span class="ident">predicate</span> }
+<span class="kw">impl</span>&lt;<span class="kw">const </span>N: usize&gt; CallablePredicate&lt;N&gt; {
+    <span class="doccomment">/// Wrap a `predicate_t` from the SWI-Prolog fli, not checking if arity matches.
+    </span><span class="kw">pub unsafe fn </span>wrap(predicate: predicate_t) -&gt; <span class="self">Self </span>{
+        <span class="comment">// no check for arity or if the predicate even exists!
+        </span><span class="self">Self </span>{ predicate }
     }
 
-    <span class="doccomment">/// Wrap a [Predicate](crate::predicate::Predicate).</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">///This checks that the arity matches the const generic, and</span>
-    <span class="doccomment">/// panics otherwise.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">predicate</span>: <span class="ident">Predicate</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">PredicateWrapError</span><span class="op">&gt;</span> {
-        <span class="ident">assert_some_engine_is_active</span>();
-        <span class="kw">let</span> <span class="ident">arity</span> <span class="op">=</span> <span class="ident">predicate</span>.<span class="ident">arity</span>();
-        <span class="kw">if</span> <span class="ident">arity</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">!</span><span class="op">=</span> <span class="ident">N</span> {
-            <span class="prelude-val">Err</span>(<span class="ident">PredicateWrapError::WrongArity</span> {
-                <span class="ident">expected</span>: <span class="ident">N</span> <span class="kw">as</span> <span class="ident">u16</span>,
-                <span class="ident">actual</span>: <span class="ident">arity</span>,
+    <span class="doccomment">/// Wrap a [Predicate](crate::predicate::Predicate).
+    ///
+    ///This checks that the arity matches the const generic, and
+    /// panics otherwise.
+    </span><span class="kw">pub fn </span>new(predicate: Predicate) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, PredicateWrapError&gt; {
+        assert_some_engine_is_active();
+        <span class="kw">let </span>arity = predicate.arity();
+        <span class="kw">if </span>arity <span class="kw">as </span>usize != N {
+            <span class="prelude-val">Err</span>(PredicateWrapError::WrongArity {
+                expected: N <span class="kw">as </span>u16,
+                actual: arity,
             })
-        } <span class="kw">else</span> {
-            <span class="prelude-val">Ok</span>(<span class="kw">unsafe</span> { <span class="ident"><span class="self">Self</span>::wrap</span>(<span class="ident">predicate</span>.<span class="ident">predicate_ptr</span>()) })
+        } <span class="kw">else </span>{
+            <span class="prelude-val">Ok</span>(<span class="kw">unsafe </span>{ <span class="self">Self</span>::wrap(predicate.predicate_ptr()) })
         }
     }
 }
 
-<span class="doccomment">/// Trait for things that can be called as if they are prolog predicates.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is obviously the case for prolog predicates themselves, which</span>
-<span class="doccomment">/// are implemented through [CallablePredicate]. The intention though</span>
-<span class="doccomment">/// is to also implement frontends for foreign predicates through this</span>
-<span class="doccomment">/// trait, so that they may be used as prolog predicates without</span>
-<span class="doccomment">/// actually having to go through prolog. However, this is currently</span>
-<span class="doccomment">/// not yet implemented.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Through the const generic, this knows about the predicate arity at</span>
-<span class="doccomment">/// compile time. This allows `context.open(..)` to check at compile</span>
-<span class="doccomment">/// time that the arity matches.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Callable</span><span class="op">&lt;</span><span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">ContextType</span>: <span class="ident">OpenCall</span>;
+<span class="doccomment">/// Trait for things that can be called as if they are prolog predicates.
+///
+/// This is obviously the case for prolog predicates themselves, which
+/// are implemented through [CallablePredicate]. The intention though
+/// is to also implement frontends for foreign predicates through this
+/// trait, so that they may be used as prolog predicates without
+/// actually having to go through prolog. However, this is currently
+/// not yet implemented.
+///
+/// Through the const generic, this knows about the predicate arity at
+/// compile time. This allows `context.open(..)` to check at compile
+/// time that the arity matches.
+</span><span class="kw">pub trait </span>Callable&lt;<span class="kw">const </span>N: usize&gt; {
+    <span class="kw">type </span>ContextType: OpenCall;
 
-    <span class="kw">fn</span> <span class="ident">open</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">C</span>: <span class="ident">ContextType</span><span class="op">&gt;</span>(
+    <span class="kw">fn </span>open&lt;<span class="lifetime">&#39;a</span>, C: ContextType&gt;(
         <span class="self">self</span>,
-        <span class="ident">context</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>,
-        <span class="ident">module</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Module</span><span class="op">&gt;</span>,
-        <span class="ident">args</span>: [<span class="kw-2">&amp;</span><span class="ident">Term</span>; <span class="ident">N</span>],
-    ) -&gt; <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident"><span class="self">Self</span>::ContextType</span><span class="op">&gt;</span>;
+        context: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Context&lt;C&gt;,
+        module: <span class="prelude-ty">Option</span>&lt;Module&gt;,
+        args: [<span class="kw-2">&amp;</span>Term; N],
+    ) -&gt; Context&lt;<span class="lifetime">&#39;a</span>, <span class="self">Self</span>::ContextType&gt;;
 }
 
-<span class="doccomment">/// An open query.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">OpenQuery</span> {
-    <span class="ident">qid</span>: <span class="ident">qid_t</span>,
-    <span class="ident">closed</span>: <span class="ident">bool</span>,
+<span class="doccomment">/// An open query.
+</span><span class="kw">pub struct </span>OpenQuery {
+    qid: qid_t,
+    closed: bool,
 }
 
-<span class="doccomment">/// An open call.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// A context that wraps an open call can be asked for the next</span>
-<span class="doccomment">/// solution, or close itself through cutting the query or</span>
-<span class="doccomment">/// discarding. All these functions are actually implemented here</span>
-<span class="doccomment">/// using the `OpenCall` trait.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This context type is the only type where new terms are not allowed</span>
-<span class="doccomment">/// to be created, nor is it allowed to start new queries directly</span>
-<span class="doccomment">/// from this context. This is because SWI-Prolog really doesn&#39;t like</span>
-<span class="doccomment">/// it if the prolog stack changes between solutions. It is still</span>
-<span class="doccomment">/// possible however to open a new frame and do all that stuff in the</span>
-<span class="doccomment">/// new frame. You&#39;ll need to close the frame before continuing with</span>
-<span class="doccomment">/// solution retrieval.</span>
-<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">trait</span> <span class="ident">OpenCall</span>: <span class="ident">Sized</span> {
-    <span class="doccomment">/// Retrieve the next solution.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If solution retrieval led to a failure or an error, this is</span>
-    <span class="doccomment">/// returned in the `Err` part of the `PrologResult`. Otherwise,</span>
-    <span class="doccomment">/// `Ok(true)` is returned if there are more solutions, and</span>
-    <span class="doccomment">/// `Ok(false)` is returned when this is the last solution.</span>
-    <span class="kw">fn</span> <span class="ident">next_solution</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">this</span>: <span class="kw-2">&amp;</span><span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="self">Self</span><span class="op">&gt;</span>) -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>;
+<span class="doccomment">/// An open call.
+///
+/// A context that wraps an open call can be asked for the next
+/// solution, or close itself through cutting the query or
+/// discarding. All these functions are actually implemented here
+/// using the `OpenCall` trait.
+///
+/// This context type is the only type where new terms are not allowed
+/// to be created, nor is it allowed to start new queries directly
+/// from this context. This is because SWI-Prolog really doesn&#39;t like
+/// it if the prolog stack changes between solutions. It is still
+/// possible however to open a new frame and do all that stuff in the
+/// new frame. You&#39;ll need to close the frame before continuing with
+/// solution retrieval.
+</span><span class="kw">pub unsafe trait </span>OpenCall: Sized {
+    <span class="doccomment">/// Retrieve the next solution.
+    ///
+    /// If solution retrieval led to a failure or an error, this is
+    /// returned in the `Err` part of the `PrologResult`. Otherwise,
+    /// `Ok(true)` is returned if there are more solutions, and
+    /// `Ok(false)` is returned when this is the last solution.
+    </span><span class="kw">fn </span>next_solution&lt;<span class="lifetime">&#39;a</span>&gt;(this: <span class="kw-2">&amp;</span>Context&lt;<span class="lifetime">&#39;a</span>, <span class="self">Self</span>&gt;) -&gt; PrologResult&lt;bool&gt;;
 
-    <span class="doccomment">/// Cut the query, keeping all data it has created.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Any unifications the query did to terms from parent contexts</span>
-    <span class="doccomment">/// will be retained.</span>
-    <span class="kw">fn</span> <span class="ident">cut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">this</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="self">Self</span><span class="op">&gt;</span>);
+    <span class="doccomment">/// Cut the query, keeping all data it has created.
+    ///
+    /// Any unifications the query did to terms from parent contexts
+    /// will be retained.
+    </span><span class="kw">fn </span>cut&lt;<span class="lifetime">&#39;a</span>&gt;(this: Context&lt;<span class="lifetime">&#39;a</span>, <span class="self">Self</span>&gt;);
 
-    <span class="doccomment">/// Discard the query, discarding all data it has created.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Any unifications the query did to terms from parent contexts</span>
-    <span class="doccomment">/// will be discarded.</span>
-    <span class="kw">fn</span> <span class="ident">discard</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">this</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="self">Self</span><span class="op">&gt;</span>);
+    <span class="doccomment">/// Discard the query, discarding all data it has created.
+    ///
+    /// Any unifications the query did to terms from parent contexts
+    /// will be discarded.
+    </span><span class="kw">fn </span>discard&lt;<span class="lifetime">&#39;a</span>&gt;(this: Context&lt;<span class="lifetime">&#39;a</span>, <span class="self">Self</span>&gt;);
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">C</span>: <span class="ident">OpenCall</span><span class="op">&gt;</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">C</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Retrieve the next solution.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If solution retrieval led to a failure or an error, this is</span>
-    <span class="doccomment">/// returned in the `Err` part of the `PrologResult`. Otherwise,</span>
-    <span class="doccomment">/// `Ok(true)` is returned if there are more solutions, and</span>
-    <span class="doccomment">/// `Ok(false)` is returned when this is the last solution.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">next_solution</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
-        <span class="ident">C::next_solution</span>(<span class="self">self</span>)
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C: OpenCall&gt; Context&lt;<span class="lifetime">&#39;a</span>, C&gt; {
+    <span class="doccomment">/// Retrieve the next solution.
+    ///
+    /// If solution retrieval led to a failure or an error, this is
+    /// returned in the `Err` part of the `PrologResult`. Otherwise,
+    /// `Ok(true)` is returned if there are more solutions, and
+    /// `Ok(false)` is returned when this is the last solution.
+    </span><span class="kw">pub fn </span>next_solution(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; PrologResult&lt;bool&gt; {
+        C::next_solution(<span class="self">self</span>)
     }
 
-    <span class="doccomment">/// Cut the query, keeping all data it has created.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Any unifications the query did to terms from parent contexts</span>
-    <span class="doccomment">/// will be retained.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">cut</span>(<span class="self">self</span>) {
-        <span class="ident">C::cut</span>(<span class="self">self</span>)
+    <span class="doccomment">/// Cut the query, keeping all data it has created.
+    ///
+    /// Any unifications the query did to terms from parent contexts
+    /// will be retained.
+    </span><span class="kw">pub fn </span>cut(<span class="self">self</span>) {
+        C::cut(<span class="self">self</span>)
     }
 
-    <span class="doccomment">/// Discard the query, discarding all data it has created.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Any unifications the query did to terms from parent contexts</span>
-    <span class="doccomment">/// will be discarded.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">discard</span>(<span class="self">self</span>) {
-        <span class="ident">C::discard</span>(<span class="self">self</span>)
+    <span class="doccomment">/// Discard the query, discarding all data it has created.
+    ///
+    /// Any unifications the query did to terms from parent contexts
+    /// will be discarded.
+    </span><span class="kw">pub fn </span>discard(<span class="self">self</span>) {
+        C::discard(<span class="self">self</span>)
     }
 
-    <span class="doccomment">/// Retrieve one result, and then cut.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">once</span>(<span class="self">self</span>) -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">next_solution</span>()<span class="question-mark">?</span>;
-        <span class="self">self</span>.<span class="ident">cut</span>();
+    <span class="doccomment">/// Retrieve one result, and then cut.
+    </span><span class="kw">pub fn </span>once(<span class="self">self</span>) -&gt; PrologResult&lt;()&gt; {
+        <span class="self">self</span>.next_solution()<span class="question-mark">?</span>;
+        <span class="self">self</span>.cut();
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="doccomment">/// Retrieve one result, ignoring failures, and then cut.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Exceptions will still be returned as such.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ignore</span>(<span class="self">self</span>) -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">PrologError::Exception</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">next_solution</span>() {
-            <span class="prelude-val">Err</span>(<span class="ident">PrologError::Exception</span>)
-        } <span class="kw">else</span> {
-            <span class="self">self</span>.<span class="ident">cut</span>();
+    <span class="doccomment">/// Retrieve one result, ignoring failures, and then cut.
+    ///
+    /// Exceptions will still be returned as such.
+    </span><span class="kw">pub fn </span>ignore(<span class="self">self</span>) -&gt; PrologResult&lt;()&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Err</span>(PrologError::Exception) = <span class="self">self</span>.next_solution() {
+            <span class="prelude-val">Err</span>(PrologError::Exception)
+        } <span class="kw">else </span>{
+            <span class="self">self</span>.cut();
 
             <span class="prelude-val">Ok</span>(())
         }
     }
 }
 
-<span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">OpenCall</span><span class="op">&gt;</span> <span class="ident">ContextType</span> <span class="kw">for</span> <span class="ident">T</span> {}
-<span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">OpenCall</span><span class="op">&gt;</span> <span class="ident">FrameableContextType</span> <span class="kw">for</span> <span class="ident">T</span> {}
+<span class="kw">unsafe impl</span>&lt;T: OpenCall&gt; ContextType <span class="kw">for </span>T {}
+<span class="kw">unsafe impl</span>&lt;T: OpenCall&gt; FrameableContextType <span class="kw">for </span>T {}
 
-<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">OpenCall</span> <span class="kw">for</span> <span class="ident">OpenQuery</span> {
-    <span class="kw">fn</span> <span class="ident">next_solution</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">this</span>: <span class="kw-2">&amp;</span><span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="self">Self</span><span class="op">&gt;</span>) -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
-        <span class="ident">this</span>.<span class="ident">assert_activated</span>();
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">PL_next_solution</span>(<span class="ident">this</span>.<span class="ident">context</span>.<span class="ident">qid</span>) };
-        <span class="kw">match</span> <span class="ident">result</span> {
-            <span class="op">-</span><span class="number">1</span> =&gt; {
-                <span class="kw">let</span> <span class="ident">exception</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">PL_exception</span>(<span class="ident">this</span>.<span class="ident">context</span>.<span class="ident">qid</span>) };
-                <span class="comment">// rethrow this exception but as the special 0 exception which remains alive</span>
-                <span class="kw">unsafe</span> { <span class="ident">PL_raise_exception</span>(<span class="ident">exception</span>) };
+<span class="kw">unsafe impl </span>OpenCall <span class="kw">for </span>OpenQuery {
+    <span class="kw">fn </span>next_solution&lt;<span class="lifetime">&#39;a</span>&gt;(this: <span class="kw-2">&amp;</span>Context&lt;<span class="lifetime">&#39;a</span>, <span class="self">Self</span>&gt;) -&gt; PrologResult&lt;bool&gt; {
+        this.assert_activated();
+        <span class="kw">let </span>result = <span class="kw">unsafe </span>{ PL_next_solution(this.context.qid) };
+        <span class="kw">match </span>result {
+            -<span class="number">1 </span>=&gt; {
+                <span class="kw">let </span>exception = <span class="kw">unsafe </span>{ PL_exception(this.context.qid) };
+                <span class="comment">// rethrow this exception but as the special 0 exception which remains alive
+                </span><span class="kw">unsafe </span>{ PL_raise_exception(exception) };
 
-                <span class="prelude-val">Err</span>(<span class="ident">PrologError::Exception</span>)
+                <span class="prelude-val">Err</span>(PrologError::Exception)
             }
-            <span class="number">0</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">PrologError::Failure</span>),
-            <span class="number">1</span> =&gt; <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>),
-            <span class="number">2</span> =&gt; <span class="prelude-val">Ok</span>(<span class="bool-val">false</span>),
-            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;unknown query result type {}&quot;</span>, <span class="ident">result</span>),
+            <span class="number">0 </span>=&gt; <span class="prelude-val">Err</span>(PrologError::Failure),
+            <span class="number">1 </span>=&gt; <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>),
+            <span class="number">2 </span>=&gt; <span class="prelude-val">Ok</span>(<span class="bool-val">false</span>),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unknown query result type {}&quot;</span>, result),
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">cut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="ident">this</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="self">Self</span><span class="op">&gt;</span>) {
-        <span class="ident">this</span>.<span class="ident">assert_activated</span>();
-        <span class="comment">// TODO handle exceptions</span>
+    <span class="kw">fn </span>cut&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">mut </span>this: Context&lt;<span class="lifetime">&#39;a</span>, <span class="self">Self</span>&gt;) {
+        this.assert_activated();
+        <span class="comment">// TODO handle exceptions
 
-        <span class="kw">unsafe</span> { <span class="ident">PL_cut_query</span>(<span class="ident">this</span>.<span class="ident">context</span>.<span class="ident">qid</span>) };
-        <span class="ident">this</span>.<span class="ident">context</span>.<span class="ident">closed</span> <span class="op">=</span> <span class="bool-val">true</span>;
+        </span><span class="kw">unsafe </span>{ PL_cut_query(this.context.qid) };
+        this.context.closed = <span class="bool-val">true</span>;
     }
 
-    <span class="kw">fn</span> <span class="ident">discard</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="ident">this</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="self">Self</span><span class="op">&gt;</span>) {
-        <span class="ident">this</span>.<span class="ident">assert_activated</span>();
-        <span class="comment">// TODO handle exceptions</span>
+    <span class="kw">fn </span>discard&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">mut </span>this: Context&lt;<span class="lifetime">&#39;a</span>, <span class="self">Self</span>&gt;) {
+        this.assert_activated();
+        <span class="comment">// TODO handle exceptions
 
-        <span class="kw">unsafe</span> { <span class="ident">PL_close_query</span>(<span class="ident">this</span>.<span class="ident">context</span>.<span class="ident">qid</span>) };
-        <span class="ident">this</span>.<span class="ident">context</span>.<span class="ident">closed</span> <span class="op">=</span> <span class="bool-val">true</span>;
+        </span><span class="kw">unsafe </span>{ PL_close_query(this.context.qid) };
+        this.context.closed = <span class="bool-val">true</span>;
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">OpenQuery</span> {
-    <span class="kw">fn</span> <span class="ident">drop</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">closed</span> {
-            <span class="kw">unsafe</span> { <span class="ident">PL_close_query</span>(<span class="self">self</span>.<span class="ident">qid</span>) };
+<span class="kw">impl </span>Drop <span class="kw">for </span>OpenQuery {
+    <span class="kw">fn </span>drop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="kw">if </span>!<span class="self">self</span>.closed {
+            <span class="kw">unsafe </span>{ PL_close_query(<span class="self">self</span>.qid) };
         }
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> <span class="ident">Callable</span><span class="op">&lt;</span><span class="ident">N</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">CallablePredicate</span><span class="op">&lt;</span><span class="ident">N</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">ContextType</span> <span class="op">=</span> <span class="ident">OpenQuery</span>;
+<span class="kw">impl</span>&lt;<span class="kw">const </span>N: usize&gt; Callable&lt;N&gt; <span class="kw">for </span>CallablePredicate&lt;N&gt; {
+    <span class="kw">type </span>ContextType = OpenQuery;
 
-    <span class="kw">fn</span> <span class="ident">open</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">C</span>: <span class="ident">ContextType</span><span class="op">&gt;</span>(
+    <span class="kw">fn </span>open&lt;<span class="lifetime">&#39;a</span>, C: ContextType&gt;(
         <span class="self">self</span>,
-        <span class="ident">context</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>,
-        <span class="ident">module</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Module</span><span class="op">&gt;</span>,
-        <span class="ident">args</span>: [<span class="kw-2">&amp;</span><span class="ident">Term</span>; <span class="ident">N</span>],
-    ) -&gt; <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident"><span class="self">Self</span>::ContextType</span><span class="op">&gt;</span> {
-        <span class="ident">context</span>.<span class="ident">assert_activated</span>();
-        <span class="ident">context</span>.<span class="ident">assert_no_exception</span>();
-        <span class="kw">let</span> <span class="ident">module_context</span> <span class="op">=</span> <span class="ident">module</span>
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">c</span>.<span class="ident">module_ptr</span>())
-            .<span class="ident">unwrap_or</span>(<span class="ident">std::ptr::null_mut</span>());
-        <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">PL_Q_NORMAL</span> <span class="op">|</span> <span class="ident">PL_Q_CATCH_EXCEPTION</span> <span class="op">|</span> <span class="ident">PL_Q_EXT_STATUS</span>;
-        <span class="kw">unsafe</span> {
-            <span class="kw">let</span> <span class="ident">terms</span> <span class="op">=</span> <span class="ident">PL_new_term_refs</span>(<span class="ident">N</span> <span class="kw">as</span> <span class="ident">i32</span>);
-            <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">args</span>.<span class="ident">len</span>() {
-                <span class="kw">let</span> <span class="ident">term</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">wrap_term_ref</span>(<span class="ident">terms</span> <span class="op">+</span> <span class="ident">i</span>);
-                <span class="macro">assert!</span>(<span class="ident">term</span>.<span class="ident">unify</span>(<span class="ident">args</span>[<span class="ident">i</span>]).<span class="ident">is_ok</span>());
+        context: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Context&lt;C&gt;,
+        module: <span class="prelude-ty">Option</span>&lt;Module&gt;,
+        args: [<span class="kw-2">&amp;</span>Term; N],
+    ) -&gt; Context&lt;<span class="lifetime">&#39;a</span>, <span class="self">Self</span>::ContextType&gt; {
+        context.assert_activated();
+        context.assert_no_exception();
+        <span class="kw">let </span>module_context = module
+            .map(|c| c.module_ptr())
+            .unwrap_or(std::ptr::null_mut());
+        <span class="kw">let </span>flags = PL_Q_NORMAL | PL_Q_CATCH_EXCEPTION | PL_Q_EXT_STATUS;
+        <span class="kw">unsafe </span>{
+            <span class="kw">let </span>terms = PL_new_term_refs(N <span class="kw">as </span>i32);
+            <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..args.len() {
+                <span class="kw">let </span>term = context.wrap_term_ref(terms + i);
+                <span class="macro">assert!</span>(term.unify(args[i]).is_ok());
             }
 
-            <span class="kw">let</span> <span class="ident">qid</span> <span class="op">=</span> <span class="ident">PL_open_query</span>(
-                <span class="ident">module_context</span>,
-                <span class="ident">flags</span>.<span class="ident">try_into</span>().<span class="ident">unwrap</span>(),
-                <span class="self">self</span>.<span class="ident">predicate</span>,
-                <span class="ident">terms</span>,
+            <span class="kw">let </span>qid = PL_open_query(
+                module_context,
+                flags.try_into().unwrap(),
+                <span class="self">self</span>.predicate,
+                terms,
             );
 
-            <span class="kw">let</span> <span class="ident">query</span> <span class="op">=</span> <span class="ident">OpenQuery</span> { <span class="ident">qid</span>, <span class="ident">closed</span>: <span class="bool-val">false</span> };
+            <span class="kw">let </span>query = OpenQuery { qid, closed: <span class="bool-val">false </span>};
 
-            <span class="ident">context</span>.<span class="ident">deactivate</span>();
-            <span class="ident">Context::new_activated</span>(<span class="ident">context</span>, <span class="ident">query</span>, <span class="ident">context</span>.<span class="ident">engine_ptr</span>())
+            context.deactivate();
+            Context::new_activated(context, query, context.engine_ptr())
         }
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::prelude</span>::<span class="kw-2">*</span>;
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">call_prolog_inline_slash</span>() -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
-        <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
-        <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>call_prolog_inline_slash() -&gt; PrologResult&lt;()&gt; {
+        <span class="kw">let </span>engine = Engine::new();
+        <span class="kw">let </span>activation = engine.activate();
+        <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let</span> <span class="ident">term</span> <span class="op">=</span> <span class="macro">term!</span> {<span class="ident">context</span>: <span class="ident">flurps</span>(<span class="ident">flargh</span>)}<span class="question-mark">?</span>;
-        <span class="ident">context</span>.<span class="ident">call_once</span>(<span class="macro">pred!</span>(<span class="ident">writeq</span> <span class="op">/</span> <span class="number">1</span>), [<span class="kw-2">&amp;</span><span class="ident">term</span>]).<span class="ident">unwrap</span>();
-        <span class="ident">context</span>.<span class="ident">call_once</span>(<span class="macro">pred!</span>(<span class="ident">nl</span> <span class="op">/</span> <span class="number">0</span>), []).<span class="ident">unwrap</span>();
-
-        <span class="prelude-val">Ok</span>(())
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">call_prolog_inline_module_slash</span>() -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
-        <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
-        <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
-
-        <span class="kw">let</span> <span class="ident">term</span> <span class="op">=</span> <span class="macro">term!</span> {<span class="ident">context</span>: <span class="ident">flurps</span>(<span class="ident">flargh</span>)}<span class="question-mark">?</span>;
-        <span class="ident">context</span>.<span class="ident">call_once</span>(<span class="macro">pred!</span>(<span class="ident">user</span>: <span class="ident">writeq</span> <span class="op">/</span> <span class="number">1</span>), [<span class="kw-2">&amp;</span><span class="ident">term</span>]).<span class="ident">unwrap</span>();
-        <span class="ident">context</span>.<span class="ident">call_once</span>(<span class="macro">pred!</span>(<span class="ident">user</span>: <span class="ident">nl</span> <span class="op">/</span> <span class="number">0</span>), []).<span class="ident">unwrap</span>();
+        <span class="kw">let </span>term = <span class="macro">term! </span>{context: flurps(flargh)}<span class="question-mark">?</span>;
+        context.call_once(<span class="macro">pred!</span>(writeq / <span class="number">1</span>), [<span class="kw-2">&amp;</span>term]).unwrap();
+        context.call_once(<span class="macro">pred!</span>(nl / <span class="number">0</span>), []).unwrap();
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">call_prolog_inline_str</span>() -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
-        <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
-        <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>call_prolog_inline_module_slash() -&gt; PrologResult&lt;()&gt; {
+        <span class="kw">let </span>engine = Engine::new();
+        <span class="kw">let </span>activation = engine.activate();
+        <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let</span> <span class="ident">term</span> <span class="op">=</span> <span class="macro">term!</span> {<span class="ident">context</span>: <span class="ident">flurps</span>(<span class="ident">flargh</span>)}<span class="question-mark">?</span>;
-        <span class="ident">context</span>.<span class="ident">call_once</span>(<span class="macro">pred!</span>(<span class="string">&quot;writeq/1&quot;</span>), [<span class="kw-2">&amp;</span><span class="ident">term</span>]).<span class="ident">unwrap</span>();
-        <span class="ident">context</span>.<span class="ident">call_once</span>(<span class="macro">pred!</span>(<span class="string">&quot;nl/0&quot;</span>), []).<span class="ident">unwrap</span>();
-
-        <span class="prelude-val">Ok</span>(())
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">call_prolog_inline_module_str</span>() -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
-        <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
-        <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
-
-        <span class="kw">let</span> <span class="ident">term</span> <span class="op">=</span> <span class="macro">term!</span> {<span class="ident">context</span>: <span class="ident">flurps</span>(<span class="ident">flargh</span>)}<span class="question-mark">?</span>;
-        <span class="ident">context</span>.<span class="ident">call_once</span>(<span class="macro">pred!</span>(<span class="ident">user</span>:<span class="string">&quot;writeq/1&quot;</span>), [<span class="kw-2">&amp;</span><span class="ident">term</span>]).<span class="ident">unwrap</span>();
-        <span class="ident">context</span>.<span class="ident">call_once</span>(<span class="macro">pred!</span>(<span class="ident">user</span>:<span class="string">&quot;nl/0&quot;</span>), []).<span class="ident">unwrap</span>();
+        <span class="kw">let </span>term = <span class="macro">term! </span>{context: flurps(flargh)}<span class="question-mark">?</span>;
+        context.call_once(<span class="macro">pred!</span>(user: writeq / <span class="number">1</span>), [<span class="kw-2">&amp;</span>term]).unwrap();
+        context.call_once(<span class="macro">pred!</span>(user: nl / <span class="number">0</span>), []).unwrap();
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">call_prolog_inline_str_with_module</span>() -&gt; <span class="ident">PrologResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Engine::new</span>();
-        <span class="kw">let</span> <span class="ident">activation</span> <span class="op">=</span> <span class="ident">engine</span>.<span class="ident">activate</span>();
-        <span class="kw">let</span> <span class="ident">context</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">activation</span>.<span class="ident">into</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>call_prolog_inline_str() -&gt; PrologResult&lt;()&gt; {
+        <span class="kw">let </span>engine = Engine::new();
+        <span class="kw">let </span>activation = engine.activate();
+        <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let</span> <span class="ident">term</span> <span class="op">=</span> <span class="macro">term!</span> {<span class="ident">context</span>: <span class="ident">flurps</span>(<span class="ident">flargh</span>)}<span class="question-mark">?</span>;
-        <span class="ident">context</span>.<span class="ident">call_once</span>(<span class="macro">pred!</span>(<span class="string">&quot;user:writeq/1&quot;</span>), [<span class="kw-2">&amp;</span><span class="ident">term</span>]).<span class="ident">unwrap</span>();
-        <span class="ident">context</span>.<span class="ident">call_once</span>(<span class="macro">pred!</span>(<span class="string">&quot;user:nl/0&quot;</span>), []).<span class="ident">unwrap</span>();
+        <span class="kw">let </span>term = <span class="macro">term! </span>{context: flurps(flargh)}<span class="question-mark">?</span>;
+        context.call_once(<span class="macro">pred!</span>(<span class="string">&quot;writeq/1&quot;</span>), [<span class="kw-2">&amp;</span>term]).unwrap();
+        context.call_once(<span class="macro">pred!</span>(<span class="string">&quot;nl/0&quot;</span>), []).unwrap();
+
+        <span class="prelude-val">Ok</span>(())
+    }
+
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>call_prolog_inline_module_str() -&gt; PrologResult&lt;()&gt; {
+        <span class="kw">let </span>engine = Engine::new();
+        <span class="kw">let </span>activation = engine.activate();
+        <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
+
+        <span class="kw">let </span>term = <span class="macro">term! </span>{context: flurps(flargh)}<span class="question-mark">?</span>;
+        context.call_once(<span class="macro">pred!</span>(user:<span class="string">&quot;writeq/1&quot;</span>), [<span class="kw-2">&amp;</span>term]).unwrap();
+        context.call_once(<span class="macro">pred!</span>(user:<span class="string">&quot;nl/0&quot;</span>), []).unwrap();
+
+        <span class="prelude-val">Ok</span>(())
+    }
+
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>call_prolog_inline_str_with_module() -&gt; PrologResult&lt;()&gt; {
+        <span class="kw">let </span>engine = Engine::new();
+        <span class="kw">let </span>activation = engine.activate();
+        <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
+
+        <span class="kw">let </span>term = <span class="macro">term! </span>{context: flurps(flargh)}<span class="question-mark">?</span>;
+        context.call_once(<span class="macro">pred!</span>(<span class="string">&quot;user:writeq/1&quot;</span>), [<span class="kw-2">&amp;</span>term]).unwrap();
+        context.call_once(<span class="macro">pred!</span>(<span class="string">&quot;user:nl/0&quot;</span>), []).unwrap();
 
         <span class="prelude-val">Ok</span>(())
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>
