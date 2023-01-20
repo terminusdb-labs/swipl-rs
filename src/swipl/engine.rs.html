@@ -243,6 +243,9 @@
 <span id="243">243</span>
 <span id="244">244</span>
 <span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Prolog engines.
 //!
 //! A single process can run multiple prolog engines. Prolog engines
@@ -302,6 +305,7 @@
 
 <span class="doccomment">/// Returns the current engine pointer.
 ///
+/// # Safety
 /// This is unsafe because behavior of this function is undefined if
 /// SWI-Prolog has not yet been activated.
 </span><span class="kw">pub unsafe fn </span>current_engine_ptr() -&gt; PL_engine_t {
@@ -311,6 +315,12 @@
     </span>PL_set_engine(PL_ENGINE_CURRENT, <span class="kw-2">&amp;mut </span>current);
 
     current
+}
+
+<span class="kw">impl </span>Default <span class="kw">for </span>Engine {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::new()
+    }
 }
 
 <span class="kw">impl </span>Engine {
@@ -355,11 +365,7 @@
         <span class="comment">// unsafe justification: swipl was shown to be initialized above so engine should be queryable
         </span><span class="kw">let </span>current = <span class="kw">unsafe </span>{ current_engine_ptr() };
 
-        <span class="kw">if </span>current.is_null() {
-            <span class="bool-val">false
-        </span>} <span class="kw">else </span>{
-            <span class="bool-val">true
-        </span>}
+        !current.is_null()
     }
 
     <span class="doccomment">/// Returns true if this engine is the engine currently active on this thread.
@@ -489,4 +495,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.1 (90743e729 2023-01-10)" ></div></body></html>

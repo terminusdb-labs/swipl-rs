@@ -352,7 +352,6 @@
 <span id="352">352</span>
 <span id="353">353</span>
 <span id="354">354</span>
-<span id="355">355</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Prolog functors.
 //!
 //! A functor is a core datatype in prolog. It is a combination of an
@@ -381,6 +380,7 @@
 <span class="kw">impl </span>Functor {
     <span class="doccomment">/// Wrap a `functor_t`, which is how the SWI-Prolog fli represents functors.
     ///
+    /// # Safety
     /// This is unsafe because no check is done to ensure that the
     /// functor_t indeed points at a valid functor. The caller will
     /// have to ensure that this is the case.
@@ -531,9 +531,7 @@
 
             </span>functor
         } <span class="kw">else </span>{
-            <span class="kw">let </span>functor = <span class="kw">unsafe </span>{ Functor::wrap(ptr <span class="kw">as </span>functor_t) };
-
-            functor
+            <span class="kw">unsafe </span>{ Functor::wrap(ptr <span class="kw">as </span>functor_t) }
         }
     }
 }
@@ -565,8 +563,8 @@
 
         <span class="kw">let </span>f = Functor::new(<span class="string">&quot;moocows&quot;</span>, <span class="number">3</span>);
         <span class="kw">let </span>term = context.new_term_ref();
-        <span class="macro">assert!</span>(term.unify(<span class="kw-2">&amp;</span>f).is_ok());
-        <span class="macro">assert!</span>(term.unify(<span class="kw-2">&amp;</span>f).is_ok());
+        <span class="macro">assert!</span>(term.unify(f).is_ok());
+        <span class="macro">assert!</span>(term.unify(f).is_ok());
     }
 
     <span class="attribute">#[test]
@@ -577,7 +575,7 @@
 
         <span class="kw">let </span>f = Functor::new(<span class="string">&quot;moocows&quot;</span>, <span class="number">3</span>);
         <span class="kw">let </span>term = context.new_term_ref();
-        <span class="macro">assert!</span>(term.unify(<span class="kw-2">&amp;</span>f).is_ok());
+        <span class="macro">assert!</span>(term.unify(f).is_ok());
     }
 
     <span class="attribute">#[test]
@@ -588,7 +586,7 @@
 
         <span class="kw">let </span>f1 = Functor::new(<span class="string">&quot;moocows&quot;</span>, <span class="number">3</span>);
         <span class="kw">let </span>term = context.new_term_ref();
-        term.unify(<span class="kw-2">&amp;</span>f1).unwrap();
+        term.unify(f1).unwrap();
         <span class="kw">let </span>f2: Functor = term.get().unwrap();
         <span class="macro">assert_eq!</span>(f1, f2);
     }
@@ -602,8 +600,8 @@
         <span class="kw">let </span>f1 = Functor::new(<span class="string">&quot;moocows&quot;</span>, <span class="number">3</span>);
         <span class="kw">let </span>f2 = Functor::new(<span class="string">&quot;oinkpigs&quot;</span>, <span class="number">3</span>);
         <span class="kw">let </span>term = context.new_term_ref();
-        <span class="macro">assert!</span>(term.unify(<span class="kw-2">&amp;</span>f1).is_ok());
-        <span class="macro">assert!</span>(!term.unify(<span class="kw-2">&amp;</span>f2).is_ok());
+        <span class="macro">assert!</span>(term.unify(f1).is_ok());
+        <span class="macro">assert!</span>(term.unify(f2).is_err());
     }
 
     <span class="attribute">#[test]
@@ -629,12 +627,12 @@
         <span class="macro">assert!</span>(term.unify_arg(<span class="number">1</span>, <span class="number">42_u64</span>).is_ok());
         <span class="macro">assert_eq!</span>(<span class="number">42_u64</span>, term.get_arg(<span class="number">1</span>).unwrap());
         <span class="macro">assert!</span>(term.unify_arg(<span class="number">1</span>, <span class="number">42_u64</span>).is_ok());
-        <span class="macro">assert!</span>(!term.unify_arg(<span class="number">1</span>, <span class="number">43_u64</span>).is_ok());
+        <span class="macro">assert!</span>(term.unify_arg(<span class="number">1</span>, <span class="number">43_u64</span>).is_err());
 
         <span class="macro">assert!</span>(term.unify_arg(<span class="number">2</span>, <span class="number">24_u64</span>).is_ok());
         <span class="macro">assert_eq!</span>(<span class="number">24_u64</span>, term.get_arg(<span class="number">2</span>).unwrap());
 
-        <span class="macro">assert!</span>(!term.unify_arg(<span class="number">3</span>, <span class="number">24_u64</span>).is_ok());
+        <span class="macro">assert!</span>(term.unify_arg(<span class="number">3</span>, <span class="number">24_u64</span>).is_err());
         <span class="macro">assert!</span>(term.get_arg::&lt;u64&gt;(<span class="number">3</span>).unwrap_err().is_failure());
     }
 
@@ -709,4 +707,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.1 (90743e729 2023-01-10)" ></div></body></html>

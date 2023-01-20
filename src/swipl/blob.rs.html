@@ -661,6 +661,29 @@
 <span id="661">661</span>
 <span id="662">662</span>
 <span id="663">663</span>
+<span id="664">664</span>
+<span id="665">665</span>
+<span id="666">666</span>
+<span id="667">667</span>
+<span id="668">668</span>
+<span id="669">669</span>
+<span id="670">670</span>
+<span id="671">671</span>
+<span id="672">672</span>
+<span id="673">673</span>
+<span id="674">674</span>
+<span id="675">675</span>
+<span id="676">676</span>
+<span id="677">677</span>
+<span id="678">678</span>
+<span id="679">679</span>
+<span id="680">680</span>
+<span id="681">681</span>
+<span id="682">682</span>
+<span id="683">683</span>
+<span id="684">684</span>
+<span id="685">685</span>
+<span id="686">686</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Blob support.
 //!
 //! Blobs are a way to share data with SWI-Prolog which does not fit
@@ -891,6 +914,7 @@
 ///
 /// This is used by the various blob macros. You&#39;ll almost never have
 /// to use this directly.
+</span><span class="attribute">#[allow(clippy::too_many_arguments)]
 </span><span class="kw">pub fn </span>create_blob_definition(
     name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[u8],
     text: bool,
@@ -977,6 +1001,7 @@
 <span class="doccomment">/// A blob type whose data is shared with SWI-Prolog as an atomic
 /// reference-counted pointer.
 ///
+/// # Safety
 /// This is unsafe because care has to be taken that the returned
 /// `PL_blob_t` from `get_blob_definition` actually matches the blob
 /// type.
@@ -988,10 +1013,11 @@
 <span class="doccomment">/// Unify the term with the given `Arc`, using the given blob
 /// definition to do so.
 ///
+/// This is used from the arc blob macros.
+///
+/// # Safety
 /// This is unsafe cause no attempt is made to ensure that the blob
 /// definition matches the given data.
-///
-/// This is used from the arc blob macros.
 </span><span class="kw">pub unsafe fn </span>unify_with_arc&lt;T&gt;(
     term: <span class="kw-2">&amp;</span>Term,
     blob_definition: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>fli::PL_blob_t,
@@ -1012,10 +1038,11 @@
 <span class="doccomment">/// Unify the term with the given Cloneable, using the given blob
 /// definition to do so.
 ///
+/// This is used from the clone blob macros.
+///
+/// # Safety
 /// This is unsafe cause no attempt is made to ensure that the blob
 /// definition matches the given data.
-///
-/// This is used from the clone blob macros.
 </span><span class="kw">pub unsafe fn </span>unify_with_cloneable&lt;T: Clone + Sized + Unpin&gt;(
     term: <span class="kw-2">&amp;</span>Term,
     blob_definition: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>fli::PL_blob_t,
@@ -1027,7 +1054,7 @@
     <span class="kw">let </span>result = fli::PL_unify_blob(
         term.term_ptr(),
         <span class="kw-2">&amp;</span>cloned <span class="kw">as </span><span class="kw-2">*const </span>T <span class="kw">as </span><span class="kw-2">*mut </span>c_void,
-        std::mem::size_of::&lt;T&gt;() <span class="kw">as </span>fli::size_t,
+        std::mem::size_of::&lt;T&gt;(),
         blob_definition <span class="kw">as </span><span class="kw-2">*const </span>fli::PL_blob_t <span class="kw">as </span><span class="kw-2">*mut </span>fli::PL_blob_t,
     );
 
@@ -1042,10 +1069,11 @@
 <span class="doccomment">/// Retrieve an arc from the given term, using the given blob
 /// definition.
 ///
+/// This is used from the arc blob macros.
+///
+/// # Safety
 /// This is unsafe cause no attempt is made to ensure that the blob
 /// definition matches the given data.
-///
-/// This is used from the arc blob macros.
 </span><span class="kw">pub unsafe fn </span>get_arc_from_term&lt;T&gt;(
     term: <span class="kw-2">&amp;</span>Term,
     blob_definition: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>fli::PL_blob_t,
@@ -1079,10 +1107,11 @@
 <span class="doccomment">/// Retrieve a cloneable value from the given term, using the given
 /// blob definition.
 ///
+/// This is used from the clone blob macros.
+///
+/// # Safety
 /// This is unsafe cause no attempt is made to ensure that the blob
 /// definition matches the given data.
-///
-/// This is used from the clone blob macros.
 </span><span class="kw">pub unsafe fn </span>get_cloned_from_term&lt;T: Clone + Sized + Unpin&gt;(
     term: <span class="kw-2">&amp;</span>Term,
     blob_definition: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>fli::PL_blob_t,
@@ -1114,10 +1143,11 @@
 
 <span class="doccomment">/// Put an arc into the given term, using the given blob definition.
 ///
+/// This is used from the arc blob macros.
+///
+/// # Safety
 /// This is unsafe cause no attempt is made to ensure that the blob
 /// definition matches the given data.
-///
-/// This is used from the arc blob macros.
 </span><span class="kw">pub unsafe fn </span>put_arc_in_term&lt;T&gt;(
     term: <span class="kw-2">&amp;</span>Term,
     blob_definition: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>fli::PL_blob_t,
@@ -1136,10 +1166,11 @@
 <span class="doccomment">/// Put a Cloneable into the given term, using the given blob
 /// definition.
 ///
+/// This is used from the clone blob macros.
+///
+/// # Safety
 /// This is unsafe cause no attempt is made to ensure that the blob
 /// definition matches the given data.
-///
-/// This is used from the clone blob macros.
 </span><span class="kw">pub unsafe fn </span>put_cloneable_in_term&lt;T: Clone + Sized + Unpin&gt;(
     term: <span class="kw-2">&amp;</span>Term,
     blob_definition: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>fli::PL_blob_t,
@@ -1152,7 +1183,7 @@
     fli::PL_put_blob(
         term.term_ptr(),
         <span class="kw-2">&amp;</span>cloned <span class="kw">as </span><span class="kw-2">*const </span>T <span class="kw">as </span><span class="kw-2">*mut </span>c_void,
-        std::mem::size_of::&lt;T&gt;() <span class="kw">as </span>fli::size_t,
+        std::mem::size_of::&lt;T&gt;(),
         blob_definition <span class="kw">as </span><span class="kw-2">*const </span>fli::PL_blob_t <span class="kw">as </span><span class="kw-2">*mut </span>fli::PL_blob_t,
     );
 
@@ -1162,6 +1193,11 @@
 <span class="doccomment">/// Increment the reference count on an Arc stored in a blob.
 ///
 /// This is used from the arc blob macros.
+///
+/// # Safety
+/// This is only safe to call from a thread with a swipl environment,
+/// on an atom which contains an arc blob of the given type.
+/// definition matches the given data.
 </span><span class="kw">pub unsafe fn </span>acquire_arc_blob&lt;T&gt;(atom: fli::atom_t) {
     <span class="kw">let </span>data = fli::PL_blob_data(atom, std::ptr::null_mut(), std::ptr::null_mut()) <span class="kw">as </span><span class="kw-2">*const </span>T;
 
@@ -1171,6 +1207,10 @@
 <span class="doccomment">/// Decrement the reference count on an Arc stored in a blob.
 ///
 /// This is used from the arc blob macros.
+///
+/// # Safety
+/// This is only safe to call from a thread with a swipl environment,
+/// on an atom which contains an arc blob of the given type.
 </span><span class="kw">pub unsafe fn </span>release_arc_blob&lt;T&gt;(atom: fli::atom_t) {
     <span class="kw">let </span>data = fli::PL_blob_data(atom, std::ptr::null_mut(), std::ptr::null_mut()) <span class="kw">as </span><span class="kw-2">*const </span>T;
 
@@ -1180,6 +1220,10 @@
 <span class="doccomment">/// Drop the rust value stored in a blob.
 ///
 /// This is used from the clone blob macros.
+///
+/// # Safety
+/// This is only safe to call from a thread with a swipl environment,
+/// on an atom which contains a clone blob of the given type.
 </span><span class="kw">pub unsafe fn </span>release_clone_blob&lt;T&gt;(atom: fli::atom_t) {
     <span class="kw">let </span>data =
         fli::PL_blob_data(atom, std::ptr::null_mut(), std::ptr::null_mut()) <span class="kw">as </span><span class="kw-2">*const </span>T <span class="kw">as </span><span class="kw-2">*mut </span>T;
@@ -1266,6 +1310,7 @@
 /// reference-counted pointer, and which is wrapped into a wrapper
 /// type.
 ///
+/// # Safety
 /// This is unsafe because care has to be taken that the returned
 /// `PL_blob_t` from `get_blob_definition` actually matches the blob
 /// type.
@@ -1317,6 +1362,7 @@
 <span class="doccomment">/// A blob type whose data is copied into SWI-Prolog and dropped on
 /// garbage collection.
 ///
+/// # Safety
 /// This is unsafe because care has to be taken that the returned
 /// `PL_blob_t` from `get_blob_definition` actually matches the blob
 /// type.
@@ -1325,4 +1371,4 @@
     </span><span class="kw">fn </span>get_blob_definition() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>fli::PL_blob_t;
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.1 (90743e729 2023-01-10)" ></div></body></html>

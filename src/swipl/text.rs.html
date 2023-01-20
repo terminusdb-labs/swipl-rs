@@ -90,7 +90,7 @@
         <span class="kw">let </span><span class="kw-2">mut </span>s: <span class="kw-2">*mut </span>c_char = std::ptr::null_mut();
         <span class="kw">let </span>flags = fli::CVT_ATOM|fli::CVT_STRING|fli::BUF_DISCARDABLE|fli::REP_UTF8;
         <span class="kw">let </span>result = <span class="kw">unsafe </span>{ fli::PL_get_nchars(term.term_ptr(),
-                                                 <span class="kw-2">&amp;mut </span>len <span class="kw">as </span><span class="kw-2">*mut </span>usize <span class="kw">as </span><span class="kw-2">*mut </span>fli::size_t,
+                                                 <span class="kw-2">&amp;mut </span>len <span class="kw">as </span><span class="kw-2">*mut </span>usize,
                                                  <span class="kw-2">&amp;mut </span>s,
                                                  flags) };
 
@@ -107,4 +107,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.1 (90743e729 2023-01-10)" ></div></body></html>

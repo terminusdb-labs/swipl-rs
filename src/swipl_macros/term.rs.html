@@ -484,10 +484,7 @@
 <span id="484">484</span>
 <span id="485">485</span>
 <span id="486">486</span>
-<span id="487">487</span>
-<span id="488">488</span>
-</pre><pre class="rust"><code><span class="kw">use </span>proc_macro;
-<span class="kw">use </span>proc_macro2::{Span, TokenStream};
+</pre><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>std::collections::HashMap;
 <span class="kw">use </span>syn::ext::IdentExt;
@@ -630,7 +627,7 @@
                 <span class="self">Self</span>::Int(i) =&gt; {
                     <span class="comment">// terrible, but necessary?
                     </span><span class="kw">let </span>int_str = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, i);
-                    <span class="kw">if </span>int_str.chars().next().unwrap() == <span class="string">&#39;-&#39; </span>{
+                    <span class="kw">if </span>int_str.starts_with(<span class="string">&#39;-&#39;</span>) {
                         <span class="macro">quote! </span>{#into.unify(#i <span class="kw">as </span>i64)<span class="question-mark">?</span>;}
                     } <span class="kw">else </span>{
                         <span class="macro">quote! </span>{#into.unify(#i <span class="kw">as </span>u64)<span class="question-mark">?</span>;}
@@ -925,13 +922,12 @@
         };
 
         <span class="kw">let </span><span class="kw-2">mut </span>terms_chain = Vec::with_capacity(len);
-        <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..(len - <span class="number">1</span>) {
+        <span class="kw">for </span>term_ident <span class="kw">in </span>term_idents.iter() {
             <span class="comment">// for each element except the last one, we need to
             // - unify comma functor with current
             // - unify element with first
             // - make current the second element
-            </span><span class="kw">let </span>term_ident = <span class="kw-2">&amp;</span>term_idents[i];
-            terms_chain.push(<span class="macro">quote! </span>{
+            </span>terms_chain.push(<span class="macro">quote! </span>{
                 cur_ident.unify(<span class="kw-2">&amp;</span>comma_functor)<span class="question-mark">?</span>;
                 cur_ident.unify_arg(<span class="number">1</span>, <span class="kw-2">&amp;</span>#term_ident)<span class="question-mark">?</span>;
                 <span class="kw">let </span>next_ident = __swipl_frame.new_term_ref();
@@ -966,7 +962,7 @@
         <span class="kw">let </span>terms_punct: Punctuated&lt;Term, <span class="macro">Token!</span>[,]&gt; =
             terms_stream.parse_terminated(Term::parse)<span class="question-mark">?</span>;
         <span class="kw">let </span>terms: Vec&lt;<span class="kw">_</span>&gt; = terms_punct.into_iter().collect();
-        <span class="kw">if </span>terms.len() == <span class="number">0 </span>{
+        <span class="kw">if </span>terms.is_empty() {
             terms_stream
                 .error(<span class="string">&quot;parenthesized list of expressions should contain at least one element&quot;</span>);
         }
@@ -975,4 +971,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.1 (90743e729 2023-01-10)" ></div></body></html>

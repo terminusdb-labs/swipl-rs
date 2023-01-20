@@ -207,6 +207,8 @@
 <span id="207">207</span>
 <span id="208">208</span>
 <span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Prolog initialization logic.
 //!
 //! When using swipl-rs to embed prolog, you need to ensure that you
@@ -249,8 +251,8 @@
     }
 }
 
-<span class="kw">static </span>ARG0: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[u8] = <span class="string">b&quot;rust-swipl\0&quot;</span>; <span class="comment">// fake program name
-</span><span class="kw">static </span>ARG1: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[u8] = <span class="string">b&quot;--quiet\0&quot;</span>; <span class="comment">// suppress swipl banner printing
+<span class="kw">static </span>ARG0: <span class="kw-2">&amp;</span>[u8] = <span class="string">b&quot;rust-swipl\0&quot;</span>; <span class="comment">// fake program name
+</span><span class="kw">static </span>ARG1: <span class="kw-2">&amp;</span>[u8] = <span class="string">b&quot;--quiet\0&quot;</span>; <span class="comment">// suppress swipl banner printing
 
 </span><span class="doccomment">/// Initialize SWI-Prolog.
 ///
@@ -303,7 +305,7 @@
     // &gt; to raise an exception.
     // - SWIPL FLI docs (footnote 208)
     // https://www.swi-prolog.org/pldoc/doc_for?object=c(%27PL_set_resource_db_mem%27)
-    </span><span class="kw">let </span>result = <span class="kw">unsafe </span>{ PL_set_resource_db_mem(state.as_ptr(), state.len() <span class="kw">as </span>size_t) };
+    </span><span class="kw">let </span>result = <span class="kw">unsafe </span>{ PL_set_resource_db_mem(state.as_ptr(), state.len()) };
 
     <span class="kw">if </span>result != TRUE <span class="kw">as </span>i32 {
         <span class="kw">return </span><span class="prelude-val">None</span>;
@@ -368,6 +370,10 @@
 ///
 /// This function is used by the `predicates!` macro to implement
 /// predicate registration.
+///
+/// # Safety
+/// This is only safe to call for functions which implement a foreign
+/// predicate.
 </span><span class="kw">pub unsafe fn </span>register_foreign_in_module(
     module: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;,
     name: <span class="kw-2">&amp;</span>str,
@@ -411,10 +417,8 @@
         arity <span class="kw">as </span>c_int,
         <span class="prelude-val">Some</span>(converted_function_ptr),
         flags.try_into().unwrap(),
-        c_meta
-            .map(|m| m.as_ptr())
-            .unwrap_or_else(|| std::ptr::null()),
+        c_meta.map(|m| m.as_ptr()).unwrap_or_else(std::ptr::null),
     ) == <span class="number">1
 </span>}
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.1 (90743e729 2023-01-10)" ></div></body></html>

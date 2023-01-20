@@ -1542,10 +1542,6 @@
 <span id="1542">1542</span>
 <span id="1543">1543</span>
 <span id="1544">1544</span>
-<span id="1545">1545</span>
-<span id="1546">1546</span>
-<span id="1547">1547</span>
-<span id="1548">1548</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Serialization of rust values into prolog terms.
 </span><span class="kw">use </span><span class="kw">super</span>::de::Error;
 <span class="kw">use super</span>::<span class="kw-2">*</span>;
@@ -1557,7 +1553,7 @@
 
 <span class="kw">use </span>std::cell::Cell;
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>ATOM_STRUCT_NAME: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str = <span class="string">&quot;$swipl::private::atom&quot;</span>;
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>ATOM_STRUCT_NAME: <span class="kw-2">&amp;</span>str = <span class="string">&quot;$swipl::private::atom&quot;</span>;
 
 <span class="kw">impl </span>ser::Error <span class="kw">for </span>Error {
     <span class="kw">fn </span>custom&lt;T&gt;(c: T) -&gt; <span class="self">Self
@@ -1624,6 +1620,12 @@
     tag_struct_dicts: bool,
 }
 
+<span class="kw">impl </span>Default <span class="kw">for </span>SerializerConfiguration {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::new()
+    }
+}
+
 <span class="kw">impl </span>SerializerConfiguration {
     <span class="doccomment">/// Create a new SerializerConfiguration.
     </span><span class="kw">pub fn </span>new() -&gt; <span class="self">Self </span>{
@@ -1640,7 +1642,6 @@
     </span><span class="kw">pub fn </span>set_default_tag&lt;A: AsAtom&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, tag: A) {
         <span class="self">self</span>.default_tag = <span class="prelude-val">Some</span>(tag.as_atom());
     }
-
 
     <span class="doccomment">/// Set the default tag to use for dictionaries.
     ///
@@ -1798,22 +1799,17 @@
     {
         <span class="kw">if </span>name == ATOM_STRUCT_NAME {
             value.serialize(AtomEmitter(<span class="self">self</span>.term))
-        } <span class="kw">else </span>{
-            <span class="kw">if </span>attempt(<span class="self">self</span>.term.unify(Functor::new(name, <span class="number">1</span>)))<span class="question-mark">? </span>{
-                <span class="kw">let </span>[term] = attempt_opt(<span class="self">self</span>.context.compound_terms(<span class="kw-2">&amp;</span><span class="self">self</span>.term))<span class="question-mark">?</span>.expect(<span class="string">&quot;having just unified the functor with arity 1, retrieving its argument list should have been possible&quot;</span>);
-                <span class="kw">let </span>inner_serializer = Serializer::new_with_config(
-                    <span class="self">self</span>.context,
-                    term.clone(),
-                    <span class="self">self</span>.configuration.clone(),
-                );
-                <span class="kw">let </span>result = value.serialize(inner_serializer);
-                <span class="kw">unsafe </span>{
-                    term.reset();
-                }
-                result
-            } <span class="kw">else </span>{
-                <span class="prelude-val">Err</span>(Error::UnificationFailed)
+        } <span class="kw">else if </span>attempt(<span class="self">self</span>.term.unify(Functor::new(name, <span class="number">1</span>)))<span class="question-mark">? </span>{
+            <span class="kw">let </span>[term] = attempt_opt(<span class="self">self</span>.context.compound_terms(<span class="kw-2">&amp;</span><span class="self">self</span>.term))<span class="question-mark">?</span>.expect(<span class="string">&quot;having just unified the functor with arity 1, retrieving its argument list should have been possible&quot;</span>);
+            <span class="kw">let </span>inner_serializer =
+                Serializer::new_with_config(<span class="self">self</span>.context, term.clone(), <span class="self">self</span>.configuration.clone());
+            <span class="kw">let </span>result = value.serialize(inner_serializer);
+            <span class="kw">unsafe </span>{
+                term.reset();
             }
+            result
+        } <span class="kw">else </span>{
+            <span class="prelude-val">Err</span>(Error::UnificationFailed)
         }
     }
     <span class="kw">fn </span>serialize_newtype_variant&lt;T: <span class="question-mark">?</span>Sized&gt;(
@@ -1902,12 +1898,11 @@
         name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
         _len: usize,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::SerializeStruct, <span class="self">Self</span>::Error&gt; {
-        <span class="kw">let </span>tag;
-        <span class="kw">if </span><span class="self">self</span>.configuration.tag_struct_dicts {
-            tag = <span class="prelude-val">Some</span>(name);
+        <span class="kw">let </span>tag = <span class="kw">if </span><span class="self">self</span>.configuration.tag_struct_dicts {
+            <span class="prelude-val">Some</span>(name)
         } <span class="kw">else </span>{
-            tag = <span class="prelude-val">None</span>;
-        }
+            <span class="prelude-val">None
+        </span>};
         <span class="prelude-val">Ok</span>(SerializeMap::new(
             <span class="self">self</span>.context,
             <span class="self">self</span>.term,
@@ -1945,7 +1940,6 @@
             sst.set(<span class="bool-val">true</span>)
         });
 
-
         <span class="self">Self
     </span>}
 
@@ -1960,7 +1954,6 @@
     }
 }
 
-
 <span class="kw">impl </span>ser::Serialize <span class="kw">for </span>Atom {
     <span class="kw">fn </span>serialize&lt;S&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, serializer: S) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt;
     <span class="kw">where
@@ -1968,8 +1961,7 @@
     {
         <span class="kw">if </span>SerializingSwiplTermState::is_serializing_swipl_term() {
             serializer.serialize_newtype_struct(ATOM_STRUCT_NAME, <span class="kw-2">&amp;</span><span class="self">self</span>.atom_ptr())
-        }
-        <span class="kw">else </span>{
+        } <span class="kw">else </span>{
             serializer.serialize_newtype_struct(ATOM_STRUCT_NAME, <span class="kw-2">&amp;</span><span class="self">self</span>.name())
         }
     }
@@ -1977,7 +1969,7 @@
 
 <span class="kw">struct </span>AtomEmitter&lt;<span class="lifetime">&#39;a</span>&gt;(Term&lt;<span class="lifetime">&#39;a</span>&gt;);
 
-<span class="kw">fn </span>attempt_unify_atom&lt;<span class="lifetime">&#39;a</span>&gt;(term: <span class="kw-2">&amp;</span>Term&lt;<span class="lifetime">&#39;a</span>&gt;, atom_ptr: usize) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+<span class="kw">fn </span>attempt_unify_atom(term: <span class="kw-2">&amp;</span>Term, atom_ptr: usize) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
     <span class="kw">let </span>atom = <span class="kw">unsafe </span>{ Atom::wrap(atom_ptr) };
     <span class="kw">let </span>result = attempt_unify(term, <span class="kw-2">&amp;</span>atom);
     std::mem::forget(atom);
@@ -2554,7 +2546,7 @@
             atom.increment_refcount();
             <span class="kw-2">*</span><span class="self">self</span>.key = <span class="prelude-val">Some</span>(Key::Atom(atom));
         } <span class="kw">else </span>{
-            <span class="kw-2">*</span><span class="self">self</span>.key = <span class="prelude-val">Some</span>(Key::Int(v <span class="kw">as </span>u64));
+            <span class="kw-2">*</span><span class="self">self</span>.key = <span class="prelude-val">Some</span>(Key::Int(v));
         }
         <span class="prelude-val">Ok</span>(())
     }
@@ -3095,4 +3087,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.1 (90743e729 2023-01-10)" ></div></body></html>

@@ -48,6 +48,7 @@
 <span id="48">48</span>
 <span id="49">49</span>
 <span id="50">50</span>
+<span id="51">51</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Generated low-level bindings to the SWI-Prolog fli.
 </span><span class="attribute">#![doc(html_root_url = <span class="string">&quot;https://terminusdb-labs.github.io/swipl-rs/swipl_fli/&quot;</span>)]
 #![allow(non_upper_case_globals)]
@@ -55,6 +56,7 @@
 #![allow(non_snake_case)]
 </span><span class="comment">// TODO any function that uses u128 should be excluded
 </span><span class="attribute">#![allow(improper_ctypes)]
+#![allow(clippy::useless_transmute)]
 
 </span><span class="macro">include!</span>(<span class="macro">concat!</span>(<span class="macro">env!</span>(<span class="string">&quot;OUT_DIR&quot;</span>), <span class="string">&quot;/bindings.rs&quot;</span>));
 
@@ -99,4 +101,4 @@
 </span><span class="kw">pub const </span>SIO_BOM: u32 = <span class="number">1 </span>&lt;&lt; <span class="number">30</span>; <span class="comment">/* BOM was detected/written */
 </span><span class="kw">pub const </span>SIO_REPPLU: u32 = <span class="number">1 </span>&lt;&lt; <span class="number">31</span>; <span class="comment">/* Bad char --&gt; Prolog \uXXXX */
 </span></code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl_fli" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl_fli" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.1 (90743e729 2023-01-10)" ></div></body></html>

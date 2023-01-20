@@ -384,6 +384,15 @@
 <span id="384">384</span>
 <span id="385">385</span>
 <span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
+<span id="395">395</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Support for calling into prolog or prolog-like code.
 </span><span class="kw">use </span><span class="kw">crate</span>::context::<span class="kw-2">*</span>;
 <span class="kw">use </span><span class="kw">crate</span>::engine::<span class="kw-2">*</span>;
@@ -481,6 +490,10 @@
 
 <span class="kw">impl</span>&lt;<span class="kw">const </span>N: usize&gt; CallablePredicate&lt;N&gt; {
     <span class="doccomment">/// Wrap a `predicate_t` from the SWI-Prolog fli, not checking if arity matches.
+    ///
+    /// # Safety
+    /// This is only safe if the given predicate is in fact a
+    /// predicate in SWI-Prolog.
     </span><span class="kw">pub unsafe fn </span>wrap(predicate: predicate_t) -&gt; <span class="self">Self </span>{
         <span class="comment">// no check for arity or if the predicate even exists!
         </span><span class="self">Self </span>{ predicate }
@@ -547,6 +560,11 @@
 /// possible however to open a new frame and do all that stuff in the
 /// new frame. You&#39;ll need to close the frame before continuing with
 /// solution retrieval.
+///
+/// # Safety
+/// A type implementing OpenCall automatically becomes a ContextType
+/// as well, so all the safety concerns regarding ContextType apply
+/// here too.
 </span><span class="kw">pub unsafe trait </span>OpenCall: Sized {
     <span class="doccomment">/// Retrieve the next solution.
     ///
@@ -554,19 +572,19 @@
     /// returned in the `Err` part of the `PrologResult`. Otherwise,
     /// `Ok(true)` is returned if there are more solutions, and
     /// `Ok(false)` is returned when this is the last solution.
-    </span><span class="kw">fn </span>next_solution&lt;<span class="lifetime">&#39;a</span>&gt;(this: <span class="kw-2">&amp;</span>Context&lt;<span class="lifetime">&#39;a</span>, <span class="self">Self</span>&gt;) -&gt; PrologResult&lt;bool&gt;;
+    </span><span class="kw">fn </span>next_solution(this: <span class="kw-2">&amp;</span>Context&lt;<span class="self">Self</span>&gt;) -&gt; PrologResult&lt;bool&gt;;
 
     <span class="doccomment">/// Cut the query, keeping all data it has created.
     ///
     /// Any unifications the query did to terms from parent contexts
     /// will be retained.
-    </span><span class="kw">fn </span>cut&lt;<span class="lifetime">&#39;a</span>&gt;(this: Context&lt;<span class="lifetime">&#39;a</span>, <span class="self">Self</span>&gt;);
+    </span><span class="kw">fn </span>cut(this: Context&lt;<span class="self">Self</span>&gt;);
 
     <span class="doccomment">/// Discard the query, discarding all data it has created.
     ///
     /// Any unifications the query did to terms from parent contexts
     /// will be discarded.
-    </span><span class="kw">fn </span>discard&lt;<span class="lifetime">&#39;a</span>&gt;(this: Context&lt;<span class="lifetime">&#39;a</span>, <span class="self">Self</span>&gt;);
+    </span><span class="kw">fn </span>discard(this: Context&lt;<span class="self">Self</span>&gt;);
 }
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C: OpenCall&gt; Context&lt;<span class="lifetime">&#39;a</span>, C&gt; {
@@ -619,10 +637,10 @@
 }
 
 <span class="kw">unsafe impl</span>&lt;T: OpenCall&gt; ContextType <span class="kw">for </span>T {}
-<span class="kw">unsafe impl</span>&lt;T: OpenCall&gt; FrameableContextType <span class="kw">for </span>T {}
+<span class="kw">impl</span>&lt;T: OpenCall&gt; FrameableContextType <span class="kw">for </span>T {}
 
 <span class="kw">unsafe impl </span>OpenCall <span class="kw">for </span>OpenQuery {
-    <span class="kw">fn </span>next_solution&lt;<span class="lifetime">&#39;a</span>&gt;(this: <span class="kw-2">&amp;</span>Context&lt;<span class="lifetime">&#39;a</span>, <span class="self">Self</span>&gt;) -&gt; PrologResult&lt;bool&gt; {
+    <span class="kw">fn </span>next_solution(this: <span class="kw-2">&amp;</span>Context&lt;<span class="self">Self</span>&gt;) -&gt; PrologResult&lt;bool&gt; {
         this.assert_activated();
         <span class="kw">let </span>result = <span class="kw">unsafe </span>{ PL_next_solution(this.context.qid) };
         <span class="kw">match </span>result {
@@ -640,7 +658,7 @@
         }
     }
 
-    <span class="kw">fn </span>cut&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">mut </span>this: Context&lt;<span class="lifetime">&#39;a</span>, <span class="self">Self</span>&gt;) {
+    <span class="kw">fn </span>cut(<span class="kw-2">mut </span>this: Context&lt;<span class="self">Self</span>&gt;) {
         this.assert_activated();
         <span class="comment">// TODO handle exceptions
 
@@ -648,7 +666,7 @@
         this.context.closed = <span class="bool-val">true</span>;
     }
 
-    <span class="kw">fn </span>discard&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">mut </span>this: Context&lt;<span class="lifetime">&#39;a</span>, <span class="self">Self</span>&gt;) {
+    <span class="kw">fn </span>discard(<span class="kw-2">mut </span>this: Context&lt;<span class="self">Self</span>&gt;) {
         this.assert_activated();
         <span class="comment">// TODO handle exceptions
 
@@ -682,9 +700,9 @@
         <span class="kw">let </span>flags = PL_Q_NORMAL | PL_Q_CATCH_EXCEPTION | PL_Q_EXT_STATUS;
         <span class="kw">unsafe </span>{
             <span class="kw">let </span>terms = PL_new_term_refs(N <span class="kw">as </span>i32);
-            <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..args.len() {
+            <span class="kw">for </span>(i, arg) <span class="kw">in </span>args.iter().enumerate() {
                 <span class="kw">let </span>term = context.wrap_term_ref(terms + i);
-                <span class="macro">assert!</span>(term.unify(args[i]).is_ok());
+                <span class="macro">assert!</span>(term.unify(arg).is_ok());
             }
 
             <span class="kw">let </span>qid = PL_open_query(
@@ -771,4 +789,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.1 (90743e729 2023-01-10)" ></div></body></html>

@@ -132,6 +132,7 @@
 <span id="132">132</span>
 <span id="133">133</span>
 <span id="134">134</span>
+<span id="135">135</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Prolog predicates.
 //!
 //! A prolog predicate is a core datatype in prolog. It is a
@@ -164,6 +165,7 @@
 <span class="kw">impl </span>Predicate {
     <span class="doccomment">/// Wrap a `predicate_t`, which is how the SWI-Prolog fli represents predicates.
     ///
+    /// # Safety
     /// This is unsafe because no check is done to ensure that the
     /// predicate_t indeed points at a valid predicate. The caller
     /// will have to ensure that this is the case.
@@ -267,4 +269,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.1 (90743e729 2023-01-10)" ></div></body></html>

@@ -16,10 +16,18 @@
 <span id="16">16</span>
 <span id="17">17</span>
 <span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Re-export of the swipl-fli crate.
 </span><span class="kw">pub use </span>swipl_fli::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// Retrieve the default exception.
+///
+/// # Safety
+/// This requires an initialized SWI-Prolog environment.
+</span><span class="attribute">#[allow(clippy::useless_transmute)]
 </span><span class="kw">pub unsafe fn </span>pl_default_exception() -&gt; term_t {
     <span class="comment">// So why this ugly transmute?
     // In swipl version 8.5.5, query handles change from being a
@@ -35,4 +43,4 @@
     </span>PL_exception(std::mem::transmute(<span class="number">0_u64</span>))
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.1 (90743e729 2023-01-10)" ></div></body></html>

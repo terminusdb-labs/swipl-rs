@@ -367,7 +367,7 @@
 /// ```
 </span><span class="attribute">#[proc_macro]
 </span><span class="kw">pub fn </span>prolog(stream: TokenStream) -&gt; TokenStream {
-    prolog::prolog_macro(stream).into()
+    prolog::prolog_macro(stream)
 }
 
 <span class="doccomment">/// Generate an inline callable predicate.
@@ -390,7 +390,7 @@
 /// ```
 </span><span class="attribute">#[proc_macro]
 </span><span class="kw">pub fn </span>pred(stream: TokenStream) -&gt; TokenStream {
-    pred::pred_macro(stream).into()
+    pred::pred_macro(stream)
 }
 
 <span class="doccomment">/// Define foreign predicates written in rust for use in prolog.
@@ -550,7 +550,7 @@
 /// ```
 </span><span class="attribute">#[proc_macro]
 </span><span class="kw">pub fn </span>predicates(stream: TokenStream) -&gt; TokenStream {
-    predicate::predicates_macro(stream).into()
+    predicate::predicates_macro(stream)
 }
 
 <span class="doccomment">/// Generate a term from a rust expression.
@@ -584,7 +584,7 @@
 /// ```
 </span><span class="attribute">#[proc_macro]
 </span><span class="kw">pub fn </span>term(stream: TokenStream) -&gt; TokenStream {
-    term::term_macro(stream).into()
+    term::term_macro(stream)
 }
 
 <span class="doccomment">/// Define an arc blob.
@@ -641,4 +641,4 @@
     functor::functor_macro(item)
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.1 (90743e729 2023-01-10)" ></div></body></html>

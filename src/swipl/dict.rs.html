@@ -816,6 +816,12 @@
     entries: HashMap&lt;Key, <span class="prelude-ty">Option</span>&lt;Box&lt;<span class="kw">dyn </span>TermPutable + <span class="lifetime">&#39;a</span>&gt;&gt;&gt;,
 }
 
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Default <span class="kw">for </span>DictBuilder&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::new()
+    }
+}
+
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; DictBuilder&lt;<span class="lifetime">&#39;a</span>&gt; {
     <span class="doccomment">/// Create a new dictionary builder.
     </span><span class="kw">pub fn </span>new() -&gt; <span class="self">Self </span>{
@@ -925,13 +931,7 @@
         };
 
         <span class="kw">unsafe </span>{
-            fli::PL_put_dict(
-                term.term_ptr(),
-                <span class="number">0</span>,
-                len <span class="kw">as </span>fli::size_t,
-                key_atoms.as_ptr(),
-                value_terms,
-            );
+            fli::PL_put_dict(term.term_ptr(), <span class="number">0</span>, len, key_atoms.as_ptr(), value_terms);
 
             fli::PL_unify_arg(<span class="number">1</span>, term.term_ptr(), tag_term.term_ptr());
 
@@ -1405,4 +1405,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.1 (90743e729 2023-01-10)" ></div></body></html>

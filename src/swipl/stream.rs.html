@@ -245,6 +245,11 @@
 <span id="245">245</span>
 <span id="246">246</span>
 <span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Prolog streams.
 //!
 //! This exists mostly to support blob description writers. In the
@@ -263,6 +268,10 @@
 
 <span class="kw">impl </span>PrologStream {
     <span class="doccomment">/// Wrap the underlying fli object.
+    ///
+    /// # Safety
+    /// This is only safe to do with actual IOSTREAMs coming out of
+    /// SWI-Prolog.
     </span><span class="kw">pub unsafe fn </span>wrap(stream: <span class="kw-2">*mut </span>fli::IOSTREAM) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{ stream }
     }
@@ -280,7 +289,12 @@
 }
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; WritablePrologStream&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="kw">pub unsafe fn </span>new(stream: <span class="kw-2">*mut </span>fli::IOSTREAM) -&gt; WritablePrologStream&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="doccomment">/// Wrap a writable prolog stream.
+    ///
+    /// # Safety
+    /// This is only safe to do with actual IOSTREAMs coming out of
+    /// SWI-Prolog, which are writable.
+    </span><span class="kw">pub unsafe fn </span>new(stream: <span class="kw-2">*mut </span>fli::IOSTREAM) -&gt; WritablePrologStream&lt;<span class="lifetime">&#39;a</span>&gt; {
         WritablePrologStream {
             stream,
             _x: PhantomData::default(),
@@ -334,9 +348,9 @@
         </span>count = fli::Sfwrite(
             buf.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span>std::ffi::c_void,
             <span class="number">1</span>,
-            buf.len() <span class="kw">as </span>fli::size_t,
+            buf.len(),
             stream,
-        ) <span class="kw">as </span>usize;
+        );
 
         <span class="kw">let </span>error = fli::Sferror(stream);
         <span class="kw">if </span>error == -<span class="number">1 </span>{
@@ -376,9 +390,7 @@
     <span class="kw">fn </span>write(<span class="kw-2">&amp;mut </span><span class="self">self</span>, buf: <span class="kw-2">&amp;</span>[u8]) -&gt; io::Result&lt;usize&gt; {
         assert_some_engine_is_active();
 
-        <span class="kw">let </span>result = <span class="kw">unsafe </span>{ write_to_prolog_stream(<span class="self">self</span>.stream, buf) };
-
-        result
+        <span class="kw">unsafe </span>{ write_to_prolog_stream(<span class="self">self</span>.stream, buf) }
     }
 
     <span class="kw">fn </span>flush(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; io::Result&lt;()&gt; {
@@ -419,7 +431,12 @@
 }
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; ReadablePrologStream&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="kw">pub unsafe fn </span>new(stream: <span class="kw-2">*mut </span>fli::IOSTREAM) -&gt; ReadablePrologStream&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="doccomment">/// Wrap a readable prolog stream.
+    ///
+    /// # Safety
+    /// This is only safe to do with actual IOSTREAMs coming out of
+    /// SWI-Prolog, which are readable.
+    </span><span class="kw">pub unsafe fn </span>new(stream: <span class="kw-2">*mut </span>fli::IOSTREAM) -&gt; ReadablePrologStream&lt;<span class="lifetime">&#39;a</span>&gt; {
         ReadablePrologStream {
             stream,
             _x: PhantomData::default(),
@@ -465,12 +482,7 @@
 <span class="kw">unsafe fn </span>read_from_prolog_stream(stream: <span class="kw-2">*mut </span>fli::IOSTREAM, buf: <span class="kw-2">&amp;mut </span>[u8]) -&gt; io::Result&lt;usize&gt; {
     ensure_readable_prolog_stream(stream)<span class="question-mark">?</span>;
 
-    <span class="kw">let </span>count = fli::Sfread(
-        buf.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>std::ffi::c_void,
-        <span class="number">1</span>,
-        buf.len() <span class="kw">as </span>fli::size_t,
-        stream,
-    ) <span class="kw">as </span>usize;
+    <span class="kw">let </span>count = fli::Sfread(buf.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>std::ffi::c_void, <span class="number">1</span>, buf.len(), stream);
 
     <span class="kw">let </span>error = fli::Sferror(stream);
     <span class="kw">if </span>error == -<span class="number">1 </span>{
@@ -487,10 +499,8 @@
     <span class="kw">fn </span>read(<span class="kw-2">&amp;mut </span><span class="self">self</span>, buf: <span class="kw-2">&amp;mut </span>[u8]) -&gt; io::Result&lt;usize&gt; {
         assert_some_engine_is_active();
 
-        <span class="kw">let </span>result = <span class="kw">unsafe </span>{ read_from_prolog_stream(<span class="self">self</span>.stream, buf) };
-
-        result
+        <span class="kw">unsafe </span>{ read_from_prolog_stream(<span class="self">self</span>.stream, buf) }
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.1 (90743e729 2023-01-10)" ></div></body></html>

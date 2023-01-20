@@ -601,10 +601,16 @@
 <span id="601">601</span>
 <span id="602">602</span>
 <span id="603">603</span>
+<span id="604">604</span>
+<span id="605">605</span>
+<span id="606">606</span>
+<span id="607">607</span>
+<span id="608">608</span>
+<span id="609">609</span>
+<span id="610">610</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::kw;
 <span class="kw">use </span><span class="kw">crate</span>::util::<span class="kw-2">*</span>;
 
-<span class="kw">use </span>proc_macro;
 <span class="kw">use </span>proc_macro2::{Span, TokenStream};
 <span class="kw">use </span>quote::{quote, ToTokens};
 <span class="kw">use </span>syn::parse::{Parse, ParseStream, <span class="prelude-ty">Result</span>};
@@ -640,14 +646,13 @@
     <span class="kw">let </span>blob_compare = Ident::new(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_compare&quot;</span>, item_name), Span::call_site());
     <span class="kw">let </span>blob_write = Ident::new(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_write&quot;</span>, item_name), Span::call_site());
 
-    <span class="kw">let </span>default_implementation;
-    <span class="kw">if </span>attr_def.defaults {
-        default_implementation = <span class="macro">quote! </span>{
+    <span class="kw">let </span>default_implementation = <span class="kw">if </span>attr_def.defaults {
+        <span class="macro">quote! </span>{
             <span class="kw">impl </span>#crt::blob::ArcBlobImpl <span class="kw">for </span>#item_name {}
-        };
+        }
     } <span class="kw">else </span>{
-        default_implementation = <span class="macro">quote! </span>{};
-    }
+        <span class="macro">quote! </span>{}
+    };
 
     <span class="kw">let </span>result = <span class="macro">quote! </span>{
         #item_def
@@ -658,19 +663,23 @@
             }
         }
 
-        <span class="kw">static </span>#blob_definition_ident: std::sync::atomic::AtomicPtr&lt;#crt::fli::PL_blob_t&gt; = std::sync::atomic::AtomicPtr::new(std::ptr::null_mut());
+        <span class="attribute">#[allow(non_upper_case_globals)]
+        </span><span class="kw">static </span>#blob_definition_ident: std::sync::atomic::AtomicPtr&lt;#crt::fli::PL_blob_t&gt; = std::sync::atomic::AtomicPtr::new(std::ptr::null_mut());
 
-        <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_acquire(a: #crt::fli::atom_t) {
+        <span class="attribute">#[allow(non_snake_case)]
+        </span><span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_acquire(a: #crt::fli::atom_t) {
             #crt::blob::acquire_arc_blob::&lt;#item_name&gt;(a);
         }
 
-        <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_release(a: #crt::fli::atom_t) -&gt; std::os::raw::c_int {
+        <span class="attribute">#[allow(non_snake_case)]
+        </span><span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_release(a: #crt::fli::atom_t) -&gt; std::os::raw::c_int {
             #crt::blob::release_arc_blob::&lt;#item_name&gt;(a);
 
             <span class="number">1
         </span>}
 
-        <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_compare(a: #crt::fli::atom_t, b: #crt::fli::atom_t)-&gt;std::os::raw::c_int {
+        <span class="attribute">#[allow(non_snake_case)]
+        </span><span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_compare(a: #crt::fli::atom_t, b: #crt::fli::atom_t)-&gt;std::os::raw::c_int {
             <span class="kw">match </span>#crt::context::prolog_catch_unwind(||{
                 <span class="kw">let </span>a_val = #crt::fli::PL_blob_data(a,
                                                     std::ptr::null_mut(),
@@ -689,7 +698,8 @@
             </span>}
         }
 
-        <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_write(s: <span class="kw-2">*mut </span>#crt::fli::IOSTREAM,
+        <span class="attribute">#[allow(non_snake_case)]
+        </span><span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_write(s: <span class="kw-2">*mut </span>#crt::fli::IOSTREAM,
                                          a: #crt::fli::atom_t,
                                          _flags: std::os::raw::c_int)
                                          -&gt; std::os::raw::c_int {
@@ -737,7 +747,7 @@
                     definition = #blob_definition_ident.load(std::sync::atomic::Ordering::Relaxed);
                 }
 
-                <span class="kw">unsafe </span>{ std::mem::transmute(definition) }
+                <span class="kw">unsafe </span>{ <span class="kw-2">&amp;*</span>definition }
             }
         }
 
@@ -772,14 +782,13 @@
     <span class="kw">let </span>blob_compare = Ident::new(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_compare&quot;</span>, item_name), Span::call_site());
     <span class="kw">let </span>blob_write = Ident::new(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_write&quot;</span>, item_name), Span::call_site());
 
-    <span class="kw">let </span>default_implementation;
-    <span class="kw">if </span>item_def.defaults {
-        default_implementation = <span class="macro">quote! </span>{
+    <span class="kw">let </span>default_implementation = <span class="kw">if </span>item_def.defaults {
+        <span class="macro">quote! </span>{
             <span class="kw">impl </span>#crt::blob::WrappedArcBlobImpl <span class="kw">for </span>#item_name {}
-        };
+        }
     } <span class="kw">else </span>{
-        default_implementation = <span class="macro">quote! </span>{};
-    }
+        <span class="macro">quote! </span>{}
+    };
 
     <span class="kw">let </span>result = <span class="macro">quote! </span>{
         #visibility <span class="kw">struct </span>#item_name(#visibility Arc&lt;#inner_type_name&gt;);
@@ -809,19 +818,23 @@
             }
         }
 
-        <span class="kw">static </span>#blob_definition_ident: std::sync::atomic::AtomicPtr&lt;#crt::fli::PL_blob_t&gt; = std::sync::atomic::AtomicPtr::new(std::ptr::null_mut());
+        <span class="attribute">#[allow(non_upper_case_globals)]
+        </span><span class="kw">static </span>#blob_definition_ident: std::sync::atomic::AtomicPtr&lt;#crt::fli::PL_blob_t&gt; = std::sync::atomic::AtomicPtr::new(std::ptr::null_mut());
 
-        <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_acquire(a: #crt::fli::atom_t) {
+        <span class="attribute">#[allow(non_snake_case)]
+        </span><span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_acquire(a: #crt::fli::atom_t) {
             #crt::blob::acquire_arc_blob::&lt;#inner_type_name&gt;(a);
         }
 
-        <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_release(a: #crt::fli::atom_t) -&gt; std::os::raw::c_int {
+        <span class="attribute">#[allow(non_snake_case)]
+        </span><span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_release(a: #crt::fli::atom_t) -&gt; std::os::raw::c_int {
             #crt::blob::release_arc_blob::&lt;#inner_type_name&gt;(a);
 
             <span class="number">1
         </span>}
 
-        <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_compare(a: #crt::fli::atom_t, b: #crt::fli::atom_t)-&gt;std::os::raw::c_int {
+        <span class="attribute">#[allow(non_snake_case)]
+        </span><span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_compare(a: #crt::fli::atom_t, b: #crt::fli::atom_t)-&gt;std::os::raw::c_int {
             <span class="kw">match </span>#crt::context::prolog_catch_unwind(||{
                 <span class="kw">let </span>a_val = #crt::fli::PL_blob_data(a,
                                                     std::ptr::null_mut(),
@@ -840,7 +853,8 @@
             </span>}
         }
 
-        <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_write(s: <span class="kw-2">*mut </span>#crt::fli::IOSTREAM,
+        <span class="attribute">#[allow(non_snake_case)]
+        </span><span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_write(s: <span class="kw-2">*mut </span>#crt::fli::IOSTREAM,
                                          a: #crt::fli::atom_t,
                                          _flags: std::os::raw::c_int)
                                          -&gt; std::os::raw::c_int {
@@ -888,7 +902,7 @@
                     definition = #blob_definition_ident.load(std::sync::atomic::Ordering::Relaxed);
                 }
 
-                <span class="kw">unsafe </span>{ std::mem::transmute(definition) }
+                <span class="kw">unsafe </span>{ <span class="kw-2">&amp;*</span>definition }
             }
         }
 
@@ -951,14 +965,13 @@
     <span class="kw">let </span>blob_compare = Ident::new(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_compare&quot;</span>, item_name), Span::call_site());
     <span class="kw">let </span>blob_write = Ident::new(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_blob_write&quot;</span>, item_name), Span::call_site());
 
-    <span class="kw">let </span>default_implementation;
-    <span class="kw">if </span>attr_def.defaults {
-        default_implementation = <span class="macro">quote! </span>{
+    <span class="kw">let </span>default_implementation = <span class="kw">if </span>attr_def.defaults {
+        <span class="macro">quote! </span>{
             <span class="kw">impl </span>#crt::blob::CloneBlobImpl <span class="kw">for </span>#item_name {}
-        };
+        }
     } <span class="kw">else </span>{
-        default_implementation = <span class="macro">quote! </span>{};
-    }
+        <span class="macro">quote! </span>{}
+    };
 
     <span class="kw">let </span>result = <span class="macro">quote! </span>{
         #item_def
@@ -969,15 +982,18 @@
             }
         }
 
-        <span class="kw">static </span>#blob_definition_ident: std::sync::atomic::AtomicPtr&lt;#crt::fli::PL_blob_t&gt; = std::sync::atomic::AtomicPtr::new(std::ptr::null_mut());
+        <span class="attribute">#[allow(non_upper_case_globals)]
+        </span><span class="kw">static </span>#blob_definition_ident: std::sync::atomic::AtomicPtr&lt;#crt::fli::PL_blob_t&gt; = std::sync::atomic::AtomicPtr::new(std::ptr::null_mut());
 
-        <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_release(a: #crt::fli::atom_t) -&gt; std::os::raw::c_int {
+        <span class="attribute">#[allow(non_snake_case)]
+        </span><span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_release(a: #crt::fli::atom_t) -&gt; std::os::raw::c_int {
             #crt::blob::release_clone_blob::&lt;#item_name&gt;(a);
 
             <span class="number">1
         </span>}
 
-        <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_compare(a: #crt::fli::atom_t, b: #crt::fli::atom_t)-&gt;std::os::raw::c_int {
+        <span class="attribute">#[allow(non_snake_case)]
+        </span><span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_compare(a: #crt::fli::atom_t, b: #crt::fli::atom_t)-&gt;std::os::raw::c_int {
             <span class="kw">match </span>#crt::context::prolog_catch_unwind(|| {
                 <span class="kw">let </span>a_val = #crt::fli::PL_blob_data(a,
                                                     std::ptr::null_mut(),
@@ -996,7 +1012,8 @@
             </span>}
         }
 
-        <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_write(s: <span class="kw-2">*mut </span>#crt::fli::IOSTREAM,
+        <span class="attribute">#[allow(non_snake_case)]
+        </span><span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#blob_write(s: <span class="kw-2">*mut </span>#crt::fli::IOSTREAM,
                                          a: #crt::fli::atom_t,
                                          _flags: std::os::raw::c_int)
                                          -&gt; std::os::raw::c_int {
@@ -1044,7 +1061,7 @@
                     definition = #blob_definition_ident.load(std::sync::atomic::Ordering::Relaxed);
                 }
 
-                <span class="kw">unsafe </span>{ std::mem::transmute(definition) }
+                <span class="kw">unsafe </span>{ <span class="kw-2">&amp;*</span>definition }
             }
         }
 
@@ -1087,12 +1104,11 @@
     <span class="kw">let </span>visibility = <span class="kw-2">&amp;</span>item_def.visibility;
     <span class="kw">let </span>inner_type_name = <span class="kw-2">&amp;</span>item_def.inner_type;
 
-    <span class="kw">let </span>attr;
-    <span class="kw">if </span>item_def.defaults {
-        attr = <span class="macro">quote! </span>{<span class="attribute">#[clone_blob(#name_lit, defaults)]</span>};
+    <span class="kw">let </span>attr = <span class="kw">if </span>item_def.defaults {
+        <span class="macro">quote! </span>{<span class="attribute">#[clone_blob(#name_lit, defaults)]</span>}
     } <span class="kw">else </span>{
-        attr = <span class="macro">quote! </span>{<span class="attribute">#[clone_blob(#name_lit)]</span>};
-    }
+        <span class="macro">quote! </span>{<span class="attribute">#[clone_blob(#name_lit)]</span>}
+    };
 
     <span class="kw">let </span>result = <span class="macro">quote! </span>{
         #attr
@@ -1120,14 +1136,13 @@
     <span class="kw">fn </span>parse(input: ParseStream) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
         <span class="kw">let </span>name = input.parse()<span class="question-mark">?</span>;
 
-        <span class="kw">let </span>defaults;
-        <span class="kw">if </span>input.peek(<span class="macro">Token!</span>[,]) {
+        <span class="kw">let </span>defaults = <span class="kw">if </span>input.peek(<span class="macro">Token!</span>[,]) {
             input.parse::&lt;<span class="macro">Token!</span>[,]&gt;()<span class="question-mark">?</span>;
             input.parse::&lt;kw::defaults&gt;()<span class="question-mark">?</span>;
-            defaults = <span class="bool-val">true</span>;
-        } <span class="kw">else </span>{
-            defaults = <span class="bool-val">false</span>;
-        }
+            <span class="bool-val">true
+        </span>} <span class="kw">else </span>{
+            <span class="bool-val">false
+        </span>};
 
         <span class="prelude-val">Ok</span>(<span class="self">Self </span>{ name, defaults })
     }
@@ -1186,14 +1201,13 @@
         input.parse::&lt;<span class="macro">Token!</span>[,]&gt;()<span class="question-mark">?</span>;
         <span class="kw">let </span>inner_type = input.parse()<span class="question-mark">?</span>;
 
-        <span class="kw">let </span>defaults;
-        <span class="kw">if </span>input.peek(<span class="macro">Token!</span>[,]) {
+        <span class="kw">let </span>defaults = <span class="kw">if </span>input.peek(<span class="macro">Token!</span>[,]) {
             input.parse::&lt;<span class="macro">Token!</span>[,]&gt;()<span class="question-mark">?</span>;
             input.parse::&lt;kw::defaults&gt;()<span class="question-mark">?</span>;
-            defaults = <span class="bool-val">true</span>;
-        } <span class="kw">else </span>{
-            defaults = <span class="bool-val">false</span>;
-        }
+            <span class="bool-val">true
+        </span>} <span class="kw">else </span>{
+            <span class="bool-val">false
+        </span>};
 
         <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
             visibility,
@@ -1205,4 +1219,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.1 (90743e729 2023-01-10)" ></div></body></html>

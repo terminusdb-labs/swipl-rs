@@ -1645,6 +1645,17 @@
 <span id="1645">1645</span>
 <span id="1646">1646</span>
 <span id="1647">1647</span>
+<span id="1648">1648</span>
+<span id="1649">1649</span>
+<span id="1650">1650</span>
+<span id="1651">1651</span>
+<span id="1652">1652</span>
+<span id="1653">1653</span>
+<span id="1654">1654</span>
+<span id="1655">1655</span>
+<span id="1656">1656</span>
+<span id="1657">1657</span>
+<span id="1658">1658</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Prolog contexts.
 //!
 //! As you interact with SWI-Prolog, the underlying prolog engine
@@ -1850,6 +1861,7 @@
 
     <span class="doccomment">/// Wrap the given term_t into a Term with a lifetime corresponding to this context.
     ///
+    /// # Safety
     /// This is unsafe because there&#39;s no way of checking that the
     /// given term_t is indeed from this context. The caller will have
     /// to ensure that the term lives at least as long as this
@@ -1911,7 +1923,7 @@
     /// normal safe functions for doing so. When the function returns,
     /// the engine will go back into an exceptional state with the
     /// original exception term.
-    </span><span class="kw">pub fn </span>with_exception&lt;<span class="lifetime">&#39;b</span>, R&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;b </span><span class="self">self</span>, f: <span class="kw">impl </span>FnOnce(<span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Term&gt;) -&gt; R) -&gt; R {
+    </span><span class="kw">pub fn </span>with_exception&lt;R&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw">impl </span>FnOnce(<span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Term&gt;) -&gt; R) -&gt; R {
         <span class="self">self</span>.with_uncleared_exception(|e| <span class="kw">match </span>e {
             <span class="prelude-val">None </span>=&gt; f(<span class="prelude-val">None</span>),
             <span class="prelude-val">Some</span>(e) =&gt; <span class="kw">unsafe </span>{ e.with_cleared_exception(<span class="self">self</span>, |e| f(<span class="prelude-val">Some</span>(e))) },
@@ -1972,6 +1984,12 @@
 /// This is the object that is wrapped by [Context]. Implementors can
 /// use this to hold context-specific information. Any functions are
 /// to be implemented on `Context&lt;YourContextType&gt;`.
+///
+/// # Safety
+/// An active context ensures that callers are allowed to interact
+/// with SWI-Prolog environments. Therefore, a bunch of assertions are
+/// not performed. If an implementor to ensure that SWI-Prolog
+/// environment is active, then this might lead to undefined behavior.
 </span><span class="kw">pub unsafe trait </span>ContextType {}
 
 <span class="doccomment">/// Context type for an active engine. This wraps an `EngineActivation`.
@@ -1989,10 +2007,12 @@
     _activation: EngineActivation&lt;<span class="lifetime">&#39;a</span>&gt;,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Into&lt;Context&lt;<span class="lifetime">&#39;a</span>, ActivatedEngine&lt;<span class="lifetime">&#39;a</span>&gt;&gt;&gt; <span class="kw">for </span>EngineActivation&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="kw">fn </span>into(<span class="self">self</span>) -&gt; Context&lt;<span class="lifetime">&#39;a</span>, ActivatedEngine&lt;<span class="lifetime">&#39;a</span>&gt;&gt; {
-        <span class="kw">let </span>engine = <span class="self">self</span>.engine_ptr();
-        <span class="kw">let </span>context = ActivatedEngine { _activation: <span class="self">self </span>};
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; From&lt;EngineActivation&lt;<span class="lifetime">&#39;a</span>&gt;&gt; <span class="kw">for </span>Context&lt;<span class="lifetime">&#39;a</span>, ActivatedEngine&lt;<span class="lifetime">&#39;a</span>&gt;&gt; {
+    <span class="kw">fn </span>from(activation: EngineActivation&lt;<span class="lifetime">&#39;a</span>&gt;) -&gt; Context&lt;<span class="lifetime">&#39;a</span>, ActivatedEngine&lt;<span class="lifetime">&#39;a</span>&gt;&gt; {
+        <span class="kw">let </span>engine = activation.engine_ptr();
+        <span class="kw">let </span>context = ActivatedEngine {
+            _activation: activation,
+        };
 
         <span class="kw">unsafe </span>{ Context::new_activated_without_parent(context, engine) }
     }
@@ -2011,12 +2031,6 @@
 
 <span class="doccomment">/// Create an unmanaged context for situations where the thread has an engine that rust doesn&#39;t know about.
 ///
-/// This is unsafe to call if we are not in a swipl environment, or if
-/// some other context is active. Furthermore, the lifetime will most
-/// definitely be wrong. This should be used by code that doesn&#39;t
-/// promiscuously spread this context. all further accesses should be
-/// through borrows.
-///
 /// Example:
 /// ```
 /// # use swipl::prelude::*;
@@ -2025,6 +2039,13 @@
 /// let context = unsafe { unmanaged_engine_context() };
 /// # unsafe { swipl::fli::PL_thread_destroy_engine(); }
 /// ```
+///
+/// # Safety
+/// This is unsafe to call if we are not in a swipl environment, or if
+/// some other context is active. Furthermore, the lifetime will most
+/// definitely be wrong. This should be used by code that doesn&#39;t
+/// promiscuously spread this context. all further accesses should be
+/// through borrows.
 </span><span class="kw">pub unsafe fn </span>unmanaged_engine_context() -&gt; Context&lt;<span class="lifetime">&#39;static</span>, Unmanaged&gt; {
     <span class="kw">let </span>current = current_engine_ptr();
 
@@ -2144,8 +2165,7 @@
 
 <span class="kw">impl </span>Drop <span class="kw">for </span>Frame {
     <span class="kw">fn </span>drop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
-        <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self</span>.state {
-            FrameState::Active =&gt;
+        <span class="kw">if let </span>FrameState::Active = <span class="self">self</span>.state {
             <span class="comment">// unsafe justification: all instantiations of Frame happen in
             // this module.  This module only instantiates the frame as
             // part of the context mechanism. No &#39;free&#39; Frames are ever
@@ -2153,8 +2173,9 @@
             // discarded if there&#39;s no inner frame still
             // remaining. It&#39;ll also ensure that the engine of the
             // frame is active while dropping.
-            </span><span class="kw">unsafe </span>{ PL_discard_foreign_frame(<span class="self">self</span>.fid) },
-            <span class="kw">_ </span>=&gt; {}
+            </span><span class="kw">unsafe </span>{
+                PL_discard_foreign_frame(<span class="self">self</span>.fid);
+            }
         }
     }
 }
@@ -2201,10 +2222,10 @@
 }
 
 <span class="doccomment">/// A trait marker for context types for which it is safe to open frames.
-</span><span class="kw">pub unsafe trait </span>FrameableContextType: ContextType {}
-<span class="kw">unsafe impl </span>FrameableContextType <span class="kw">for </span>Unmanaged {}
-<span class="kw">unsafe impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; FrameableContextType <span class="kw">for </span>ActivatedEngine&lt;<span class="lifetime">&#39;a</span>&gt; {}
-<span class="kw">unsafe impl </span>FrameableContextType <span class="kw">for </span>Frame {}
+</span><span class="kw">pub trait </span>FrameableContextType: ContextType {}
+<span class="kw">impl </span>FrameableContextType <span class="kw">for </span>Unmanaged {}
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; FrameableContextType <span class="kw">for </span>ActivatedEngine&lt;<span class="lifetime">&#39;a</span>&gt; {}
+<span class="kw">impl </span>FrameableContextType <span class="kw">for </span>Frame {}
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C: FrameableContextType&gt; Context&lt;<span class="lifetime">&#39;a</span>, C&gt; {
     <span class="doccomment">/// Open a new frame.
@@ -2227,11 +2248,11 @@
     }
 }
 
-<span class="doccomment">/// A trait marker for context types for hich it is safe to open queries and create new term refs.
-</span><span class="kw">pub unsafe trait </span>QueryableContextType: FrameableContextType {}
-<span class="kw">unsafe impl </span>QueryableContextType <span class="kw">for </span>Unmanaged {}
-<span class="kw">unsafe impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; QueryableContextType <span class="kw">for </span>ActivatedEngine&lt;<span class="lifetime">&#39;a</span>&gt; {}
-<span class="kw">unsafe impl </span>QueryableContextType <span class="kw">for </span>Frame {}
+<span class="doccomment">/// A trait marker for context types for which it is safe to open queries and create new term refs.
+</span><span class="kw">pub trait </span>QueryableContextType: FrameableContextType {}
+<span class="kw">impl </span>QueryableContextType <span class="kw">for </span>Unmanaged {}
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; QueryableContextType <span class="kw">for </span>ActivatedEngine&lt;<span class="lifetime">&#39;a</span>&gt; {}
+<span class="kw">impl </span>QueryableContextType <span class="kw">for </span>Frame {}
 
 <span class="macro">prolog! </span>{
     <span class="attribute">#[module(<span class="string">&quot;user&quot;</span>)]
@@ -2267,9 +2288,9 @@
 
         <span class="kw">let </span><span class="kw-2">mut </span>term_ptr = <span class="kw">unsafe </span>{ PL_new_term_refs(N <span class="kw">as </span>i32) };
         <span class="kw">let </span><span class="kw-2">mut </span>result: [MaybeUninit&lt;Term&gt;; N] = <span class="kw">unsafe </span>{ MaybeUninit::uninit().assume_init() };
-        <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..N {
+        <span class="kw">for </span>r <span class="kw">in </span>result.iter_mut() {
             <span class="kw">let </span>term = <span class="kw">unsafe </span>{ Term::new(term_ptr, <span class="self">self</span>.as_term_origin()) };
-            result[i].write(term);
+            r.write(term);
             term_ptr += <span class="number">1</span>;
         }
 
@@ -2403,7 +2424,7 @@
         <span class="kw">let </span>frame = <span class="self">self</span>.open_frame();
         <span class="kw">let </span>out = frame.new_term_ref();
 
-        frame.call_once(<span class="macro">pred!</span>(<span class="string">&quot;term_string/2&quot;</span>), [<span class="kw-2">&amp;</span>t, <span class="kw-2">&amp;</span>out])<span class="question-mark">?</span>;
+        frame.call_once(<span class="macro">pred!</span>(<span class="string">&quot;term_string/2&quot;</span>), [t, <span class="kw-2">&amp;</span>out])<span class="question-mark">?</span>;
         <span class="kw">let </span>s: String = out.get()<span class="question-mark">?</span>;
         frame.close();
 
@@ -2488,10 +2509,7 @@
         <span class="self">self</span>.assert_activated();
         <span class="kw">let </span>cur = <span class="self">self</span>.new_term_ref();
         cur.unify(list).expect(<span class="string">&quot;unifying terms should work&quot;</span>);
-        TermListIterator {
-            context: <span class="self">self</span>,
-            cur: cur,
-        }
+        TermListIterator { context: <span class="self">self</span>, cur }
     }
 
     <span class="doccomment">/// Retrieve a term list as a fixed-size array.
@@ -2576,9 +2594,9 @@
         }
 
         <span class="kw">let </span>terms: [Term; N] = <span class="self">self</span>.new_term_refs();
-        <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..N {
+        <span class="kw">for </span>(i, term) <span class="kw">in </span>terms.iter().enumerate() {
             <span class="kw">unsafe </span>{
-                <span class="macro">assert!</span>(PL_get_arg((i + <span class="number">1</span>) <span class="kw">as </span>i32, compound.term_ptr(), terms[i].term_ptr()) == <span class="number">1</span>);
+                <span class="macro">assert!</span>(PL_get_arg((i + <span class="number">1</span>) <span class="kw">as </span>i32, compound.term_ptr(), term.term_ptr()) == <span class="number">1</span>);
             }
         }
 
@@ -2602,9 +2620,9 @@
         }
 
         <span class="kw">let </span>terms = <span class="self">self</span>.new_term_refs_vec(size <span class="kw">as </span>usize);
-        <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..(size <span class="kw">as </span>usize) {
+        <span class="kw">for </span>(i, term) <span class="kw">in </span>terms.iter().enumerate() {
             <span class="kw">unsafe </span>{
-                <span class="macro">assert!</span>(PL_get_arg((i + <span class="number">1</span>) <span class="kw">as </span>i32, compound.term_ptr(), terms[i].term_ptr()) == <span class="number">1</span>);
+                <span class="macro">assert!</span>(PL_get_arg((i + <span class="number">1</span>) <span class="kw">as </span>i32, compound.term_ptr(), term.term_ptr()) == <span class="number">1</span>);
             }
         }
 
@@ -2636,9 +2654,9 @@
         }
 
         <span class="kw">let </span>terms = <span class="self">self</span>.new_term_refs_vec(count);
-        <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..count {
+        <span class="kw">for </span>(i, term) <span class="kw">in </span>terms.iter().enumerate() {
             <span class="kw">unsafe </span>{
-                <span class="macro">assert!</span>(PL_get_arg((i + <span class="number">1</span>) <span class="kw">as </span>i32, compound.term_ptr(), terms[i].term_ptr()) == <span class="number">1</span>);
+                <span class="macro">assert!</span>(PL_get_arg((i + <span class="number">1</span>) <span class="kw">as </span>i32, compound.term_ptr(), term.term_ptr()) == <span class="number">1</span>);
             }
         }
 
@@ -2760,6 +2778,10 @@
 ///
 /// This is used by various macros to ensure that panics from user
 /// code do not propagate into prolog.
+///
+/// # Safety
+/// This is only safe to use from an environment from which we can
+/// raise a prolog exception.
 </span><span class="kw">pub unsafe fn </span>prolog_catch_unwind&lt;F: FnOnce() -&gt; R + std::panic::UnwindSafe, R&gt;(
     f: F,
 ) -&gt; PrologResult&lt;R&gt; {
@@ -3293,4 +3315,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.1 (90743e729 2023-01-10)" ></div></body></html>

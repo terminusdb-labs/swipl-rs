@@ -247,7 +247,7 @@
 
 <span class="kw">impl </span>Record {
     <span class="doccomment">/// Extract a record from the given term.
-    </span><span class="kw">pub fn </span>from_term&lt;<span class="lifetime">&#39;a</span>&gt;(term: <span class="kw-2">&amp;</span>Term&lt;<span class="lifetime">&#39;a</span>&gt;) -&gt; Record {
+    </span><span class="kw">pub fn </span>from_term(term: <span class="kw-2">&amp;</span>Term) -&gt; Record {
         term.assert_term_handling_possible();
         <span class="kw">unsafe </span>{
             <span class="kw">let </span>record = fli::PL_record(term.term_ptr());
@@ -257,7 +257,7 @@
     }
 
     <span class="doccomment">/// Copy the recorded term into the given term reference.
-    </span><span class="kw">pub fn </span>recorded&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, term: <span class="kw-2">&amp;</span>Term&lt;<span class="lifetime">&#39;a</span>&gt;) -&gt; PrologResult&lt;()&gt; {
+    </span><span class="kw">pub fn </span>recorded(<span class="kw-2">&amp;</span><span class="self">self</span>, term: <span class="kw-2">&amp;</span>Term) -&gt; PrologResult&lt;()&gt; {
         term.assert_term_handling_possible();
         <span class="kw">unsafe </span>{ into_prolog_result(fli::PL_recorded(<span class="self">self</span>.record, term.term_ptr()) != <span class="number">0</span>) }
     }
@@ -451,4 +451,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.1 (90743e729 2023-01-10)" ></div></body></html>

@@ -1521,12 +1521,6 @@
 <span id="1521">1521</span>
 <span id="1522">1522</span>
 <span id="1523">1523</span>
-<span id="1524">1524</span>
-<span id="1525">1525</span>
-<span id="1526">1526</span>
-<span id="1527">1527</span>
-<span id="1528">1528</span>
-<span id="1529">1529</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Prolog terms.
 //!
 //! In prolog, all data is a term. Terms are things like atoms or
@@ -1671,6 +1665,8 @@
     }
 
     <span class="doccomment">/// Reset terms created after this term, including this term itself.
+    ///
+    /// # Safety
     /// Only safe to call when you&#39;re sure these terms aren&#39;t used afterwards.
     </span><span class="kw">pub unsafe fn </span>reset(<span class="kw-2">&amp;</span><span class="self">self</span>) {
         <span class="self">self</span>.assert_term_handling_possible();
@@ -1883,14 +1879,13 @@
         }
 
         <span class="kw">let </span>arg = <span class="kw">unsafe </span>{ Term::new(arg_ref, <span class="self">self</span>.origin.clone()) };
-        <span class="kw">let </span>result2;
-        <span class="kw">if </span>result != <span class="number">0 </span>{
-            result2 = arg.get_ex();
+        <span class="kw">let </span>result2 = <span class="kw">if </span>result != <span class="number">0 </span>{
+            arg.get_ex()
         } <span class="kw">else </span>{
             <span class="kw">let </span>context = <span class="kw">unsafe </span>{ unmanaged_engine_context() };
             <span class="kw">let </span>exception_term = <span class="macro">term! </span>{context: error(arity_error, <span class="kw">_</span>)};
-            result2 = exception_term.and_then(|t| context.raise_exception(<span class="kw-2">&amp;</span>t));
-        }
+            exception_term.and_then(|t| context.raise_exception(<span class="kw-2">&amp;</span>t))
+        };
 
         <span class="kw">unsafe </span>{ PL_reset_term_refs(arg_ref) };
 
@@ -1913,9 +1908,7 @@
                 <span class="self">self</span>.term,
                 <span class="kw-2">&amp;mut </span>len,
                 <span class="kw-2">&amp;mut </span>ptr,
-                (CVT_STRING | REP_UTF8 | BUF_DISCARDABLE)
-                    .try_into()
-                    .unwrap(),
+                CVT_STRING | REP_UTF8 | BUF_DISCARDABLE,
             )
         };
 
@@ -1926,8 +1919,7 @@
         <span class="kw">let </span>arg = <span class="kw">if </span>result == <span class="number">0 </span>{
             <span class="prelude-val">None
         </span>} <span class="kw">else </span>{
-            <span class="kw">let </span>swipl_string_ref =
-                <span class="kw">unsafe </span>{ std::slice::from_raw_parts(ptr <span class="kw">as </span><span class="kw-2">*const </span>u8, len <span class="kw">as </span>usize) };
+            <span class="kw">let </span>swipl_string_ref = <span class="kw">unsafe </span>{ std::slice::from_raw_parts(ptr <span class="kw">as </span><span class="kw-2">*const </span>u8, len) };
 
             <span class="kw">let </span>swipl_string = std::str::from_utf8(swipl_string_ref).unwrap();
 
@@ -1965,7 +1957,7 @@
                 <span class="self">self</span>.term,
                 <span class="kw-2">&amp;mut </span>len,
                 <span class="kw-2">&amp;mut </span>ptr,
-                (CVT_ATOM | REP_UTF8 | BUF_DISCARDABLE).try_into().unwrap(),
+                CVT_ATOM | REP_UTF8 | BUF_DISCARDABLE,
             )
         };
 
@@ -1976,8 +1968,7 @@
         <span class="kw">let </span>arg = <span class="kw">if </span>result == <span class="number">0 </span>{
             <span class="prelude-val">None
         </span>} <span class="kw">else </span>{
-            <span class="kw">let </span>swipl_string_ref =
-                <span class="kw">unsafe </span>{ std::slice::from_raw_parts(ptr <span class="kw">as </span><span class="kw-2">*const </span>u8, len <span class="kw">as </span>usize) };
+            <span class="kw">let </span>swipl_string_ref = <span class="kw">unsafe </span>{ std::slice::from_raw_parts(ptr <span class="kw">as </span><span class="kw-2">*const </span>u8, len) };
 
             <span class="kw">let </span>swipl_string = std::str::from_utf8(swipl_string_ref).unwrap();
 
@@ -2052,13 +2043,7 @@
 
         <span class="kw">let </span>result = <span class="kw">unsafe </span>{ PL_compare(<span class="self">self</span>.term_ptr(), other.term_ptr()) };
 
-        <span class="prelude-val">Some</span>(<span class="kw">if </span>result &lt; <span class="number">0 </span>{
-            Ordering::Less
-        } <span class="kw">else if </span>result == <span class="number">0 </span>{
-            Ordering::Equal
-        } <span class="kw">else </span>{
-            Ordering::Greater
-        })
+        <span class="prelude-val">Some</span>(result.cmp(<span class="kw-2">&amp;</span><span class="number">0</span>))
     }
 }
 
@@ -2100,6 +2085,7 @@
 
 <span class="doccomment">/// Trait for term unification.
 ///
+/// # Safety
 /// This is marked unsafe because in order to do term unification, we
 /// must be sure that
 /// - the term is created on the engine which is currently active
@@ -2126,6 +2112,7 @@
 
 <span class="doccomment">/// Trait for getting data from a term reference.
 ///
+/// # Safety
 /// This is marked unsafe because in order to do term getting, we
 /// must be sure that
 /// - the term is created on the engine which is currently active
@@ -2153,6 +2140,7 @@
 /// entirely. This is a non-logical operation that doesn&#39;t play nice
 /// with backtracking. You&#39;re generally better off using unification.
 ///
+/// # Safety
 /// This is marked unsafe because in order to do term putting, we
 /// must be sure that
 /// - the term is created on the engine which is currently active
@@ -2502,7 +2490,7 @@
         <span class="kw">let </span>result = <span class="kw">unsafe </span>{ PL_unify_chars(
             term.term_ptr(),
             (PL_STRING | REP_UTF8).try_into().unwrap(),
-            <span class="self">self</span>.len().try_into().unwrap(),
+            <span class="self">self</span>.len(),
             <span class="self">self</span>.as_bytes().as_ptr() <span class="kw">as </span><span class="kw-2">*const </span>c_char,
         )
         };
@@ -2516,7 +2504,7 @@
         <span class="kw">let </span>result = <span class="kw">unsafe </span>{ PL_unify_chars(
             term.term_ptr(),
             (PL_STRING | REP_UTF8).try_into().unwrap(),
-            <span class="self">self</span>.len().try_into().unwrap(),
+            <span class="self">self</span>.len(),
             <span class="self">self</span>.as_bytes().as_ptr() <span class="kw">as </span><span class="kw-2">*const </span>c_char,
         )
         };
@@ -2540,7 +2528,7 @@
         <span class="kw">unsafe </span>{ PL_put_chars(
             term.term_ptr(),
             (PL_STRING | REP_UTF8).try_into().unwrap(),
-            <span class="self">self</span>.len().try_into().unwrap(),
+            <span class="self">self</span>.len(),
             <span class="self">self</span>.as_bytes().as_ptr() <span class="kw">as </span><span class="kw-2">*const </span>c_char,
         )
         };
@@ -2552,7 +2540,7 @@
         <span class="kw">unsafe </span>{ PL_put_chars(
             term.term_ptr(),
             (PL_STRING | REP_UTF8).try_into().unwrap(),
-            <span class="self">self</span>.len().try_into().unwrap(),
+            <span class="self">self</span>.len(),
             <span class="self">self</span>.as_bytes().as_ptr() <span class="kw">as </span><span class="kw-2">*const </span>c_char,
         )
         };
@@ -2561,7 +2549,7 @@
 
 <span class="macro">unifiable! </span>{
     (<span class="self">self</span>: <span class="kw-2">&amp;</span>[u8], term) =&gt; {
-        <span class="kw">let </span>result = <span class="kw">unsafe </span>{ PL_unify_string_nchars(term.term_ptr(), <span class="self">self</span>.len() <span class="kw">as </span>size_t, <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span>std::os::raw::c_char) };
+        <span class="kw">let </span>result = <span class="kw">unsafe </span>{ PL_unify_string_nchars(term.term_ptr(), <span class="self">self</span>.len(), <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span>std::os::raw::c_char) };
 
         result != <span class="number">0
     </span>}
@@ -2576,8 +2564,8 @@
             <span class="kw">return </span><span class="prelude-val">None</span>;
         }
 
-        <span class="kw">let </span>slice = <span class="kw">unsafe </span>{ std::slice::from_raw_parts(string_ptr <span class="kw">as </span><span class="kw-2">*const </span>u8, len <span class="kw">as </span>usize) };
-        <span class="kw">let </span><span class="kw-2">mut </span>result: Vec&lt;u8&gt; = Vec::with_capacity(len <span class="kw">as </span>usize);
+        <span class="kw">let </span>slice = <span class="kw">unsafe </span>{ std::slice::from_raw_parts(string_ptr <span class="kw">as </span><span class="kw-2">*const </span>u8, len) };
+        <span class="kw">let </span><span class="kw-2">mut </span>result: Vec&lt;u8&gt; = Vec::with_capacity(len);
         result.extend_from_slice(slice);
 
         <span class="prelude-val">Some</span>(result)
@@ -2586,7 +2574,7 @@
 
 <span class="macro">term_putable! </span>{
     (<span class="self">self</span>: [u8], term) =&gt; {
-        <span class="kw">unsafe </span>{ PL_put_string_nchars(term.term_ptr(), <span class="self">self</span>.len() <span class="kw">as </span>size_t, <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span>std::os::raw::c_char) };
+        <span class="kw">unsafe </span>{ PL_put_string_nchars(term.term_ptr(), <span class="self">self</span>.len(), <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span>std::os::raw::c_char) };
     }
 
 }
@@ -2750,7 +2738,7 @@
         <span class="kw">let </span>term2 = context.new_term_ref();
         <span class="macro">assert!</span>(term1.unify(<span class="number">42_u64</span>).is_ok());
         <span class="macro">assert!</span>(term2.unify(<span class="number">43_u64</span>).is_ok());
-        <span class="macro">assert!</span>(!term1.unify(<span class="kw-2">&amp;</span>term2).is_ok());
+        <span class="macro">assert!</span>(term1.unify(<span class="kw-2">&amp;</span>term2).is_err());
     }
 
     <span class="attribute">#[test]
@@ -2761,7 +2749,7 @@
 
         <span class="kw">let </span>term = context.new_term_ref();
         <span class="macro">assert!</span>(term.unify(<span class="number">42_u64</span>).is_ok());
-        <span class="macro">assert!</span>(!term.unify(<span class="number">43_u64</span>).is_ok());
+        <span class="macro">assert!</span>(term.unify(<span class="number">43_u64</span>).is_err());
     }
 
     <span class="attribute">#[test]
@@ -2786,10 +2774,10 @@
         <span class="kw">let </span>term1 = context.new_term_ref();
         <span class="macro">assert!</span>(term1.get::&lt;bool&gt;().unwrap_err().is_failure());
         term1.unify(<span class="bool-val">true</span>).unwrap();
-        <span class="macro">assert_eq!</span>(<span class="bool-val">true</span>, term1.get::&lt;bool&gt;().unwrap());
+        <span class="macro">assert!</span>(term1.get::&lt;bool&gt;().unwrap());
         <span class="kw">let </span>term2 = context.new_term_ref();
         term2.unify(<span class="bool-val">false</span>).unwrap();
-        <span class="macro">assert_eq!</span>(<span class="bool-val">false</span>, term2.get::&lt;bool&gt;().unwrap());
+        <span class="macro">assert!</span>(!term2.get::&lt;bool&gt;().unwrap());
     }
 
     <span class="attribute">#[test]
@@ -3039,7 +3027,7 @@
         <span class="kw">let </span>result: PrologResult&lt;u64&gt; = term.get_arg_ex(<span class="number">1</span>);
         <span class="macro">assert_eq!</span>(PrologError::Exception, result.err().unwrap());
         <span class="macro">assert!</span>(context.has_exception());
-        context.with_exception(|e| <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, context.string_from_term(<span class="kw-2">&amp;</span>e.unwrap()).unwrap()));
+        context.with_exception(|e| <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, context.string_from_term(e.unwrap()).unwrap()));
         context.with_exception(|e| e.unwrap().unify(<span class="kw-2">&amp;</span>expected).unwrap());
     }
 
@@ -3057,4 +3045,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.1 (90743e729 2023-01-10)" ></div></body></html>

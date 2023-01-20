@@ -120,8 +120,6 @@
 <span id="120">120</span>
 <span id="121">121</span>
 <span id="122">122</span>
-<span id="123">123</span>
-<span id="124">124</span>
 </pre><pre class="rust"><code><span class="doccomment">//! A helper crate to retrieve information about the installed swipl environment.
 </span><span class="attribute">#![doc(html_root_url = <span class="string">&quot;https://terminusdb-labs.github.io/swipl-rs/swipl_info/&quot;</span>)]
 
@@ -182,13 +180,12 @@
 
     <span class="kw">let </span>version: u32 = String::from_utf8_lossy(<span class="kw-2">&amp;</span>output.stdout).parse().unwrap();
 
-    <span class="kw">let </span>build_env_command: <span class="kw-2">&amp;</span>str;
-    <span class="kw">if </span>version &gt;= <span class="number">80504 </span>{
+    <span class="kw">let </span>build_env_command = <span class="kw">if </span>version &gt;= <span class="number">80504 </span>{
         <span class="comment">// build_environment predicate moved and is now called somewhat differently
-        </span>build_env_command = <span class="string">&quot;use_module(library(build/tools)), build_tools:build_environment(Env, []), memberchk(&#39;SWIHOME&#39;=Swihome, Env), memberchk(&#39;PACKSODIR&#39;=Packsodir, Env), memberchk(&#39;CFLAGS&#39;=Cflags, Env), memberchk(&#39;LDSOFLAGS&#39;=Ldflags, Env), format(&#39;~s~n~s~n~s~n~s~n&#39;, [Swihome, Packsodir, Cflags, Ldflags])&quot;</span>;
-    } <span class="kw">else </span>{
-        build_env_command = <span class="string">&quot;use_module(library(prolog_pack)), prolog_pack:build_environment(Env), memberchk(&#39;SWIHOME&#39;=Swihome, Env), memberchk(&#39;PACKSODIR&#39;=Packsodir, Env), memberchk(&#39;CFLAGS&#39;=Cflags, Env), memberchk(&#39;LDSOFLAGS&#39;=Ldflags, Env), format(&#39;~s~n~s~n~s~n~s~n&#39;, [Swihome, Packsodir, Cflags, Ldflags])&quot;</span>;
-    }
+        </span><span class="string">&quot;use_module(library(build/tools)), build_tools:build_environment(Env, []), memberchk(&#39;SWIHOME&#39;=Swihome, Env), memberchk(&#39;PACKSODIR&#39;=Packsodir, Env), memberchk(&#39;CFLAGS&#39;=Cflags, Env), memberchk(&#39;LDSOFLAGS&#39;=Ldflags, Env), format(&#39;~s~n~s~n~s~n~s~n&#39;, [Swihome, Packsodir, Cflags, Ldflags])&quot;
+    </span>} <span class="kw">else </span>{
+        <span class="string">&quot;use_module(library(prolog_pack)), prolog_pack:build_environment(Env), memberchk(&#39;SWIHOME&#39;=Swihome, Env), memberchk(&#39;PACKSODIR&#39;=Packsodir, Env), memberchk(&#39;CFLAGS&#39;=Cflags, Env), memberchk(&#39;LDSOFLAGS&#39;=Ldflags, Env), format(&#39;~s~n~s~n~s~n~s~n&#39;, [Swihome, Packsodir, Cflags, Ldflags])&quot;
+    </span>};
 
     <span class="kw">let </span>output = Command::new(<span class="kw-2">&amp;</span>swipl_path)
         .arg(<span class="string">&quot;-g&quot;</span>)
@@ -225,12 +222,11 @@
     <span class="kw">let </span>cflags = lines.next().unwrap().to_owned();
     <span class="kw">let </span>ldflags = lines.next().unwrap().to_owned();
 
-    <span class="kw">let </span>lib_name;
-    <span class="kw">if </span><span class="macro">cfg!</span>(target_os = <span class="string">&quot;windows&quot;</span>) {
-        lib_name = <span class="string">&quot;libswipl&quot;</span>.to_string();
+    <span class="kw">let </span>lib_name = <span class="kw">if </span><span class="macro">cfg!</span>(target_os = <span class="string">&quot;windows&quot;</span>) {
+        <span class="string">&quot;libswipl&quot;</span>.to_string()
     } <span class="kw">else </span>{
-        lib_name = <span class="string">&quot;swipl&quot;</span>.to_string();
-    }
+        <span class="string">&quot;swipl&quot;</span>.to_string()
+    };
 
     <span class="kw">let </span>header_dir = <span class="macro">format!</span>(<span class="string">&quot;{}/include&quot;</span>, swi_home);
 
@@ -247,4 +243,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl_info" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl_info" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.1 (90743e729 2023-01-10)" ></div></body></html>

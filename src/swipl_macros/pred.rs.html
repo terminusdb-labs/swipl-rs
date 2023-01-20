@@ -110,9 +110,7 @@
 <span id="110">110</span>
 <span id="111">111</span>
 <span id="112">112</span>
-<span id="113">113</span>
-</pre><pre class="rust"><code><span class="kw">use </span>proc_macro;
-<span class="kw">use </span>proc_macro2::Span;
+</pre><pre class="rust"><code><span class="kw">use </span>proc_macro2::Span;
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::parse::{Parse, ParseBuffer, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>syn::{parse_macro_input, Ident, LitStr, Token};
@@ -124,7 +122,7 @@
     <span class="kw">let </span>definition = <span class="macro">parse_macro_input!</span>(stream <span class="kw">as </span>Pred);
     <span class="kw">let </span>arity = definition.arity <span class="kw">as </span>usize;
 
-    <span class="kw">let </span>name_lit = LitStr::new(<span class="kw-2">&amp;</span>definition.name.to_string(), definition.name_span);
+    <span class="kw">let </span>name_lit = LitStr::new(<span class="kw-2">&amp;</span>definition.name, definition.name_span);
     <span class="kw">let </span>module_lit = <span class="kw">match </span>definition.module {
         <span class="prelude-val">Some</span>(m) =&gt; LitStr::new(<span class="kw-2">&amp;</span>m.<span class="number">0</span>, m.<span class="number">1</span>),
         <span class="prelude-val">None </span>=&gt; LitStr::new(<span class="string">&quot;&quot;</span>, Span::call_site()),
@@ -196,7 +194,7 @@
                     name = module_and_name.to_string();
                 }
 
-                <span class="kw">if </span>name.len() == <span class="number">0 </span>{
+                <span class="kw">if </span>name.is_empty() {
                     <span class="kw">return </span><span class="prelude-val">Err</span>(syn::parse::Error::new(x.span(), <span class="string">&quot;invalid predicate name&quot;</span>));
                 }
 
@@ -225,4 +223,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.1 (90743e729 2023-01-10)" ></div></body></html>

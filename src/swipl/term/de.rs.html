@@ -1541,27 +1541,6 @@
 <span id="1541">1541</span>
 <span id="1542">1542</span>
 <span id="1543">1543</span>
-<span id="1544">1544</span>
-<span id="1545">1545</span>
-<span id="1546">1546</span>
-<span id="1547">1547</span>
-<span id="1548">1548</span>
-<span id="1549">1549</span>
-<span id="1550">1550</span>
-<span id="1551">1551</span>
-<span id="1552">1552</span>
-<span id="1553">1553</span>
-<span id="1554">1554</span>
-<span id="1555">1555</span>
-<span id="1556">1556</span>
-<span id="1557">1557</span>
-<span id="1558">1558</span>
-<span id="1559">1559</span>
-<span id="1560">1560</span>
-<span id="1561">1561</span>
-<span id="1562">1562</span>
-<span id="1563">1563</span>
-<span id="1564">1564</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Deserialization of rust values from prolog terms.
 </span><span class="kw">use </span><span class="kw">super</span>::ser::ATOM_STRUCT_NAME;
 <span class="kw">use super</span>::<span class="kw-2">*</span>;
@@ -1571,8 +1550,8 @@
 <span class="kw">use crate</span>::{atom, functor};
 <span class="kw">use </span>serde::de::{<span class="self">self</span>, DeserializeSeed, EnumAccess, MapAccess, SeqAccess, VariantAccess, Visitor};
 <span class="kw">use </span>serde::Deserialize;
-<span class="kw">use </span>std::fmt::{<span class="self">self</span>, Display};
 <span class="kw">use </span>std::cell::Cell;
+<span class="kw">use </span>std::fmt::{<span class="self">self</span>, Display};
 
 <span class="doccomment">/// Deserialize a term into a rust value using serde.
 </span><span class="kw">pub fn </span>from_term&lt;<span class="lifetime">&#39;a</span>, C: QueryableContextType, T&gt;(
@@ -1956,13 +1935,7 @@
         </span>V: Visitor&lt;<span class="lifetime">&#39;de</span>&gt;,
     {
         <span class="kw">match </span>attempt_opt(<span class="self">self</span>.term.get::&lt;i64&gt;())<span class="question-mark">? </span>{
-            <span class="prelude-val">Some</span>(i) =&gt; {
-                <span class="kw">if </span>i &gt;= i64::MIN <span class="kw">as </span>i64 &amp;&amp; i &lt;= i64::MAX <span class="kw">as </span>i64 {
-                    visitor.visit_i64(i <span class="kw">as </span>i64)
-                } <span class="kw">else </span>{
-                    <span class="prelude-val">Err</span>(Error::ValueOutOfRange)
-                }
-            }
+            <span class="prelude-val">Some</span>(i) =&gt; visitor.visit_i64(i),
             <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;i64&quot;</span>)),
         }
     }
@@ -2016,13 +1989,7 @@
         </span>V: Visitor&lt;<span class="lifetime">&#39;de</span>&gt;,
     {
         <span class="kw">match </span>attempt_opt(<span class="self">self</span>.term.get::&lt;u64&gt;())<span class="question-mark">? </span>{
-            <span class="prelude-val">Some</span>(i) =&gt; {
-                <span class="kw">if </span>i &lt;= u64::MAX <span class="kw">as </span>u64 {
-                    visitor.visit_u64(i <span class="kw">as </span>u64)
-                } <span class="kw">else </span>{
-                    <span class="prelude-val">Err</span>(Error::ValueOutOfRange)
-                }
-            }
+            <span class="prelude-val">Some</span>(i) =&gt; visitor.visit_u64(i),
             <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;u64&quot;</span>)),
         }
     }
@@ -2054,11 +2021,7 @@
         </span><span class="kw">match </span><span class="self">self</span>.term.term_type() {
             TermType::Atom =&gt; {
                 <span class="kw">let </span>c = attempt_opt(<span class="self">self</span>.term.get_atom_name(|a| {
-                    <span class="kw">if </span>a.is_none() {
-                        <span class="kw">return </span><span class="prelude-val">None</span>;
-                    }
-
-                    <span class="kw">let </span><span class="kw-2">mut </span>it = a.unwrap().chars();
+                    <span class="kw">let </span><span class="kw-2">mut </span>it = a<span class="question-mark">?</span>.chars();
                     <span class="kw">if let </span><span class="prelude-val">Some</span>(c) = it.next() {
                         <span class="kw">if </span>it.next().is_none() {
                             <span class="kw">return </span><span class="prelude-val">Some</span>(c);
@@ -2151,15 +2114,13 @@
                     <span class="prelude-val">Some</span>(atom) =&gt; {
                         <span class="kw">if </span><span class="macro">cfg!</span>(target_pointer_width = <span class="string">&quot;32&quot;</span>) {
                             visitor.visit_u32(atom.atom_ptr() <span class="kw">as </span>u32)
-                        }
-                        <span class="kw">else </span>{
+                        } <span class="kw">else </span>{
                             visitor.visit_u64(atom.atom_ptr() <span class="kw">as </span>u64)
                         }
-                    },
-                    <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;atom&quot;</span>))
+                    }
+                    <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;atom&quot;</span>)),
                 }
-            }
-            <span class="kw">else </span>{
+            } <span class="kw">else </span>{
                 <span class="self">self</span>.deserialize_string(visitor)
             }
         } <span class="kw">else </span>{
@@ -2193,33 +2154,31 @@
                 context: <span class="self">self</span>.context,
                 term: <span class="self">self</span>.term,
             });
-        } <span class="kw">else </span>{
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>terms) =
-                attempt_opt(<span class="self">self</span>.context.compound_terms_vec_sized(<span class="kw-2">&amp;</span><span class="self">self</span>.term, len))<span class="question-mark">?
-            </span>{
+        } <span class="kw">else if let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>terms) =
+            attempt_opt(<span class="self">self</span>.context.compound_terms_vec_sized(<span class="kw-2">&amp;</span><span class="self">self</span>.term, len))<span class="question-mark">?
+        </span>{
+            terms.reverse();
+            result = visitor.visit_seq(CompoundTermSeqAccess {
+                context: <span class="self">self</span>.context,
+                terms,
+            });
+        } <span class="kw">else if </span><span class="self">self</span>.term.term_type() == TermType::ListPair
+            || <span class="self">self</span>.term.term_type() == TermType::Nil
+        {
+            <span class="kw">let </span><span class="kw-2">mut </span>terms = <span class="self">self</span>.context.term_list_vec(<span class="kw-2">&amp;</span><span class="self">self</span>.term);
+            <span class="kw">if </span>terms.len() != len {
+                result = <span class="prelude-val">Err</span>(Error::ValueOutOfRange);
+            } <span class="kw">else </span>{
                 terms.reverse();
+
                 result = visitor.visit_seq(CompoundTermSeqAccess {
                     context: <span class="self">self</span>.context,
                     terms,
                 });
-            } <span class="kw">else if </span><span class="self">self</span>.term.term_type() == TermType::ListPair
-                || <span class="self">self</span>.term.term_type() == TermType::Nil
-            {
-                <span class="kw">let </span><span class="kw-2">mut </span>terms = <span class="self">self</span>.context.term_list_vec(<span class="kw-2">&amp;</span><span class="self">self</span>.term);
-                <span class="kw">if </span>terms.len() != len {
-                    result = <span class="prelude-val">Err</span>(Error::ValueOutOfRange);
-                } <span class="kw">else </span>{
-                    terms.reverse();
-
-                    result = visitor.visit_seq(CompoundTermSeqAccess {
-                        context: <span class="self">self</span>.context,
-                        terms,
-                    });
-                }
-            } <span class="kw">else </span>{
-                result = <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;tuple&quot;</span>));
-            };
-        }
+            }
+        } <span class="kw">else </span>{
+            result = <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;tuple&quot;</span>));
+        };
 
         <span class="kw">unsafe </span>{
             cleanup_term.reset();
@@ -2532,15 +2491,13 @@
                     Key::Atom(atom) =&gt; {
                         <span class="kw">if </span><span class="macro">cfg!</span>(target_pointer_width = <span class="string">&quot;32&quot;</span>) {
                             visitor.visit_u32(atom.atom_ptr() <span class="kw">as </span>u32)
-                        }
-                        <span class="kw">else </span>{
+                        } <span class="kw">else </span>{
                             visitor.visit_u64(atom.atom_ptr() <span class="kw">as </span>u64)
                         }
-                    },
-                    <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;atom&quot;</span>))
+                    }
+                    <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;atom&quot;</span>)),
                 }
-            }
-            <span class="kw">else </span>{
+            } <span class="kw">else </span>{
                 <span class="self">self</span>.deserialize_string(visitor)
             }
         } <span class="kw">else </span>{
@@ -2831,7 +2788,6 @@
             da.set(<span class="bool-val">true</span>)
         });
 
-
         <span class="self">Self
     </span>}
 
@@ -2866,6 +2822,7 @@
     }
 
     <span class="attribute">#[cfg(target_pointer_width = <span class="string">&quot;32&quot;</span>)]
+    #[allow(clippy::useless_conversion)]
     </span><span class="kw">fn </span>visit_u32&lt;E&gt;(<span class="self">self</span>, v: u32) -&gt; std::result::Result&lt;Atom, E&gt;
     <span class="kw">where
         </span>E: de::Error,
@@ -2879,6 +2836,7 @@
     }
 
     <span class="attribute">#[cfg(target_pointer_width = <span class="string">&quot;64&quot;</span>)]
+    #[allow(clippy::useless_conversion)]
     </span><span class="kw">fn </span>visit_u64&lt;E&gt;(<span class="self">self</span>, v: u64) -&gt; std::result::Result&lt;Atom, E&gt;
     <span class="kw">where
         </span>E: de::Error,
@@ -3127,4 +3085,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.1 (90743e729 2023-01-10)" ></div></body></html>

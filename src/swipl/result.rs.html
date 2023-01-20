@@ -178,11 +178,6 @@
 <span id="178">178</span>
 <span id="179">179</span>
 <span id="180">180</span>
-<span id="181">181</span>
-<span id="182">182</span>
-<span id="183">183</span>
-<span id="184">184</span>
-<span id="185">185</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Prolog results.
 //!
 //! Functions in swipl-rs that interact with SWI-Prolog generally
@@ -212,18 +207,12 @@
 <span class="kw">impl </span>PrologError {
     <span class="doccomment">/// Returns true if this error is a failure.
     </span><span class="kw">pub fn </span>is_failure(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-        <span class="kw">match </span><span class="self">self </span>{
-            PrologError::Failure =&gt; <span class="bool-val">true</span>,
-            <span class="kw">_ </span>=&gt; <span class="bool-val">false</span>,
-        }
+        <span class="macro">matches!</span>(<span class="self">self</span>, PrologError::Failure)
     }
 
     <span class="doccomment">/// Returns true if this error is an exception.
     </span><span class="kw">pub fn </span>is_exception(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-        <span class="kw">match </span><span class="self">self </span>{
-            PrologError::Exception =&gt; <span class="bool-val">true</span>,
-            <span class="kw">_ </span>=&gt; <span class="bool-val">false</span>,
-        }
+        <span class="macro">matches!</span>(<span class="self">self</span>, PrologError::Exception)
     }
 }
 
@@ -325,8 +314,8 @@
 
 <span class="kw">pub type </span>PrologStringResult&lt;T&gt; = <span class="prelude-ty">Result</span>&lt;T, PrologStringError&gt;;
 
-<span class="kw">pub fn </span>result_to_string_result&lt;<span class="lifetime">&#39;a</span>, C: QueryableContextType, T&gt;(
-    c: <span class="kw-2">&amp;</span>Context&lt;<span class="lifetime">&#39;a</span>, C&gt;,
+<span class="kw">pub fn </span>result_to_string_result&lt;C: QueryableContextType, T&gt;(
+    c: <span class="kw-2">&amp;</span>Context&lt;C&gt;,
     r: PrologResult&lt;T&gt;,
 ) -&gt; PrologStringResult&lt;T&gt; {
     <span class="kw">match </span>r {
@@ -350,18 +339,19 @@
                     <span class="string">&quot;prolog had the following exception: {}&quot;</span>,
                     s
                 ))),
-                <span class="prelude-val">Err</span>(PrologError::Failure) =&gt; <span class="prelude-val">Err</span>(PrologStringError::Exception(<span class="macro">format!</span>(
-                    <span class="string">&quot;prolog failed while retrieving string from previous error&quot;
-                </span>))),
-                <span class="prelude-val">Err</span>(PrologError::Exception) =&gt; <span class="prelude-val">Err</span>(PrologStringError::Exception(<span class="macro">format!</span>(
+                <span class="prelude-val">Err</span>(PrologError::Failure) =&gt; <span class="prelude-val">Err</span>(PrologStringError::Exception(
+                    <span class="string">&quot;prolog failed while retrieving string from previous error&quot;</span>.to_string(),
+                )),
+                <span class="prelude-val">Err</span>(PrologError::Exception) =&gt; <span class="prelude-val">Err</span>(PrologStringError::Exception(
                     <span class="string">&quot;prolog threw exception while retrieving string from previous error&quot;
-                </span>))),
+                        </span>.to_string(),
+                )),
             }
         }
     }
 }
 
-<span class="kw">pub fn </span>unwrap_result&lt;<span class="lifetime">&#39;a</span>, C: QueryableContextType, T&gt;(c: <span class="kw-2">&amp;</span>Context&lt;<span class="lifetime">&#39;a</span>, C&gt;, r: PrologResult&lt;T&gt;) -&gt; T {
+<span class="kw">pub fn </span>unwrap_result&lt;C: QueryableContextType, T&gt;(c: <span class="kw-2">&amp;</span>Context&lt;C&gt;, r: PrologResult&lt;T&gt;) -&gt; T {
     <span class="kw">match </span>result_to_string_result(c, r) {
         <span class="prelude-val">Ok</span>(r) =&gt; r,
         <span class="prelude-val">Err</span>(PrologStringError::Failure) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;prolog failed&quot;</span>),
@@ -369,4 +359,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.1 (90743e729 2023-01-10)" ></div></body></html>

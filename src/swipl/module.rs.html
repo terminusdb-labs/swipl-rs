@@ -95,6 +95,7 @@
 <span id="95">95</span>
 <span id="96">96</span>
 <span id="97">97</span>
+<span id="98">98</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Prolog modules.
 //!
 //! Modules are prolog namespaces. They are created from an
@@ -122,6 +123,7 @@
 <span class="kw">impl </span>Module {
     <span class="doccomment">/// Wrap a `module_t`, which is how the SWI-Prolog fli represents modules.
     ///
+    /// # Safety
     /// This is unsafe because no check is done to ensure that the
     /// module_t indeed points at a valid module. The caller will have
     /// to ensure that this is the case.
@@ -193,4 +195,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="swipl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.1 (90743e729 2023-01-10)" ></div></body></html>
