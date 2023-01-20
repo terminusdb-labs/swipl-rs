@@ -7,8 +7,8 @@ use crate::text::*;
 use crate::{atom, functor};
 use serde::de::{self, DeserializeSeed, EnumAccess, MapAccess, SeqAccess, VariantAccess, Visitor};
 use serde::Deserialize;
-use std::fmt::{self, Display};
 use std::cell::Cell;
+use std::fmt::{self, Display};
 
 /// Deserialize a term into a rust value using serde.
 pub fn from_term<'a, C: QueryableContextType, T>(
@@ -392,13 +392,7 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
         V: Visitor<'de>,
     {
         match attempt_opt(self.term.get::<i64>())? {
-            Some(i) => {
-                if i >= i64::MIN as i64 && i <= i64::MAX as i64 {
-                    visitor.visit_i64(i as i64)
-                } else {
-                    Err(Error::ValueOutOfRange)
-                }
-            }
+            Some(i) => visitor.visit_i64(i),
             None => Err(Error::ValueNotOfExpectedType("i64")),
         }
     }
@@ -452,13 +446,7 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
         V: Visitor<'de>,
     {
         match attempt_opt(self.term.get::<u64>())? {
-            Some(i) => {
-                if i <= u64::MAX as u64 {
-                    visitor.visit_u64(i as u64)
-                } else {
-                    Err(Error::ValueOutOfRange)
-                }
-            }
+            Some(i) => visitor.visit_u64(i),
             None => Err(Error::ValueNotOfExpectedType("u64")),
         }
     }
@@ -490,11 +478,7 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
         match self.term.term_type() {
             TermType::Atom => {
                 let c = attempt_opt(self.term.get_atom_name(|a| {
-                    if a.is_none() {
-                        return None;
-                    }
-
-                    let mut it = a.unwrap().chars();
+                    let mut it = a?.chars();
                     if let Some(c) = it.next() {
                         if it.next().is_none() {
                             return Some(c);
@@ -587,15 +571,13 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
                     Some(atom) => {
                         if cfg!(target_pointer_width = "32") {
                             visitor.visit_u32(atom.atom_ptr() as u32)
-                        }
-                        else {
+                        } else {
                             visitor.visit_u64(atom.atom_ptr() as u64)
                         }
-                    },
-                    None => Err(Error::ValueNotOfExpectedType("atom"))
+                    }
+                    None => Err(Error::ValueNotOfExpectedType("atom")),
                 }
-            }
-            else {
+            } else {
                 self.deserialize_string(visitor)
             }
         } else {
@@ -629,33 +611,31 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
                 context: self.context,
                 term: self.term,
             });
-        } else {
-            if let Some(mut terms) =
-                attempt_opt(self.context.compound_terms_vec_sized(&self.term, len))?
-            {
+        } else if let Some(mut terms) =
+            attempt_opt(self.context.compound_terms_vec_sized(&self.term, len))?
+        {
+            terms.reverse();
+            result = visitor.visit_seq(CompoundTermSeqAccess {
+                context: self.context,
+                terms,
+            });
+        } else if self.term.term_type() == TermType::ListPair
+            || self.term.term_type() == TermType::Nil
+        {
+            let mut terms = self.context.term_list_vec(&self.term);
+            if terms.len() != len {
+                result = Err(Error::ValueOutOfRange);
+            } else {
                 terms.reverse();
+
                 result = visitor.visit_seq(CompoundTermSeqAccess {
                     context: self.context,
                     terms,
                 });
-            } else if self.term.term_type() == TermType::ListPair
-                || self.term.term_type() == TermType::Nil
-            {
-                let mut terms = self.context.term_list_vec(&self.term);
-                if terms.len() != len {
-                    result = Err(Error::ValueOutOfRange);
-                } else {
-                    terms.reverse();
-
-                    result = visitor.visit_seq(CompoundTermSeqAccess {
-                        context: self.context,
-                        terms,
-                    });
-                }
-            } else {
-                result = Err(Error::ValueNotOfExpectedType("tuple"));
-            };
-        }
+            }
+        } else {
+            result = Err(Error::ValueNotOfExpectedType("tuple"));
+        };
 
         unsafe {
             cleanup_term.reset();
@@ -968,15 +948,13 @@ impl<'de> de::Deserializer<'de> for KeyDeserializer {
                     Key::Atom(atom) => {
                         if cfg!(target_pointer_width = "32") {
                             visitor.visit_u32(atom.atom_ptr() as u32)
-                        }
-                        else {
+                        } else {
                             visitor.visit_u64(atom.atom_ptr() as u64)
                         }
-                    },
-                    _ => Err(Error::ValueNotOfExpectedType("atom"))
+                    }
+                    _ => Err(Error::ValueNotOfExpectedType("atom")),
                 }
-            }
-            else {
+            } else {
                 self.deserialize_string(visitor)
             }
         } else {
@@ -1267,7 +1245,6 @@ impl DeserializingAtomState {
             da.set(true)
         });
 
-
         Self
     }
 
@@ -1302,6 +1279,7 @@ impl<'de> Visitor<'de> for AtomVisitor {
     }
 
     #[cfg(target_pointer_width = "32")]
+    #[allow(clippy::useless_conversion)]
     fn visit_u32<E>(self, v: u32) -> std::result::Result<Atom, E>
     where
         E: de::Error,
@@ -1315,6 +1293,7 @@ impl<'de> Visitor<'de> for AtomVisitor {
     }
 
     #[cfg(target_pointer_width = "64")]
+    #[allow(clippy::useless_conversion)]
     fn visit_u64<E>(self, v: u64) -> std::result::Result<Atom, E>
     where
         E: de::Error,

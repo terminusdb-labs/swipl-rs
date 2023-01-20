@@ -26,6 +26,7 @@ pub struct Functor {
 impl Functor {
     /// Wrap a `functor_t`, which is how the SWI-Prolog fli represents functors.
     ///
+    /// # Safety
     /// This is unsafe because no check is done to ensure that the
     /// functor_t indeed points at a valid functor. The caller will
     /// have to ensure that this is the case.
@@ -176,9 +177,7 @@ impl LazyFunctor {
 
             functor
         } else {
-            let functor = unsafe { Functor::wrap(ptr as functor_t) };
-
-            functor
+            unsafe { Functor::wrap(ptr as functor_t) }
         }
     }
 }
@@ -210,8 +209,8 @@ mod tests {
 
         let f = Functor::new("moocows", 3);
         let term = context.new_term_ref();
-        assert!(term.unify(&f).is_ok());
-        assert!(term.unify(&f).is_ok());
+        assert!(term.unify(f).is_ok());
+        assert!(term.unify(f).is_ok());
     }
 
     #[test]
@@ -222,7 +221,7 @@ mod tests {
 
         let f = Functor::new("moocows", 3);
         let term = context.new_term_ref();
-        assert!(term.unify(&f).is_ok());
+        assert!(term.unify(f).is_ok());
     }
 
     #[test]
@@ -233,7 +232,7 @@ mod tests {
 
         let f1 = Functor::new("moocows", 3);
         let term = context.new_term_ref();
-        term.unify(&f1).unwrap();
+        term.unify(f1).unwrap();
         let f2: Functor = term.get().unwrap();
         assert_eq!(f1, f2);
     }
@@ -247,8 +246,8 @@ mod tests {
         let f1 = Functor::new("moocows", 3);
         let f2 = Functor::new("oinkpigs", 3);
         let term = context.new_term_ref();
-        assert!(term.unify(&f1).is_ok());
-        assert!(!term.unify(&f2).is_ok());
+        assert!(term.unify(f1).is_ok());
+        assert!(term.unify(f2).is_err());
     }
 
     #[test]
@@ -274,12 +273,12 @@ mod tests {
         assert!(term.unify_arg(1, 42_u64).is_ok());
         assert_eq!(42_u64, term.get_arg(1).unwrap());
         assert!(term.unify_arg(1, 42_u64).is_ok());
-        assert!(!term.unify_arg(1, 43_u64).is_ok());
+        assert!(term.unify_arg(1, 43_u64).is_err());
 
         assert!(term.unify_arg(2, 24_u64).is_ok());
         assert_eq!(24_u64, term.get_arg(2).unwrap());
 
-        assert!(!term.unify_arg(3, 24_u64).is_ok());
+        assert!(term.unify_arg(3, 24_u64).is_err());
         assert!(term.get_arg::<u64>(3).unwrap_err().is_failure());
     }
 

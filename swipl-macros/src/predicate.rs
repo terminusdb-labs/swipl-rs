@@ -1,7 +1,6 @@
 use crate::kw;
 use crate::util::*;
 
-use proc_macro;
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
 use syn::parse::{Nothing, Parse, ParseStream, Result};
@@ -156,7 +155,7 @@ impl Parse for SemidetForeignPredicateDefinition {
             params_stream.parse_terminated(Ident::parse)?;
         let span = params_stream.span();
         let params: Vec<_> = params_punct.into_iter().collect();
-        if params.len() == 0 {
+        if params.is_empty() {
             return Err(syn::Error::new(
                 span,
                 "need at least one argument for query context",
@@ -218,6 +217,7 @@ impl ForeignPredicateDefinitionImpl for SemidetForeignPredicateDefinition {
                         let mut terms: [std::mem::MaybeUninit<#crt::term::Term>;#known_arity] =
                             std::mem::MaybeUninit::uninit().assume_init();
 
+                        #[allow(clippy::reversed_empty_ranges)]
                         for i in 0..#known_arity {
                             let term_ref = context.wrap_term_ref(term+i);
                             terms[i] = std::mem::MaybeUninit::new(term_ref);
@@ -321,7 +321,7 @@ impl Parse for NondetForeignPredicateDefinition {
             params_stream.parse_terminated(Ident::parse)?;
         let span = params_stream.span();
         let params: Vec<_> = params_punct.into_iter().collect();
-        if params.len() == 0 {
+        if params.is_empty() {
             return Err(syn::Error::new(
                 span,
                 "need at least one argument for query context",
@@ -426,6 +426,7 @@ impl ForeignPredicateDefinitionImpl for NondetForeignPredicateDefinition {
                         let mut terms: [std::mem::MaybeUninit<#crt::term::Term>;#known_arity] =
                             std::mem::MaybeUninit::uninit().assume_init();
 
+                        #[allow(clippy::reversed_empty_ranges)]
                         for i in 0..#known_arity {
                             let term_ref = context.wrap_term_ref(term+i);
                             terms[i] = std::mem::MaybeUninit::new(term_ref);

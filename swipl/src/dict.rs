@@ -113,6 +113,12 @@ pub struct DictBuilder<'a> {
     entries: HashMap<Key, Option<Box<dyn TermPutable + 'a>>>,
 }
 
+impl<'a> Default for DictBuilder<'a> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<'a> DictBuilder<'a> {
     /// Create a new dictionary builder.
     pub fn new() -> Self {
@@ -222,13 +228,7 @@ unsafe impl<'a> TermPutable for DictBuilder<'a> {
         };
 
         unsafe {
-            fli::PL_put_dict(
-                term.term_ptr(),
-                0,
-                len as fli::size_t,
-                key_atoms.as_ptr(),
-                value_terms,
-            );
+            fli::PL_put_dict(term.term_ptr(), 0, len, key_atoms.as_ptr(), value_terms);
 
             fli::PL_unify_arg(1, term.term_ptr(), tag_term.term_ptr());
 

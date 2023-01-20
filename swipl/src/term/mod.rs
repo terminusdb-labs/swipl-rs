@@ -142,6 +142,8 @@ impl<'a> Term<'a> {
     }
 
     /// Reset terms created after this term, including this term itself.
+    ///
+    /// # Safety
     /// Only safe to call when you're sure these terms aren't used afterwards.
     pub unsafe fn reset(&self) {
         self.assert_term_handling_possible();
@@ -354,14 +356,13 @@ impl<'a> Term<'a> {
         }
 
         let arg = unsafe { Term::new(arg_ref, self.origin.clone()) };
-        let result2;
-        if result != 0 {
-            result2 = arg.get_ex();
+        let result2 = if result != 0 {
+            arg.get_ex()
         } else {
             let context = unsafe { unmanaged_engine_context() };
             let exception_term = term! {context: error(arity_error, _)};
-            result2 = exception_term.and_then(|t| context.raise_exception(&t));
-        }
+            exception_term.and_then(|t| context.raise_exception(&t))
+        };
 
         unsafe { PL_reset_term_refs(arg_ref) };
 
@@ -384,9 +385,7 @@ impl<'a> Term<'a> {
                 self.term,
                 &mut len,
                 &mut ptr,
-                (CVT_STRING | REP_UTF8 | BUF_DISCARDABLE)
-                    .try_into()
-                    .unwrap(),
+                CVT_STRING | REP_UTF8 | BUF_DISCARDABLE,
             )
         };
 
@@ -397,8 +396,7 @@ impl<'a> Term<'a> {
         let arg = if result == 0 {
             None
         } else {
-            let swipl_string_ref =
-                unsafe { std::slice::from_raw_parts(ptr as *const u8, len as usize) };
+            let swipl_string_ref = unsafe { std::slice::from_raw_parts(ptr as *const u8, len) };
 
             let swipl_string = std::str::from_utf8(swipl_string_ref).unwrap();
 
@@ -436,7 +434,7 @@ impl<'a> Term<'a> {
                 self.term,
                 &mut len,
                 &mut ptr,
-                (CVT_ATOM | REP_UTF8 | BUF_DISCARDABLE).try_into().unwrap(),
+                CVT_ATOM | REP_UTF8 | BUF_DISCARDABLE,
             )
         };
 
@@ -447,8 +445,7 @@ impl<'a> Term<'a> {
         let arg = if result == 0 {
             None
         } else {
-            let swipl_string_ref =
-                unsafe { std::slice::from_raw_parts(ptr as *const u8, len as usize) };
+            let swipl_string_ref = unsafe { std::slice::from_raw_parts(ptr as *const u8, len) };
 
             let swipl_string = std::str::from_utf8(swipl_string_ref).unwrap();
 
@@ -523,13 +520,7 @@ impl<'a> PartialOrd for Term<'a> {
 
         let result = unsafe { PL_compare(self.term_ptr(), other.term_ptr()) };
 
-        Some(if result < 0 {
-            Ordering::Less
-        } else if result == 0 {
-            Ordering::Equal
-        } else {
-            Ordering::Greater
-        })
+        Some(result.cmp(&0))
     }
 }
 
@@ -571,6 +562,7 @@ impl<'a> TermOrigin<'a> {
 
 /// Trait for term unification.
 ///
+/// # Safety
 /// This is marked unsafe because in order to do term unification, we
 /// must be sure that
 /// - the term is created on the engine which is currently active
@@ -597,6 +589,7 @@ unsafe impl<T: Unifiable> Unifiable for &T {
 
 /// Trait for getting data from a term reference.
 ///
+/// # Safety
 /// This is marked unsafe because in order to do term getting, we
 /// must be sure that
 /// - the term is created on the engine which is currently active
@@ -624,6 +617,7 @@ pub unsafe trait TermGetable: Sized {
 /// entirely. This is a non-logical operation that doesn't play nice
 /// with backtracking. You're generally better off using unification.
 ///
+/// # Safety
 /// This is marked unsafe because in order to do term putting, we
 /// must be sure that
 /// - the term is created on the engine which is currently active
@@ -973,7 +967,7 @@ unifiable! {
         let result = unsafe { PL_unify_chars(
             term.term_ptr(),
             (PL_STRING | REP_UTF8).try_into().unwrap(),
-            self.len().try_into().unwrap(),
+            self.len(),
             self.as_bytes().as_ptr() as *const c_char,
         )
         };
@@ -987,7 +981,7 @@ unifiable! {
         let result = unsafe { PL_unify_chars(
             term.term_ptr(),
             (PL_STRING | REP_UTF8).try_into().unwrap(),
-            self.len().try_into().unwrap(),
+            self.len(),
             self.as_bytes().as_ptr() as *const c_char,
         )
         };
@@ -1011,7 +1005,7 @@ term_putable! {
         unsafe { PL_put_chars(
             term.term_ptr(),
             (PL_STRING | REP_UTF8).try_into().unwrap(),
-            self.len().try_into().unwrap(),
+            self.len(),
             self.as_bytes().as_ptr() as *const c_char,
         )
         };
@@ -1023,7 +1017,7 @@ term_putable! {
         unsafe { PL_put_chars(
             term.term_ptr(),
             (PL_STRING | REP_UTF8).try_into().unwrap(),
-            self.len().try_into().unwrap(),
+            self.len(),
             self.as_bytes().as_ptr() as *const c_char,
         )
         };
@@ -1032,7 +1026,7 @@ term_putable! {
 
 unifiable! {
     (self: &[u8], term) => {
-        let result = unsafe { PL_unify_string_nchars(term.term_ptr(), self.len() as size_t, self.as_ptr() as *const std::os::raw::c_char) };
+        let result = unsafe { PL_unify_string_nchars(term.term_ptr(), self.len(), self.as_ptr() as *const std::os::raw::c_char) };
 
         result != 0
     }
@@ -1047,8 +1041,8 @@ term_getable! {
             return None;
         }
 
-        let slice = unsafe { std::slice::from_raw_parts(string_ptr as *const u8, len as usize) };
-        let mut result: Vec<u8> = Vec::with_capacity(len as usize);
+        let slice = unsafe { std::slice::from_raw_parts(string_ptr as *const u8, len) };
+        let mut result: Vec<u8> = Vec::with_capacity(len);
         result.extend_from_slice(slice);
 
         Some(result)
@@ -1057,7 +1051,7 @@ term_getable! {
 
 term_putable! {
     (self: [u8], term) => {
-        unsafe { PL_put_string_nchars(term.term_ptr(), self.len() as size_t, self.as_ptr() as *const std::os::raw::c_char) };
+        unsafe { PL_put_string_nchars(term.term_ptr(), self.len(), self.as_ptr() as *const std::os::raw::c_char) };
     }
 
 }
@@ -1221,7 +1215,7 @@ mod tests {
         let term2 = context.new_term_ref();
         assert!(term1.unify(42_u64).is_ok());
         assert!(term2.unify(43_u64).is_ok());
-        assert!(!term1.unify(&term2).is_ok());
+        assert!(term1.unify(&term2).is_err());
     }
 
     #[test]
@@ -1232,7 +1226,7 @@ mod tests {
 
         let term = context.new_term_ref();
         assert!(term.unify(42_u64).is_ok());
-        assert!(!term.unify(43_u64).is_ok());
+        assert!(term.unify(43_u64).is_err());
     }
 
     #[test]
@@ -1257,10 +1251,10 @@ mod tests {
         let term1 = context.new_term_ref();
         assert!(term1.get::<bool>().unwrap_err().is_failure());
         term1.unify(true).unwrap();
-        assert_eq!(true, term1.get::<bool>().unwrap());
+        assert!(term1.get::<bool>().unwrap());
         let term2 = context.new_term_ref();
         term2.unify(false).unwrap();
-        assert_eq!(false, term2.get::<bool>().unwrap());
+        assert!(!term2.get::<bool>().unwrap());
     }
 
     #[test]
@@ -1510,7 +1504,7 @@ mod tests {
         let result: PrologResult<u64> = term.get_arg_ex(1);
         assert_eq!(PrologError::Exception, result.err().unwrap());
         assert!(context.has_exception());
-        context.with_exception(|e| println!("{}", context.string_from_term(&e.unwrap()).unwrap()));
+        context.with_exception(|e| println!("{}", context.string_from_term(e.unwrap()).unwrap()));
         context.with_exception(|e| e.unwrap().unify(&expected).unwrap());
     }
 

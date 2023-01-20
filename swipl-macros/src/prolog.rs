@@ -1,5 +1,4 @@
 use crate::util::*;
-use proc_macro;
 use proc_macro2::{self, Span, TokenStream};
 use quote::quote;
 use syn::parse::{Parse, ParseStream, Result};
@@ -13,8 +12,7 @@ pub fn prolog_macro(stream: proc_macro::TokenStream) -> proc_macro::TokenStream 
         .into_iter()
         .map(|p| p.into_definition());
     let gen = quote! {#(#definitions)*};
-    let result = gen.into();
-    result
+    gen.into()
 }
 
 struct PrologPredicate {

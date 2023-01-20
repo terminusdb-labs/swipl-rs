@@ -7,11 +7,11 @@ fn set_library_path(command: &mut Command) {
     let info = get_swipl_info();
 
     if cfg!(target_os = "windows") {
-        let path = env::var("PATH").unwrap_or("".to_owned());
+        let path = env::var("PATH").unwrap_or_else(|_|"".to_owned());
         let path = format!("{};{}", info.lib_dir, path);
         command.env("PATH", path);
     } else {
-        let ld_library_path = env::var("LD_LIBRARY_PATH").unwrap_or("".to_owned());
+        let ld_library_path = env::var("LD_LIBRARY_PATH").unwrap_or_else(|_|"".to_owned());
         let ld_library_path = format!("{}:{}", info.lib_dir, ld_library_path);
         command.env("LD_LIBRARY_PATH", ld_library_path);
     }
@@ -20,7 +20,7 @@ fn set_library_path(command: &mut Command) {
 }
 
 fn subcmd(subcommand: &ArgMatches, cmd: &str) {
-    let cargo = env::var("CARGO").unwrap_or("cargo".to_owned());
+    let cargo = env::var("CARGO").unwrap_or_else(|_|"cargo".to_owned());
     let mut command = Command::new(cargo);
 
     set_library_path(&mut command);
@@ -55,7 +55,7 @@ fn arbitrary_command(subcommand: &ArgMatches) {
             std::process::exit(1);
         }
         let command_name = first.unwrap();
-        let mut command = Command::new(&command_name);
+        let mut command = Command::new(command_name);
         set_library_path(&mut command);
         let rest: Vec<_> = m.collect();
         command.args(rest);

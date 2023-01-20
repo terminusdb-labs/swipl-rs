@@ -9,7 +9,7 @@ use serde::{self, ser, Serialize};
 
 use std::cell::Cell;
 
-pub(crate) const ATOM_STRUCT_NAME: &'static str = "$swipl::private::atom";
+pub(crate) const ATOM_STRUCT_NAME: &str = "$swipl::private::atom";
 
 impl ser::Error for Error {
     fn custom<T>(c: T) -> Self
@@ -76,6 +76,12 @@ pub struct SerializerConfiguration {
     tag_struct_dicts: bool,
 }
 
+impl Default for SerializerConfiguration {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SerializerConfiguration {
     /// Create a new SerializerConfiguration.
     pub fn new() -> Self {
@@ -92,7 +98,6 @@ impl SerializerConfiguration {
     pub fn set_default_tag<A: AsAtom>(&mut self, tag: A) {
         self.default_tag = Some(tag.as_atom());
     }
-
 
     /// Set the default tag to use for dictionaries.
     ///
@@ -250,22 +255,17 @@ impl<'a, C: QueryableContextType> serde::Serializer for Serializer<'a, C> {
     {
         if name == ATOM_STRUCT_NAME {
             value.serialize(AtomEmitter(self.term))
-        } else {
-            if attempt(self.term.unify(Functor::new(name, 1)))? {
-                let [term] = attempt_opt(self.context.compound_terms(&self.term))?.expect("having just unified the functor with arity 1, retrieving its argument list should have been possible");
-                let inner_serializer = Serializer::new_with_config(
-                    self.context,
-                    term.clone(),
-                    self.configuration.clone(),
-                );
-                let result = value.serialize(inner_serializer);
-                unsafe {
-                    term.reset();
-                }
-                result
-            } else {
-                Err(Error::UnificationFailed)
+        } else if attempt(self.term.unify(Functor::new(name, 1)))? {
+            let [term] = attempt_opt(self.context.compound_terms(&self.term))?.expect("having just unified the functor with arity 1, retrieving its argument list should have been possible");
+            let inner_serializer =
+                Serializer::new_with_config(self.context, term.clone(), self.configuration.clone());
+            let result = value.serialize(inner_serializer);
+            unsafe {
+                term.reset();
             }
+            result
+        } else {
+            Err(Error::UnificationFailed)
         }
     }
     fn serialize_newtype_variant<T: ?Sized>(
@@ -354,12 +354,11 @@ impl<'a, C: QueryableContextType> serde::Serializer for Serializer<'a, C> {
         name: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeStruct, Self::Error> {
-        let tag;
-        if self.configuration.tag_struct_dicts {
-            tag = Some(name);
+        let tag = if self.configuration.tag_struct_dicts {
+            Some(name)
         } else {
-            tag = None;
-        }
+            None
+        };
         Ok(SerializeMap::new(
             self.context,
             self.term,
@@ -397,7 +396,6 @@ impl SerializingSwiplTermState {
             sst.set(true)
         });
 
-
         Self
     }
 
@@ -412,7 +410,6 @@ impl Drop for SerializingSwiplTermState {
     }
 }
 
-
 impl ser::Serialize for Atom {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -420,8 +417,7 @@ impl ser::Serialize for Atom {
     {
         if SerializingSwiplTermState::is_serializing_swipl_term() {
             serializer.serialize_newtype_struct(ATOM_STRUCT_NAME, &self.atom_ptr())
-        }
-        else {
+        } else {
             serializer.serialize_newtype_struct(ATOM_STRUCT_NAME, &self.name())
         }
     }
@@ -429,7 +425,7 @@ impl ser::Serialize for Atom {
 
 struct AtomEmitter<'a>(Term<'a>);
 
-fn attempt_unify_atom<'a>(term: &Term<'a>, atom_ptr: usize) -> Result<(), Error> {
+fn attempt_unify_atom(term: &Term, atom_ptr: usize) -> Result<(), Error> {
     let atom = unsafe { Atom::wrap(atom_ptr) };
     let result = attempt_unify(term, &atom);
     std::mem::forget(atom);
@@ -1006,7 +1002,7 @@ impl<'a> ser::Serializer for KeyEmitter<'a> {
             atom.increment_refcount();
             *self.key = Some(Key::Atom(atom));
         } else {
-            *self.key = Some(Key::Int(v as u64));
+            *self.key = Some(Key::Int(v));
         }
         Ok(())
     }

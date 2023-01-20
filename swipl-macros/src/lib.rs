@@ -46,7 +46,7 @@ use proc_macro::TokenStream;
 /// ```
 #[proc_macro]
 pub fn prolog(stream: TokenStream) -> TokenStream {
-    prolog::prolog_macro(stream).into()
+    prolog::prolog_macro(stream)
 }
 
 /// Generate an inline callable predicate.
@@ -69,7 +69,7 @@ pub fn prolog(stream: TokenStream) -> TokenStream {
 /// ```
 #[proc_macro]
 pub fn pred(stream: TokenStream) -> TokenStream {
-    pred::pred_macro(stream).into()
+    pred::pred_macro(stream)
 }
 
 /// Define foreign predicates written in rust for use in prolog.
@@ -229,7 +229,7 @@ pub fn pred(stream: TokenStream) -> TokenStream {
 /// ```
 #[proc_macro]
 pub fn predicates(stream: TokenStream) -> TokenStream {
-    predicate::predicates_macro(stream).into()
+    predicate::predicates_macro(stream)
 }
 
 /// Generate a term from a rust expression.
@@ -263,7 +263,7 @@ pub fn predicates(stream: TokenStream) -> TokenStream {
 /// ```
 #[proc_macro]
 pub fn term(stream: TokenStream) -> TokenStream {
-    term::term_macro(stream).into()
+    term::term_macro(stream)
 }
 
 /// Define an arc blob.

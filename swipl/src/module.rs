@@ -25,6 +25,7 @@ unsafe impl Sync for Module {}
 impl Module {
     /// Wrap a `module_t`, which is how the SWI-Prolog fli represents modules.
     ///
+    /// # Safety
     /// This is unsafe because no check is done to ensure that the
     /// module_t indeed points at a valid module. The caller will have
     /// to ensure that this is the case.

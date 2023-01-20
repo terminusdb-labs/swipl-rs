@@ -27,18 +27,12 @@ pub enum PrologError {
 impl PrologError {
     /// Returns true if this error is a failure.
     pub fn is_failure(&self) -> bool {
-        match self {
-            PrologError::Failure => true,
-            _ => false,
-        }
+        matches!(self, PrologError::Failure)
     }
 
     /// Returns true if this error is an exception.
     pub fn is_exception(&self) -> bool {
-        match self {
-            PrologError::Exception => true,
-            _ => false,
-        }
+        matches!(self, PrologError::Exception)
     }
 }
 
@@ -140,8 +134,8 @@ pub enum PrologStringError {
 
 pub type PrologStringResult<T> = Result<T, PrologStringError>;
 
-pub fn result_to_string_result<'a, C: QueryableContextType, T>(
-    c: &Context<'a, C>,
+pub fn result_to_string_result<C: QueryableContextType, T>(
+    c: &Context<C>,
     r: PrologResult<T>,
 ) -> PrologStringResult<T> {
     match r {
@@ -165,18 +159,19 @@ pub fn result_to_string_result<'a, C: QueryableContextType, T>(
                     "prolog had the following exception: {}",
                     s
                 ))),
-                Err(PrologError::Failure) => Err(PrologStringError::Exception(format!(
-                    "prolog failed while retrieving string from previous error"
-                ))),
-                Err(PrologError::Exception) => Err(PrologStringError::Exception(format!(
+                Err(PrologError::Failure) => Err(PrologStringError::Exception(
+                    "prolog failed while retrieving string from previous error".to_string(),
+                )),
+                Err(PrologError::Exception) => Err(PrologStringError::Exception(
                     "prolog threw exception while retrieving string from previous error"
-                ))),
+                        .to_string(),
+                )),
             }
         }
     }
 }
 
-pub fn unwrap_result<'a, C: QueryableContextType, T>(c: &Context<'a, C>, r: PrologResult<T>) -> T {
+pub fn unwrap_result<C: QueryableContextType, T>(c: &Context<C>, r: PrologResult<T>) -> T {
     match result_to_string_result(c, r) {
         Ok(r) => r,
         Err(PrologStringError::Failure) => panic!("prolog failed"),

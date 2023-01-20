@@ -58,13 +58,12 @@ pub fn get_swipl_info() -> SwiplInfo {
 
     let version: u32 = String::from_utf8_lossy(&output.stdout).parse().unwrap();
 
-    let build_env_command: &str;
-    if version >= 80504 {
+    let build_env_command = if version >= 80504 {
         // build_environment predicate moved and is now called somewhat differently
-        build_env_command = "use_module(library(build/tools)), build_tools:build_environment(Env, []), memberchk('SWIHOME'=Swihome, Env), memberchk('PACKSODIR'=Packsodir, Env), memberchk('CFLAGS'=Cflags, Env), memberchk('LDSOFLAGS'=Ldflags, Env), format('~s~n~s~n~s~n~s~n', [Swihome, Packsodir, Cflags, Ldflags])";
+        "use_module(library(build/tools)), build_tools:build_environment(Env, []), memberchk('SWIHOME'=Swihome, Env), memberchk('PACKSODIR'=Packsodir, Env), memberchk('CFLAGS'=Cflags, Env), memberchk('LDSOFLAGS'=Ldflags, Env), format('~s~n~s~n~s~n~s~n', [Swihome, Packsodir, Cflags, Ldflags])"
     } else {
-        build_env_command = "use_module(library(prolog_pack)), prolog_pack:build_environment(Env), memberchk('SWIHOME'=Swihome, Env), memberchk('PACKSODIR'=Packsodir, Env), memberchk('CFLAGS'=Cflags, Env), memberchk('LDSOFLAGS'=Ldflags, Env), format('~s~n~s~n~s~n~s~n', [Swihome, Packsodir, Cflags, Ldflags])";
-    }
+        "use_module(library(prolog_pack)), prolog_pack:build_environment(Env), memberchk('SWIHOME'=Swihome, Env), memberchk('PACKSODIR'=Packsodir, Env), memberchk('CFLAGS'=Cflags, Env), memberchk('LDSOFLAGS'=Ldflags, Env), format('~s~n~s~n~s~n~s~n', [Swihome, Packsodir, Cflags, Ldflags])"
+    };
 
     let output = Command::new(&swipl_path)
         .arg("-g")
@@ -101,12 +100,11 @@ pub fn get_swipl_info() -> SwiplInfo {
     let cflags = lines.next().unwrap().to_owned();
     let ldflags = lines.next().unwrap().to_owned();
 
-    let lib_name;
-    if cfg!(target_os = "windows") {
-        lib_name = "libswipl".to_string();
+    let lib_name = if cfg!(target_os = "windows") {
+        "libswipl".to_string()
     } else {
-        lib_name = "swipl".to_string();
-    }
+        "swipl".to_string()
+    };
 
     let header_dir = format!("{}/include", swi_home);
 

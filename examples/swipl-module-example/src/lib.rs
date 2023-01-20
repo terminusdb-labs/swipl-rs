@@ -110,7 +110,7 @@ predicates! {
     semidet fn stream_write_hello(context, stream_term) {
         let mut stream: WritablePrologStream = stream_term.get()?;
 
-        context.try_or_die(write!(stream, "こんにちは! 🫡\n"))
+        context.try_or_die(writeln!(stream, "こんにちは! 🫡"))
     }
 }
 

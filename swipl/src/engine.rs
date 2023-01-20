@@ -57,6 +57,7 @@ const PL_ENGINE_CURRENT: PL_engine_t = 2 as PL_engine_t;
 
 /// Returns the current engine pointer.
 ///
+/// # Safety
 /// This is unsafe because behavior of this function is undefined if
 /// SWI-Prolog has not yet been activated.
 pub unsafe fn current_engine_ptr() -> PL_engine_t {
@@ -66,6 +67,12 @@ pub unsafe fn current_engine_ptr() -> PL_engine_t {
     PL_set_engine(PL_ENGINE_CURRENT, &mut current);
 
     current
+}
+
+impl Default for Engine {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl Engine {
@@ -110,11 +117,7 @@ impl Engine {
         // unsafe justification: swipl was shown to be initialized above so engine should be queryable
         let current = unsafe { current_engine_ptr() };
 
-        if current.is_null() {
-            false
-        } else {
-            true
-        }
+        !current.is_null()
     }
 
     /// Returns true if this engine is the engine currently active on this thread.

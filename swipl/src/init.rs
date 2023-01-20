@@ -40,8 +40,8 @@ pub fn assert_swipl_is_initialized() {
     }
 }
 
-static ARG0: &'static [u8] = b"rust-swipl\0"; // fake program name
-static ARG1: &'static [u8] = b"--quiet\0"; // suppress swipl banner printing
+static ARG0: &[u8] = b"rust-swipl\0"; // fake program name
+static ARG1: &[u8] = b"--quiet\0"; // suppress swipl banner printing
 
 /// Initialize SWI-Prolog.
 ///
@@ -94,7 +94,7 @@ pub fn initialize_swipl_with_state(state: &'static [u8]) -> Option<EngineActivat
     // > to raise an exception.
     // - SWIPL FLI docs (footnote 208)
     // https://www.swi-prolog.org/pldoc/doc_for?object=c(%27PL_set_resource_db_mem%27)
-    let result = unsafe { PL_set_resource_db_mem(state.as_ptr(), state.len() as size_t) };
+    let result = unsafe { PL_set_resource_db_mem(state.as_ptr(), state.len()) };
 
     if result != TRUE as i32 {
         return None;
@@ -159,6 +159,10 @@ pub fn reactivate_swipl() -> EngineActivation<'static> {
 ///
 /// This function is used by the `predicates!` macro to implement
 /// predicate registration.
+///
+/// # Safety
+/// This is only safe to call for functions which implement a foreign
+/// predicate.
 pub unsafe fn register_foreign_in_module(
     module: Option<&str>,
     name: &str,
@@ -202,8 +206,6 @@ pub unsafe fn register_foreign_in_module(
         arity as c_int,
         Some(converted_function_ptr),
         flags.try_into().unwrap(),
-        c_meta
-            .map(|m| m.as_ptr())
-            .unwrap_or_else(|| std::ptr::null()),
+        c_meta.map(|m| m.as_ptr()).unwrap_or_else(std::ptr::null),
     ) == 1
 }

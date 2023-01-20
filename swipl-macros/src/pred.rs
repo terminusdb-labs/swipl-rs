@@ -1,4 +1,3 @@
-use proc_macro;
 use proc_macro2::Span;
 use quote::quote;
 use syn::parse::{Parse, ParseBuffer, Result};
@@ -11,7 +10,7 @@ pub fn pred_macro(stream: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let definition = parse_macro_input!(stream as Pred);
     let arity = definition.arity as usize;
 
-    let name_lit = LitStr::new(&definition.name.to_string(), definition.name_span);
+    let name_lit = LitStr::new(&definition.name, definition.name_span);
     let module_lit = match definition.module {
         Some(m) => LitStr::new(&m.0, m.1),
         None => LitStr::new("", Span::call_site()),
@@ -83,7 +82,7 @@ impl Parse for Pred {
                     name = module_and_name.to_string();
                 }
 
-                if name.len() == 0 {
+                if name.is_empty() {
                     return Err(syn::parse::Error::new(x.span(), "invalid predicate name"));
                 }
 

@@ -1,7 +1,6 @@
 use crate::kw;
 use crate::util::*;
 
-use proc_macro;
 use proc_macro2::{Span, TokenStream};
 use quote::{quote, ToTokens};
 use syn::parse::{Parse, ParseStream, Result};
@@ -37,14 +36,13 @@ pub fn arc_blob_macro(
     let blob_compare = Ident::new(&format!("__{}_blob_compare", item_name), Span::call_site());
     let blob_write = Ident::new(&format!("__{}_blob_write", item_name), Span::call_site());
 
-    let default_implementation;
-    if attr_def.defaults {
-        default_implementation = quote! {
+    let default_implementation = if attr_def.defaults {
+        quote! {
             impl #crt::blob::ArcBlobImpl for #item_name {}
-        };
+        }
     } else {
-        default_implementation = quote! {};
-    }
+        quote! {}
+    };
 
     let result = quote! {
         #item_def
@@ -55,18 +53,22 @@ pub fn arc_blob_macro(
             }
         }
 
+        #[allow(non_upper_case_globals)]
         static #blob_definition_ident: std::sync::atomic::AtomicPtr<#crt::fli::PL_blob_t> = std::sync::atomic::AtomicPtr::new(std::ptr::null_mut());
 
+        #[allow(non_snake_case)]
         unsafe extern "C" fn #blob_acquire(a: #crt::fli::atom_t) {
             #crt::blob::acquire_arc_blob::<#item_name>(a);
         }
 
+        #[allow(non_snake_case)]
         unsafe extern "C" fn #blob_release(a: #crt::fli::atom_t) -> std::os::raw::c_int {
             #crt::blob::release_arc_blob::<#item_name>(a);
 
             1
         }
 
+        #[allow(non_snake_case)]
         unsafe extern "C" fn #blob_compare(a: #crt::fli::atom_t, b: #crt::fli::atom_t)->std::os::raw::c_int {
             match #crt::context::prolog_catch_unwind(||{
                 let a_val = #crt::fli::PL_blob_data(a,
@@ -86,6 +88,7 @@ pub fn arc_blob_macro(
             }
         }
 
+        #[allow(non_snake_case)]
         unsafe extern "C" fn #blob_write(s: *mut #crt::fli::IOSTREAM,
                                          a: #crt::fli::atom_t,
                                          _flags: std::os::raw::c_int)
@@ -134,7 +137,7 @@ pub fn arc_blob_macro(
                     definition = #blob_definition_ident.load(std::sync::atomic::Ordering::Relaxed);
                 }
 
-                unsafe { std::mem::transmute(definition) }
+                unsafe { &*definition }
             }
         }
 
@@ -169,14 +172,13 @@ pub fn wrapped_arc_blob_macro(item: proc_macro::TokenStream) -> proc_macro::Toke
     let blob_compare = Ident::new(&format!("__{}_blob_compare", item_name), Span::call_site());
     let blob_write = Ident::new(&format!("__{}_blob_write", item_name), Span::call_site());
 
-    let default_implementation;
-    if item_def.defaults {
-        default_implementation = quote! {
+    let default_implementation = if item_def.defaults {
+        quote! {
             impl #crt::blob::WrappedArcBlobImpl for #item_name {}
-        };
+        }
     } else {
-        default_implementation = quote! {};
-    }
+        quote! {}
+    };
 
     let result = quote! {
         #visibility struct #item_name(#visibility Arc<#inner_type_name>);
@@ -206,18 +208,22 @@ pub fn wrapped_arc_blob_macro(item: proc_macro::TokenStream) -> proc_macro::Toke
             }
         }
 
+        #[allow(non_upper_case_globals)]
         static #blob_definition_ident: std::sync::atomic::AtomicPtr<#crt::fli::PL_blob_t> = std::sync::atomic::AtomicPtr::new(std::ptr::null_mut());
 
+        #[allow(non_snake_case)]
         unsafe extern "C" fn #blob_acquire(a: #crt::fli::atom_t) {
             #crt::blob::acquire_arc_blob::<#inner_type_name>(a);
         }
 
+        #[allow(non_snake_case)]
         unsafe extern "C" fn #blob_release(a: #crt::fli::atom_t) -> std::os::raw::c_int {
             #crt::blob::release_arc_blob::<#inner_type_name>(a);
 
             1
         }
 
+        #[allow(non_snake_case)]
         unsafe extern "C" fn #blob_compare(a: #crt::fli::atom_t, b: #crt::fli::atom_t)->std::os::raw::c_int {
             match #crt::context::prolog_catch_unwind(||{
                 let a_val = #crt::fli::PL_blob_data(a,
@@ -237,6 +243,7 @@ pub fn wrapped_arc_blob_macro(item: proc_macro::TokenStream) -> proc_macro::Toke
             }
         }
 
+        #[allow(non_snake_case)]
         unsafe extern "C" fn #blob_write(s: *mut #crt::fli::IOSTREAM,
                                          a: #crt::fli::atom_t,
                                          _flags: std::os::raw::c_int)
@@ -285,7 +292,7 @@ pub fn wrapped_arc_blob_macro(item: proc_macro::TokenStream) -> proc_macro::Toke
                     definition = #blob_definition_ident.load(std::sync::atomic::Ordering::Relaxed);
                 }
 
-                unsafe { std::mem::transmute(definition) }
+                unsafe { &*definition }
             }
         }
 
@@ -348,14 +355,13 @@ pub fn clone_blob_macro(
     let blob_compare = Ident::new(&format!("__{}_blob_compare", item_name), Span::call_site());
     let blob_write = Ident::new(&format!("__{}_blob_write", item_name), Span::call_site());
 
-    let default_implementation;
-    if attr_def.defaults {
-        default_implementation = quote! {
+    let default_implementation = if attr_def.defaults {
+        quote! {
             impl #crt::blob::CloneBlobImpl for #item_name {}
-        };
+        }
     } else {
-        default_implementation = quote! {};
-    }
+        quote! {}
+    };
 
     let result = quote! {
         #item_def
@@ -366,14 +372,17 @@ pub fn clone_blob_macro(
             }
         }
 
+        #[allow(non_upper_case_globals)]
         static #blob_definition_ident: std::sync::atomic::AtomicPtr<#crt::fli::PL_blob_t> = std::sync::atomic::AtomicPtr::new(std::ptr::null_mut());
 
+        #[allow(non_snake_case)]
         unsafe extern "C" fn #blob_release(a: #crt::fli::atom_t) -> std::os::raw::c_int {
             #crt::blob::release_clone_blob::<#item_name>(a);
 
             1
         }
 
+        #[allow(non_snake_case)]
         unsafe extern "C" fn #blob_compare(a: #crt::fli::atom_t, b: #crt::fli::atom_t)->std::os::raw::c_int {
             match #crt::context::prolog_catch_unwind(|| {
                 let a_val = #crt::fli::PL_blob_data(a,
@@ -393,6 +402,7 @@ pub fn clone_blob_macro(
             }
         }
 
+        #[allow(non_snake_case)]
         unsafe extern "C" fn #blob_write(s: *mut #crt::fli::IOSTREAM,
                                          a: #crt::fli::atom_t,
                                          _flags: std::os::raw::c_int)
@@ -441,7 +451,7 @@ pub fn clone_blob_macro(
                     definition = #blob_definition_ident.load(std::sync::atomic::Ordering::Relaxed);
                 }
 
-                unsafe { std::mem::transmute(definition) }
+                unsafe { &*definition }
             }
         }
 
@@ -484,12 +494,11 @@ pub fn wrapped_clone_blob_macro(item: proc_macro::TokenStream) -> proc_macro::To
     let visibility = &item_def.visibility;
     let inner_type_name = &item_def.inner_type;
 
-    let attr;
-    if item_def.defaults {
-        attr = quote! {#[clone_blob(#name_lit, defaults)]};
+    let attr = if item_def.defaults {
+        quote! {#[clone_blob(#name_lit, defaults)]}
     } else {
-        attr = quote! {#[clone_blob(#name_lit)]};
-    }
+        quote! {#[clone_blob(#name_lit)]}
+    };
 
     let result = quote! {
         #attr
@@ -517,14 +526,13 @@ impl Parse for ArcBlobAttr {
     fn parse(input: ParseStream) -> Result<Self> {
         let name = input.parse()?;
 
-        let defaults;
-        if input.peek(Token![,]) {
+        let defaults = if input.peek(Token![,]) {
             input.parse::<Token![,]>()?;
             input.parse::<kw::defaults>()?;
-            defaults = true;
+            true
         } else {
-            defaults = false;
-        }
+            false
+        };
 
         Ok(Self { name, defaults })
     }
@@ -583,14 +591,13 @@ impl Parse for WrappedArcBlobItem {
         input.parse::<Token![,]>()?;
         let inner_type = input.parse()?;
 
-        let defaults;
-        if input.peek(Token![,]) {
+        let defaults = if input.peek(Token![,]) {
             input.parse::<Token![,]>()?;
             input.parse::<kw::defaults>()?;
-            defaults = true;
+            true
         } else {
-            defaults = false;
-        }
+            false
+        };
 
         Ok(Self {
             visibility,
