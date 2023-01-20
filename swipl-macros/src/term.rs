@@ -1,4 +1,3 @@
-use proc_macro;
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
 use std::collections::HashMap;
@@ -142,7 +141,7 @@ impl Leaf {
                 Self::Int(i) => {
                     // terrible, but necessary?
                     let int_str = format!("{}", i);
-                    if int_str.chars().next().unwrap() == '-' {
+                    if int_str.starts_with('-') {
                         quote! {#into.unify(#i as i64)?;}
                     } else {
                         quote! {#into.unify(#i as u64)?;}
@@ -437,12 +436,11 @@ impl Tuple {
         };
 
         let mut terms_chain = Vec::with_capacity(len);
-        for i in 0..(len - 1) {
+        for term_ident in term_idents.iter() {
             // for each element except the last one, we need to
             // - unify comma functor with current
             // - unify element with first
             // - make current the second element
-            let term_ident = &term_idents[i];
             terms_chain.push(quote! {
                 cur_ident.unify(&comma_functor)?;
                 cur_ident.unify_arg(1, &#term_ident)?;
@@ -478,7 +476,7 @@ impl Parse for Tuple {
         let terms_punct: Punctuated<Term, Token![,]> =
             terms_stream.parse_terminated(Term::parse)?;
         let terms: Vec<_> = terms_punct.into_iter().collect();
-        if terms.len() == 0 {
+        if terms.is_empty() {
             terms_stream
                 .error("parenthesized list of expressions should contain at least one element");
         }

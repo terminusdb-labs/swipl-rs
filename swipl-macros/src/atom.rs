@@ -1,4 +1,3 @@
-use proc_macro;
 use proc_macro2::Span;
 use quote::quote;
 use syn::parse::{Parse, ParseBuffer, Result};

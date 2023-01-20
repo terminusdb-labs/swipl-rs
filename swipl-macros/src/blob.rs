@@ -1,7 +1,6 @@
 use crate::kw;
 use crate::util::*;
 
-use proc_macro;
 use proc_macro2::{Span, TokenStream};
 use quote::{quote, ToTokens};
 use syn::parse::{Parse, ParseStream, Result};
@@ -37,14 +36,13 @@ pub fn arc_blob_macro(
     let blob_compare = Ident::new(&format!("__{}_blob_compare", item_name), Span::call_site());
     let blob_write = Ident::new(&format!("__{}_blob_write", item_name), Span::call_site());
 
-    let default_implementation;
-    if attr_def.defaults {
-        default_implementation = quote! {
+    let default_implementation = if attr_def.defaults {
+        quote! {
             impl #crt::blob::ArcBlobImpl for #item_name {}
-        };
+        }
     } else {
-        default_implementation = quote! {};
-    }
+        quote! {}
+    };
 
     let result = quote! {
         #item_def
@@ -169,14 +167,13 @@ pub fn wrapped_arc_blob_macro(item: proc_macro::TokenStream) -> proc_macro::Toke
     let blob_compare = Ident::new(&format!("__{}_blob_compare", item_name), Span::call_site());
     let blob_write = Ident::new(&format!("__{}_blob_write", item_name), Span::call_site());
 
-    let default_implementation;
-    if item_def.defaults {
-        default_implementation = quote! {
+    let default_implementation = if item_def.defaults {
+        quote! {
             impl #crt::blob::WrappedArcBlobImpl for #item_name {}
-        };
+        }
     } else {
-        default_implementation = quote! {};
-    }
+        quote! {}
+    };
 
     let result = quote! {
         #visibility struct #item_name(#visibility Arc<#inner_type_name>);
@@ -348,14 +345,13 @@ pub fn clone_blob_macro(
     let blob_compare = Ident::new(&format!("__{}_blob_compare", item_name), Span::call_site());
     let blob_write = Ident::new(&format!("__{}_blob_write", item_name), Span::call_site());
 
-    let default_implementation;
-    if attr_def.defaults {
-        default_implementation = quote! {
+    let default_implementation = if attr_def.defaults {
+        quote! {
             impl #crt::blob::CloneBlobImpl for #item_name {}
-        };
+        }
     } else {
-        default_implementation = quote! {};
-    }
+        quote! {}
+    };
 
     let result = quote! {
         #item_def
@@ -484,12 +480,11 @@ pub fn wrapped_clone_blob_macro(item: proc_macro::TokenStream) -> proc_macro::To
     let visibility = &item_def.visibility;
     let inner_type_name = &item_def.inner_type;
 
-    let attr;
-    if item_def.defaults {
-        attr = quote! {#[clone_blob(#name_lit, defaults)]};
+    let attr = if item_def.defaults {
+        quote! {#[clone_blob(#name_lit, defaults)]}
     } else {
-        attr = quote! {#[clone_blob(#name_lit)]};
-    }
+        quote! {#[clone_blob(#name_lit)]}
+    };
 
     let result = quote! {
         #attr
@@ -517,14 +512,13 @@ impl Parse for ArcBlobAttr {
     fn parse(input: ParseStream) -> Result<Self> {
         let name = input.parse()?;
 
-        let defaults;
-        if input.peek(Token![,]) {
+        let defaults = if input.peek(Token![,]) {
             input.parse::<Token![,]>()?;
             input.parse::<kw::defaults>()?;
-            defaults = true;
+            true
         } else {
-            defaults = false;
-        }
+            false
+        };
 
         Ok(Self { name, defaults })
     }
@@ -583,14 +577,13 @@ impl Parse for WrappedArcBlobItem {
         input.parse::<Token![,]>()?;
         let inner_type = input.parse()?;
 
-        let defaults;
-        if input.peek(Token![,]) {
+        let defaults = if input.peek(Token![,]) {
             input.parse::<Token![,]>()?;
             input.parse::<kw::defaults>()?;
-            defaults = true;
+            true
         } else {
-            defaults = false;
-        }
+            false
+        };
 
         Ok(Self {
             visibility,

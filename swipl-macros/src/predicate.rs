@@ -1,7 +1,6 @@
 use crate::kw;
 use crate::util::*;
 
-use proc_macro;
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
 use syn::parse::{Nothing, Parse, ParseStream, Result};
@@ -156,7 +155,7 @@ impl Parse for SemidetForeignPredicateDefinition {
             params_stream.parse_terminated(Ident::parse)?;
         let span = params_stream.span();
         let params: Vec<_> = params_punct.into_iter().collect();
-        if params.len() == 0 {
+        if params.is_empty() {
             return Err(syn::Error::new(
                 span,
                 "need at least one argument for query context",
@@ -321,7 +320,7 @@ impl Parse for NondetForeignPredicateDefinition {
             params_stream.parse_terminated(Ident::parse)?;
         let span = params_stream.span();
         let params: Vec<_> = params_punct.into_iter().collect();
-        if params.len() == 0 {
+        if params.is_empty() {
             return Err(syn::Error::new(
                 span,
                 "need at least one argument for query context",

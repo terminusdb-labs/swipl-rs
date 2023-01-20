@@ -1,4 +1,3 @@
-use proc_macro;
 use proc_macro2::Span;
 use quote::quote;
 use syn::parse::{Parse, ParseBuffer, Result};
@@ -52,7 +51,7 @@ impl Parse for Functor {
                         return Ok(Functor {
                             name: name.to_string(),
                             name_span: x.span(),
-                            arity: arity,
+                            arity,
                             arity_span: x.span(),
                         });
                     } else {
