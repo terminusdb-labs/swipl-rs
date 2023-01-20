@@ -36,6 +36,8 @@ jobs:
   clippy:
     needs:
       - is_duplicate_run
+    if: |
+      needs.is_duplicate_run.outputs.duplicate_run == 'false'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -49,6 +51,8 @@ jobs:
   build:
     needs:
       - is_duplicate_run
+    if: |
+      needs.is_duplicate_run.outputs.duplicate_run == 'false'
     strategy:
       fail-fast: false
       matrix:
