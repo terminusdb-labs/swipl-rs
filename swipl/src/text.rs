@@ -36,7 +36,7 @@ term_getable! {
         let mut s: *mut c_char = std::ptr::null_mut();
         let flags = fli::CVT_ATOM|fli::CVT_STRING|fli::BUF_DISCARDABLE|fli::REP_UTF8;
         let result = unsafe { fli::PL_get_nchars(term.term_ptr(),
-                                                 &mut len as *mut usize as *mut fli::size_t,
+                                                 &mut len as *mut usize,
                                                  &mut s,
                                                  flags) };
 

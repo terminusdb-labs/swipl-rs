@@ -364,7 +364,7 @@ pub unsafe fn unify_with_cloneable<T: Clone + Sized + Unpin>(
     let result = fli::PL_unify_blob(
         term.term_ptr(),
         &cloned as *const T as *mut c_void,
-        std::mem::size_of::<T>() as fli::size_t,
+        std::mem::size_of::<T>(),
         blob_definition as *const fli::PL_blob_t as *mut fli::PL_blob_t,
     );
 
@@ -489,7 +489,7 @@ pub unsafe fn put_cloneable_in_term<T: Clone + Sized + Unpin>(
     fli::PL_put_blob(
         term.term_ptr(),
         &cloned as *const T as *mut c_void,
-        std::mem::size_of::<T>() as fli::size_t,
+        std::mem::size_of::<T>(),
         blob_definition as *const fli::PL_blob_t as *mut fli::PL_blob_t,
     );
 

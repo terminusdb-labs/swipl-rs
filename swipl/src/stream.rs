@@ -87,7 +87,7 @@ unsafe fn write_to_prolog_stream(stream: *mut fli::IOSTREAM, buf: &[u8]) -> io::
         count = fli::Sfwrite(
             buf.as_ptr() as *const std::ffi::c_void,
             1,
-            buf.len() as fli::size_t,
+            buf.len(),
             stream,
         ) as usize;
 
@@ -218,12 +218,7 @@ unsafe fn ensure_readable_prolog_stream(stream: *mut fli::IOSTREAM) -> io::Resul
 unsafe fn read_from_prolog_stream(stream: *mut fli::IOSTREAM, buf: &mut [u8]) -> io::Result<usize> {
     ensure_readable_prolog_stream(stream)?;
 
-    let count = fli::Sfread(
-        buf.as_ptr() as *mut std::ffi::c_void,
-        1,
-        buf.len() as fli::size_t,
-        stream,
-    ) as usize;
+    let count = fli::Sfread(buf.as_ptr() as *mut std::ffi::c_void, 1, buf.len(), stream) as usize;
 
     let error = fli::Sferror(stream);
     if error == -1 {

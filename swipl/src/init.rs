@@ -94,7 +94,7 @@ pub fn initialize_swipl_with_state(state: &'static [u8]) -> Option<EngineActivat
     // > to raise an exception.
     // - SWIPL FLI docs (footnote 208)
     // https://www.swi-prolog.org/pldoc/doc_for?object=c(%27PL_set_resource_db_mem%27)
-    let result = unsafe { PL_set_resource_db_mem(state.as_ptr(), state.len() as size_t) };
+    let result = unsafe { PL_set_resource_db_mem(state.as_ptr(), state.len()) };
 
     if result != TRUE as i32 {
         return None;

@@ -222,13 +222,7 @@ unsafe impl<'a> TermPutable for DictBuilder<'a> {
         };
 
         unsafe {
-            fli::PL_put_dict(
-                term.term_ptr(),
-                0,
-                len as fli::size_t,
-                key_atoms.as_ptr(),
-                value_terms,
-            );
+            fli::PL_put_dict(term.term_ptr(), 0, len, key_atoms.as_ptr(), value_terms);
 
             fli::PL_unify_arg(1, term.term_ptr(), tag_term.term_ptr());
 
