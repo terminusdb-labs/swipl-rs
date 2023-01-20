@@ -35,6 +35,7 @@ pub struct Atom {
 impl Atom {
     /// Wrap an `atom_t`, which is how the SWI-Prolog fli represents atoms.
     ///
+    /// # Safety
     /// This is unsafe because no check is done to ensure that the
     /// atom_t indeed points at a valid atom. The caller will have to
     /// ensure that this is the case.
@@ -63,7 +64,7 @@ impl Atom {
             unsafe {
                 PL_new_atom_mbchars(
                     REP_UTF8.try_into().unwrap(),
-                    name.len().try_into().unwrap(),
+                    name.len(),
                     buf.as_ptr() as *const c_char,
                 )
             }
@@ -71,7 +72,7 @@ impl Atom {
             unsafe {
                 PL_new_atom_mbchars(
                     REP_UTF8.try_into().unwrap(),
-                    name.len().try_into().unwrap(),
+                    name.len(),
                     name.as_ptr() as *const c_char,
                 )
             }
@@ -116,13 +117,13 @@ impl Atom {
 
 impl ToString for Atom {
     fn to_string(&self) -> String {
-        self.name().to_owned()
+        self.name()
     }
 }
 
-impl Into<String> for Atom {
-    fn into(self) -> String {
-        self.to_string()
+impl From<Atom> for String {
+    fn from(atom: Atom) -> String {
+        atom.to_string()
     }
 }
 
@@ -153,10 +154,11 @@ unifiable! {
 
 /// Get an atom out of a term.
 ///
+/// # Safety
 /// This is unsafe because we don't check if the term is part of the
 /// active engine.
 #[allow(unused_unsafe)]
-pub unsafe fn get_atom<'a, F, R>(term: &Term<'a>, func: F) -> PrologResult<R>
+pub unsafe fn get_atom<F, R>(term: &Term, func: F) -> PrologResult<R>
 where
     F: Fn(Option<&Atom>) -> R,
 {
@@ -184,7 +186,7 @@ where
 
 term_getable! {
     (Atom, "atom", term) => {
-        match term.get_atom(|a| a.map(|a|a.clone())) {
+        match term.get_atom(|a| a.cloned()) {
             Ok(r) => r,
             // ignore this error - it'll be picked up again by the wrapper
             Err(_) => None
@@ -226,7 +228,7 @@ impl<'a> Atomable<'a> {
     pub fn name(&self) -> &str {
         match self {
             Self::Str(s) => s,
-            Self::String(s) => &s,
+            Self::String(s) => s,
         }
     }
 
@@ -345,7 +347,7 @@ unifiable! {
             PL_unify_chars(
                 term.term_ptr(),
                 (PL_ATOM | REP_UTF8).try_into().unwrap(),
-                self.name().len().try_into().unwrap(),
+                self.name().len(),
                 self.name().as_bytes().as_ptr() as *const c_char,
             )
         };
@@ -361,7 +363,7 @@ unifiable! {
 /// `Atomable`. This means the atom reference count does not have to
 /// be manipulated, and it should be slightly faster than first
 /// getting the atom and then extracting its name.
-pub fn get_atomable<'a, F, R>(term: &Term<'a>, func: F) -> PrologResult<R>
+pub fn get_atomable<F, R>(term: &Term, func: F) -> PrologResult<R>
 where
     F: Fn(Option<&Atomable>) -> R,
 {
@@ -373,7 +375,7 @@ where
             term.term_ptr(),
             &mut len,
             &mut ptr,
-            (CVT_ATOM | REP_UTF8 | BUF_DISCARDABLE).try_into().unwrap(),
+            CVT_ATOM | REP_UTF8 | BUF_DISCARDABLE,
         )
     };
 
@@ -384,8 +386,7 @@ where
     let arg = if result == 0 {
         None
     } else {
-        let swipl_string_ref =
-            unsafe { std::slice::from_raw_parts(ptr as *const u8, len as usize) };
+        let swipl_string_ref = unsafe { std::slice::from_raw_parts(ptr as *const u8, len) };
 
         let swipl_string = std::str::from_utf8(swipl_string_ref).unwrap();
         let atomable = Atomable::new(swipl_string);
@@ -416,7 +417,7 @@ term_putable! {
             PL_put_chars(
                 term.term_ptr(),
                 (PL_ATOM | REP_UTF8).try_into().unwrap(),
-                self.name().len().try_into().unwrap(),
+                self.name().len(),
                 self.name().as_bytes().as_ptr() as *const c_char,
             );
         }
@@ -554,7 +555,7 @@ mod tests {
 
         assert!(term.unify(&a1).is_ok());
         assert!(term.unify(a1).is_ok());
-        assert!(!term.unify(a2).is_ok());
+        assert!(term.unify(a2).is_err());
     }
 
     #[test]
@@ -571,8 +572,8 @@ mod tests {
         assert!(term.unify(atomable("foo")).is_ok());
         assert!(term.unify(atomable("foo")).is_ok());
         assert!(term.unify(a1).is_ok());
-        assert!(!term.unify(atomable("bar")).is_ok());
-        assert!(!term.unify(a2).is_ok());
+        assert!(term.unify(atomable("bar")).is_err());
+        assert!(term.unify(a2).is_err());
     }
 
     #[test]
@@ -590,7 +591,7 @@ mod tests {
 
         assert!(term.unify(&a1).is_ok());
         assert!(term.unify(&a1).is_ok());
-        assert!(!term.unify(&a2).is_ok());
+        assert!(term.unify(&a2).is_err());
     }
 
     #[test]

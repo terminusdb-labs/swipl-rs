@@ -16,6 +16,10 @@ pub struct PrologStream {
 
 impl PrologStream {
     /// Wrap the underlying fli object.
+    ///
+    /// # Safety
+    /// This is only safe to do with actual IOSTREAMs coming out of
+    /// SWI-Prolog.
     pub unsafe fn wrap(stream: *mut fli::IOSTREAM) -> Self {
         Self { stream }
     }
@@ -33,6 +37,11 @@ pub struct WritablePrologStream<'a> {
 }
 
 impl<'a> WritablePrologStream<'a> {
+    /// Wrap a writable prolog stream.
+    ///
+    /// # Safety
+    /// This is only safe to do with actual IOSTREAMs coming out of
+    /// SWI-Prolog, which are writable.
     pub unsafe fn new(stream: *mut fli::IOSTREAM) -> WritablePrologStream<'a> {
         WritablePrologStream {
             stream,
@@ -89,7 +98,7 @@ unsafe fn write_to_prolog_stream(stream: *mut fli::IOSTREAM, buf: &[u8]) -> io::
             1,
             buf.len(),
             stream,
-        ) as usize;
+        );
 
         let error = fli::Sferror(stream);
         if error == -1 {
@@ -129,9 +138,7 @@ impl<'a> Write for WritablePrologStream<'a> {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
         assert_some_engine_is_active();
 
-        let result = unsafe { write_to_prolog_stream(self.stream, buf) };
-
-        result
+        unsafe { write_to_prolog_stream(self.stream, buf) }
     }
 
     fn flush(&mut self) -> io::Result<()> {
@@ -172,6 +179,11 @@ pub struct ReadablePrologStream<'a> {
 }
 
 impl<'a> ReadablePrologStream<'a> {
+    /// Wrap a readable prolog stream.
+    ///
+    /// # Safety
+    /// This is only safe to do with actual IOSTREAMs coming out of
+    /// SWI-Prolog, which are readable.
     pub unsafe fn new(stream: *mut fli::IOSTREAM) -> ReadablePrologStream<'a> {
         ReadablePrologStream {
             stream,
@@ -218,7 +230,7 @@ unsafe fn ensure_readable_prolog_stream(stream: *mut fli::IOSTREAM) -> io::Resul
 unsafe fn read_from_prolog_stream(stream: *mut fli::IOSTREAM, buf: &mut [u8]) -> io::Result<usize> {
     ensure_readable_prolog_stream(stream)?;
 
-    let count = fli::Sfread(buf.as_ptr() as *mut std::ffi::c_void, 1, buf.len(), stream) as usize;
+    let count = fli::Sfread(buf.as_ptr() as *mut std::ffi::c_void, 1, buf.len(), stream);
 
     let error = fli::Sferror(stream);
     if error == -1 {
@@ -235,8 +247,6 @@ impl<'a> Read for ReadablePrologStream<'a> {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         assert_some_engine_is_active();
 
-        let result = unsafe { read_from_prolog_stream(self.stream, buf) };
-
-        result
+        unsafe { read_from_prolog_stream(self.stream, buf) }
     }
 }

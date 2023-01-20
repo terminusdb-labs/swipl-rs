@@ -21,7 +21,7 @@ pub struct Record {
 
 impl Record {
     /// Extract a record from the given term.
-    pub fn from_term<'a>(term: &Term<'a>) -> Record {
+    pub fn from_term(term: &Term) -> Record {
         term.assert_term_handling_possible();
         unsafe {
             let record = fli::PL_record(term.term_ptr());
@@ -31,7 +31,7 @@ impl Record {
     }
 
     /// Copy the recorded term into the given term reference.
-    pub fn recorded<'a>(&self, term: &Term<'a>) -> PrologResult<()> {
+    pub fn recorded(&self, term: &Term) -> PrologResult<()> {
         term.assert_term_handling_possible();
         unsafe { into_prolog_result(fli::PL_recorded(self.record, term.term_ptr()) != 0) }
     }

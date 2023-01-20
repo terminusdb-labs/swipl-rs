@@ -228,6 +228,7 @@ use crate::term::*;
 ///
 /// This is used by the various blob macros. You'll almost never have
 /// to use this directly.
+#[allow(clippy::too_many_arguments)]
 pub fn create_blob_definition(
     name: &'static [u8],
     text: bool,
@@ -314,6 +315,7 @@ pub trait ArcBlobImpl: ArcBlobBase + Send + Sync + Unpin {
 /// A blob type whose data is shared with SWI-Prolog as an atomic
 /// reference-counted pointer.
 ///
+/// # Safety
 /// This is unsafe because care has to be taken that the returned
 /// `PL_blob_t` from `get_blob_definition` actually matches the blob
 /// type.
@@ -325,10 +327,11 @@ pub unsafe trait ArcBlob: ArcBlobImpl {
 /// Unify the term with the given `Arc`, using the given blob
 /// definition to do so.
 ///
+/// This is used from the arc blob macros.
+///
+/// # Safety
 /// This is unsafe cause no attempt is made to ensure that the blob
 /// definition matches the given data.
-///
-/// This is used from the arc blob macros.
 pub unsafe fn unify_with_arc<T>(
     term: &Term,
     blob_definition: &'static fli::PL_blob_t,
@@ -349,10 +352,11 @@ pub unsafe fn unify_with_arc<T>(
 /// Unify the term with the given Cloneable, using the given blob
 /// definition to do so.
 ///
+/// This is used from the clone blob macros.
+///
+/// # Safety
 /// This is unsafe cause no attempt is made to ensure that the blob
 /// definition matches the given data.
-///
-/// This is used from the clone blob macros.
 pub unsafe fn unify_with_cloneable<T: Clone + Sized + Unpin>(
     term: &Term,
     blob_definition: &'static fli::PL_blob_t,
@@ -379,10 +383,11 @@ pub unsafe fn unify_with_cloneable<T: Clone + Sized + Unpin>(
 /// Retrieve an arc from the given term, using the given blob
 /// definition.
 ///
+/// This is used from the arc blob macros.
+///
+/// # Safety
 /// This is unsafe cause no attempt is made to ensure that the blob
 /// definition matches the given data.
-///
-/// This is used from the arc blob macros.
 pub unsafe fn get_arc_from_term<T>(
     term: &Term,
     blob_definition: &'static fli::PL_blob_t,
@@ -416,10 +421,11 @@ pub unsafe fn get_arc_from_term<T>(
 /// Retrieve a cloneable value from the given term, using the given
 /// blob definition.
 ///
+/// This is used from the clone blob macros.
+///
+/// # Safety
 /// This is unsafe cause no attempt is made to ensure that the blob
 /// definition matches the given data.
-///
-/// This is used from the clone blob macros.
 pub unsafe fn get_cloned_from_term<T: Clone + Sized + Unpin>(
     term: &Term,
     blob_definition: &'static fli::PL_blob_t,
@@ -451,10 +457,11 @@ pub unsafe fn get_cloned_from_term<T: Clone + Sized + Unpin>(
 
 /// Put an arc into the given term, using the given blob definition.
 ///
+/// This is used from the arc blob macros.
+///
+/// # Safety
 /// This is unsafe cause no attempt is made to ensure that the blob
 /// definition matches the given data.
-///
-/// This is used from the arc blob macros.
 pub unsafe fn put_arc_in_term<T>(
     term: &Term,
     blob_definition: &'static fli::PL_blob_t,
@@ -473,10 +480,11 @@ pub unsafe fn put_arc_in_term<T>(
 /// Put a Cloneable into the given term, using the given blob
 /// definition.
 ///
+/// This is used from the clone blob macros.
+///
+/// # Safety
 /// This is unsafe cause no attempt is made to ensure that the blob
 /// definition matches the given data.
-///
-/// This is used from the clone blob macros.
 pub unsafe fn put_cloneable_in_term<T: Clone + Sized + Unpin>(
     term: &Term,
     blob_definition: &'static fli::PL_blob_t,
@@ -499,6 +507,11 @@ pub unsafe fn put_cloneable_in_term<T: Clone + Sized + Unpin>(
 /// Increment the reference count on an Arc stored in a blob.
 ///
 /// This is used from the arc blob macros.
+///
+/// # Safety
+/// This is only safe to call from a thread with a swipl environment,
+/// on an atom which contains an arc blob of the given type.
+/// definition matches the given data.
 pub unsafe fn acquire_arc_blob<T>(atom: fli::atom_t) {
     let data = fli::PL_blob_data(atom, std::ptr::null_mut(), std::ptr::null_mut()) as *const T;
 
@@ -508,6 +521,10 @@ pub unsafe fn acquire_arc_blob<T>(atom: fli::atom_t) {
 /// Decrement the reference count on an Arc stored in a blob.
 ///
 /// This is used from the arc blob macros.
+///
+/// # Safety
+/// This is only safe to call from a thread with a swipl environment,
+/// on an atom which contains an arc blob of the given type.
 pub unsafe fn release_arc_blob<T>(atom: fli::atom_t) {
     let data = fli::PL_blob_data(atom, std::ptr::null_mut(), std::ptr::null_mut()) as *const T;
 
@@ -517,6 +534,10 @@ pub unsafe fn release_arc_blob<T>(atom: fli::atom_t) {
 /// Drop the rust value stored in a blob.
 ///
 /// This is used from the clone blob macros.
+///
+/// # Safety
+/// This is only safe to call from a thread with a swipl environment,
+/// on an atom which contains a clone blob of the given type.
 pub unsafe fn release_clone_blob<T>(atom: fli::atom_t) {
     let data =
         fli::PL_blob_data(atom, std::ptr::null_mut(), std::ptr::null_mut()) as *const T as *mut T;
@@ -603,6 +624,7 @@ pub trait WrappedArcBlobImpl: WrappedArcBlobBase {
 /// reference-counted pointer, and which is wrapped into a wrapper
 /// type.
 ///
+/// # Safety
 /// This is unsafe because care has to be taken that the returned
 /// `PL_blob_t` from `get_blob_definition` actually matches the blob
 /// type.
@@ -654,6 +676,7 @@ pub trait CloneBlobImpl: CloneBlobBase + Sized + Sync + Clone {
 /// A blob type whose data is copied into SWI-Prolog and dropped on
 /// garbage collection.
 ///
+/// # Safety
 /// This is unsafe because care has to be taken that the returned
 /// `PL_blob_t` from `get_blob_definition` actually matches the blob
 /// type.

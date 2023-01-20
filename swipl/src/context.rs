@@ -203,6 +203,7 @@ impl<'a, T: ContextType> Context<'a, T> {
 
     /// Wrap the given term_t into a Term with a lifetime corresponding to this context.
     ///
+    /// # Safety
     /// This is unsafe because there's no way of checking that the
     /// given term_t is indeed from this context. The caller will have
     /// to ensure that the term lives at least as long as this
@@ -264,7 +265,7 @@ impl<'a, T: ContextType> Context<'a, T> {
     /// normal safe functions for doing so. When the function returns,
     /// the engine will go back into an exceptional state with the
     /// original exception term.
-    pub fn with_exception<'b, R>(&'b self, f: impl FnOnce(Option<&Term>) -> R) -> R {
+    pub fn with_exception<R>(&self, f: impl FnOnce(Option<&Term>) -> R) -> R {
         self.with_uncleared_exception(|e| match e {
             None => f(None),
             Some(e) => unsafe { e.with_cleared_exception(self, |e| f(Some(e))) },
@@ -325,6 +326,12 @@ impl<'a, T: ContextType> Drop for Context<'a, T> {
 /// This is the object that is wrapped by [Context]. Implementors can
 /// use this to hold context-specific information. Any functions are
 /// to be implemented on `Context<YourContextType>`.
+///
+/// # Safety
+/// An active context ensures that callers are allowed to interact
+/// with SWI-Prolog environments. Therefore, a bunch of assertions are
+/// not performed. If an implementor to ensure that SWI-Prolog
+/// environment is active, then this might lead to undefined behavior.
 pub unsafe trait ContextType {}
 
 /// Context type for an active engine. This wraps an `EngineActivation`.
@@ -342,10 +349,12 @@ pub struct ActivatedEngine<'a> {
     _activation: EngineActivation<'a>,
 }
 
-impl<'a> Into<Context<'a, ActivatedEngine<'a>>> for EngineActivation<'a> {
-    fn into(self) -> Context<'a, ActivatedEngine<'a>> {
-        let engine = self.engine_ptr();
-        let context = ActivatedEngine { _activation: self };
+impl<'a> From<EngineActivation<'a>> for Context<'a, ActivatedEngine<'a>> {
+    fn from(activation: EngineActivation<'a>) -> Context<'a, ActivatedEngine<'a>> {
+        let engine = activation.engine_ptr();
+        let context = ActivatedEngine {
+            _activation: activation,
+        };
 
         unsafe { Context::new_activated_without_parent(context, engine) }
     }
@@ -364,12 +373,6 @@ unsafe impl ContextType for Unmanaged {}
 
 /// Create an unmanaged context for situations where the thread has an engine that rust doesn't know about.
 ///
-/// This is unsafe to call if we are not in a swipl environment, or if
-/// some other context is active. Furthermore, the lifetime will most
-/// definitely be wrong. This should be used by code that doesn't
-/// promiscuously spread this context. all further accesses should be
-/// through borrows.
-///
 /// Example:
 /// ```
 /// # use swipl::prelude::*;
@@ -378,6 +381,13 @@ unsafe impl ContextType for Unmanaged {}
 /// let context = unsafe { unmanaged_engine_context() };
 /// # unsafe { swipl::fli::PL_thread_destroy_engine(); }
 /// ```
+///
+/// # Safety
+/// This is unsafe to call if we are not in a swipl environment, or if
+/// some other context is active. Furthermore, the lifetime will most
+/// definitely be wrong. This should be used by code that doesn't
+/// promiscuously spread this context. all further accesses should be
+/// through borrows.
 pub unsafe fn unmanaged_engine_context() -> Context<'static, Unmanaged> {
     let current = current_engine_ptr();
 
@@ -497,8 +507,7 @@ unsafe impl ContextType for Frame {}
 
 impl Drop for Frame {
     fn drop(&mut self) {
-        match &self.state {
-            FrameState::Active =>
+        if let FrameState::Active = self.state {
             // unsafe justification: all instantiations of Frame happen in
             // this module.  This module only instantiates the frame as
             // part of the context mechanism. No 'free' Frames are ever
@@ -506,8 +515,9 @@ impl Drop for Frame {
             // discarded if there's no inner frame still
             // remaining. It'll also ensure that the engine of the
             // frame is active while dropping.
-            unsafe { PL_discard_foreign_frame(self.fid) },
-            _ => {}
+            unsafe {
+                PL_discard_foreign_frame(self.fid);
+            }
         }
     }
 }
@@ -554,10 +564,10 @@ impl<'a> Context<'a, Frame> {
 }
 
 /// A trait marker for context types for which it is safe to open frames.
-pub unsafe trait FrameableContextType: ContextType {}
-unsafe impl FrameableContextType for Unmanaged {}
-unsafe impl<'a> FrameableContextType for ActivatedEngine<'a> {}
-unsafe impl FrameableContextType for Frame {}
+pub trait FrameableContextType: ContextType {}
+impl FrameableContextType for Unmanaged {}
+impl<'a> FrameableContextType for ActivatedEngine<'a> {}
+impl FrameableContextType for Frame {}
 
 impl<'a, C: FrameableContextType> Context<'a, C> {
     /// Open a new frame.
@@ -580,11 +590,11 @@ impl<'a, C: FrameableContextType> Context<'a, C> {
     }
 }
 
-/// A trait marker for context types for hich it is safe to open queries and create new term refs.
-pub unsafe trait QueryableContextType: FrameableContextType {}
-unsafe impl QueryableContextType for Unmanaged {}
-unsafe impl<'a> QueryableContextType for ActivatedEngine<'a> {}
-unsafe impl QueryableContextType for Frame {}
+/// A trait marker for context types for which it is safe to open queries and create new term refs.
+pub trait QueryableContextType: FrameableContextType {}
+impl QueryableContextType for Unmanaged {}
+impl<'a> QueryableContextType for ActivatedEngine<'a> {}
+impl QueryableContextType for Frame {}
 
 prolog! {
     #[module("user")]
@@ -620,9 +630,9 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
 
         let mut term_ptr = unsafe { PL_new_term_refs(N as i32) };
         let mut result: [MaybeUninit<Term>; N] = unsafe { MaybeUninit::uninit().assume_init() };
-        for i in 0..N {
+        for r in result.iter_mut() {
             let term = unsafe { Term::new(term_ptr, self.as_term_origin()) };
-            result[i].write(term);
+            r.write(term);
             term_ptr += 1;
         }
 
@@ -756,7 +766,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         let frame = self.open_frame();
         let out = frame.new_term_ref();
 
-        frame.call_once(pred!("term_string/2"), [&t, &out])?;
+        frame.call_once(pred!("term_string/2"), [t, &out])?;
         let s: String = out.get()?;
         frame.close();
 
@@ -841,10 +851,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         self.assert_activated();
         let cur = self.new_term_ref();
         cur.unify(list).expect("unifying terms should work");
-        TermListIterator {
-            context: self,
-            cur: cur,
-        }
+        TermListIterator { context: self, cur }
     }
 
     /// Retrieve a term list as a fixed-size array.
@@ -929,9 +936,9 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         }
 
         let terms: [Term; N] = self.new_term_refs();
-        for i in 0..N {
+        for (i, term) in terms.iter().enumerate() {
             unsafe {
-                assert!(PL_get_arg((i + 1) as i32, compound.term_ptr(), terms[i].term_ptr()) == 1);
+                assert!(PL_get_arg((i + 1) as i32, compound.term_ptr(), term.term_ptr()) == 1);
             }
         }
 
@@ -955,9 +962,9 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         }
 
         let terms = self.new_term_refs_vec(size as usize);
-        for i in 0..(size as usize) {
+        for (i, term) in terms.iter().enumerate() {
             unsafe {
-                assert!(PL_get_arg((i + 1) as i32, compound.term_ptr(), terms[i].term_ptr()) == 1);
+                assert!(PL_get_arg((i + 1) as i32, compound.term_ptr(), term.term_ptr()) == 1);
             }
         }
 
@@ -989,9 +996,9 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         }
 
         let terms = self.new_term_refs_vec(count);
-        for i in 0..count {
+        for (i, term) in terms.iter().enumerate() {
             unsafe {
-                assert!(PL_get_arg((i + 1) as i32, compound.term_ptr(), terms[i].term_ptr()) == 1);
+                assert!(PL_get_arg((i + 1) as i32, compound.term_ptr(), term.term_ptr()) == 1);
             }
         }
 
@@ -1113,6 +1120,10 @@ impl IntoPrologException for std::io::Error {
 ///
 /// This is used by various macros to ensure that panics from user
 /// code do not propagate into prolog.
+///
+/// # Safety
+/// This is only safe to use from an environment from which we can
+/// raise a prolog exception.
 pub unsafe fn prolog_catch_unwind<F: FnOnce() -> R + std::panic::UnwindSafe, R>(
     f: F,
 ) -> PrologResult<R> {

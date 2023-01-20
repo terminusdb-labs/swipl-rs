@@ -2,6 +2,10 @@
 pub use swipl_fli::*;
 
 /// Retrieve the default exception.
+///
+/// # Safety
+/// This requires an initialized SWI-Prolog environment.
+#[allow(clippy::useless_transmute)]
 pub unsafe fn pl_default_exception() -> term_t {
     // So why this ugly transmute?
     // In swipl version 8.5.5, query handles change from being a

@@ -95,6 +95,10 @@ pub struct CallablePredicate<const N: usize> {
 
 impl<const N: usize> CallablePredicate<N> {
     /// Wrap a `predicate_t` from the SWI-Prolog fli, not checking if arity matches.
+    ///
+    /// # Safety
+    /// This is only safe if the given predicate is in fact a
+    /// predicate in SWI-Prolog.
     pub unsafe fn wrap(predicate: predicate_t) -> Self {
         // no check for arity or if the predicate even exists!
         Self { predicate }
@@ -161,6 +165,11 @@ pub struct OpenQuery {
 /// possible however to open a new frame and do all that stuff in the
 /// new frame. You'll need to close the frame before continuing with
 /// solution retrieval.
+///
+/// # Safety
+/// A type implementing OpenCall automatically becomes a ContextType
+/// as well, so all the safety concerns regarding ContextType apply
+/// here too.
 pub unsafe trait OpenCall: Sized {
     /// Retrieve the next solution.
     ///
@@ -168,19 +177,19 @@ pub unsafe trait OpenCall: Sized {
     /// returned in the `Err` part of the `PrologResult`. Otherwise,
     /// `Ok(true)` is returned if there are more solutions, and
     /// `Ok(false)` is returned when this is the last solution.
-    fn next_solution<'a>(this: &Context<'a, Self>) -> PrologResult<bool>;
+    fn next_solution(this: &Context<Self>) -> PrologResult<bool>;
 
     /// Cut the query, keeping all data it has created.
     ///
     /// Any unifications the query did to terms from parent contexts
     /// will be retained.
-    fn cut<'a>(this: Context<'a, Self>);
+    fn cut(this: Context<Self>);
 
     /// Discard the query, discarding all data it has created.
     ///
     /// Any unifications the query did to terms from parent contexts
     /// will be discarded.
-    fn discard<'a>(this: Context<'a, Self>);
+    fn discard(this: Context<Self>);
 }
 
 impl<'a, C: OpenCall> Context<'a, C> {
@@ -233,10 +242,10 @@ impl<'a, C: OpenCall> Context<'a, C> {
 }
 
 unsafe impl<T: OpenCall> ContextType for T {}
-unsafe impl<T: OpenCall> FrameableContextType for T {}
+impl<T: OpenCall> FrameableContextType for T {}
 
 unsafe impl OpenCall for OpenQuery {
-    fn next_solution<'a>(this: &Context<'a, Self>) -> PrologResult<bool> {
+    fn next_solution(this: &Context<Self>) -> PrologResult<bool> {
         this.assert_activated();
         let result = unsafe { PL_next_solution(this.context.qid) };
         match result {
@@ -254,7 +263,7 @@ unsafe impl OpenCall for OpenQuery {
         }
     }
 
-    fn cut<'a>(mut this: Context<'a, Self>) {
+    fn cut(mut this: Context<Self>) {
         this.assert_activated();
         // TODO handle exceptions
 
@@ -262,7 +271,7 @@ unsafe impl OpenCall for OpenQuery {
         this.context.closed = true;
     }
 
-    fn discard<'a>(mut this: Context<'a, Self>) {
+    fn discard(mut this: Context<Self>) {
         this.assert_activated();
         // TODO handle exceptions
 
@@ -296,9 +305,9 @@ impl<const N: usize> Callable<N> for CallablePredicate<N> {
         let flags = PL_Q_NORMAL | PL_Q_CATCH_EXCEPTION | PL_Q_EXT_STATUS;
         unsafe {
             let terms = PL_new_term_refs(N as i32);
-            for i in 0..args.len() {
+            for (i, arg) in args.iter().enumerate() {
                 let term = context.wrap_term_ref(terms + i);
-                assert!(term.unify(args[i]).is_ok());
+                assert!(term.unify(arg).is_ok());
             }
 
             let qid = PL_open_query(

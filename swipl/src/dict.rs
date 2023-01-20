@@ -113,6 +113,12 @@ pub struct DictBuilder<'a> {
     entries: HashMap<Key, Option<Box<dyn TermPutable + 'a>>>,
 }
 
+impl<'a> Default for DictBuilder<'a> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<'a> DictBuilder<'a> {
     /// Create a new dictionary builder.
     pub fn new() -> Self {
