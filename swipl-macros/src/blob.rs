@@ -53,18 +53,22 @@ pub fn arc_blob_macro(
             }
         }
 
+        #[allow(non_upper_case_globals)]
         static #blob_definition_ident: std::sync::atomic::AtomicPtr<#crt::fli::PL_blob_t> = std::sync::atomic::AtomicPtr::new(std::ptr::null_mut());
 
+        #[allow(non_snake_case)]
         unsafe extern "C" fn #blob_acquire(a: #crt::fli::atom_t) {
             #crt::blob::acquire_arc_blob::<#item_name>(a);
         }
 
+        #[allow(non_snake_case)]
         unsafe extern "C" fn #blob_release(a: #crt::fli::atom_t) -> std::os::raw::c_int {
             #crt::blob::release_arc_blob::<#item_name>(a);
 
             1
         }
 
+        #[allow(non_snake_case)]
         unsafe extern "C" fn #blob_compare(a: #crt::fli::atom_t, b: #crt::fli::atom_t)->std::os::raw::c_int {
             match #crt::context::prolog_catch_unwind(||{
                 let a_val = #crt::fli::PL_blob_data(a,
@@ -84,6 +88,7 @@ pub fn arc_blob_macro(
             }
         }
 
+        #[allow(non_snake_case)]
         unsafe extern "C" fn #blob_write(s: *mut #crt::fli::IOSTREAM,
                                          a: #crt::fli::atom_t,
                                          _flags: std::os::raw::c_int)
@@ -203,18 +208,22 @@ pub fn wrapped_arc_blob_macro(item: proc_macro::TokenStream) -> proc_macro::Toke
             }
         }
 
+        #[allow(non_upper_case_globals)]
         static #blob_definition_ident: std::sync::atomic::AtomicPtr<#crt::fli::PL_blob_t> = std::sync::atomic::AtomicPtr::new(std::ptr::null_mut());
 
+        #[allow(non_snake_case)]
         unsafe extern "C" fn #blob_acquire(a: #crt::fli::atom_t) {
             #crt::blob::acquire_arc_blob::<#inner_type_name>(a);
         }
 
+        #[allow(non_snake_case)]
         unsafe extern "C" fn #blob_release(a: #crt::fli::atom_t) -> std::os::raw::c_int {
             #crt::blob::release_arc_blob::<#inner_type_name>(a);
 
             1
         }
 
+        #[allow(non_snake_case)]
         unsafe extern "C" fn #blob_compare(a: #crt::fli::atom_t, b: #crt::fli::atom_t)->std::os::raw::c_int {
             match #crt::context::prolog_catch_unwind(||{
                 let a_val = #crt::fli::PL_blob_data(a,
@@ -234,6 +243,7 @@ pub fn wrapped_arc_blob_macro(item: proc_macro::TokenStream) -> proc_macro::Toke
             }
         }
 
+        #[allow(non_snake_case)]
         unsafe extern "C" fn #blob_write(s: *mut #crt::fli::IOSTREAM,
                                          a: #crt::fli::atom_t,
                                          _flags: std::os::raw::c_int)
@@ -362,14 +372,17 @@ pub fn clone_blob_macro(
             }
         }
 
+        #[allow(non_upper_case_globals)]
         static #blob_definition_ident: std::sync::atomic::AtomicPtr<#crt::fli::PL_blob_t> = std::sync::atomic::AtomicPtr::new(std::ptr::null_mut());
 
+        #[allow(non_snake_case)]
         unsafe extern "C" fn #blob_release(a: #crt::fli::atom_t) -> std::os::raw::c_int {
             #crt::blob::release_clone_blob::<#item_name>(a);
 
             1
         }
 
+        #[allow(non_snake_case)]
         unsafe extern "C" fn #blob_compare(a: #crt::fli::atom_t, b: #crt::fli::atom_t)->std::os::raw::c_int {
             match #crt::context::prolog_catch_unwind(|| {
                 let a_val = #crt::fli::PL_blob_data(a,
@@ -389,6 +402,7 @@ pub fn clone_blob_macro(
             }
         }
 
+        #[allow(non_snake_case)]
         unsafe extern "C" fn #blob_write(s: *mut #crt::fli::IOSTREAM,
                                          a: #crt::fli::atom_t,
                                          _flags: std::os::raw::c_int)
