@@ -14,7 +14,28 @@ env:
   RUST_BACKTRACE: full
 
 jobs:
+  is_duplicate_run:
+    name: Duplicate run?
+    runs-on: ubuntu-latest
+
+    outputs:
+      duplicate_run: ${{ steps.check_skip.outputs.should_skip }}
+
+    steps:
+      - uses: fkirc/skip-duplicate-actions@master
+        id: check_skip
+        with:
+          # Skip a concurrent run triggered by a pull_request event if there is
+          # already a run triggered by a push event.
+          concurrent_skipping: same_content_newer
+          # Cancel runs from outdated commits.
+          cancel_others: 'true'
+          # Do not skip push events. They are used by the push_docker job.
+          do_not_skip: '["push", "workflow_dispatch", "schedule"]'
+
   clippy:
+    needs:
+      - is_duplicate_run
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -26,6 +47,8 @@ jobs:
           args: --all-features -- -Dwarnings
 
   build:
+    needs:
+      - is_duplicate_run
     strategy:
       fail-fast: false
       matrix:
