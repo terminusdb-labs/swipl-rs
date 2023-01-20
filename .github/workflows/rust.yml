@@ -17,7 +17,7 @@ jobs:
   clippy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - run: sudo apt update && sudo apt install software-properties-common -y
       - run: sudo apt-add-repository ppa:swi-prolog/stable -y && sudo apt update && sudo apt install swi-prolog-nox
       - uses: actions-rs/clippy-check@v1
@@ -37,7 +37,7 @@ jobs:
         #    dmg: dmg
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Install SWI Prolog on Linux
       if: ${{ matrix.os == 'ubuntu-latest' }}
       run: |
