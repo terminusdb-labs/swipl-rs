@@ -478,9 +478,7 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
         match self.term.term_type() {
             TermType::Atom => {
                 let c = attempt_opt(self.term.get_atom_name(|a| {
-                    a?;
-
-                    let mut it = a.unwrap().chars();
+                    let mut it = a?.chars();
                     if let Some(c) = it.next() {
                         if it.next().is_none() {
                             return Some(c);
