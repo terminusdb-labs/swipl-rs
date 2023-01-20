@@ -132,7 +132,7 @@ pub fn arc_blob_macro(
                     definition = #blob_definition_ident.load(std::sync::atomic::Ordering::Relaxed);
                 }
 
-                unsafe { std::mem::transmute(definition) }
+                unsafe { &*definition }
             }
         }
 
@@ -282,7 +282,7 @@ pub fn wrapped_arc_blob_macro(item: proc_macro::TokenStream) -> proc_macro::Toke
                     definition = #blob_definition_ident.load(std::sync::atomic::Ordering::Relaxed);
                 }
 
-                unsafe { std::mem::transmute(definition) }
+                unsafe { &*definition }
             }
         }
 
@@ -437,7 +437,7 @@ pub fn clone_blob_macro(
                     definition = #blob_definition_ident.load(std::sync::atomic::Ordering::Relaxed);
                 }
 
-                unsafe { std::mem::transmute(definition) }
+                unsafe { &*definition }
             }
         }
 
