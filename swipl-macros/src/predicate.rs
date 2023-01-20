@@ -217,6 +217,7 @@ impl ForeignPredicateDefinitionImpl for SemidetForeignPredicateDefinition {
                         let mut terms: [std::mem::MaybeUninit<#crt::term::Term>;#known_arity] =
                             std::mem::MaybeUninit::uninit().assume_init();
 
+                        #[allow(clippy::reversed_empty_ranges)]
                         for i in 0..#known_arity {
                             let term_ref = context.wrap_term_ref(term+i);
                             terms[i] = std::mem::MaybeUninit::new(term_ref);
@@ -425,6 +426,7 @@ impl ForeignPredicateDefinitionImpl for NondetForeignPredicateDefinition {
                         let mut terms: [std::mem::MaybeUninit<#crt::term::Term>;#known_arity] =
                             std::mem::MaybeUninit::uninit().assume_init();
 
+                        #[allow(clippy::reversed_empty_ranges)]
                         for i in 0..#known_arity {
                             let term_ref = context.wrap_term_ref(term+i);
                             terms[i] = std::mem::MaybeUninit::new(term_ref);
