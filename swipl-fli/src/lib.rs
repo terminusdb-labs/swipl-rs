@@ -5,6 +5,7 @@
 #![allow(non_snake_case)]
 // TODO any function that uses u128 should be excluded
 #![allow(improper_ctypes)]
+#![allow(clippy::useless_transmute)]
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
