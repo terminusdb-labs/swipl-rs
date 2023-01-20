@@ -272,12 +272,12 @@ mod tests {
         assert!(term.unify(f).is_ok());
         assert!(term.get_arg::<u64>(1).unwrap_err().is_failure());
         assert!(term.unify_arg(1, 42_u64).is_ok());
-        assert_eq!(42_u64, term.get_arg(1).unwrap());
+        assert_eq!(42_u64, term.get_arg::<u64>(1).unwrap());
         assert!(term.unify_arg(1, 42_u64).is_ok());
         assert!(!term.unify_arg(1, 43_u64).is_ok());
 
         assert!(term.unify_arg(2, 24_u64).is_ok());
-        assert_eq!(24_u64, term.get_arg(2).unwrap());
+        assert_eq!(24_u64, term.get_arg::<u64>(2).unwrap());
 
         assert!(!term.unify_arg(3, 24_u64).is_ok());
         assert!(term.get_arg::<u64>(3).unwrap_err().is_failure());

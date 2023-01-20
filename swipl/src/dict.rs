@@ -656,7 +656,7 @@ mod tests {
         dict.unify(&builder).unwrap();
 
         dict.get_dict_tag_term(&tag2).unwrap();
-        assert_eq!(42_u64, tag2.get().unwrap());
+        assert_eq!(42_u64, tag2.get::<u64>().unwrap());
         tag.unify(&tag2).unwrap();
     }
 
@@ -673,7 +673,7 @@ mod tests {
 
         dict.unify(&builder).unwrap();
 
-        assert_eq!(42_u64, dict.get_dict_key("foo").unwrap());
+        assert_eq!(42_u64, dict.get_dict_key::<_, u64>("foo").unwrap());
         let hello_str: String = dict.get_dict_key("bar").unwrap();
         assert_eq!("hello", hello_str);
 

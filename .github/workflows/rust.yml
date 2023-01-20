@@ -18,23 +18,51 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        dmg: [no_dmg]
+        include:
+          - os: ubuntu-latest
+            shell: bash
+            dmg: no_dmg
+          - os: macos-latest
+            shell: bash
+            dmg: no_dmg
+          - os: windows-latest
+            shell: msys2
+            dmg: no_dmg
+
+    defaults:
+      run:
+        shell: ${{ matrix.shell}} {0}
         #include:
         #  - os: macos-latest
         #    dmg: dmg
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
+      # This is needed because the GMP crate does not support MSVC
     - name: Install SWI Prolog on Linux
       if: ${{ matrix.os == 'ubuntu-latest' }}
       run: |
         sudo apt-add-repository ppa:swi-prolog/stable
         sudo apt-get update
         sudo apt install swi-prolog-nox
-    - name: Install LLVM and SWI Prolog on Windows
+
+    - name: Install msys2 for Windows
       if: ${{ matrix.os == 'windows-latest' }}
-      run: choco install llvm swi-prolog
+      uses: msys2/setup-msys2@v2
+      with:
+        install: >-
+          diffutils
+          m4
+          make
+          gmp
+          gmp-devel
+          mingw-w64-x86_64-gcc
+          mingw-w64-x86_64-rust
+          mingw-w64-x86_64-swi-prolog
+          mingw-w64-clang-x86_64-toolchain
+          mingw-w64-x86_64-gmp
+          mingw-w64-x86_64-pkg-config
+
     - name: Install SWI Prolog on MacOS from brew
       if: ${{ matrix.os == 'macos-latest' && matrix.dmg == 'no_dmg' }}
       run: brew install swi-prolog
@@ -44,27 +72,31 @@ jobs:
     - name: Print information with swipl-info on posix
       if: ${{ matrix.os != 'windows-latest' && matrix.dmg == 'no_dmg' }}
       run: cargo run --bin print_swipl_info
+    - name: Install cargo-swipl
+      run: cargo install --path ./cargo-swipl
     - name: Print information with swipl-info on windows
       if: ${{ matrix.os == 'windows-latest' }}
-      env: 
-        SWIPL: C:\Program Files\swipl\bin\swipl.exe
-      run: cargo run --bin print_swipl_info
+      env:
+        SWIPL: /mingw64/lib/swipl/bin/amd64-windows/swipl.exe
+      run: cargo swipl run --bin print_swipl_info
     - name: Print information with swipl-info on osx with dmg
       if: ${{ matrix.dmg == 'dmg' }}
       env: 
         SWIPL: /Applications/SWI-Prolog.app/Contents/MacOS/swipl
       run: cargo run --bin print_swipl_info
-    - name: Install cargo-swipl
-      run: cargo install --path ./cargo-swipl
     - name: Run tests on posix
       if: ${{ matrix.os != 'windows-latest' && matrix.dmg == 'no_dmg' }}
       run: cargo swipl test --all-features
+
     - name: Run tests on windows
       if: ${{ matrix.os == 'windows-latest' }}
-      env: 
-        SWIPL: C:\Program Files\swipl\bin\swipl.exe
-        LIBCLANG_PATH: C:\Program Files\LLVM\bin\
-      run: cargo swipl test --all-features
+      env:
+        C_INCLUDE_PATH: /usr/include
+        SWIPL: /mingw64/lib/swipl/bin/amd64-windows/swipl.exe
+      run: |
+        export C_INCLUDE_PATH=/usr/include/
+        cargo swipl test --all-features --target=x86_64-pc-windows-gnu
+
     - name: Run tests on osx with dmg
       if: ${{ matrix.dmg == 'dmg' }}
       env: 

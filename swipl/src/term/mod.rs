@@ -54,6 +54,9 @@ pub use de::Deserializer;
 #[cfg(feature = "serde")]
 pub use ser::{Serializer, SerializerConfiguration};
 
+#[cfg(feature = "rug")]
+mod bignum;
+
 /// A term reference.
 #[derive(Clone)]
 pub struct Term<'a> {

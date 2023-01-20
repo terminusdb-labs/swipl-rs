@@ -10,7 +10,12 @@ fn main() {
     println!("cargo:rerun-if-changed=c/wrapper.h");
     println!("cargo:rerun-if-env-changed=SWIPL");
 
-    let bindings = bindgen::Builder::default()
+    let mut bindings = bindgen::Builder::default();
+    if cfg!(feature = "gmp") {
+        bindings = bindings.header_contents("include_gmp", "#include <gmp.h>\n");
+    }
+
+    let bindings = bindings
         .header("c/wrapper.h")
         .clang_arg(format!("-I{}", info.header_dir))
         .parse_callbacks(Box::new(bindgen::CargoCallbacks))

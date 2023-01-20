@@ -7,8 +7,8 @@ use crate::text::*;
 use crate::{atom, functor};
 use serde::de::{self, DeserializeSeed, EnumAccess, MapAccess, SeqAccess, VariantAccess, Visitor};
 use serde::Deserialize;
-use std::fmt::{self, Display};
 use std::cell::Cell;
+use std::fmt::{self, Display};
 
 /// Deserialize a term into a rust value using serde.
 pub fn from_term<'a, C: QueryableContextType, T>(
@@ -587,15 +587,13 @@ impl<'de, C: QueryableContextType> de::Deserializer<'de> for Deserializer<'de, C
                     Some(atom) => {
                         if cfg!(target_pointer_width = "32") {
                             visitor.visit_u32(atom.atom_ptr() as u32)
-                        }
-                        else {
+                        } else {
                             visitor.visit_u64(atom.atom_ptr() as u64)
                         }
-                    },
-                    None => Err(Error::ValueNotOfExpectedType("atom"))
+                    }
+                    None => Err(Error::ValueNotOfExpectedType("atom")),
                 }
-            }
-            else {
+            } else {
                 self.deserialize_string(visitor)
             }
         } else {
@@ -968,15 +966,13 @@ impl<'de> de::Deserializer<'de> for KeyDeserializer {
                     Key::Atom(atom) => {
                         if cfg!(target_pointer_width = "32") {
                             visitor.visit_u32(atom.atom_ptr() as u32)
-                        }
-                        else {
+                        } else {
                             visitor.visit_u64(atom.atom_ptr() as u64)
                         }
-                    },
-                    _ => Err(Error::ValueNotOfExpectedType("atom"))
+                    }
+                    _ => Err(Error::ValueNotOfExpectedType("atom")),
                 }
-            }
-            else {
+            } else {
                 self.deserialize_string(visitor)
             }
         } else {
@@ -1266,7 +1262,6 @@ impl DeserializingAtomState {
             }
             da.set(true)
         });
-
 
         Self
     }
