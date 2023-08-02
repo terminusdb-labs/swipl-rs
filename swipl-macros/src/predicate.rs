@@ -557,7 +557,7 @@ struct ForeignPredicateDefinitionBlock {
 impl Parse for ForeignPredicateDefinitionBlock {
     fn parse(input: ParseStream) -> Result<Self> {
         let punct: Punctuated<AttributedForeignPredicateDefinition, Nothing> =
-            Punctuated::parse_terminated(&input)?;
+            Punctuated::parse_terminated(input)?;
         let definitions = punct.into_iter().collect();
         Ok(Self { definitions })
     }
