@@ -28,7 +28,7 @@
 <a href="#28" id="28">28</a>
 <a href="#29" id="29">29</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Span, TokenStream};
-<span class="kw">use </span>proc_macro_crate::crate_name;
+<span class="kw">use </span>proc_macro_crate::{crate_name, FoundCrate};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::Ident;
 
@@ -46,11 +46,11 @@
         }
     } <span class="kw">else </span>{
         <span class="kw">match </span>crate_name(<span class="string">&quot;swipl&quot;</span>) {
-            <span class="prelude-val">Ok</span>(name) =&gt; {
+            <span class="prelude-val">Ok</span>(FoundCrate::Name(name)) =&gt; {
                 <span class="kw">let </span>name_ident = Ident::new(<span class="kw-2">&amp;</span>name, Span::call_site());
                 <span class="macro">quote! </span>{#name_ident}
             }
-            <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; {
+            <span class="kw">_ </span>=&gt; {
                 <span class="macro">quote! </span>{swipl}
             }
         }

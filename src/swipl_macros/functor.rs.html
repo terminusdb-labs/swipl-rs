@@ -112,8 +112,8 @@
     <span class="kw">let </span>functor_arity_int = LitInt::new(<span class="kw-2">&amp;</span>functor.arity.to_string(), functor.arity_span);
     <span class="kw">let </span>crt = crate_token();
     <span class="kw">let </span>result = <span class="macro">quote! </span>{
-        { <span class="kw">static </span>functor: #crt::prelude::LazyFunctor = #crt::prelude::LazyFunctor::new(#functor_name_str, #functor_arity_int);
-          functor.as_functor()
+        { <span class="kw">static </span>FUNCTOR: #crt::prelude::LazyFunctor = #crt::prelude::LazyFunctor::new(#functor_name_str, #functor_arity_int);
+          FUNCTOR.as_functor()
         }
     };
     result.into()

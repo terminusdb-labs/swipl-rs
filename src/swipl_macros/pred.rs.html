@@ -131,9 +131,9 @@
     <span class="kw">let </span>crt = crate_token();
     <span class="kw">let </span>result = <span class="macro">quote! </span>{
         {
-            <span class="kw">static </span>pred: #crt::callable::LazyCallablePredicate&lt;#arity&gt; = #crt::callable::LazyCallablePredicate::new(<span class="prelude-val">Some</span>(#module_lit), #name_lit);
+            <span class="kw">static </span>PRED: #crt::callable::LazyCallablePredicate&lt;#arity&gt; = #crt::callable::LazyCallablePredicate::new(<span class="prelude-val">Some</span>(#module_lit), #name_lit);
 
-            pred.as_callable()
+            PRED.as_callable()
         }
     };
 

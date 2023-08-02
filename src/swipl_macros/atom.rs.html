@@ -43,8 +43,8 @@
     <span class="kw">let </span>atom_str = LitStr::new(<span class="kw-2">&amp;</span>atom.<span class="number">0</span>, atom.<span class="number">1</span>);
     <span class="kw">let </span>crt = crate_token();
     <span class="kw">let </span>result = <span class="macro">quote! </span>{
-        { <span class="kw">static </span>atom: #crt::prelude::LazyAtom = #crt::prelude::LazyAtom::new(#atom_str);
-          #crt::prelude::AsAtom::as_atom(<span class="kw-2">&amp;</span>atom)
+        { <span class="kw">static </span>ATOM: #crt::prelude::LazyAtom = #crt::prelude::LazyAtom::new(#atom_str);
+          #crt::prelude::AsAtom::as_atom(<span class="kw-2">&amp;</span>ATOM)
         }
     };
     result.into()

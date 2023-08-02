@@ -483,7 +483,6 @@
 <a href="#483" id="483">483</a>
 <a href="#484" id="484">484</a>
 <a href="#485" id="485">485</a>
-<a href="#486" id="486">486</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>std::collections::HashMap;
@@ -773,7 +772,7 @@
         <span class="kw">let </span>params_stream;
         <span class="macro">parenthesized!</span>(params_stream <span class="kw">in </span>input);
         <span class="kw">let </span>params_punct: Punctuated&lt;Term, <span class="macro">Token!</span>[,]&gt; =
-            params_stream.parse_terminated(Term::parse)<span class="question-mark">?</span>;
+            Punctuated::parse_terminated(<span class="kw-2">&amp;</span>params_stream)<span class="question-mark">?</span>;
         <span class="kw">let </span>params: Vec&lt;<span class="kw">_</span>&gt; = params_punct.into_iter().collect();
 
         <span class="prelude-val">Ok</span>(<span class="self">Self </span>{ head, params })
@@ -853,7 +852,7 @@
         <span class="kw">let </span>elements_stream;
         <span class="macro">bracketed!</span>(elements_stream <span class="kw">in </span>input);
         <span class="kw">let </span>elements_punct: Punctuated&lt;Term, <span class="macro">Token!</span>[,]&gt; =
-            elements_stream.parse_terminated(Term::parse)<span class="question-mark">?</span>;
+            Punctuated::parse_terminated(<span class="kw-2">&amp;</span>elements_stream)<span class="question-mark">?</span>;
         <span class="kw">let </span>elements: Vec&lt;<span class="kw">_</span>&gt; = elements_punct.into_iter().collect();
 
         <span class="prelude-val">Ok</span>(<span class="self">Self </span>{ elements })
@@ -959,8 +958,7 @@
     <span class="kw">fn </span>parse(input: <span class="kw-2">&amp;</span>ParseBuffer) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
         <span class="kw">let </span>terms_stream;
         <span class="macro">parenthesized!</span>(terms_stream <span class="kw">in </span>input);
-        <span class="kw">let </span>terms_punct: Punctuated&lt;Term, <span class="macro">Token!</span>[,]&gt; =
-            terms_stream.parse_terminated(Term::parse)<span class="question-mark">?</span>;
+        <span class="kw">let </span>terms_punct: Punctuated&lt;Term, <span class="macro">Token!</span>[,]&gt; = Punctuated::parse_terminated(<span class="kw-2">&amp;</span>terms_stream)<span class="question-mark">?</span>;
         <span class="kw">let </span>terms: Vec&lt;<span class="kw">_</span>&gt; = terms_punct.into_iter().collect();
         <span class="kw">if </span>terms.is_empty() {
             terms_stream

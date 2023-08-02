@@ -143,11 +143,11 @@
         <span class="kw">let </span><span class="kw-2">mut </span>predicate_name = <span class="prelude-val">None</span>;
         <span class="kw">let </span><span class="kw-2">mut </span>predicate_module = <span class="prelude-val">None</span>;
         <span class="kw">for </span>attr <span class="kw">in </span>attrs {
-            <span class="kw">if </span>attr.path.is_ident(<span class="string">&quot;doc&quot;</span>) {
+            <span class="kw">if </span>attr.path().is_ident(<span class="string">&quot;doc&quot;</span>) {
                 doc = <span class="prelude-val">Some</span>(attr);
-            } <span class="kw">else if </span>attr.path.is_ident(<span class="string">&quot;name&quot;</span>) {
+            } <span class="kw">else if </span>attr.path().is_ident(<span class="string">&quot;name&quot;</span>) {
                 predicate_name = <span class="prelude-val">Some</span>(attr.parse_args()<span class="question-mark">?</span>);
-            } <span class="kw">else if </span>attr.path.is_ident(<span class="string">&quot;module&quot;</span>) {
+            } <span class="kw">else if </span>attr.path().is_ident(<span class="string">&quot;module&quot;</span>) {
                 predicate_module = <span class="prelude-val">Some</span>(attr.parse_args()<span class="question-mark">?</span>);
             }
         }
@@ -157,7 +157,7 @@
         <span class="kw">let </span>params_stream;
         <span class="macro">parenthesized!</span>(params_stream <span class="kw">in </span>input);
         <span class="kw">let </span>params_punct: Punctuated&lt;Ident, <span class="macro">Token!</span>[,]&gt; =
-            params_stream.parse_terminated(Ident::parse)<span class="question-mark">?</span>;
+            Punctuated::parse_terminated(<span class="kw-2">&amp;</span>params_stream)<span class="question-mark">?</span>;
         <span class="kw">let </span>params: Vec&lt;<span class="kw">_</span>&gt; = params_punct.into_iter().collect();
 
         <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
@@ -193,7 +193,8 @@
         };
         <span class="kw">let </span>visibility = <span class="self">self</span>.visibility;
         <span class="kw">let </span>gen = <span class="macro">quote! </span>{
-            <span class="kw">static </span>#pred_static_ident: #crt::callable::LazyCallablePredicate&lt;#params_len&gt; = #crt::callable::LazyCallablePredicate::new(<span class="prelude-val">Some</span>(#predicate_module), #predicate_name);
+            <span class="attr">#[allow(clippy::non_upper_case_globals)]
+            </span><span class="kw">static </span>#pred_static_ident: #crt::callable::LazyCallablePredicate&lt;#params_len&gt; = #crt::callable::LazyCallablePredicate::new(<span class="prelude-val">Some</span>(#predicate_module), #predicate_name);
 
             #doc
             #visibility <span class="kw">fn </span>#rust_name&lt;<span class="lifetime">&#39;a</span>, T:#crt::context::QueryableContextType&gt;(swipl_context: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>#crt::context::Context&lt;<span class="lifetime">&#39;a</span>, T&gt;, #(#params: <span class="kw-2">&amp;</span>#crt::term::Term&lt;<span class="lifetime">&#39;a</span>&gt;),<span class="kw-2">*</span>) -&gt; #crt::context::Context&lt;<span class="lifetime">&#39;a</span>, <span class="kw">impl </span>#crt::callable::OpenCall&gt; {
@@ -216,8 +217,7 @@
 
 <span class="kw">impl </span>Parse <span class="kw">for </span>PrologPredicateBlock {
     <span class="kw">fn </span>parse(input: ParseStream) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
-        <span class="kw">let </span>punct: Punctuated&lt;PrologPredicate, <span class="macro">Token!</span>[;]&gt; =
-            input.parse_terminated(PrologPredicate::parse)<span class="question-mark">?</span>;
+        <span class="kw">let </span>punct: Punctuated&lt;PrologPredicate, <span class="macro">Token!</span>[;]&gt; = Punctuated::parse_terminated(input)<span class="question-mark">?</span>;
         <span class="kw">let </span>predicates = punct.into_iter().collect();
         <span class="prelude-val">Ok</span>(<span class="self">Self </span>{ predicates })
     }
