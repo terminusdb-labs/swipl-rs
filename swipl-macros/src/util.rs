@@ -1,5 +1,5 @@
 use proc_macro2::{Span, TokenStream};
-use proc_macro_crate::crate_name;
+use proc_macro_crate::{crate_name, FoundCrate};
 use quote::quote;
 use syn::Ident;
 
@@ -17,11 +17,11 @@ pub fn crate_token() -> TokenStream {
         }
     } else {
         match crate_name("swipl") {
-            Ok(name) => {
+            Ok(FoundCrate::Name(name)) => {
                 let name_ident = Ident::new(&name, Span::call_site());
                 quote! {#name_ident}
             }
-            Err(_) => {
+            _ => {
                 quote! {swipl}
             }
         }

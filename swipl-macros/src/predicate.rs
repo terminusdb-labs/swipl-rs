@@ -52,11 +52,11 @@ impl Parse for AttributedForeignPredicateDefinition {
         let mut predicate_name = None;
         let mut predicate_module = None;
         for attr in attrs {
-            if attr.path.is_ident("doc") {
+            if attr.path().is_ident("doc") {
                 doc = Some(attr);
-            } else if attr.path.is_ident("name") {
+            } else if attr.path().is_ident("name") {
                 predicate_name = Some(attr.parse_args()?);
-            } else if attr.path.is_ident("module") {
+            } else if attr.path().is_ident("module") {
                 predicate_module = Some(attr.parse_args()?);
             }
         }
@@ -152,7 +152,7 @@ impl Parse for SemidetForeignPredicateDefinition {
         let params_stream;
         parenthesized!(params_stream in input);
         let params_punct: Punctuated<Ident, Token![,]> =
-            params_stream.parse_terminated(Ident::parse)?;
+            Punctuated::parse_terminated(&params_stream)?;
         let span = params_stream.span();
         let params: Vec<_> = params_punct.into_iter().collect();
         if params.is_empty() {
@@ -318,7 +318,7 @@ impl Parse for NondetForeignPredicateDefinition {
         parenthesized!(params_stream in input);
 
         let params_punct: Punctuated<Ident, Token![,]> =
-            params_stream.parse_terminated(Ident::parse)?;
+            Punctuated::parse_terminated(&params_stream)?;
         let span = params_stream.span();
         let params: Vec<_> = params_punct.into_iter().collect();
         if params.is_empty() {
@@ -557,7 +557,7 @@ struct ForeignPredicateDefinitionBlock {
 impl Parse for ForeignPredicateDefinitionBlock {
     fn parse(input: ParseStream) -> Result<Self> {
         let punct: Punctuated<AttributedForeignPredicateDefinition, Nothing> =
-            input.parse_terminated(AttributedForeignPredicateDefinition::parse)?;
+            Punctuated::parse_terminated(input)?;
         let definitions = punct.into_iter().collect();
         Ok(Self { definitions })
     }
