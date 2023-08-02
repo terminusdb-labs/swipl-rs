@@ -513,6 +513,12 @@ impl<'a> PartialEq for Term<'a> {
 }
 impl<'a> PartialOrd for Term<'a> {
     fn partial_cmp(&self, other: &Term) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl<'a> Ord for Term<'a> {
+    fn cmp(&self, other: &Term) -> Ordering {
         self.assert_term_handling_possible();
         if self.origin.origin_engine_ptr() != other.origin.origin_engine_ptr() {
             panic!("terms being compard are not part of the same engine");
@@ -520,17 +526,11 @@ impl<'a> PartialOrd for Term<'a> {
 
         let result = unsafe { PL_compare(self.term_ptr(), other.term_ptr()) };
 
-        Some(result.cmp(&0))
+        result.cmp(&0)
     }
 }
 
 impl<'a> Eq for Term<'a> {}
-
-impl<'a> Ord for Term<'a> {
-    fn cmp(&self, other: &Term) -> Ordering {
-        self.partial_cmp(other).unwrap()
-    }
-}
 
 #[derive(Clone)]
 pub(crate) struct TermOrigin<'a> {
