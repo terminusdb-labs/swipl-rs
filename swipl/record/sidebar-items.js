@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":[["Record","A recorded term."]]};
+window.SIDEBAR_ITEMS = {"struct":["Record"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":[["PrologText","A wrapper around an owned string for which TermGetable has been implemented."]]};
+window.SIDEBAR_ITEMS = {"struct":["PrologText"]};
