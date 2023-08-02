@@ -19,9 +19,9 @@ pub fn pred_macro(stream: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let crt = crate_token();
     let result = quote! {
         {
-            static pred: #crt::callable::LazyCallablePredicate<#arity> = #crt::callable::LazyCallablePredicate::new(Some(#module_lit), #name_lit);
+            static PRED: #crt::callable::LazyCallablePredicate<#arity> = #crt::callable::LazyCallablePredicate::new(Some(#module_lit), #name_lit);
 
-            pred.as_callable()
+            PRED.as_callable()
         }
     };
 

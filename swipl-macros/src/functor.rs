@@ -11,8 +11,8 @@ pub fn functor_macro(stream: proc_macro::TokenStream) -> proc_macro::TokenStream
     let functor_arity_int = LitInt::new(&functor.arity.to_string(), functor.arity_span);
     let crt = crate_token();
     let result = quote! {
-        { static functor: #crt::prelude::LazyFunctor = #crt::prelude::LazyFunctor::new(#functor_name_str, #functor_arity_int);
-          functor.as_functor()
+        { static FUNCTOR: #crt::prelude::LazyFunctor = #crt::prelude::LazyFunctor::new(#functor_name_str, #functor_arity_int);
+          FUNCTOR.as_functor()
         }
     };
     result.into()

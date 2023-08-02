@@ -287,7 +287,7 @@ impl Parse for Functor {
         let params_stream;
         parenthesized!(params_stream in input);
         let params_punct: Punctuated<Term, Token![,]> =
-            params_stream.parse_terminated(Term::parse)?;
+            Punctuated::parse_terminated(&params_stream)?;
         let params: Vec<_> = params_punct.into_iter().collect();
 
         Ok(Self { head, params })
@@ -367,7 +367,7 @@ impl Parse for List {
         let elements_stream;
         bracketed!(elements_stream in input);
         let elements_punct: Punctuated<Term, Token![,]> =
-            elements_stream.parse_terminated(Term::parse)?;
+            Punctuated::parse_terminated(&elements_stream)?;
         let elements: Vec<_> = elements_punct.into_iter().collect();
 
         Ok(Self { elements })
@@ -473,8 +473,7 @@ impl Parse for Tuple {
     fn parse(input: &ParseBuffer) -> Result<Self> {
         let terms_stream;
         parenthesized!(terms_stream in input);
-        let terms_punct: Punctuated<Term, Token![,]> =
-            terms_stream.parse_terminated(Term::parse)?;
+        let terms_punct: Punctuated<Term, Token![,]> = Punctuated::parse_terminated(&terms_stream)?;
         let terms: Vec<_> = terms_punct.into_iter().collect();
         if terms.is_empty() {
             terms_stream
