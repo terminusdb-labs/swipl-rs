@@ -45,7 +45,7 @@ impl<'a> WritablePrologStream<'a> {
     pub unsafe fn new(stream: *mut fli::IOSTREAM) -> WritablePrologStream<'a> {
         WritablePrologStream {
             stream,
-            _x: PhantomData::default(),
+            _x: PhantomData,
         }
     }
 }
@@ -187,7 +187,7 @@ impl<'a> ReadablePrologStream<'a> {
     pub unsafe fn new(stream: *mut fli::IOSTREAM) -> ReadablePrologStream<'a> {
         ReadablePrologStream {
             stream,
-            _x: PhantomData::default(),
+            _x: PhantomData,
         }
     }
 }
@@ -230,7 +230,12 @@ unsafe fn ensure_readable_prolog_stream(stream: *mut fli::IOSTREAM) -> io::Resul
 unsafe fn read_from_prolog_stream(stream: *mut fli::IOSTREAM, buf: &mut [u8]) -> io::Result<usize> {
     ensure_readable_prolog_stream(stream)?;
 
-    let count = fli::Sfread(buf.as_ptr() as *mut std::ffi::c_void, 1, buf.len(), stream);
+    let count = fli::Sfread(
+        buf.as_mut_ptr() as *mut std::ffi::c_void,
+        1,
+        buf.len(),
+        stream,
+    );
 
     let error = fli::Sferror(stream);
     if error == -1 {

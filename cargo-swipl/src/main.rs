@@ -3,24 +3,33 @@ use std::env;
 use std::process::Command;
 use swipl_info::*;
 
-fn set_library_path(command: &mut Command) {
+fn get_envs() -> Vec<(&'static str, String)> {
     let info = get_swipl_info();
+    let mut result = Vec::new();
 
     if cfg!(target_os = "windows") {
-        let path = env::var("PATH").unwrap_or_else(|_|"".to_owned());
+        let path = env::var("PATH").unwrap_or_else(|_| "".to_owned());
         let path = format!("{};{}", info.lib_dir, path);
-        command.env("PATH", path);
+        result.push(("PATH", path));
     } else {
-        let ld_library_path = env::var("LD_LIBRARY_PATH").unwrap_or_else(|_|"".to_owned());
+        let ld_library_path = env::var("LD_LIBRARY_PATH").unwrap_or_else(|_| "".to_owned());
         let ld_library_path = format!("{}:{}", info.lib_dir, ld_library_path);
-        command.env("LD_LIBRARY_PATH", ld_library_path);
+        result.push(("LD_LIBRARY_PATH", ld_library_path));
     }
 
-    command.env("SWI_HOME_DIR", info.swi_home);
+    result.push(("SWI_HOME_DIR", info.swi_home));
+
+    result
+}
+
+fn set_library_path(command: &mut Command) {
+    for (var, val) in get_envs() {
+        command.env(var, val);
+    }
 }
 
 fn subcmd(subcommand: &ArgMatches, cmd: &str) {
-    let cargo = env::var("CARGO").unwrap_or_else(|_|"cargo".to_owned());
+    let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_owned());
     let mut command = Command::new(cargo);
 
     set_library_path(&mut command);
@@ -38,13 +47,23 @@ fn subcmd(subcommand: &ArgMatches, cmd: &str) {
     }
 }
 
-fn print_info() {
+fn print_info(lib_only: bool) {
     let info = get_swipl_info();
 
-    println!(
-        "version: {}\nswihome: {}\nlibrary path: {}",
-        info.version, info.swi_home, info.lib_dir
-    );
+    if lib_only {
+        println!("{}", info.lib_dir);
+    } else {
+        println!(
+            "version: {}\nswihome: {}\nlibrary path: {}",
+            info.version, info.swi_home, info.lib_dir
+        );
+    }
+}
+
+fn list_envs() {
+    for (var, val) in get_envs() {
+        println!("{var}={val}");
+    }
 }
 
 fn arbitrary_command(subcommand: &ArgMatches) {
@@ -99,13 +118,20 @@ fn main() {
         .subcommand(
             SubCommand::with_name("info")
                 .about("print information about the swipl environment")
+                .arg(Arg::with_name("lib_only")
+                    .help("only print library path (useful for debuggers)")
+                    .short("l").required(false))
         )
         .subcommand(
             SubCommand::with_name("env")
                 .setting(AppSettings::TrailingVarArg)
                 .setting(AppSettings::AllowLeadingHyphen)
                 .about("run an arbitrary command in an environment where the swipl library is added to the load path")
-                .arg(Arg::from_usage("<cmd>... 'commands to run'").required(false)),
+                .arg(Arg::from_usage("<cmd>... 'commands to run'").required(false))
+        )
+        .subcommand(
+            SubCommand::with_name("listenv")
+                .about("list the environment variables that would be applied if the env subcommand was used")
         );
 
     // Drop extra `swipl` argument provided by `cargo`.
@@ -125,10 +151,12 @@ fn main() {
         subcmd(matches, "test");
     } else if let Some(matches) = matches.subcommand_matches("run") {
         subcmd(matches, "run");
-    } else if let Some(_matches) = matches.subcommand_matches("info") {
-        print_info();
+    } else if let Some(matches) = matches.subcommand_matches("info") {
+        print_info(matches.is_present("lib_only"));
     } else if let Some(matches) = matches.subcommand_matches("env") {
         arbitrary_command(matches);
+    } else if let Some(_matches) = matches.subcommand_matches("listenv") {
+        list_envs();
     } else {
         panic!("unknown subcommand");
     }

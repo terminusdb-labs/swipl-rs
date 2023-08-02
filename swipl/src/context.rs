@@ -1092,16 +1092,16 @@ pub trait IntoPrologException {
     /// Turns this error into a prolog exception using the given context.
     ///
     /// The result is a `Term` containing the prolog exception.
-    fn into_prolog_exception<'a, 'b, T: QueryableContextType>(
+    fn into_prolog_exception<'a, T: QueryableContextType>(
         self,
-        context: &'a Context<'b, T>,
+        context: &'a Context<'_, T>,
     ) -> PrologResult<Term<'a>>;
 }
 
 impl IntoPrologException for std::io::Error {
-    fn into_prolog_exception<'a, 'b, T: QueryableContextType>(
+    fn into_prolog_exception<'a, T: QueryableContextType>(
         self,
-        context: &'a Context<'b, T>,
+        context: &'a Context<'_, T>,
     ) -> PrologResult<Term<'a>> {
         let kind_str = format!("{:?}", self.kind());
         let kind_atom = Atom::new(&kind_str);
