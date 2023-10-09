@@ -1183,6 +1183,7 @@ impl ErasedQWueryableContext {
 }
  */
 
+#[derive(Clone)]
 pub struct GenericQueryableContextType;
 unsafe impl ContextType for GenericQueryableContextType {}
 impl FrameableContextType for GenericQueryableContextType {}
