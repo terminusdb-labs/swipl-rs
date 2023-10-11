@@ -143,11 +143,8 @@ pub fn result_to_string_result<C: QueryableContextType, T>(
         Err(PrologError::Failure) => Err(PrologStringError::Failure),
         Err(PrologError::Exception) => {
             let r = c.with_exception(|e| {
-                eprintln!("a");
                 let e = e.expect("prolog exception but no exception in prolog engine");
-                eprintln!("b");
                 let result = c.string_from_term(e);
-                eprintln!("c");
 
                 result
             });
