@@ -604,6 +604,8 @@ prolog! {
     fn open_call(term);
 }
 
+pub type GenericQueryableContext<'a> = Context<'a, GenericQueryableContextType>;
+
 impl<'a, T: QueryableContextType> Context<'a, T> {
     /// Create a new Term reference in the current context.
     ///
@@ -1059,6 +1061,12 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
             _ => Ok((head, tail)),
         }
     }
+
+    pub fn into_generic(&self) -> GenericQueryableContext {
+        self.assert_activated();
+        self.activated.set(false);
+        unsafe { Context::new_activated(self, GenericQueryableContextType, self.engine) }
+    }
 }
 
 /// An iterator over a term list.
@@ -1154,6 +1162,12 @@ pub unsafe fn prolog_catch_unwind<F: FnOnce() -> R + std::panic::UnwindSafe, R>(
         }
     }
 }
+
+#[derive(Clone)]
+pub struct GenericQueryableContextType;
+unsafe impl ContextType for GenericQueryableContextType {}
+impl FrameableContextType for GenericQueryableContextType {}
+impl QueryableContextType for GenericQueryableContextType {}
 
 #[cfg(test)]
 mod tests {

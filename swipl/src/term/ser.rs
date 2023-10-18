@@ -671,7 +671,6 @@ impl<'a, C: QueryableContextType> ser::SerializeTuple for SerializeTuple<'a, C> 
     {
         self.len -= 1;
         if self.len == 0 {
-            eprintln!("last item");
             // this is our last item, so just unify directly
             let inner_serializer = Serializer::new_with_config(
                 self.context,
@@ -680,7 +679,6 @@ impl<'a, C: QueryableContextType> ser::SerializeTuple for SerializeTuple<'a, C> 
             );
             value.serialize(inner_serializer)
         } else {
-            eprintln!("some item");
             attempt_unify(&self.term, functor!(",/2"))?;
             let [head, tail] = attempt_opt(self.context.compound_terms(&self.term))?
                 .expect("should have two terms");
