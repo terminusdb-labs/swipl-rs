@@ -1,3 +1,3 @@
 (function() {var implementors = {
-"swipl":[["impl <a class=\"trait\" href=\"https://docs.rs/serde/1.0.180/serde/ser/trait.Error.html\" title=\"trait serde::ser::Error\">Error</a> for <a class=\"enum\" href=\"swipl/term/de/enum.Error.html\" title=\"enum swipl::term::de::Error\">Error</a>"]]
+"swipl":[["impl <a class=\"trait\" href=\"https://docs.rs/serde/1.0.189/serde/ser/trait.Error.html\" title=\"trait serde::ser::Error\">Error</a> for <a class=\"enum\" href=\"swipl/term/de/enum.Error.html\" title=\"enum swipl::term::de::Error\">Error</a>"]]
 };if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
