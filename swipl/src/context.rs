@@ -1163,26 +1163,6 @@ pub unsafe fn prolog_catch_unwind<F: FnOnce() -> R + std::panic::UnwindSafe, R>(
     }
 }
 
-/*
-unsafe impl ContextType for Box<dyn ContextType> {}
-unsafe impl ContextType for Box<dyn FrameableContextType> {}
-unsafe impl ContextType for Box<dyn QueryableContextType> {}
-impl FrameableContextType for Box<dyn FrameableContextType> {}
-impl FrameableContextType for Box<dyn QueryableContextType> {}
-impl QueryableContextType for Box<dyn QueryableContextType> {}
-
-pub struct ErasedQueryableContext {
-    inner: Context<'static, Box<dyn QueryableContextType>>,
-}
-
-impl ErasedQWueryableContext {
-    pub unsafe fn new<'a, C: ContextType>(context: Context<'a, C>) -> Self {
-        let inner: Box<dyn QueryableContextType> = Box::new(context.context);
-
-    }
-}
- */
-
 #[derive(Clone)]
 pub struct GenericQueryableContextType;
 unsafe impl ContextType for GenericQueryableContextType {}

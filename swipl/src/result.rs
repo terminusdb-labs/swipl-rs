@@ -144,9 +144,7 @@ pub fn result_to_string_result<C: QueryableContextType, T>(
         Err(PrologError::Exception) => {
             let r = c.with_exception(|e| {
                 let e = e.expect("prolog exception but no exception in prolog engine");
-                let result = c.string_from_term(e);
-
-                result
+                c.string_from_term(e)
             });
 
             c.clear_exception();
