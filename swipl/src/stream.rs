@@ -102,6 +102,7 @@ unsafe fn write_to_prolog_stream(stream: *mut fli::IOSTREAM, buf: &[u8]) -> io::
 
         let error = fli::Sferror(stream);
         if error == -1 {
+            fli::Sclearerr(stream);
             return Err(io::Error::new(
                 io::ErrorKind::UnexpectedEof,
                 "unexpected eof",
@@ -239,6 +240,7 @@ unsafe fn read_from_prolog_stream(stream: *mut fli::IOSTREAM, buf: &mut [u8]) ->
 
     let error = fli::Sferror(stream);
     if error == -1 {
+        fli::Sclearerr(stream);
         Err(io::Error::new(
             io::ErrorKind::UnexpectedEof,
             "unexpected eof",
