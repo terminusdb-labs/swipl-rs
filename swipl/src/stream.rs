@@ -5,6 +5,9 @@
 use std::io::{self, Read, Write};
 use std::marker::PhantomData;
 
+use either::Either;
+use num_enum::FromPrimitive;
+
 use crate::engine::*;
 use crate::term::*;
 use crate::{fli, term_getable};
@@ -47,6 +50,10 @@ impl<'a> WritablePrologStream<'a> {
             stream,
             _x: PhantomData,
         }
+    }
+
+    pub fn encoding(&self) -> StreamEncoding {
+        StreamEncoding::from(unsafe { (*self.stream).encoding })
     }
 }
 
@@ -188,6 +195,21 @@ pub struct ReadablePrologStream<'a> {
     _x: PhantomData<&'a ()>,
 }
 
+#[derive(FromPrimitive)]
+#[repr(u32)]
+pub enum StreamEncoding {
+    #[default]
+    Unknown = 0,
+    Octet,
+    Ascii,
+    Latin1,
+    Ansi,
+    Utf8,
+    Utf16Be,
+    Utf16Le,
+    Wchar,
+}
+
 impl<'a> ReadablePrologStream<'a> {
     /// Wrap a readable prolog stream.
     ///
@@ -198,6 +220,23 @@ impl<'a> ReadablePrologStream<'a> {
         ReadablePrologStream {
             stream,
             _x: PhantomData,
+        }
+    }
+
+    pub fn encoding(&self) -> StreamEncoding {
+        StreamEncoding::from(unsafe { (*self.stream).encoding })
+    }
+
+    /// Returns an implementation of Read which will automatically
+    /// decode the underlying prolog stream, ensuring that it looks
+    /// like proper utf-8.
+    ///
+    /// This is especially useful for cases where we like to pass a
+    /// reader to a decoder like serde.
+    pub fn decoding_reader(self) -> Either<Self, Latin1Reader<Self>> {
+        match self.encoding() {
+            StreamEncoding::Latin1 => Either::Right(Latin1Reader::new(self)),
+            _ => Either::Left(self),
         }
     }
 }
@@ -264,5 +303,94 @@ impl<'a> Read for ReadablePrologStream<'a> {
         assert_some_engine_is_active();
 
         unsafe { read_from_prolog_stream(self.stream, buf) }
+    }
+}
+
+pub struct Latin1Reader<R> {
+    inner: R,
+    remainder: u8,
+}
+
+impl<R> Latin1Reader<R> {
+    pub fn new(reader: R) -> Self {
+        Self {
+            inner: reader,
+            remainder: 0,
+        }
+    }
+
+    pub fn into_inner(self) -> R {
+        self.inner
+    }
+}
+
+impl<R: Read> Read for Latin1Reader<R> {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        if buf.is_empty() {
+            return Ok(0);
+        }
+        let mut partial_buf = buf;
+        let mut count = 0;
+        if self.remainder != 0 {
+            partial_buf[0] = self.remainder;
+            partial_buf = &mut partial_buf[1..];
+            count += 1;
+            self.remainder = 0;
+        }
+
+        if partial_buf.is_empty() {
+            return Ok(count);
+        } else if partial_buf.len() == 1 {
+            // only one character remains. we might be lucky and
+            // be able to fit one more character, or we might hit
+            // a boundary.
+            let mut x = [0_u8; 1];
+            let final_count = self.inner.read(&mut x)?;
+            if final_count == 0 {
+                return Ok(count);
+            } else if x[0] & 0x80 != 0 {
+                // boundary!
+                let c = x[0] as char;
+                let mut x2 = [0_u8; 2];
+                c.encode_utf8(&mut x2);
+                partial_buf[0] = x2[0];
+                self.remainder = x2[1];
+            } else {
+                partial_buf[0] = x[0];
+            }
+            count += 1;
+            return Ok(count);
+        }
+        // at least 2 bytes remain in buf. this means we can
+        // always read at least one latin1 character.
+
+        // for the most part we want to be optimistic and assume
+        // that this latin-1 stream is actually just going to be
+        // an ascii stream and no special encoding is necessary.
+        // So we read directly into the destination buf and only
+        // do something special if it turns out this assumption
+        // doesn't hold.
+
+        let expected_len = partial_buf.len() / 2;
+        let mut len = self.inner.read(&mut partial_buf[..expected_len])?;
+        if len == 0 {
+            // nothing was read. we should be done.
+            return Ok(count);
+        }
+        // scan for forbidden values
+        let found_forbidden = partial_buf[..len].iter().position(|i| i & 0x80 != 0);
+        if let Some(mut index) = found_forbidden {
+            // copy remainder to a vec so we can start processing
+            let copy = partial_buf[index..len].to_vec();
+            for c in copy {
+                (c as char).encode_utf8(&mut partial_buf[index..index + 2]);
+                index += if c & 0x80 == 0 { 1 } else { 2 };
+            }
+            // finally, since length will have changed through this operation, ensure len is correct.
+            len = index;
+        }
+        count += len;
+
+        Ok(count)
     }
 }

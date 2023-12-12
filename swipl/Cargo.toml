@@ -17,6 +17,8 @@ lazy_static = "1.4.0"
 thiserror = "1.0"
 serde = {version="1.0", optional=true}
 convert_case = "0.6"
+num_enum = "0.7.1"
+either = "1.9.0"
 
 [dev-dependencies]
 serde = {version="1.0", features=["derive"]}
