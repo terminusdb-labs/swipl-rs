@@ -644,6 +644,8 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         // yet with const generic arrays. We do a pointer cast
         // instead.
         let magic = result.as_ptr() as *const [Term; N];
+        // allowing forget_non_drop cause I don't want us to accidentally drop something should the underlying things at one point implement drop.
+        #[allow(clippy::forget_non_drop)]
         std::mem::forget(result);
 
         unsafe { magic.read() }

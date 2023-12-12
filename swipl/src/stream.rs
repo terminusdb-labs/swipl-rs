@@ -102,6 +102,7 @@ unsafe fn write_to_prolog_stream(stream: *mut fli::IOSTREAM, buf: &[u8]) -> io::
 
         let error = fli::Sferror(stream);
         if error == -1 {
+            fli::Sclearerr(stream);
             return Err(io::Error::new(
                 io::ErrorKind::UnexpectedEof,
                 "unexpected eof",
@@ -113,19 +114,19 @@ unsafe fn write_to_prolog_stream(stream: *mut fli::IOSTREAM, buf: &[u8]) -> io::
         write_buf.extend_from_slice(buf);
         write_buf.push(0);
         let result = fli::Sfputs(write_buf.as_ptr() as *const std::os::raw::c_char, stream);
+        let error = fli::Sferror(stream);
+        if error != 0 {
+            fli::Sclearerr(stream);
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "Tried to write data that is out of range for the encoding of this stream",
+            ));
+        }
         if result == fli::EOF {
-            if fli::Sferror(stream) != 0 {
-                fli::Sclearerr(stream);
-                return Err(io::Error::new(
-                    io::ErrorKind::InvalidData,
-                    "Tried to write data that is out of range for the encoding of this stream",
-                ));
-            } else {
-                return Err(io::Error::new(
-                    io::ErrorKind::UnexpectedEof,
-                    "unexpected eof",
-                ));
-            }
+            return Err(io::Error::new(
+                io::ErrorKind::UnexpectedEof,
+                "unexpected eof",
+            ));
         }
 
         count = buf.len();
@@ -144,8 +145,13 @@ impl<'a> Write for WritablePrologStream<'a> {
     fn flush(&mut self) -> io::Result<()> {
         assert_some_engine_is_active();
         let result = unsafe { fli::Sflush(self.stream) };
-        match result {
-            0 => Ok(()),
+        let error = unsafe { fli::Sferror(self.stream) };
+        if error != 0 {
+            unsafe { fli::Sclearerr(self.stream) };
+        }
+
+        match (result, error) {
+            (0, 0) => Ok(()),
             _ => Err(io::Error::new(io::ErrorKind::Other, "prolog flush failed")),
         }
     }
@@ -160,8 +166,12 @@ impl Write for PrologStream {
     fn flush(&mut self) -> io::Result<()> {
         assert_some_engine_is_active();
         let result = unsafe { fli::Sflush(self.stream) };
-        match result {
-            0 => Ok(()),
+        let error = unsafe { fli::Sferror(self.stream) };
+        if error != 0 {
+            unsafe { fli::Sclearerr(self.stream) };
+        }
+        match (result, error) {
+            (0, 0) => Ok(()),
             _ => Err(io::Error::new(io::ErrorKind::Other, "prolog flush failed")),
         }
     }
@@ -239,6 +249,7 @@ unsafe fn read_from_prolog_stream(stream: *mut fli::IOSTREAM, buf: &mut [u8]) ->
 
     let error = fli::Sferror(stream);
     if error == -1 {
+        fli::Sclearerr(stream);
         Err(io::Error::new(
             io::ErrorKind::UnexpectedEof,
             "unexpected eof",
