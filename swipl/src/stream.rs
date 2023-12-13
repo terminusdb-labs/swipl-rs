@@ -195,8 +195,25 @@ pub struct ReadablePrologStream<'a> {
     _x: PhantomData<&'a ()>,
 }
 
+#[cfg(not(windows))]
 #[derive(FromPrimitive)]
 #[repr(u32)]
+pub enum StreamEncoding {
+    #[default]
+    Unknown = 0,
+    Octet,
+    Ascii,
+    Latin1,
+    Ansi,
+    Utf8,
+    Utf16Be,
+    Utf16Le,
+    Wchar,
+}
+
+#[cfg(windows)]
+#[derive(FromPrimitive)]
+#[repr(i32)]
 pub enum StreamEncoding {
     #[default]
     Unknown = 0,
