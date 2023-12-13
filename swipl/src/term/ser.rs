@@ -74,6 +74,7 @@ fn attempt_unify<U: Unifiable>(term: &Term, v: U) -> Result<(), Error> {
 pub struct SerializerConfiguration {
     default_tag: Option<Atom>,
     tag_struct_dicts: bool,
+    unit_atom: Option<Atom>,
 }
 
 impl Default for SerializerConfiguration {
@@ -88,6 +89,7 @@ impl SerializerConfiguration {
         Self {
             default_tag: None,
             tag_struct_dicts: false,
+            unit_atom: None,
         }
     }
 
@@ -123,6 +125,15 @@ impl SerializerConfiguration {
     /// default tag is not set, the tag will remain a variable.
     pub fn tag_struct_dicts(mut self) -> Self {
         self.set_tag_struct_dicts();
+        self
+    }
+
+    pub fn set_unit_atom(&mut self, unit: Atom) {
+        self.unit_atom = Some(unit);
+    }
+
+    pub fn unit_atom(mut self, unit: Atom) -> Self {
+        self.set_unit_atom(unit);
         self
     }
 }
@@ -232,7 +243,11 @@ impl<'a, C: QueryableContextType> serde::Serializer for Serializer<'a, C> {
         }
     }
     fn serialize_unit(self) -> Result<Self::Ok, Self::Error> {
-        attempt_unify(&self.term, Nil)
+        if let Some(unit) = self.configuration.unit_atom {
+            attempt_unify(&self.term, unit)
+        } else {
+            attempt_unify(&self.term, Nil)
+        }
     }
     fn serialize_unit_struct(self, name: &'static str) -> Result<Self::Ok, Self::Error> {
         attempt_unify(&self.term, Atom::new(name))
