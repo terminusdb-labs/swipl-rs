@@ -625,12 +625,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
     /// reference, ensuring that it cannot outlive the context that
     /// created it.
     pub fn new_term_refs<const N: usize>(&self) -> [Term; N] {
-        // TODO: this should be a compile time thing ideally
-        if N > i32::MAX as usize {
-            panic!("too many term refs requested: {}", N);
-        }
-
-        let mut term_ptr = unsafe { PL_new_term_refs(N as i32) };
+        let mut term_ptr = unsafe { PL_new_term_refs(N) };
         let mut result: [MaybeUninit<Term>; N] = unsafe { MaybeUninit::uninit().assume_init() };
         for r in result.iter_mut() {
             let term = unsafe { Term::new(term_ptr, self.as_term_origin()) };
@@ -657,11 +652,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
     /// reference, ensuring that it cannot outlive the context that
     /// created it.
     pub fn new_term_refs_vec(&self, count: usize) -> Vec<Term> {
-        if count > i32::MAX as usize {
-            panic!("too many term refs requested: {}", count);
-        }
-
-        let mut term_ptr = unsafe { PL_new_term_refs(count as i32) };
+        let mut term_ptr = unsafe { PL_new_term_refs(count) };
         let mut result = Vec::with_capacity(count);
         for _ in 0..count {
             let term = unsafe { Term::new(term_ptr, self.as_term_origin()) };
