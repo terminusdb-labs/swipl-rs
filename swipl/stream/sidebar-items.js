@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["PrologStream","ReadablePrologStream","WritablePrologStream"]};
+window.SIDEBAR_ITEMS = {"enum":["StreamEncoding"],"struct":["Latin1Reader","PrologStream","ReadablePrologStream","WritablePrologStream"]};
