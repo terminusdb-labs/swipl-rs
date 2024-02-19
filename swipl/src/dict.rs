@@ -5,6 +5,7 @@
 use super::fli;
 use super::prelude::*;
 use std::collections::HashMap;
+use std::convert::TryInto;
 
 /// A key in a prolog dictionary.
 #[derive(PartialEq, Eq, Hash, Debug, Clone)]
@@ -207,7 +208,8 @@ unsafe impl<'a> TermPutable for DictBuilder<'a> {
         let tag_term = context.new_term_ref();
         let len = self.entries.len();
         // TODO assert len is not too big
-        let value_terms = unsafe { fli::PL_new_term_refs(len as i32) };
+        #[allow(clippy::useless_conversion)]
+        let value_terms = unsafe { fli::PL_new_term_refs(len.try_into().unwrap()) };
         let mut value_term = value_terms;
         let mut key_atoms = Vec::with_capacity(len);
 

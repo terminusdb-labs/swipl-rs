@@ -44,6 +44,7 @@ impl Functor {
         }
         let atom = name.into_atom();
 
+        #[allow(clippy::unnecessary_fallible_conversions)]
         let functor = unsafe { PL_new_functor(atom.atom_ptr(), arity.try_into().unwrap()) };
 
         unsafe { Functor::wrap(functor) }

@@ -304,7 +304,8 @@ impl<const N: usize> Callable<N> for CallablePredicate<N> {
             .unwrap_or(std::ptr::null_mut());
         let flags = PL_Q_NORMAL | PL_Q_CATCH_EXCEPTION | PL_Q_EXT_STATUS;
         unsafe {
-            let terms = PL_new_term_refs(N as i32);
+            #[allow(clippy::useless_conversion)]
+            let terms = PL_new_term_refs(N.try_into().unwrap());
             for (i, arg) in args.iter().enumerate() {
                 let term = context.wrap_term_ref(terms + i);
                 assert!(term.unify(arg).is_ok());

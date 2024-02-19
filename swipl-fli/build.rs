@@ -13,7 +13,7 @@ fn main() {
     let bindings = bindgen::Builder::default()
         .header("c/wrapper.h")
         .clang_arg(format!("-I{}", info.header_dir))
-        .parse_callbacks(Box::new(bindgen::CargoCallbacks))
+        .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .generate()
         .unwrap();
 
