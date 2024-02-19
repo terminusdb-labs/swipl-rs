@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl-info/src/lib.rs`."><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-fa3bb1812debf86c.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="swipl_info" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.0 (79e9716c9 2023-11-13)" data-channel="1.74.0" data-search-js="search-8be46b629f5f14a8.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-c5bd66d33317d69f.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../swipl_info/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl-info/src/lib.rs`."><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-ac92e1bbe349e143.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="swipl_info" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0 (07dca489a 2024-02-04)" data-channel="1.76.0" data-search-js="search-2b6ce74ff89ae146.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-f2adc0d6ca4d09fb.js"></script><script defer src="../../static.files/src-script-39ed315d46fb705f.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-305769736d49e732.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-feafe1bb7466e4bd.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -121,7 +122,7 @@
 <a href="#121" id="121">121</a>
 <a href="#122" id="122">122</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! A helper crate to retrieve information about the installed swipl environment.
-</span><span class="attr">#![doc(html_root_url = <span class="string">&quot;https://terminusdb-labs.github.io/swipl-rs/swipl_info/&quot;</span>)]
+</span><span class="attr">#![doc(html_root_url = <span class="string">"https://terminusdb-labs.github.io/swipl-rs/swipl_info/"</span>)]
 
 </span><span class="kw">use </span>regex::<span class="kw-2">*</span>;
 <span class="kw">use </span>std::env;
@@ -153,7 +154,7 @@
 <span class="doccomment">/// Retrieve information about the installed swipl environment.
 ///
 /// This will check the SWIPL environment variable for a path to the
-/// swipl binary. If this environment variable is not set, it&#39;ll
+/// swipl binary. If this environment variable is not set, it'll
 /// attempt to find swipl by assuming it is on the PATH. When found,
 /// some prolog is run to extract this information using the
 /// `prolog_pack` library, and returned as a `SwiplInfo`.
@@ -163,54 +164,54 @@
     <span class="comment">// by retrieving SWIPL from env, this should work within swipl
     // build environments, as these set this environment variable
     // appropriately.
-    </span><span class="kw">let </span>swipl_path = env::var(<span class="string">&quot;SWIPL&quot;</span>).unwrap_or_else(|<span class="kw">_</span>| <span class="string">&quot;swipl&quot;</span>.to_string());
+    </span><span class="kw">let </span>swipl_path = env::var(<span class="string">"SWIPL"</span>).unwrap_or_else(|<span class="kw">_</span>| <span class="string">"swipl"</span>.to_string());
 
-    <span class="comment">// let&#39;s first retrieve a version number
+    <span class="comment">// let's first retrieve a version number
     </span><span class="kw">let </span>output = Command::new(<span class="kw-2">&amp;</span>swipl_path)
-        .arg(<span class="string">&quot;-g&quot;</span>)
-        .arg(<span class="string">&quot;current_prolog_flag(version, Version), writeq(Version)&quot;</span>)
-        .arg(<span class="string">&quot;-g&quot;</span>)
-        .arg(<span class="string">&quot;halt&quot;</span>)
+        .arg(<span class="string">"-g"</span>)
+        .arg(<span class="string">"current_prolog_flag(version, Version), writeq(Version)"</span>)
+        .arg(<span class="string">"-g"</span>)
+        .arg(<span class="string">"halt"</span>)
         .output()
         .unwrap();
 
     <span class="kw">if </span>!output.status.success() {
-        <span class="macro">panic!</span>(<span class="string">&quot;Error retrieving version number using swipl: {:?}&quot;</span>, output);
+        <span class="macro">panic!</span>(<span class="string">"Error retrieving version number using swipl: {:?}"</span>, output);
     }
 
     <span class="kw">let </span>version: u32 = String::from_utf8_lossy(<span class="kw-2">&amp;</span>output.stdout).parse().unwrap();
 
     <span class="kw">let </span>build_env_command = <span class="kw">if </span>version &gt;= <span class="number">80504 </span>{
         <span class="comment">// build_environment predicate moved and is now called somewhat differently
-        </span><span class="string">&quot;use_module(library(build/tools)), build_tools:build_environment(Env, []), memberchk(&#39;SWIHOME&#39;=Swihome, Env), memberchk(&#39;PACKSODIR&#39;=Packsodir, Env), memberchk(&#39;CFLAGS&#39;=Cflags, Env), memberchk(&#39;LDSOFLAGS&#39;=Ldflags, Env), format(&#39;~s~n~s~n~s~n~s~n&#39;, [Swihome, Packsodir, Cflags, Ldflags])&quot;
+        </span><span class="string">"use_module(library(build/tools)), build_tools:build_environment(Env, []), memberchk('SWIHOME'=Swihome, Env), memberchk('PACKSODIR'=Packsodir, Env), memberchk('CFLAGS'=Cflags, Env), memberchk('LDSOFLAGS'=Ldflags, Env), format('~s~n~s~n~s~n~s~n', [Swihome, Packsodir, Cflags, Ldflags])"
     </span>} <span class="kw">else </span>{
-        <span class="string">&quot;use_module(library(prolog_pack)), prolog_pack:build_environment(Env), memberchk(&#39;SWIHOME&#39;=Swihome, Env), memberchk(&#39;PACKSODIR&#39;=Packsodir, Env), memberchk(&#39;CFLAGS&#39;=Cflags, Env), memberchk(&#39;LDSOFLAGS&#39;=Ldflags, Env), format(&#39;~s~n~s~n~s~n~s~n&#39;, [Swihome, Packsodir, Cflags, Ldflags])&quot;
+        <span class="string">"use_module(library(prolog_pack)), prolog_pack:build_environment(Env), memberchk('SWIHOME'=Swihome, Env), memberchk('PACKSODIR'=Packsodir, Env), memberchk('CFLAGS'=Cflags, Env), memberchk('LDSOFLAGS'=Ldflags, Env), format('~s~n~s~n~s~n~s~n', [Swihome, Packsodir, Cflags, Ldflags])"
     </span>};
 
     <span class="kw">let </span>output = Command::new(<span class="kw-2">&amp;</span>swipl_path)
-        .arg(<span class="string">&quot;-g&quot;</span>)
+        .arg(<span class="string">"-g"</span>)
         .arg(build_env_command)
-        .arg(<span class="string">&quot;-g&quot;</span>)
-        .arg(<span class="string">&quot;halt&quot;</span>)
+        .arg(<span class="string">"-g"</span>)
+        .arg(<span class="string">"halt"</span>)
         .output()
         .unwrap();
 
     <span class="kw">if </span>!output.status.success() {
         <span class="macro">panic!</span>(
-            <span class="string">&quot;Error retrieving build environment using swipl: {:?}&quot;</span>,
+            <span class="string">"Error retrieving build environment using swipl: {:?}"</span>,
             output
         );
     }
 
     <span class="kw">let </span>runtime_output = Command::new(<span class="kw-2">&amp;</span>swipl_path)
-        .arg(<span class="string">&quot;--dump-runtime-variables&quot;</span>)
+        .arg(<span class="string">"--dump-runtime-variables"</span>)
         .output()
         .unwrap();
 
     <span class="kw">let </span>runtime_output = String::from_utf8_lossy(<span class="kw-2">&amp;</span>runtime_output.stdout);
 
-    <span class="kw">let </span>plarch_regex = Regex::new(<span class="string">r#&quot;PLARCH=&quot;([^&quot;]*)&quot;&quot;#</span>).unwrap();
-    <span class="kw">let </span>pllibdir_regex = Regex::new(<span class="string">r#&quot;PLLIBDIR=&quot;([^&quot;]*)&quot;&quot;#</span>).unwrap();
+    <span class="kw">let </span>plarch_regex = Regex::new(<span class="string">r#"PLARCH="([^"]*)""#</span>).unwrap();
+    <span class="kw">let </span>pllibdir_regex = Regex::new(<span class="string">r#"PLLIBDIR="([^"]*)""#</span>).unwrap();
 
     <span class="kw">let </span>arch = plarch_regex.captures(<span class="kw-2">&amp;</span>runtime_output).unwrap()[<span class="number">1</span>].to_string();
     <span class="kw">let </span>lib_dir = pllibdir_regex.captures(<span class="kw-2">&amp;</span>runtime_output).unwrap()[<span class="number">1</span>].to_string();
@@ -222,13 +223,13 @@
     <span class="kw">let </span>cflags = lines.next().unwrap().to_owned();
     <span class="kw">let </span>ldflags = lines.next().unwrap().to_owned();
 
-    <span class="kw">let </span>lib_name = <span class="kw">if </span><span class="macro">cfg!</span>(target_os = <span class="string">&quot;windows&quot;</span>) {
-        <span class="string">&quot;libswipl&quot;</span>.to_string()
+    <span class="kw">let </span>lib_name = <span class="kw">if </span><span class="macro">cfg!</span>(target_os = <span class="string">"windows"</span>) {
+        <span class="string">"libswipl"</span>.to_string()
     } <span class="kw">else </span>{
-        <span class="string">&quot;swipl&quot;</span>.to_string()
+        <span class="string">"swipl"</span>.to_string()
     };
 
-    <span class="kw">let </span>header_dir = <span class="macro">format!</span>(<span class="string">&quot;{}/include&quot;</span>, swi_home);
+    <span class="kw">let </span>header_dir = <span class="macro">format!</span>(<span class="string">"{}/include"</span>, swi_home);
 
     SwiplInfo {
         version,

@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl/src/callable.rs`."><title>callable.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-fa3bb1812debf86c.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="swipl" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.0 (79e9716c9 2023-11-13)" data-channel="1.74.0" data-search-js="search-8be46b629f5f14a8.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-c5bd66d33317d69f.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../swipl/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl/src/callable.rs`."><title>callable.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-ac92e1bbe349e143.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="swipl" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0 (07dca489a 2024-02-04)" data-channel="1.76.0" data-search-js="search-2b6ce74ff89ae146.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-f2adc0d6ca4d09fb.js"></script><script defer src="../../static.files/src-script-39ed315d46fb705f.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-305769736d49e732.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-feafe1bb7466e4bd.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -393,6 +394,7 @@
 <a href="#393" id="393">393</a>
 <a href="#394" id="394">394</a>
 <a href="#395" id="395">395</a>
+<a href="#396" id="396">396</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Support for calling into prolog or prolog-like code.
 </span><span class="kw">use </span><span class="kw">crate</span>::context::<span class="kw-2">*</span>;
 <span class="kw">use </span><span class="kw">crate</span>::engine::<span class="kw-2">*</span>;
@@ -412,14 +414,14 @@
 /// This is used by both the `prolog!` macro and the `pred!` macro to
 /// only look up a predicate once.
 </span><span class="kw">pub struct </span>LazyCallablePredicate&lt;<span class="kw">const </span>N: usize&gt; {
-    module: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str&gt;,
-    name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+    module: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">'static </span>str&gt;,
+    name: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
     predicate: AtomicPtr&lt;c_void&gt;,
 }
 
 <span class="kw">impl</span>&lt;<span class="kw">const </span>N: usize&gt; LazyCallablePredicate&lt;N&gt; {
     <span class="doccomment">/// Create a new `LazyCallablepredicate` from a module, a name, and the const type argument which is used as arity.
-    </span><span class="kw">pub const fn </span>new(module: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str&gt;, name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str) -&gt; <span class="self">Self </span>{
+    </span><span class="kw">pub const fn </span>new(module: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">'static </span>str&gt;, name: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             module,
             name,
@@ -429,14 +431,14 @@
 
     <span class="doccomment">/// Return a `CallablePredicate` from the information in this struct.
     ///
-    /// If this was previously called for this struct, it&#39;ll return
-    /// what it previously looked up. Otherwise, it&#39;ll do the lookup.
+    /// If this was previously called for this struct, it'll return
+    /// what it previously looked up. Otherwise, it'll do the lookup.
     </span><span class="kw">pub fn </span>as_callable(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; CallablePredicate&lt;N&gt; {
         assert_some_engine_is_active();
         <span class="kw">let </span><span class="kw-2">mut </span>loaded: predicate_t = <span class="self">self</span>.predicate.load(Ordering::Relaxed) <span class="kw">as </span>predicate_t;
         <span class="kw">if </span>loaded.is_null() {
             <span class="kw">let </span>functor = Functor::new(<span class="self">self</span>.name, N <span class="kw">as </span>u16);
-            <span class="kw">let </span>module_name = <span class="self">self</span>.module.unwrap_or(<span class="string">&quot;&quot;</span>);
+            <span class="kw">let </span>module_name = <span class="self">self</span>.module.unwrap_or(<span class="string">""</span>);
             <span class="kw">let </span>module = Module::new(module_name);
 
             loaded = Predicate::new(functor, module).predicate_ptr();
@@ -452,25 +454,25 @@
 <span class="kw">impl</span>&lt;<span class="kw">const </span>N: usize&gt; Callable&lt;N&gt; <span class="kw">for </span>LazyCallablePredicate&lt;N&gt; {
     <span class="kw">type </span>ContextType = OpenQuery;
 
-    <span class="kw">fn </span>open&lt;<span class="lifetime">&#39;a</span>, C: ContextType&gt;(
+    <span class="kw">fn </span>open&lt;<span class="lifetime">'a</span>, C: ContextType&gt;(
         <span class="self">self</span>,
-        context: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Context&lt;C&gt;,
+        context: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Context&lt;C&gt;,
         module: <span class="prelude-ty">Option</span>&lt;Module&gt;,
         args: [<span class="kw-2">&amp;</span>Term; N],
-    ) -&gt; Context&lt;<span class="lifetime">&#39;a</span>, OpenQuery&gt; {
+    ) -&gt; Context&lt;<span class="lifetime">'a</span>, OpenQuery&gt; {
         <span class="self">self</span>.as_callable().open(context, module, args)
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="kw">const </span>N: usize&gt; Callable&lt;N&gt; <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>LazyCallablePredicate&lt;N&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, <span class="kw">const </span>N: usize&gt; Callable&lt;N&gt; <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">'a </span>LazyCallablePredicate&lt;N&gt; {
     <span class="kw">type </span>ContextType = OpenQuery;
 
-    <span class="kw">fn </span>open&lt;<span class="lifetime">&#39;b</span>, C: ContextType&gt;(
+    <span class="kw">fn </span>open&lt;<span class="lifetime">'b</span>, C: ContextType&gt;(
         <span class="self">self</span>,
-        context: <span class="kw-2">&amp;</span><span class="lifetime">&#39;b </span>Context&lt;C&gt;,
+        context: <span class="kw-2">&amp;</span><span class="lifetime">'b </span>Context&lt;C&gt;,
         module: <span class="prelude-ty">Option</span>&lt;Module&gt;,
         args: [<span class="kw-2">&amp;</span>Term; N],
-    ) -&gt; Context&lt;<span class="lifetime">&#39;b</span>, OpenQuery&gt; {
+    ) -&gt; Context&lt;<span class="lifetime">'b</span>, OpenQuery&gt; {
         <span class="self">self</span>.as_callable().open(context, module, args)
     }
 }
@@ -478,7 +480,7 @@
 <span class="doccomment">/// Error type for turning a [Predicate](crate::predicate::Predicate) into a [CallablePredicate].
 </span><span class="attr">#[derive(Error, Debug)]
 </span><span class="kw">pub enum </span>PredicateWrapError {
-    <span class="attr">#[error(<span class="string">&quot;predicate has arity {actual} but {expected} was required&quot;</span>)]
+    <span class="attr">#[error(<span class="string">"predicate has arity {actual} but {expected} was required"</span>)]
     </span>WrongArity { expected: u16, actual: u16 },
 }
 
@@ -532,12 +534,12 @@
 </span><span class="kw">pub trait </span>Callable&lt;<span class="kw">const </span>N: usize&gt; {
     <span class="kw">type </span>ContextType: OpenCall;
 
-    <span class="kw">fn </span>open&lt;<span class="lifetime">&#39;a</span>, C: ContextType&gt;(
+    <span class="kw">fn </span>open&lt;<span class="lifetime">'a</span>, C: ContextType&gt;(
         <span class="self">self</span>,
-        context: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Context&lt;C&gt;,
+        context: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Context&lt;C&gt;,
         module: <span class="prelude-ty">Option</span>&lt;Module&gt;,
         args: [<span class="kw-2">&amp;</span>Term; N],
-    ) -&gt; Context&lt;<span class="lifetime">&#39;a</span>, <span class="self">Self</span>::ContextType&gt;;
+    ) -&gt; Context&lt;<span class="lifetime">'a</span>, <span class="self">Self</span>::ContextType&gt;;
 }
 
 <span class="doccomment">/// An open query.
@@ -555,10 +557,10 @@
 ///
 /// This context type is the only type where new terms are not allowed
 /// to be created, nor is it allowed to start new queries directly
-/// from this context. This is because SWI-Prolog really doesn&#39;t like
+/// from this context. This is because SWI-Prolog really doesn't like
 /// it if the prolog stack changes between solutions. It is still
 /// possible however to open a new frame and do all that stuff in the
-/// new frame. You&#39;ll need to close the frame before continuing with
+/// new frame. You'll need to close the frame before continuing with
 /// solution retrieval.
 ///
 /// # Safety
@@ -587,7 +589,7 @@
     </span><span class="kw">fn </span>discard(this: Context&lt;<span class="self">Self</span>&gt;);
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C: OpenCall&gt; Context&lt;<span class="lifetime">&#39;a</span>, C&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C: OpenCall&gt; Context&lt;<span class="lifetime">'a</span>, C&gt; {
     <span class="doccomment">/// Retrieve the next solution.
     ///
     /// If solution retrieval led to a failure or an error, this is
@@ -654,7 +656,7 @@
             <span class="number">0 </span>=&gt; <span class="prelude-val">Err</span>(PrologError::Failure),
             <span class="number">1 </span>=&gt; <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>),
             <span class="number">2 </span>=&gt; <span class="prelude-val">Ok</span>(<span class="bool-val">false</span>),
-            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unknown query result type {}&quot;</span>, result),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">"unknown query result type {}"</span>, result),
         }
     }
 
@@ -686,12 +688,12 @@
 <span class="kw">impl</span>&lt;<span class="kw">const </span>N: usize&gt; Callable&lt;N&gt; <span class="kw">for </span>CallablePredicate&lt;N&gt; {
     <span class="kw">type </span>ContextType = OpenQuery;
 
-    <span class="kw">fn </span>open&lt;<span class="lifetime">&#39;a</span>, C: ContextType&gt;(
+    <span class="kw">fn </span>open&lt;<span class="lifetime">'a</span>, C: ContextType&gt;(
         <span class="self">self</span>,
-        context: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Context&lt;C&gt;,
+        context: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Context&lt;C&gt;,
         module: <span class="prelude-ty">Option</span>&lt;Module&gt;,
         args: [<span class="kw-2">&amp;</span>Term; N],
-    ) -&gt; Context&lt;<span class="lifetime">&#39;a</span>, <span class="self">Self</span>::ContextType&gt; {
+    ) -&gt; Context&lt;<span class="lifetime">'a</span>, <span class="self">Self</span>::ContextType&gt; {
         context.assert_activated();
         context.assert_no_exception();
         <span class="kw">let </span>module_context = module
@@ -699,7 +701,8 @@
             .unwrap_or(std::ptr::null_mut());
         <span class="kw">let </span>flags = PL_Q_NORMAL | PL_Q_CATCH_EXCEPTION | PL_Q_EXT_STATUS;
         <span class="kw">unsafe </span>{
-            <span class="kw">let </span>terms = PL_new_term_refs(N <span class="kw">as </span>i32);
+            <span class="attr">#[allow(clippy::useless_conversion)]
+            </span><span class="kw">let </span>terms = PL_new_term_refs(N.try_into().unwrap());
             <span class="kw">for </span>(i, arg) <span class="kw">in </span>args.iter().enumerate() {
                 <span class="kw">let </span>term = context.wrap_term_ref(terms + i);
                 <span class="macro">assert!</span>(term.unify(arg).is_ok());
@@ -756,8 +759,8 @@
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
         <span class="kw">let </span>term = <span class="macro">term! </span>{context: flurps(flargh)}<span class="question-mark">?</span>;
-        context.call_once(<span class="macro">pred!</span>(<span class="string">&quot;writeq/1&quot;</span>), [<span class="kw-2">&amp;</span>term]).unwrap();
-        context.call_once(<span class="macro">pred!</span>(<span class="string">&quot;nl/0&quot;</span>), []).unwrap();
+        context.call_once(<span class="macro">pred!</span>(<span class="string">"writeq/1"</span>), [<span class="kw-2">&amp;</span>term]).unwrap();
+        context.call_once(<span class="macro">pred!</span>(<span class="string">"nl/0"</span>), []).unwrap();
 
         <span class="prelude-val">Ok</span>(())
     }
@@ -769,8 +772,8 @@
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
         <span class="kw">let </span>term = <span class="macro">term! </span>{context: flurps(flargh)}<span class="question-mark">?</span>;
-        context.call_once(<span class="macro">pred!</span>(user:<span class="string">&quot;writeq/1&quot;</span>), [<span class="kw-2">&amp;</span>term]).unwrap();
-        context.call_once(<span class="macro">pred!</span>(user:<span class="string">&quot;nl/0&quot;</span>), []).unwrap();
+        context.call_once(<span class="macro">pred!</span>(user:<span class="string">"writeq/1"</span>), [<span class="kw-2">&amp;</span>term]).unwrap();
+        context.call_once(<span class="macro">pred!</span>(user:<span class="string">"nl/0"</span>), []).unwrap();
 
         <span class="prelude-val">Ok</span>(())
     }
@@ -782,8 +785,8 @@
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
         <span class="kw">let </span>term = <span class="macro">term! </span>{context: flurps(flargh)}<span class="question-mark">?</span>;
-        context.call_once(<span class="macro">pred!</span>(<span class="string">&quot;user:writeq/1&quot;</span>), [<span class="kw-2">&amp;</span>term]).unwrap();
-        context.call_once(<span class="macro">pred!</span>(<span class="string">&quot;user:nl/0&quot;</span>), []).unwrap();
+        context.call_once(<span class="macro">pred!</span>(<span class="string">"user:writeq/1"</span>), [<span class="kw-2">&amp;</span>term]).unwrap();
+        context.call_once(<span class="macro">pred!</span>(<span class="string">"user:nl/0"</span>), []).unwrap();
 
         <span class="prelude-val">Ok</span>(())
     }

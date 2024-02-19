@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl/src/term/mod.rs`."><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-fa3bb1812debf86c.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="swipl" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.0 (79e9716c9 2023-11-13)" data-channel="1.74.0" data-search-js="search-8be46b629f5f14a8.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-c5bd66d33317d69f.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../swipl/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl/src/term/mod.rs`."><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-ac92e1bbe349e143.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="swipl" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0 (07dca489a 2024-02-04)" data-channel="1.76.0" data-search-js="search-2b6ce74ff89ae146.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-f2adc0d6ca4d09fb.js"></script><script defer src="../../../static.files/src-script-39ed315d46fb705f.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-305769736d49e732.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-feafe1bb7466e4bd.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -1535,8 +1536,8 @@
 //! into it. Furthermore, we can unify terms with eachother, or we can
 //! unify a term with user data.
 //!
-//! As term references live on a stack, they aren&#39;t valid
-//! forever. They&#39;re only valid as long as the frame in which they are
+//! As term references live on a stack, they aren't valid
+//! forever. They're only valid as long as the frame in which they are
 //! created is still around.
 //!
 //! swipl-rs has been written to make working with terms easy. First,
@@ -1566,27 +1567,27 @@
 
 <span class="kw">use </span>swipl_macros::term;
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;serde&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"serde"</span>)]
 </span><span class="kw">pub mod </span>de;
-<span class="attr">#[cfg(feature = <span class="string">&quot;serde&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"serde"</span>)]
 </span><span class="kw">pub mod </span>ser;
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;serde&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"serde"</span>)]
 </span><span class="kw">pub use </span>de::Deserializer;
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;serde&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"serde"</span>)]
 </span><span class="kw">pub use </span>ser::{Serializer, SerializerConfiguration};
 
 <span class="doccomment">/// A term reference.
 </span><span class="attr">#[derive(Clone)]
-</span><span class="kw">pub struct </span>Term&lt;<span class="lifetime">&#39;a</span>&gt; {
+</span><span class="kw">pub struct </span>Term&lt;<span class="lifetime">'a</span>&gt; {
     term: term_t,
-    origin: TermOrigin&lt;<span class="lifetime">&#39;a</span>&gt;,
+    origin: TermOrigin&lt;<span class="lifetime">'a</span>&gt;,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Debug <span class="kw">for </span>Term&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; Debug <span class="kw">for </span>Term&lt;<span class="lifetime">'a</span>&gt; {
     <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, fmt: <span class="kw-2">&amp;mut </span>fmt::Formatter) -&gt; <span class="prelude-ty">Result</span>&lt;(), fmt::Error&gt; {
-        <span class="macro">write!</span>(fmt, <span class="string">&quot;Term({:?})&quot;</span>, <span class="self">self</span>.term)
+        <span class="macro">write!</span>(fmt, <span class="string">"Term({:?})"</span>, <span class="self">self</span>.term)
     }
 }
 
@@ -1607,8 +1608,8 @@
     Unknown,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Term&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe fn </span>new(term: term_t, origin: TermOrigin&lt;<span class="lifetime">&#39;a</span>&gt;) -&gt; <span class="self">Self </span>{
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; Term&lt;<span class="lifetime">'a</span>&gt; {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe fn </span>new(term: term_t, origin: TermOrigin&lt;<span class="lifetime">'a</span>&gt;) -&gt; <span class="self">Self </span>{
         Term { term, origin }
     }
 
@@ -1667,7 +1668,7 @@
     <span class="doccomment">/// Reset terms created after this term, including this term itself.
     ///
     /// # Safety
-    /// Only safe to call when you&#39;re sure these terms aren&#39;t used afterwards.
+    /// Only safe to call when you're sure these terms aren't used afterwards.
     </span><span class="kw">pub unsafe fn </span>reset(<span class="kw-2">&amp;</span><span class="self">self</span>) {
         <span class="self">self</span>.assert_term_handling_possible();
         PL_reset_term_refs(<span class="self">self</span>.term);
@@ -1676,7 +1677,7 @@
     <span class="doccomment">/// Assert that the engine where this term was originally created is the active engine on this thread.
     </span><span class="kw">pub fn </span>assert_term_handling_possible(<span class="kw-2">&amp;</span><span class="self">self</span>) {
         <span class="kw">if </span>!<span class="self">self</span>.origin.is_engine_active() {
-            <span class="macro">panic!</span>(<span class="string">&quot;term is not part of the active engine&quot;</span>);
+            <span class="macro">panic!</span>(<span class="string">"term is not part of the active engine"</span>);
         }
     }
 
@@ -1694,7 +1695,7 @@
         <span class="kw">let </span>result = unifiable.unify(<span class="self">self</span>);
 
         <span class="comment">// unify functions may throw an exception, either directly or
-        // through some inner function. It&#39;s too much hassle to have
+        // through some inner function. It's too much hassle to have
         // each function check for themselves and return the
         // appropriate thing, so we just do it all here.
         </span><span class="kw">if unsafe </span>{ pl_default_exception() != <span class="number">0 </span>} {
@@ -1719,7 +1720,7 @@
     /// will be returned. Otherwise the result is an `Ok(())`.
     </span><span class="kw">pub fn </span>unify_arg&lt;U: Unifiable&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, index: usize, unifiable: U) -&gt; PrologResult&lt;()&gt; {
         <span class="kw">if </span>index == <span class="number">0 </span>{
-            <span class="macro">panic!</span>(<span class="string">&quot;unify_arg was given index 0, but index starts at 1&quot;</span>);
+            <span class="macro">panic!</span>(<span class="string">"unify_arg was given index 0, but index starts at 1"</span>);
         }
 
         <span class="self">self</span>.assert_term_handling_possible();
@@ -1757,7 +1758,7 @@
         <span class="kw">let </span>opt = G::get(<span class="self">self</span>);
 
         <span class="comment">// get functions may throw an exception, either directly or
-        // through some inner function. It&#39;s too much hassle to have
+        // through some inner function. It's too much hassle to have
         // each function check for themselves and return the
         // appropriate thing, so we just do it all here.
         </span><span class="kw">if unsafe </span>{ pl_default_exception() != <span class="number">0 </span>} {
@@ -1797,7 +1798,7 @@
         <span class="kw">let </span>opt = G::get(<span class="self">self</span>);
 
         <span class="comment">// get functions may throw an exception, either directly or
-        // through some inner function. It&#39;s too much hassle to have
+        // through some inner function. It's too much hassle to have
         // each function check for themselves and return the
         // appropriate thing, so we just do it all here.
         </span><span class="kw">if unsafe </span>{ pl_default_exception() != <span class="number">0 </span>} {
@@ -1830,7 +1831,7 @@
     /// result is an `Ok(data)`, with the requested data in it.
     </span><span class="kw">pub fn </span>get_arg&lt;G: TermGetable&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, index: usize) -&gt; PrologResult&lt;G&gt; {
         <span class="kw">if </span>index == <span class="number">0 </span>{
-            <span class="macro">panic!</span>(<span class="string">&quot;unify_arg was given index 0, but index starts at 1&quot;</span>);
+            <span class="macro">panic!</span>(<span class="string">"unify_arg was given index 0, but index starts at 1"</span>);
         }
 
         <span class="self">self</span>.assert_term_handling_possible();
@@ -1866,7 +1867,7 @@
     /// result is an `Ok(data)`, with the requested data in it.
     </span><span class="kw">pub fn </span>get_arg_ex&lt;G: TermGetable&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, index: usize) -&gt; PrologResult&lt;G&gt; {
         <span class="kw">if </span>index == <span class="number">0 </span>{
-            <span class="macro">panic!</span>(<span class="string">&quot;unify_arg was given index 0, but index starts at 1&quot;</span>);
+            <span class="macro">panic!</span>(<span class="string">"unify_arg was given index 0, but index starts at 1"</span>);
         }
 
         <span class="self">self</span>.assert_term_handling_possible();
@@ -2022,11 +2023,11 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; PartialEq <span class="kw">for </span>Term&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; PartialEq <span class="kw">for </span>Term&lt;<span class="lifetime">'a</span>&gt; {
     <span class="kw">fn </span>eq(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>Term) -&gt; bool {
         <span class="self">self</span>.assert_term_handling_possible();
         <span class="kw">if </span><span class="self">self</span>.origin.origin_engine_ptr() != other.origin.origin_engine_ptr() {
-            <span class="macro">panic!</span>(<span class="string">&quot;terms being compard are not part of the same engine&quot;</span>);
+            <span class="macro">panic!</span>(<span class="string">"terms being compard are not part of the same engine"</span>);
         }
 
         <span class="kw">let </span>result = <span class="kw">unsafe </span>{ PL_compare(<span class="self">self</span>.term_ptr(), other.term_ptr()) };
@@ -2034,17 +2035,17 @@
         result == <span class="number">0
     </span>}
 }
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; PartialOrd <span class="kw">for </span>Term&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; PartialOrd <span class="kw">for </span>Term&lt;<span class="lifetime">'a</span>&gt; {
     <span class="kw">fn </span>partial_cmp(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>Term) -&gt; <span class="prelude-ty">Option</span>&lt;Ordering&gt; {
         <span class="prelude-val">Some</span>(<span class="self">self</span>.cmp(other))
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Ord <span class="kw">for </span>Term&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; Ord <span class="kw">for </span>Term&lt;<span class="lifetime">'a</span>&gt; {
     <span class="kw">fn </span>cmp(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>Term) -&gt; Ordering {
         <span class="self">self</span>.assert_term_handling_possible();
         <span class="kw">if </span><span class="self">self</span>.origin.origin_engine_ptr() != other.origin.origin_engine_ptr() {
-            <span class="macro">panic!</span>(<span class="string">&quot;terms being compard are not part of the same engine&quot;</span>);
+            <span class="macro">panic!</span>(<span class="string">"terms being compard are not part of the same engine"</span>);
         }
 
         <span class="kw">let </span>result = <span class="kw">unsafe </span>{ PL_compare(<span class="self">self</span>.term_ptr(), other.term_ptr()) };
@@ -2053,15 +2054,15 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Eq <span class="kw">for </span>Term&lt;<span class="lifetime">&#39;a</span>&gt; {}
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; Eq <span class="kw">for </span>Term&lt;<span class="lifetime">'a</span>&gt; {}
 
 <span class="attr">#[derive(Clone)]
-</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>TermOrigin&lt;<span class="lifetime">&#39;a</span>&gt; {
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>TermOrigin&lt;<span class="lifetime">'a</span>&gt; {
     engine: PL_engine_t,
-    _lifetime: std::marker::PhantomData&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>()&gt;,
+    _lifetime: std::marker::PhantomData&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>()&gt;,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; TermOrigin&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; TermOrigin&lt;<span class="lifetime">'a</span>&gt; {
     <span class="kw">pub unsafe fn </span>new(engine: PL_engine_t) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             engine,
@@ -2070,10 +2071,10 @@
     }
 }
 
-<span class="kw">unsafe impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Send <span class="kw">for </span>TermOrigin&lt;<span class="lifetime">&#39;a</span>&gt; {}
-<span class="kw">unsafe impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Sync <span class="kw">for </span>TermOrigin&lt;<span class="lifetime">&#39;a</span>&gt; {}
+<span class="kw">unsafe impl</span>&lt;<span class="lifetime">'a</span>&gt; Send <span class="kw">for </span>TermOrigin&lt;<span class="lifetime">'a</span>&gt; {}
+<span class="kw">unsafe impl</span>&lt;<span class="lifetime">'a</span>&gt; Sync <span class="kw">for </span>TermOrigin&lt;<span class="lifetime">'a</span>&gt; {}
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; TermOrigin&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; TermOrigin&lt;<span class="lifetime">'a</span>&gt; {
     <span class="kw">pub fn </span>is_engine_active(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
         is_engine_active(<span class="self">self</span>.engine)
     }
@@ -2100,7 +2101,7 @@
 </span><span class="kw">pub unsafe trait </span>Unifiable {
     <span class="doccomment">/// Unify this data with the given term reference.
     ///
-    /// You&#39;d generally not use this directly, but rather, go through [Term::unify].
+    /// You'd generally not use this directly, but rather, go through [Term::unify].
     </span><span class="kw">fn </span>unify(<span class="kw-2">&amp;</span><span class="self">self</span>, term: <span class="kw-2">&amp;</span>Term) -&gt; bool;
 }
 
@@ -2127,18 +2128,18 @@
 </span><span class="kw">pub unsafe trait </span>TermGetable: Sized {
     <span class="doccomment">/// Get data from a term reference.
     ///
-    /// You&#39;d generally not use this directly, but rather, go through [Term::get].
+    /// You'd generally not use this directly, but rather, go through [Term::get].
     </span><span class="kw">fn </span>get(term: <span class="kw-2">&amp;</span>Term) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt;;
 
     <span class="doccomment">/// Get the name of this data type for use in exception reporting.
-    </span><span class="kw">fn </span>name() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str;
+    </span><span class="kw">fn </span>name() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str;
 }
 
 <span class="doccomment">/// Trait for putting data into a term reference.
 ///
 /// Unlike unification, putting data into a term replaces the term
-/// entirely. This is a non-logical operation that doesn&#39;t play nice
-/// with backtracking. You&#39;re generally better off using unification.
+/// entirely. This is a non-logical operation that doesn't play nice
+/// with backtracking. You're generally better off using unification.
 ///
 /// # Safety
 /// This is marked unsafe because in order to do term putting, we
@@ -2155,7 +2156,7 @@
 </span><span class="kw">pub unsafe trait </span>TermPutable {
     <span class="doccomment">/// Put data into the term reference.
     ///
-    /// You&#39;d generally not use this directly, but rather, go through [Term::put].
+    /// You'd generally not use this directly, but rather, go through [Term::put].
     </span><span class="kw">fn </span>put(<span class="kw-2">&amp;</span><span class="self">self</span>, term: <span class="kw-2">&amp;</span>Term);
 }
 
@@ -2185,7 +2186,7 @@
         // of the unification body, to ensure that we are given a term
         // that matches the given context, and that the currently
         // activated engine is one for which this term was created.
-        </span><span class="kw">unsafe impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Unifiable <span class="kw">for </span><span class="macro-nonterminal">$t </span>{
+        </span><span class="kw">unsafe impl</span>&lt;<span class="lifetime">'a</span>&gt; Unifiable <span class="kw">for </span><span class="macro-nonterminal">$t </span>{
             <span class="kw">fn </span>unify(<span class="kw-2">&amp;</span><span class="macro-nonterminal">$self_</span>, <span class="macro-nonterminal">$term_</span>: <span class="kw-2">&amp;</span>Term) -&gt; bool {
                 <span class="macro-nonterminal">$term_</span>.assert_term_handling_possible();
 
@@ -2213,7 +2214,7 @@
 ///
 /// fn do_something(term: &amp;Term) -&gt; PrologResult&lt;()&gt; {
 ///     let foo: Foo = term.get()?;
-///     println!(&quot;foo is {}&quot;, foo.num);
+///     println!("foo is {}", foo.num);
 ///     Ok(())
 /// }
 /// ```
@@ -2224,14 +2225,14 @@
         // of the term get body, to ensure that we are given a term
         // that matches the given context, and that the currently
         // activated engine is one for which this term was created.
-        </span><span class="kw">unsafe impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; TermGetable <span class="kw">for </span><span class="macro-nonterminal">$t </span>{
+        </span><span class="kw">unsafe impl</span>&lt;<span class="lifetime">'a</span>&gt; TermGetable <span class="kw">for </span><span class="macro-nonterminal">$t </span>{
             <span class="kw">fn </span>get(<span class="macro-nonterminal">$term_</span>: <span class="kw-2">&amp;</span>Term) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt; {
                 <span class="macro-nonterminal">$term_</span>.assert_term_handling_possible();
 
                 <span class="macro-nonterminal">$b
             </span>}
 
-            <span class="kw">fn </span>name() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str {
+            <span class="kw">fn </span>name() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str {
                 <span class="macro">stringify!</span>(<span class="macro-nonterminal">$t</span>)
             }
         }
@@ -2242,14 +2243,14 @@
         // of the term get body, to ensure that we are given a term
         // that matches the given context, and that the currently
         // activated engine is one for which this term was created.
-        </span><span class="kw">unsafe impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; TermGetable <span class="kw">for </span><span class="macro-nonterminal">$t </span>{
+        </span><span class="kw">unsafe impl</span>&lt;<span class="lifetime">'a</span>&gt; TermGetable <span class="kw">for </span><span class="macro-nonterminal">$t </span>{
             <span class="kw">fn </span>get(<span class="macro-nonterminal">$term_</span>: <span class="kw-2">&amp;</span>Term) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt; {
                 <span class="macro-nonterminal">$term_</span>.assert_term_handling_possible();
 
                 <span class="macro-nonterminal">$b
             </span>}
 
-            <span class="kw">fn </span>name() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str {
+            <span class="kw">fn </span>name() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str {
                 <span class="macro-nonterminal">$name
             </span>}
         }
@@ -2282,7 +2283,7 @@
         // of the term get body, to ensure that we are given a term
         // that matches the given context, and that the currently
         // activated engine is one for which this term was created.
-        </span><span class="kw">unsafe impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; TermPutable <span class="kw">for </span><span class="macro-nonterminal">$t </span>{
+        </span><span class="kw">unsafe impl</span>&lt;<span class="lifetime">'a</span>&gt; TermPutable <span class="kw">for </span><span class="macro-nonterminal">$t </span>{
             <span class="kw">fn </span>put(<span class="kw-2">&amp;</span><span class="macro-nonterminal">$self_</span>, <span class="macro-nonterminal">$term_</span>: <span class="kw-2">&amp;</span>Term) {
                 <span class="macro-nonterminal">$term_</span>.assert_term_handling_possible();
 
@@ -2293,12 +2294,12 @@
 }
 
 <span class="macro">unifiable! </span>{
-    (<span class="self">self</span>:Term&lt;<span class="lifetime">&#39;a</span>&gt;, term) =&gt; {
+    (<span class="self">self</span>:Term&lt;<span class="lifetime">'a</span>&gt;, term) =&gt; {
         <span class="kw">if </span><span class="self">self</span>.origin.origin_engine_ptr() != term.origin.origin_engine_ptr() {
-            <span class="macro">panic!</span>(<span class="string">&quot;terms being unified are not part of the same engine&quot;</span>);
+            <span class="macro">panic!</span>(<span class="string">"terms being unified are not part of the same engine"</span>);
         }
 
-        <span class="comment">// unsafe justification: the fact that we have terms here means we are dealing with some kind of active context, and therefore an initialized swipl. The check above has made sure that both terms are part of the same engine too, and the unifiable! macro takes care of checking that we&#39;re on the correct engine.
+        <span class="comment">// unsafe justification: the fact that we have terms here means we are dealing with some kind of active context, and therefore an initialized swipl. The check above has made sure that both terms are part of the same engine too, and the unifiable! macro takes care of checking that we're on the correct engine.
         </span><span class="kw">let </span>result = <span class="kw">unsafe </span>{ PL_unify(<span class="self">self</span>.term, term.term) };
 
         <span class="comment">// TODO we should actually properly test for an exception here.
@@ -2307,9 +2308,9 @@
 }
 
 <span class="macro">term_putable! </span>{
-    (<span class="self">self</span>:Term&lt;<span class="lifetime">&#39;a</span>&gt;, term) =&gt; {
+    (<span class="self">self</span>:Term&lt;<span class="lifetime">'a</span>&gt;, term) =&gt; {
         <span class="kw">if </span><span class="self">self</span>.origin.origin_engine_ptr() != term.origin.origin_engine_ptr() {
-            <span class="macro">panic!</span>(<span class="string">&quot;terms being unified are not part of the same engine&quot;</span>);
+            <span class="macro">panic!</span>(<span class="string">"terms being unified are not part of the same engine"</span>);
         }
 
         <span class="kw">unsafe </span>{ PL_put_term(term.term, <span class="self">self</span>.term); }
@@ -2353,7 +2354,7 @@
 
 <span class="macro">unifiable! </span>{
     (<span class="self">self</span>:u64, term) =&gt; {
-        <span class="comment">// there&#39;s a possibility for this function to error, we need to check.
+        <span class="comment">// there's a possibility for this function to error, we need to check.
         // but there may already be an error waiting, so we need to stash that.
 
         // Note: this seems to be inconsistent with all the other
@@ -2387,12 +2388,12 @@
 }
 
 <span class="macro">term_getable! </span>{
-    (u64, <span class="string">&quot;integer&quot;</span>, term) =&gt; {
+    (u64, <span class="string">"integer"</span>, term) =&gt; {
         <span class="kw">if unsafe </span>{ PL_is_integer(term.term) == <span class="number">0 </span>} {
             <span class="kw">return </span><span class="prelude-val">None</span>;
         }
 
-        <span class="comment">// there&#39;s a possibility for this function to error, we need to check.
+        <span class="comment">// there's a possibility for this function to error, we need to check.
         // but there may already be an error waiting, so we need to stash that.
         </span><span class="kw">unsafe </span>{with_cleared_exception(|| {
             <span class="kw">let </span><span class="kw-2">mut </span>out = <span class="number">0</span>;
@@ -2440,7 +2441,7 @@
 }
 
 <span class="macro">term_getable! </span>{
-    (i64, <span class="string">&quot;integer&quot;</span>, term) =&gt; {
+    (i64, <span class="string">"integer"</span>, term) =&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>out = <span class="number">0</span>;
         <span class="kw">let </span>result = <span class="kw">unsafe </span>{ PL_get_int64(term.term, <span class="kw-2">&amp;mut </span>out) };
         <span class="kw">if </span>result == <span class="number">0 </span>{
@@ -2467,7 +2468,7 @@
 }
 
 <span class="macro">term_getable! </span>{
-    (f64, <span class="string">&quot;float&quot;</span>, term) =&gt; {
+    (f64, <span class="string">"float"</span>, term) =&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>out = <span class="number">0.0</span>;
         <span class="kw">let </span>result = <span class="kw">unsafe </span>{ PL_get_float(term.term, <span class="kw-2">&amp;mut </span>out) };
         <span class="kw">if </span>result == <span class="number">0 </span>{
@@ -2514,10 +2515,10 @@
 }
 
 <span class="macro">term_getable! </span>{
-    (String, <span class="string">&quot;string&quot;</span>, term) =&gt; {
+    (String, <span class="string">"string"</span>, term) =&gt; {
         <span class="kw">match </span>term.get_str(|s|s.map(|s|s.to_owned())) {
             <span class="prelude-val">Ok</span>(r) =&gt; r,
-            <span class="comment">// ignore error - it&#39;ll be picked up by the wrapper
+            <span class="comment">// ignore error - it'll be picked up by the wrapper
             </span><span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">None
         </span>}
     }
@@ -2556,7 +2557,7 @@
 }
 
 <span class="macro">term_getable! </span>{
-    (Vec&lt;u8&gt;, <span class="string">&quot;string&quot;</span>, term) =&gt; {
+    (Vec&lt;u8&gt;, <span class="string">"string"</span>, term) =&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>string_ptr = std::ptr::null_mut();
         <span class="kw">let </span><span class="kw-2">mut </span>len = <span class="number">0</span>;
         <span class="kw">let </span>result = <span class="kw">unsafe </span>{ PL_get_string(term.term_ptr(), <span class="kw-2">&amp;mut </span>string_ptr, <span class="kw-2">&amp;mut </span>len) };
@@ -2590,7 +2591,7 @@
 }
 
 <span class="macro">term_getable! </span>{
-    (Nil, <span class="string">&quot;list&quot;</span>, term) =&gt; {
+    (Nil, <span class="string">"list"</span>, term) =&gt; {
         <span class="kw">let </span>result = <span class="kw">unsafe </span>{ PL_get_nil(term.term_ptr()) };
 
         <span class="kw">match </span>result != <span class="number">0 </span>{
@@ -2606,14 +2607,14 @@
     }
 }
 
-<span class="kw">unsafe impl</span>&lt;<span class="lifetime">&#39;a</span>, T&gt; Unifiable <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[T]
+<span class="kw">unsafe impl</span>&lt;<span class="lifetime">'a</span>, T&gt; Unifiable <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">'a </span>[T]
 <span class="kw">where
-    </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>T: <span class="lifetime">&#39;a </span>+ Unifiable,
+    </span><span class="kw-2">&amp;</span><span class="lifetime">'a </span>T: <span class="lifetime">'a </span>+ Unifiable,
 {
     <span class="kw">fn </span>unify(<span class="kw-2">&amp;</span><span class="self">self</span>, term: <span class="kw-2">&amp;</span>Term) -&gt; bool {
         term.assert_term_handling_possible();
-        <span class="comment">// let&#39;s create a fake context so we can make a frame
-        // unsafe justification: This context will only exist inside this implementation. We know we are in some valid context for term handling, so that&#39;s great.
+        <span class="comment">// let's create a fake context so we can make a frame
+        // unsafe justification: This context will only exist inside this implementation. We know we are in some valid context for term handling, so that's great.
         </span><span class="kw">let </span>context = <span class="kw">unsafe </span>{ unmanaged_engine_context() };
 
         <span class="kw">let </span>frame = context.open_frame();
@@ -2624,7 +2625,7 @@
         }
 
         <span class="kw">for </span>t <span class="kw">in </span><span class="self">self</span>.iter() {
-            <span class="comment">// create a new frame to ensure we don&#39;t just keep putting head and tail refs on the stack.
+            <span class="comment">// create a new frame to ensure we don't just keep putting head and tail refs on the stack.
             </span><span class="kw">let </span>frame2 = frame.open_frame();
             <span class="kw">let </span>head = frame2.new_term_ref();
             <span class="kw">let </span>tail = frame2.new_term_ref();
@@ -2661,8 +2662,8 @@
 
         <span class="kw">let </span><span class="kw-2">mut </span>result: Vec&lt;T&gt; = Vec::new();
 
-        <span class="comment">// let&#39;s create a fake context so we can make a frame
-        // unsafe justification: This context will only exist inside this implementation. We know we are in some valid context for term handling, so that&#39;s great.
+        <span class="comment">// let's create a fake context so we can make a frame
+        // unsafe justification: This context will only exist inside this implementation. We know we are in some valid context for term handling, so that's great.
         </span><span class="kw">let </span>context = <span class="kw">unsafe </span>{ unmanaged_engine_context() };
 
         <span class="kw">let </span>frame = context.open_frame();
@@ -2706,8 +2707,8 @@
         }
     }
 
-    <span class="kw">fn </span>name() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str {
-        <span class="string">&quot;list&quot;
+    <span class="kw">fn </span>name() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str {
+        <span class="string">"list"
     </span>}
 }
 
@@ -2818,9 +2819,9 @@
 
         <span class="kw">let </span>term1 = context.new_term_ref();
         term1.get_str(|s| <span class="macro">assert!</span>(s.is_none())).unwrap();
-        term1.unify(<span class="string">&quot;hello there&quot;</span>).unwrap();
+        term1.unify(<span class="string">"hello there"</span>).unwrap();
         term1
-            .get_str(|s| <span class="macro">assert_eq!</span>(<span class="string">&quot;hello there&quot;</span>, s.unwrap()))
+            .get_str(|s| <span class="macro">assert_eq!</span>(<span class="string">"hello there"</span>, s.unwrap()))
             .unwrap();
     }
 
@@ -2832,8 +2833,8 @@
 
         <span class="kw">let </span>term1 = context.new_term_ref();
         <span class="macro">assert!</span>(term1.get::&lt;String&gt;().unwrap_err().is_failure());
-        term1.unify(<span class="string">&quot;hello there&quot;</span>).unwrap();
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;hello there&quot;</span>, term1.get::&lt;String&gt;().unwrap());
+        term1.unify(<span class="string">"hello there"</span>).unwrap();
+        <span class="macro">assert_eq!</span>(<span class="string">"hello there"</span>, term1.get::&lt;String&gt;().unwrap());
     }
 
     <span class="attr">#[test]
@@ -2887,8 +2888,8 @@
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
         <span class="kw">let </span>var_term = context.new_term_ref();
-        <span class="kw">let </span>_term = <span class="macro">term! </span>{context: foo(bar([a,b,<span class="number">42</span>], baz(<span class="number">42</span>, (<span class="number">1</span>,((<span class="number">3</span>)),<span class="bool-val">true</span>), #<span class="kw-2">&amp;</span>var_term), quux(Var), quux2(Var)), <span class="string">&quot;hi&quot;</span>, yay(OtherVar, #<span class="kw-2">&amp;</span>var_term), <span class="kw">_</span>, <span class="kw">_</span>, _a, _a)}<span class="question-mark">?</span>;
-        var_term.unify(<span class="kw">crate</span>::atom::atomable(<span class="string">&quot;hallo&quot;</span>)).unwrap();
+        <span class="kw">let </span>_term = <span class="macro">term! </span>{context: foo(bar([a,b,<span class="number">42</span>], baz(<span class="number">42</span>, (<span class="number">1</span>,((<span class="number">3</span>)),<span class="bool-val">true</span>), #<span class="kw-2">&amp;</span>var_term), quux(Var), quux2(Var)), <span class="string">"hi"</span>, yay(OtherVar, #<span class="kw-2">&amp;</span>var_term), <span class="kw">_</span>, <span class="kw">_</span>, _a, _a)}<span class="question-mark">?</span>;
+        var_term.unify(<span class="kw">crate</span>::atom::atomable(<span class="string">"hallo"</span>)).unwrap();
 
         <span class="comment">// TODO actually query this term for validity
         </span><span class="prelude-val">Ok</span>(())
@@ -2974,15 +2975,15 @@
 
         <span class="kw">let </span><span class="kw-2">mut </span>terms: [Term; <span class="number">3</span>] = context.new_term_refs();
 
-        terms[<span class="number">0</span>].unify(<span class="string">&quot;foo&quot;</span>).unwrap();
-        terms[<span class="number">1</span>].unify(<span class="string">&quot;bar&quot;</span>).unwrap();
-        terms[<span class="number">2</span>].unify(<span class="string">&quot;baz&quot;</span>).unwrap();
+        terms[<span class="number">0</span>].unify(<span class="string">"foo"</span>).unwrap();
+        terms[<span class="number">1</span>].unify(<span class="string">"bar"</span>).unwrap();
+        terms[<span class="number">2</span>].unify(<span class="string">"baz"</span>).unwrap();
 
         terms.sort();
 
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;bar&quot;</span>, terms[<span class="number">0</span>].get::&lt;String&gt;().unwrap());
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;baz&quot;</span>, terms[<span class="number">1</span>].get::&lt;String&gt;().unwrap());
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;foo&quot;</span>, terms[<span class="number">2</span>].get::&lt;String&gt;().unwrap());
+        <span class="macro">assert_eq!</span>(<span class="string">"bar"</span>, terms[<span class="number">0</span>].get::&lt;String&gt;().unwrap());
+        <span class="macro">assert_eq!</span>(<span class="string">"baz"</span>, terms[<span class="number">1</span>].get::&lt;String&gt;().unwrap());
+        <span class="macro">assert_eq!</span>(<span class="string">"foo"</span>, terms[<span class="number">2</span>].get::&lt;String&gt;().unwrap());
     }
 
     <span class="attr">#[test]
@@ -3027,7 +3028,7 @@
         <span class="kw">let </span>result: PrologResult&lt;u64&gt; = term.get_arg_ex(<span class="number">1</span>);
         <span class="macro">assert_eq!</span>(PrologError::Exception, result.err().unwrap());
         <span class="macro">assert!</span>(context.has_exception());
-        context.with_exception(|e| <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, context.string_from_term(e.unwrap()).unwrap()));
+        context.with_exception(|e| <span class="macro">println!</span>(<span class="string">"{}"</span>, context.string_from_term(e.unwrap()).unwrap()));
         context.with_exception(|e| e.unwrap().unify(<span class="kw-2">&amp;</span>expected).unwrap());
     }
 

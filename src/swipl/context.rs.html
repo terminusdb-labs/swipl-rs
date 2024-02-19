@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl/src/context.rs`."><title>context.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-fa3bb1812debf86c.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="swipl" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.0 (79e9716c9 2023-11-13)" data-channel="1.74.0" data-search-js="search-8be46b629f5f14a8.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-c5bd66d33317d69f.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../swipl/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl/src/context.rs`."><title>context.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-ac92e1bbe349e143.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="swipl" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0 (07dca489a 2024-02-04)" data-channel="1.76.0" data-search-js="search-2b6ce74ff89ae146.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-f2adc0d6ca4d09fb.js"></script><script defer src="../../static.files/src-script-39ed315d46fb705f.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-305769736d49e732.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-feafe1bb7466e4bd.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -1672,6 +1673,7 @@
 <a href="#1672" id="1672">1672</a>
 <a href="#1673" id="1673">1673</a>
 <a href="#1674" id="1674">1674</a>
+<a href="#1675" id="1675">1675</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Prolog contexts.
 //!
 //! As you interact with SWI-Prolog, the underlying prolog engine
@@ -1679,9 +1681,9 @@
 //! allowed. We keep track of this underlying state through Context
 //! objects.
 //!
-//! Currently, there&#39;s four kind of states that we keep track of:
+//! Currently, there's four kind of states that we keep track of:
 //! - ActivatedEngine - this is the state an engine will be in when we
-//!   just created it. If you&#39;re directly working with engines, this
+//!   just created it. If you're directly working with engines, this
 //!   will be your initial state.
 //! - Unmanaged - this is the state an engine will be in when prolog
 //!   is calling into the rust library, for example, when a foreign
@@ -1689,8 +1691,8 @@
 //! - Framed - In any context, you can create a prolog frame. A prolog
 //!   frame allows you to rewind the state of all prolog terms to their
 //!   state at the time of frame creation.
-//! - OpenCall - While calling into prolog, this is the context you&#39;ll
-//!   be in as you&#39;re walking through the solutions. This is a special
+//! - OpenCall - While calling into prolog, this is the context you'll
+//!   be in as you're walking through the solutions. This is a special
 //!   context where a lot of the normal features are disabled.
 //!
 //! Contexts are either active or inactive. A context starts out as
@@ -1711,7 +1713,7 @@
 //! to be created, nor are you allowed to open another query. It is
 //! however possible to create a new frame in this context, which
 //! would once again put you in a state where these things are
-//! possible. Of course, you&#39;ll have to drop this frame before you&#39;re
+//! possible. Of course, you'll have to drop this frame before you're
 //! able to manipulate the OpenCall context again (such as retrieving
 //! the next solution from the query).
 //!
@@ -1721,10 +1723,10 @@
 //! exception term has been set. Most context operations are
 //! impossible while in this state, and attempting to perform them
 //! will result in a panic. Your options are either to return back
-//! into prolog (if you&#39;re implementing a foreign predicate), which
+//! into prolog (if you're implementing a foreign predicate), which
 //! will then raise this exception in prolog, or to clear the
 //! exception.
-</span><span class="attr">#[cfg(feature = <span class="string">&quot;serde&quot;</span>)]
+</span><span class="attr">#[cfg(feature = <span class="string">"serde"</span>)]
 </span><span class="kw">use </span><span class="kw">crate</span>::term::ser::SerializerConfiguration;
 
 <span class="kw">use </span><span class="kw">super</span>::atom::<span class="kw-2">*</span>;
@@ -1736,10 +1738,12 @@
 <span class="kw">use </span><span class="kw">super</span>::stream::<span class="kw-2">*</span>;
 <span class="kw">use </span><span class="kw">super</span>::term::<span class="kw-2">*</span>;
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;serde&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"serde"</span>)]
 </span><span class="kw">use </span>serde::{Deserialize, Serialize};
 <span class="kw">use </span>std::cell::Cell;
+<span class="kw">use </span>std::convert::TryInto;
 <span class="kw">use </span>std::mem::MaybeUninit;
+
 <span class="kw">use </span>swipl_macros::pred;
 
 <span class="kw">use </span>swipl_macros::{prolog, term};
@@ -1764,9 +1768,9 @@
 ///
 /// The exception term lives in a special place on the prolog stack
 /// where frame rewinds have no effect.
-</span><span class="kw">pub struct </span>ExceptionTerm&lt;<span class="lifetime">&#39;a</span>&gt;(Term&lt;<span class="lifetime">&#39;a</span>&gt;);
+</span><span class="kw">pub struct </span>ExceptionTerm&lt;<span class="lifetime">'a</span>&gt;(Term&lt;<span class="lifetime">'a</span>&gt;);
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; ExceptionTerm&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; ExceptionTerm&lt;<span class="lifetime">'a</span>&gt; {
     <span class="doccomment">/// Clear the exception, so that the engine is no longer in an
     /// exceptional state.
     </span><span class="kw">pub fn </span>clear_exception(<span class="self">self</span>) {
@@ -1782,9 +1786,9 @@
     /// we still have a handle to it through self. The caller will
     /// have to ensure that the function that is passed in will not
     /// use this exception term.
-    </span><span class="kw">unsafe fn </span>with_cleared_exception&lt;<span class="lifetime">&#39;b</span>, C: ContextType, R&gt;(
-        <span class="kw-2">&amp;</span><span class="lifetime">&#39;b </span><span class="self">self</span>,
-        ctx: <span class="kw-2">&amp;</span><span class="lifetime">&#39;b </span>Context&lt;C&gt;,
+    </span><span class="kw">unsafe fn </span>with_cleared_exception&lt;<span class="lifetime">'b</span>, C: ContextType, R&gt;(
+        <span class="kw-2">&amp;</span><span class="lifetime">'b </span><span class="self">self</span>,
+        ctx: <span class="kw-2">&amp;</span><span class="lifetime">'b </span>Context&lt;C&gt;,
         f: <span class="kw">impl </span>FnOnce(<span class="kw-2">&amp;</span>Term) -&gt; R,
     ) -&gt; R {
         ctx.assert_activated();
@@ -1804,9 +1808,9 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; std::ops::Deref <span class="kw">for </span>ExceptionTerm&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="kw">type </span>Target = Term&lt;<span class="lifetime">&#39;a</span>&gt;;
-    <span class="kw">fn </span>deref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Term&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; std::ops::Deref <span class="kw">for </span>ExceptionTerm&lt;<span class="lifetime">'a</span>&gt; {
+    <span class="kw">type </span>Target = Term&lt;<span class="lifetime">'a</span>&gt;;
+    <span class="kw">fn </span>deref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Term&lt;<span class="lifetime">'a</span>&gt; {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0
     </span>}
 }
@@ -1814,15 +1818,15 @@
 <span class="doccomment">/// A context that the underlying prolog engine is in.
 ///
 /// See the module documentation for an explanation of this type.
-</span><span class="kw">pub struct </span>Context&lt;<span class="lifetime">&#39;a</span>, T: ContextType&gt; {
-    parent: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw">dyn </span>ContextParent&gt;,
+</span><span class="kw">pub struct </span>Context&lt;<span class="lifetime">'a</span>, T: ContextType&gt; {
+    parent: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="kw">dyn </span>ContextParent&gt;,
     <span class="kw">pub </span>context: T,
     engine: PL_engine_t,
     activated: Cell&lt;bool&gt;,
     exception_handling: Cell&lt;bool&gt;,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, T: ContextType&gt; Context&lt;<span class="lifetime">&#39;a</span>, T&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T: ContextType&gt; Context&lt;<span class="lifetime">'a</span>, T&gt; {
     <span class="kw">unsafe fn </span>new_activated_without_parent(context: T, engine: PL_engine_t) -&gt; <span class="self">Self </span>{
         Context {
             parent: <span class="prelude-val">None</span>,
@@ -1833,8 +1837,8 @@
         }
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe fn </span>new_activated&lt;<span class="lifetime">&#39;b</span>, T2: ContextType&gt;(
-        parent: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Context&lt;<span class="lifetime">&#39;b</span>, T2&gt;,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe fn </span>new_activated&lt;<span class="lifetime">'b</span>, T2: ContextType&gt;(
+        parent: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Context&lt;<span class="lifetime">'b</span>, T2&gt;,
         context: T,
         engine: PL_engine_t,
     ) -&gt; <span class="self">Self </span>{
@@ -1854,14 +1858,14 @@
     <span class="doccomment">/// Panics if this context is not active.
     </span><span class="kw">pub fn </span>assert_activated(<span class="kw-2">&amp;</span><span class="self">self</span>) {
         <span class="kw">if </span>!<span class="self">self</span>.activated.get() {
-            <span class="macro">panic!</span>(<span class="string">&quot;tried to use inactive context&quot;</span>);
+            <span class="macro">panic!</span>(<span class="string">"tried to use inactive context"</span>);
         }
     }
 
     <span class="doccomment">/// Panics if the engine is in an exceptional state.
     </span><span class="kw">pub fn </span>assert_no_exception(<span class="kw-2">&amp;</span><span class="self">self</span>) {
         <span class="kw">if </span><span class="self">self</span>.has_exception() {
-            <span class="macro">panic!</span>(<span class="string">&quot;tried to use context which has raised an exception&quot;</span>);
+            <span class="macro">panic!</span>(<span class="string">"tried to use context which has raised an exception"</span>);
         }
     }
 
@@ -1878,7 +1882,7 @@
     <span class="doccomment">/// Wrap the given term_t into a Term with a lifetime corresponding to this context.
     ///
     /// # Safety
-    /// This is unsafe because there&#39;s no way of checking that the
+    /// This is unsafe because there's no way of checking that the
     /// given term_t is indeed from this context. The caller will have
     /// to ensure that the term lives at least as long as this
     /// context.
@@ -1907,13 +1911,13 @@
     /// The given function is able to clear the exception term, but
     /// not much else is allowed from safe code. Any attempt to do a
     /// get, put or unify with the given term will result in a panic.
-    </span><span class="kw">pub fn </span>with_uncleared_exception&lt;<span class="lifetime">&#39;b</span>, R&gt;(
-        <span class="kw-2">&amp;</span><span class="lifetime">&#39;b </span><span class="self">self</span>,
-        f: <span class="kw">impl </span>FnOnce(<span class="prelude-ty">Option</span>&lt;ExceptionTerm&lt;<span class="lifetime">&#39;b</span>&gt;&gt;) -&gt; R,
+    </span><span class="kw">pub fn </span>with_uncleared_exception&lt;<span class="lifetime">'b</span>, R&gt;(
+        <span class="kw-2">&amp;</span><span class="lifetime">'b </span><span class="self">self</span>,
+        f: <span class="kw">impl </span>FnOnce(<span class="prelude-ty">Option</span>&lt;ExceptionTerm&lt;<span class="lifetime">'b</span>&gt;&gt;) -&gt; R,
     ) -&gt; R {
         <span class="self">self</span>.assert_activated();
         <span class="kw">if </span><span class="self">self</span>.exception_handling.replace(<span class="bool-val">true</span>) {
-            <span class="macro">panic!</span>(<span class="string">&quot;re-entered exception handler&quot;</span>);
+            <span class="macro">panic!</span>(<span class="string">"re-entered exception handler"</span>);
         }
 
         <span class="kw">let </span>exception = <span class="kw">unsafe </span>{ pl_default_exception() };
@@ -1954,7 +1958,7 @@
     </span><span class="kw">pub fn </span>raise_exception&lt;R&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, term: <span class="kw-2">&amp;</span>Term) -&gt; PrologResult&lt;R&gt; {
         <span class="self">self</span>.assert_activated();
         <span class="kw">if </span>term.is_var() {
-            <span class="macro">panic!</span>(<span class="string">&quot;tried to raise a var as an exception&quot;</span>);
+            <span class="macro">panic!</span>(<span class="string">"tried to raise a var as an exception"</span>);
         } <span class="kw">else </span>{
             <span class="kw">unsafe </span>{
                 PL_raise_exception(term.term_ptr());
@@ -1965,7 +1969,7 @@
     }
 
     <span class="doccomment">/// Retrieve the current output stream.
-    </span><span class="kw">pub fn </span>current_output&lt;<span class="lifetime">&#39;b</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; WritablePrologStream&lt;<span class="lifetime">&#39;b</span>&gt; {
+    </span><span class="kw">pub fn </span>current_output&lt;<span class="lifetime">'b</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; WritablePrologStream&lt;<span class="lifetime">'b</span>&gt; {
         assert_some_engine_is_active();
         <span class="kw">unsafe </span>{
             <span class="kw">let </span>current_output = <span class="kw-2">*</span>_PL_streams().offset(<span class="number">4</span>);
@@ -1979,15 +1983,15 @@
     <span class="kw">fn </span>reactivate(<span class="kw-2">&amp;</span><span class="self">self</span>);
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, T: ContextType&gt; ContextParent <span class="kw">for </span>Context&lt;<span class="lifetime">&#39;a</span>, T&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T: ContextType&gt; ContextParent <span class="kw">for </span>Context&lt;<span class="lifetime">'a</span>, T&gt; {
     <span class="kw">fn </span>reactivate(<span class="kw-2">&amp;</span><span class="self">self</span>) {
         <span class="kw">if </span><span class="self">self</span>.activated.replace(<span class="bool-val">true</span>) {
-            <span class="macro">panic!</span>(<span class="string">&quot;context already active&quot;</span>);
+            <span class="macro">panic!</span>(<span class="string">"context already active"</span>);
         }
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, T: ContextType&gt; Drop <span class="kw">for </span>Context&lt;<span class="lifetime">&#39;a</span>, T&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T: ContextType&gt; Drop <span class="kw">for </span>Context&lt;<span class="lifetime">'a</span>, T&gt; {
     <span class="kw">fn </span>drop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(parent) = <span class="self">self</span>.parent {
             parent.reactivate();
@@ -2019,12 +2023,12 @@
 /// let context: Context&lt;ActivatedEngine&gt; = activation.into();
 /// // Note: Context&lt;_&gt; would also work as a type annotation
 /// ```
-</span><span class="kw">pub struct </span>ActivatedEngine&lt;<span class="lifetime">&#39;a</span>&gt; {
-    _activation: EngineActivation&lt;<span class="lifetime">&#39;a</span>&gt;,
+</span><span class="kw">pub struct </span>ActivatedEngine&lt;<span class="lifetime">'a</span>&gt; {
+    _activation: EngineActivation&lt;<span class="lifetime">'a</span>&gt;,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; From&lt;EngineActivation&lt;<span class="lifetime">&#39;a</span>&gt;&gt; <span class="kw">for </span>Context&lt;<span class="lifetime">&#39;a</span>, ActivatedEngine&lt;<span class="lifetime">&#39;a</span>&gt;&gt; {
-    <span class="kw">fn </span>from(activation: EngineActivation&lt;<span class="lifetime">&#39;a</span>&gt;) -&gt; Context&lt;<span class="lifetime">&#39;a</span>, ActivatedEngine&lt;<span class="lifetime">&#39;a</span>&gt;&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; From&lt;EngineActivation&lt;<span class="lifetime">'a</span>&gt;&gt; <span class="kw">for </span>Context&lt;<span class="lifetime">'a</span>, ActivatedEngine&lt;<span class="lifetime">'a</span>&gt;&gt; {
+    <span class="kw">fn </span>from(activation: EngineActivation&lt;<span class="lifetime">'a</span>&gt;) -&gt; Context&lt;<span class="lifetime">'a</span>, ActivatedEngine&lt;<span class="lifetime">'a</span>&gt;&gt; {
         <span class="kw">let </span>engine = activation.engine_ptr();
         <span class="kw">let </span>context = ActivatedEngine {
             _activation: activation,
@@ -2034,7 +2038,7 @@
     }
 }
 
-<span class="kw">unsafe impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; ContextType <span class="kw">for </span>ActivatedEngine&lt;<span class="lifetime">&#39;a</span>&gt; {}
+<span class="kw">unsafe impl</span>&lt;<span class="lifetime">'a</span>&gt; ContextType <span class="kw">for </span>ActivatedEngine&lt;<span class="lifetime">'a</span>&gt; {}
 
 <span class="doccomment">/// Context type for an unmanaged engine.
 ///
@@ -2045,7 +2049,7 @@
 }
 <span class="kw">unsafe impl </span>ContextType <span class="kw">for </span>Unmanaged {}
 
-<span class="doccomment">/// Create an unmanaged context for situations where the thread has an engine that rust doesn&#39;t know about.
+<span class="doccomment">/// Create an unmanaged context for situations where the thread has an engine that rust doesn't know about.
 ///
 /// Example:
 /// ```
@@ -2059,14 +2063,14 @@
 /// # Safety
 /// This is unsafe to call if we are not in a swipl environment, or if
 /// some other context is active. Furthermore, the lifetime will most
-/// definitely be wrong. This should be used by code that doesn&#39;t
+/// definitely be wrong. This should be used by code that doesn't
 /// promiscuously spread this context. all further accesses should be
 /// through borrows.
-</span><span class="kw">pub unsafe fn </span>unmanaged_engine_context() -&gt; Context&lt;<span class="lifetime">&#39;static</span>, Unmanaged&gt; {
+</span><span class="kw">pub unsafe fn </span>unmanaged_engine_context() -&gt; Context&lt;<span class="lifetime">'static</span>, Unmanaged&gt; {
     <span class="kw">let </span>current = current_engine_ptr();
 
     <span class="kw">if </span>current.is_null() {
-        <span class="macro">panic!</span>(<span class="string">&quot;tried to create an unmanaged engine context, but no engine is active&quot;</span>);
+        <span class="macro">panic!</span>(<span class="string">"tried to create an unmanaged engine context, but no engine is active"</span>);
     }
 
     Context::new_activated_without_parent(Unmanaged { _x: () }, current)
@@ -2184,10 +2188,10 @@
         <span class="kw">if let </span>FrameState::Active = <span class="self">self</span>.state {
             <span class="comment">// unsafe justification: all instantiations of Frame happen in
             // this module.  This module only instantiates the frame as
-            // part of the context mechanism. No &#39;free&#39; Frames are ever
+            // part of the context mechanism. No 'free' Frames are ever
             // returned.  This mechanism ensures that the frame is only
-            // discarded if there&#39;s no inner frame still
-            // remaining. It&#39;ll also ensure that the engine of the
+            // discarded if there's no inner frame still
+            // remaining. It'll also ensure that the engine of the
             // frame is active while dropping.
             </span><span class="kw">unsafe </span>{
                 PL_discard_foreign_frame(<span class="self">self</span>.fid);
@@ -2196,7 +2200,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Context&lt;<span class="lifetime">&#39;a</span>, Frame&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; Context&lt;<span class="lifetime">'a</span>, Frame&gt; {
     <span class="doccomment">/// Close the frame.
     ///
     /// After closing, any terms created in the context of this frame
@@ -2204,7 +2208,7 @@
     /// that are still in scope will be retained.
     </span><span class="kw">pub fn </span>close(<span class="kw-2">mut </span><span class="self">self</span>) {
         <span class="self">self</span>.context.state = FrameState::Closed;
-        <span class="comment">// unsafe justification: reasons for safety are the same as in a normal drop. Also, since we just set framestate to discarded, the drop won&#39;t try to subsequently close this same frame.
+        <span class="comment">// unsafe justification: reasons for safety are the same as in a normal drop. Also, since we just set framestate to discarded, the drop won't try to subsequently close this same frame.
         </span><span class="kw">unsafe </span>{ PL_close_foreign_frame(<span class="self">self</span>.context.fid) };
     }
 
@@ -2228,7 +2232,7 @@
     ///
     /// This returns a new context which is to be used for further
     /// manipulation of this frame.
-    </span><span class="kw">pub fn </span>rewind(<span class="self">self</span>) -&gt; Context&lt;<span class="lifetime">&#39;a</span>, Frame&gt; {
+    </span><span class="kw">pub fn </span>rewind(<span class="self">self</span>) -&gt; Context&lt;<span class="lifetime">'a</span>, Frame&gt; {
         <span class="self">self</span>.assert_activated();
         <span class="comment">// unsafe justification: We just checked that this frame right here is currently the active context. Therefore it can be rewinded.
         </span><span class="kw">unsafe </span>{ PL_rewind_foreign_frame(<span class="self">self</span>.context.fid) };
@@ -2240,10 +2244,10 @@
 <span class="doccomment">/// A trait marker for context types for which it is safe to open frames.
 </span><span class="kw">pub trait </span>FrameableContextType: ContextType {}
 <span class="kw">impl </span>FrameableContextType <span class="kw">for </span>Unmanaged {}
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; FrameableContextType <span class="kw">for </span>ActivatedEngine&lt;<span class="lifetime">&#39;a</span>&gt; {}
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; FrameableContextType <span class="kw">for </span>ActivatedEngine&lt;<span class="lifetime">'a</span>&gt; {}
 <span class="kw">impl </span>FrameableContextType <span class="kw">for </span>Frame {}
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C: FrameableContextType&gt; Context&lt;<span class="lifetime">&#39;a</span>, C&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C: FrameableContextType&gt; Context&lt;<span class="lifetime">'a</span>, C&gt; {
     <span class="doccomment">/// Open a new frame.
     ///
     /// This returns a new context for the frame. The current context
@@ -2267,20 +2271,20 @@
 <span class="doccomment">/// A trait marker for context types for which it is safe to open queries and create new term refs.
 </span><span class="kw">pub trait </span>QueryableContextType: FrameableContextType {}
 <span class="kw">impl </span>QueryableContextType <span class="kw">for </span>Unmanaged {}
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; QueryableContextType <span class="kw">for </span>ActivatedEngine&lt;<span class="lifetime">&#39;a</span>&gt; {}
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; QueryableContextType <span class="kw">for </span>ActivatedEngine&lt;<span class="lifetime">'a</span>&gt; {}
 <span class="kw">impl </span>QueryableContextType <span class="kw">for </span>Frame {}
 
 <span class="macro">prolog! </span>{
-    <span class="attr">#[module(<span class="string">&quot;user&quot;</span>)]
+    <span class="attr">#[module(<span class="string">"user"</span>)]
     </span><span class="kw">fn </span>read_term_from_atom(atom_term, result, options);
-    <span class="attr">#[module(<span class="string">&quot;user&quot;</span>)]
-    #[name(<span class="string">&quot;call&quot;</span>)]
+    <span class="attr">#[module(<span class="string">"user"</span>)]
+    #[name(<span class="string">"call"</span>)]
     </span><span class="kw">fn </span>open_call(term);
 }
 
-<span class="kw">pub type </span>GenericQueryableContext&lt;<span class="lifetime">&#39;a</span>&gt; = Context&lt;<span class="lifetime">&#39;a</span>, GenericQueryableContextType&gt;;
+<span class="kw">pub type </span>GenericQueryableContext&lt;<span class="lifetime">'a</span>&gt; = Context&lt;<span class="lifetime">'a</span>, GenericQueryableContextType&gt;;
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, T: QueryableContextType&gt; Context&lt;<span class="lifetime">&#39;a</span>, T&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T: QueryableContextType&gt; Context&lt;<span class="lifetime">'a</span>, T&gt; {
     <span class="doccomment">/// Create a new Term reference in the current context.
     ///
     /// The term ref takes on the lifetime of the Context reference,
@@ -2300,11 +2304,13 @@
     /// created it.
     </span><span class="kw">pub fn </span>new_term_refs&lt;<span class="kw">const </span>N: usize&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; [Term; N] {
         <span class="comment">// TODO: this should be a compile time thing ideally
-        </span><span class="kw">if </span>N &gt; i32::MAX <span class="kw">as </span>usize {
-            <span class="macro">panic!</span>(<span class="string">&quot;too many term refs requested: {}&quot;</span>, N);
-        }
+        // TODO: swipl 9.1.19 changed the paramater type to usize
+        // if N &gt; i32::MAX as usize {
+        //     panic!("too many term refs requested: {}", N);
+        // }
 
-        <span class="kw">let </span><span class="kw-2">mut </span>term_ptr = <span class="kw">unsafe </span>{ PL_new_term_refs(N <span class="kw">as </span>i32) };
+        </span><span class="attr">#[allow(clippy::useless_conversion)]
+        </span><span class="kw">let </span><span class="kw-2">mut </span>term_ptr = <span class="kw">unsafe </span>{ PL_new_term_refs(N.try_into().unwrap()) };
         <span class="kw">let </span><span class="kw-2">mut </span>result: [MaybeUninit&lt;Term&gt;; N] = <span class="kw">unsafe </span>{ MaybeUninit::uninit().assume_init() };
         <span class="kw">for </span>r <span class="kw">in </span>result.iter_mut() {
             <span class="kw">let </span>term = <span class="kw">unsafe </span>{ Term::new(term_ptr, <span class="self">self</span>.as_term_origin()) };
@@ -2314,11 +2320,11 @@
 
         <span class="comment">// It would be nicer if we could do a transmute here, as
         // transmute ensures that the conversion converts between
-        // types of the same size, but it seems like this doesn&#39;t work
+        // types of the same size, but it seems like this doesn't work
         // yet with const generic arrays. We do a pointer cast
         // instead.
         </span><span class="kw">let </span>magic = result.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span>[Term; N];
-        <span class="comment">// allowing forget_non_drop cause I don&#39;t want us to accidentally drop something should the underlying things at one point implement drop.
+        <span class="comment">// allowing forget_non_drop cause I don't want us to accidentally drop something should the underlying things at one point implement drop.
         </span><span class="attr">#[allow(clippy::forget_non_drop)]
         </span>std::mem::forget(result);
 
@@ -2331,11 +2337,8 @@
     /// reference, ensuring that it cannot outlive the context that
     /// created it.
     </span><span class="kw">pub fn </span>new_term_refs_vec(<span class="kw-2">&amp;</span><span class="self">self</span>, count: usize) -&gt; Vec&lt;Term&gt; {
-        <span class="kw">if </span>count &gt; i32::MAX <span class="kw">as </span>usize {
-            <span class="macro">panic!</span>(<span class="string">&quot;too many term refs requested: {}&quot;</span>, count);
-        }
-
-        <span class="kw">let </span><span class="kw-2">mut </span>term_ptr = <span class="kw">unsafe </span>{ PL_new_term_refs(count <span class="kw">as </span>i32) };
+        <span class="attr">#[allow(clippy::useless_conversion)]
+        </span><span class="kw">let </span><span class="kw-2">mut </span>term_ptr = <span class="kw">unsafe </span>{ PL_new_term_refs(count.try_into().unwrap()) };
         <span class="kw">let </span><span class="kw-2">mut </span>result = Vec::with_capacity(count);
         <span class="kw">for _ in </span><span class="number">0</span>..count {
             <span class="kw">let </span>term = <span class="kw">unsafe </span>{ Term::new(term_ptr, <span class="self">self</span>.as_term_origin()) };
@@ -2357,8 +2360,8 @@
     /// #  let context: Context&lt;_&gt; = activation.into();
     ///
     ///    let query = context.open(pred!{format/2},
-    ///                             [&amp;term!{context: &quot;hello, ~q~n&quot;}?,
-    ///                              &amp;term!{context: [&quot;world&quot;]}?]);
+    ///                             [&amp;term!{context: "hello, ~q~n"}?,
+    ///                              &amp;term!{context: ["world"]}?]);
     ///    query.next_solution()?;
     ///    query.cut();
     /// #
@@ -2384,8 +2387,8 @@
     /// #  let context: Context&lt;_&gt; = activation.into();
     ///
     ///    context.call_once(pred!{format/2},
-    ///                      [&amp;term!{context: &quot;hello, ~q~n&quot;}?,
-    ///                      &amp;term!{context: [&quot;world&quot;]}?])?;
+    ///                      [&amp;term!{context: "hello, ~q~n"}?,
+    ///                      &amp;term!{context: ["world"]}?])?;
     /// #
     /// #  Ok(())
     /// # }
@@ -2444,7 +2447,7 @@
         <span class="kw">let </span>frame = <span class="self">self</span>.open_frame();
         <span class="kw">let </span>out = frame.new_term_ref();
 
-        frame.call_once(<span class="macro">pred!</span>(<span class="string">&quot;term_string/2&quot;</span>), [t, <span class="kw-2">&amp;</span>out])<span class="question-mark">?</span>;
+        frame.call_once(<span class="macro">pred!</span>(<span class="string">"term_string/2"</span>), [t, <span class="kw-2">&amp;</span>out])<span class="question-mark">?</span>;
         <span class="kw">let </span>s: String = out.get()<span class="question-mark">?</span>;
         frame.close();
 
@@ -2452,11 +2455,11 @@
     }
 
     <span class="doccomment">/// Open a query for the given term using the `call/1` prolog predicate.
-    </span><span class="kw">pub fn </span>open_call(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>, t: <span class="kw-2">&amp;</span>Term&lt;<span class="lifetime">&#39;a</span>&gt;) -&gt; Context&lt;<span class="lifetime">&#39;a</span>, <span class="kw">impl </span>OpenCall&gt; {
+    </span><span class="kw">pub fn </span>open_call(<span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="self">self</span>, t: <span class="kw-2">&amp;</span>Term&lt;<span class="lifetime">'a</span>&gt;) -&gt; Context&lt;<span class="lifetime">'a</span>, <span class="kw">impl </span>OpenCall&gt; {
         open_call(<span class="self">self</span>, t)
     }
 
-    <span class="kw">pub fn </span>call_term_once(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>, t: <span class="kw-2">&amp;</span>Term&lt;<span class="lifetime">&#39;a</span>&gt;) -&gt; PrologResult&lt;()&gt; {
+    <span class="kw">pub fn </span>call_term_once(<span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="self">self</span>, t: <span class="kw-2">&amp;</span>Term&lt;<span class="lifetime">'a</span>&gt;) -&gt; PrologResult&lt;()&gt; {
         <span class="kw">let </span>open_call = <span class="self">self</span>.open_call(t);
         open_call.next_solution()<span class="question-mark">?</span>;
         open_call.cut();
@@ -2495,9 +2498,9 @@
             <span class="prelude-val">Ok</span>(ok) =&gt; <span class="prelude-val">Ok</span>(ok),
             <span class="prelude-val">Err</span>(e) =&gt; {
                 <span class="kw">let </span>reset_term = <span class="self">self</span>.new_term_ref();
-                <span class="kw">let </span>msg = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, e);
+                <span class="kw">let </span>msg = <span class="macro">format!</span>(<span class="string">"{}"</span>, e);
 
-                <span class="comment">// TODO: term macro doesn&#39;t like self, which is
+                <span class="comment">// TODO: term macro doesn't like self, which is
                 // probably only a problem for things inside this
                 // crate but still should probably be resolved.
                 </span><span class="kw">let </span>self_ = <span class="self">self</span>;
@@ -2522,13 +2525,13 @@
     /// unification fails, the iterator stops.
     ///
     /// Note that the terms created by this iterator are not
-    /// automatically thrown away. It is the caller&#39;s responsibility
+    /// automatically thrown away. It is the caller's responsibility
     /// to clean up terms if this is required, for example by using a
     /// frame.
-    </span><span class="kw">pub fn </span>term_list_iter&lt;<span class="lifetime">&#39;b</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;b </span><span class="self">self</span>, list: <span class="kw-2">&amp;</span>Term) -&gt; TermListIterator&lt;<span class="lifetime">&#39;b</span>, <span class="lifetime">&#39;a</span>, T&gt; {
+    </span><span class="kw">pub fn </span>term_list_iter&lt;<span class="lifetime">'b</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">'b </span><span class="self">self</span>, list: <span class="kw-2">&amp;</span>Term) -&gt; TermListIterator&lt;<span class="lifetime">'b</span>, <span class="lifetime">'a</span>, T&gt; {
         <span class="self">self</span>.assert_activated();
         <span class="kw">let </span>cur = <span class="self">self</span>.new_term_ref();
-        cur.unify(list).expect(<span class="string">&quot;unifying terms should work&quot;</span>);
+        cur.unify(list).expect(<span class="string">"unifying terms should work"</span>);
         TermListIterator { context: <span class="self">self</span>, cur }
     }
 
@@ -2567,7 +2570,7 @@
     /// If you know in advance what the size is going to be (or you
     /// know a reasonable upper bound), consider using
     /// [term_list_array](Context::term_list_array). If you just wish
-    /// to iterate over the elements, or don&#39;t care about garbage
+    /// to iterate over the elements, or don't care about garbage
     /// terms being created, consider using
     /// [term_list_iter](Context::term_list_iter).
     </span><span class="kw">pub fn </span>term_list_vec(<span class="kw-2">&amp;</span><span class="self">self</span>, list: <span class="kw-2">&amp;</span>Term) -&gt; Vec&lt;Term&gt; {
@@ -2600,7 +2603,7 @@
     </span><span class="kw">pub fn </span>compound_terms&lt;<span class="kw">const </span>N: usize&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, compound: <span class="kw-2">&amp;</span>Term) -&gt; PrologResult&lt;[Term; N]&gt; {
         <span class="self">self</span>.assert_activated();
         <span class="kw">if </span>N &gt; (i32::MAX - <span class="number">1</span>) <span class="kw">as </span>usize {
-            <span class="macro">panic!</span>(<span class="string">&quot;requested compound term array too large: {}&quot;</span>, N);
+            <span class="macro">panic!</span>(<span class="string">"requested compound term array too large: {}"</span>, N);
         }
 
         <span class="kw">let </span><span class="kw-2">mut </span>size = <span class="number">0</span>;
@@ -2683,16 +2686,16 @@
         <span class="prelude-val">Ok</span>(terms)
     }
 
-    <span class="attr">#[cfg(feature = <span class="string">&quot;serde&quot;</span>)]
+    <span class="attr">#[cfg(feature = <span class="string">"serde"</span>)]
     </span><span class="doccomment">/// Deserialize a term into a rust value using serde.
-    </span><span class="kw">pub fn </span>deserialize_from_term&lt;<span class="lifetime">&#39;de</span>, DT: Deserialize&lt;<span class="lifetime">&#39;de</span>&gt;&gt;(
-        <span class="kw-2">&amp;</span><span class="lifetime">&#39;de </span><span class="self">self</span>,
-        term: <span class="kw-2">&amp;</span><span class="lifetime">&#39;de </span>Term&lt;<span class="lifetime">&#39;de</span>&gt;,
+    </span><span class="kw">pub fn </span>deserialize_from_term&lt;<span class="lifetime">'de</span>, DT: Deserialize&lt;<span class="lifetime">'de</span>&gt;&gt;(
+        <span class="kw-2">&amp;</span><span class="lifetime">'de </span><span class="self">self</span>,
+        term: <span class="kw-2">&amp;</span><span class="lifetime">'de </span>Term&lt;<span class="lifetime">'de</span>&gt;,
     ) -&gt; <span class="kw">super</span>::term::de::Result&lt;DT&gt; {
         <span class="kw">super</span>::term::de::from_term(<span class="self">self</span>, term)
     }
 
-    <span class="attr">#[cfg(feature = <span class="string">&quot;serde&quot;</span>)]
+    <span class="attr">#[cfg(feature = <span class="string">"serde"</span>)]
     </span><span class="doccomment">/// Serialize a value into a prolog term using serde.
     ///
     /// This uses the default serialization configuration, meaning:
@@ -2706,7 +2709,7 @@
         <span class="kw">super</span>::term::ser::to_term(<span class="self">self</span>, term, obj)
     }
 
-    <span class="attr">#[cfg(feature = <span class="string">&quot;serde&quot;</span>)]
+    <span class="attr">#[cfg(feature = <span class="string">"serde"</span>)]
     </span><span class="doccomment">/// Serialize a value into a prolog term using serde, providing configuration options.
     </span><span class="kw">pub fn </span>serialize_to_term_with_config&lt;ST: Serialize&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
@@ -2718,10 +2721,10 @@
     }
 
     <span class="doccomment">/// Unify the term with the list functor, returning a term for the head and the tail.
-    </span><span class="kw">pub fn </span>unify_list_functor&lt;<span class="lifetime">&#39;b</span>&gt;(
-        <span class="kw-2">&amp;</span><span class="lifetime">&#39;b </span><span class="self">self</span>,
+    </span><span class="kw">pub fn </span>unify_list_functor&lt;<span class="lifetime">'b</span>&gt;(
+        <span class="kw-2">&amp;</span><span class="lifetime">'b </span><span class="self">self</span>,
         term: <span class="kw-2">&amp;</span>Term,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;(Term&lt;<span class="lifetime">&#39;b</span>&gt;, Term&lt;<span class="lifetime">&#39;b</span>&gt;), PrologError&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(Term&lt;<span class="lifetime">'b</span>&gt;, Term&lt;<span class="lifetime">'b</span>&gt;), PrologError&gt; {
         <span class="kw">let </span>[head, tail] = <span class="self">self</span>.new_term_refs();
         <span class="kw">match unsafe </span>{ PL_unify_list(term.term_ptr(), head.term_ptr(), tail.term_ptr()) } {
             <span class="number">0 </span>=&gt; {
@@ -2748,15 +2751,15 @@
 <span class="doccomment">/// An iterator over a term list.
 ///
 /// See [`Context::term_list_iter`] for more information.
-</span><span class="kw">pub struct </span>TermListIterator&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, CT: QueryableContextType&gt; {
-    context: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Context&lt;<span class="lifetime">&#39;b</span>, CT&gt;,
-    cur: Term&lt;<span class="lifetime">&#39;a</span>&gt;,
+</span><span class="kw">pub struct </span>TermListIterator&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, CT: QueryableContextType&gt; {
+    context: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Context&lt;<span class="lifetime">'b</span>, CT&gt;,
+    cur: Term&lt;<span class="lifetime">'a</span>&gt;,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, CT: QueryableContextType&gt; Iterator <span class="kw">for </span>TermListIterator&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, CT&gt; {
-    <span class="kw">type </span>Item = Term&lt;<span class="lifetime">&#39;a</span>&gt;;
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, CT: QueryableContextType&gt; Iterator <span class="kw">for </span>TermListIterator&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, CT&gt; {
+    <span class="kw">type </span>Item = Term&lt;<span class="lifetime">'a</span>&gt;;
 
-    <span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Term&lt;<span class="lifetime">&#39;a</span>&gt;&gt; {
+    <span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Term&lt;<span class="lifetime">'a</span>&gt;&gt; {
         <span class="kw">let </span>head = <span class="self">self</span>.context.new_term_ref();
         <span class="kw">let </span>tail = <span class="self">self</span>.context.new_term_ref();
         <span class="kw">let </span>success =
@@ -2776,20 +2779,20 @@
     <span class="doccomment">/// Turns this error into a prolog exception using the given context.
     ///
     /// The result is a `Term` containing the prolog exception.
-    </span><span class="kw">fn </span>into_prolog_exception&lt;<span class="lifetime">&#39;a</span>, T: QueryableContextType&gt;(
+    </span><span class="kw">fn </span>into_prolog_exception&lt;<span class="lifetime">'a</span>, T: QueryableContextType&gt;(
         <span class="self">self</span>,
-        context: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Context&lt;<span class="lifetime">&#39;_</span>, T&gt;,
-    ) -&gt; PrologResult&lt;Term&lt;<span class="lifetime">&#39;a</span>&gt;&gt;;
+        context: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Context&lt;<span class="lifetime">'_</span>, T&gt;,
+    ) -&gt; PrologResult&lt;Term&lt;<span class="lifetime">'a</span>&gt;&gt;;
 }
 
 <span class="kw">impl </span>IntoPrologException <span class="kw">for </span>std::io::Error {
-    <span class="kw">fn </span>into_prolog_exception&lt;<span class="lifetime">&#39;a</span>, T: QueryableContextType&gt;(
+    <span class="kw">fn </span>into_prolog_exception&lt;<span class="lifetime">'a</span>, T: QueryableContextType&gt;(
         <span class="self">self</span>,
-        context: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Context&lt;<span class="lifetime">&#39;_</span>, T&gt;,
-    ) -&gt; PrologResult&lt;Term&lt;<span class="lifetime">&#39;a</span>&gt;&gt; {
-        <span class="kw">let </span>kind_str = <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="self">self</span>.kind());
+        context: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Context&lt;<span class="lifetime">'_</span>, T&gt;,
+    ) -&gt; PrologResult&lt;Term&lt;<span class="lifetime">'a</span>&gt;&gt; {
+        <span class="kw">let </span>kind_str = <span class="macro">format!</span>(<span class="string">"{:?}"</span>, <span class="self">self</span>.kind());
         <span class="kw">let </span>kind_atom = Atom::new(<span class="kw-2">&amp;</span>kind_str);
-        <span class="kw">let </span>msg = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="self">self</span>);
+        <span class="kw">let </span>msg = <span class="macro">format!</span>(<span class="string">"{}"</span>, <span class="self">self</span>);
         <span class="macro">term! </span>{context: error(rust_io_error(#kind_atom, #msg), <span class="kw">_</span>)}
     }
 }
@@ -2797,7 +2800,7 @@
 <span class="doccomment">/// Call the given function, converting panics into prolog exceptions.
 ///
 /// If the inner function panics, an exception of the form
-/// `error(rust_error(panic(&quot;..the panic message..&quot;)))` will be
+/// `error(rust_error(panic("..the panic message..")))` will be
 /// raised, and this function will return
 /// `Err(PrologError::Exception)`. Otherwise, This function will
 /// return `Ok(())`.
@@ -2828,7 +2831,7 @@
                         panic_term.unify(panic_msg.as_str()).unwrap();
                     }
                     <span class="prelude-val">None </span>=&gt; {
-                        panic_term.unify(<span class="string">&quot;unknown panic type&quot;</span>).unwrap();
+                        panic_term.unify(<span class="string">"unknown panic type"</span>).unwrap();
                     }
                 },
             }
@@ -2891,9 +2894,9 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>functor_is = Functor::new(<span class="string">&quot;is&quot;</span>, <span class="number">2</span>);
-        <span class="kw">let </span>functor_plus = Functor::new(<span class="string">&quot;+&quot;</span>, <span class="number">2</span>);
-        <span class="kw">let </span>module = Module::new(<span class="string">&quot;user&quot;</span>);
+        <span class="kw">let </span>functor_is = Functor::new(<span class="string">"is"</span>, <span class="number">2</span>);
+        <span class="kw">let </span>functor_plus = Functor::new(<span class="string">"+"</span>, <span class="number">2</span>);
+        <span class="kw">let </span>module = Module::new(<span class="string">"user"</span>);
         <span class="kw">let </span>predicate = Predicate::new(functor_is, module);
         <span class="kw">let </span>callable = CallablePredicate::new(predicate).unwrap();
 
@@ -2922,9 +2925,9 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>functor_is = Functor::new(<span class="string">&quot;is&quot;</span>, <span class="number">2</span>);
-        <span class="kw">let </span>functor_plus = Functor::new(<span class="string">&quot;+&quot;</span>, <span class="number">2</span>);
-        <span class="kw">let </span>module = Module::new(<span class="string">&quot;user&quot;</span>);
+        <span class="kw">let </span>functor_is = Functor::new(<span class="string">"is"</span>, <span class="number">2</span>);
+        <span class="kw">let </span>functor_plus = Functor::new(<span class="string">"+"</span>, <span class="number">2</span>);
+        <span class="kw">let </span>module = Module::new(<span class="string">"user"</span>);
         <span class="kw">let </span>predicate = Predicate::new(functor_is, module);
         <span class="kw">let </span>callable = CallablePredicate::new(predicate).unwrap();
 
@@ -2955,9 +2958,9 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>functor_is = Functor::new(<span class="string">&quot;is&quot;</span>, <span class="number">2</span>);
-        <span class="kw">let </span>functor_plus = Functor::new(<span class="string">&quot;+&quot;</span>, <span class="number">2</span>);
-        <span class="kw">let </span>module = Module::new(<span class="string">&quot;user&quot;</span>);
+        <span class="kw">let </span>functor_is = Functor::new(<span class="string">"is"</span>, <span class="number">2</span>);
+        <span class="kw">let </span>functor_plus = Functor::new(<span class="string">"+"</span>, <span class="number">2</span>);
+        <span class="kw">let </span>module = Module::new(<span class="string">"user"</span>);
         <span class="kw">let </span>predicate = Predicate::new(functor_is, module);
         <span class="kw">let </span>callable = CallablePredicate::new(predicate).unwrap();
 
@@ -2989,9 +2992,9 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>functor_is = Functor::new(<span class="string">&quot;is&quot;</span>, <span class="number">2</span>);
-        <span class="kw">let </span>functor_plus = Functor::new(<span class="string">&quot;+&quot;</span>, <span class="number">2</span>);
-        <span class="kw">let </span>module = Module::new(<span class="string">&quot;user&quot;</span>);
+        <span class="kw">let </span>functor_is = Functor::new(<span class="string">"is"</span>, <span class="number">2</span>);
+        <span class="kw">let </span>functor_plus = Functor::new(<span class="string">"+"</span>, <span class="number">2</span>);
+        <span class="kw">let </span>module = Module::new(<span class="string">"user"</span>);
         <span class="kw">let </span>predicate = Predicate::new(functor_is, module);
         <span class="kw">let </span>callable = CallablePredicate::new(predicate).unwrap();
 
@@ -3023,9 +3026,9 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>term = context.term_from_string(<span class="string">&quot;foo(bar(baz,quux))&quot;</span>).unwrap();
-        <span class="kw">let </span>functor_foo = Functor::new(<span class="string">&quot;foo&quot;</span>, <span class="number">1</span>);
-        <span class="kw">let </span>functor_bar = Functor::new(<span class="string">&quot;bar&quot;</span>, <span class="number">2</span>);
+        <span class="kw">let </span>term = context.term_from_string(<span class="string">"foo(bar(baz,quux))"</span>).unwrap();
+        <span class="kw">let </span>functor_foo = Functor::new(<span class="string">"foo"</span>, <span class="number">1</span>);
+        <span class="kw">let </span>functor_bar = Functor::new(<span class="string">"bar"</span>, <span class="number">2</span>);
 
         <span class="macro">assert_eq!</span>(functor_foo, term.get().unwrap());
         <span class="macro">assert_eq!</span>(functor_bar, term.get_arg(<span class="number">1</span>).unwrap());
@@ -3037,19 +3040,19 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>term = context.term_from_string(<span class="string">&quot;member(X, [a,b,c])&quot;</span>).unwrap();
+        <span class="kw">let </span>term = context.term_from_string(<span class="string">"member(X, [a,b,c])"</span>).unwrap();
         <span class="kw">let </span>term_x = context.new_term_ref();
         <span class="macro">assert!</span>(term.unify_arg(<span class="number">1</span>, <span class="kw-2">&amp;</span>term_x).is_ok());
 
         <span class="kw">let </span>query = context.open_call(<span class="kw-2">&amp;</span>term);
         <span class="macro">assert!</span>(query.next_solution()<span class="question-mark">?</span>);
-        term_x.get_atom_name(|a| <span class="macro">assert_eq!</span>(<span class="string">&quot;a&quot;</span>, a.unwrap()))<span class="question-mark">?</span>;
+        term_x.get_atom_name(|a| <span class="macro">assert_eq!</span>(<span class="string">"a"</span>, a.unwrap()))<span class="question-mark">?</span>;
 
         <span class="macro">assert!</span>(query.next_solution()<span class="question-mark">?</span>);
-        term_x.get_atom_name(|a| <span class="macro">assert_eq!</span>(<span class="string">&quot;b&quot;</span>, a.unwrap()))<span class="question-mark">?</span>;
+        term_x.get_atom_name(|a| <span class="macro">assert_eq!</span>(<span class="string">"b"</span>, a.unwrap()))<span class="question-mark">?</span>;
 
         <span class="macro">assert!</span>(!query.next_solution()<span class="question-mark">?</span>);
-        term_x.get_atom_name(|a| <span class="macro">assert_eq!</span>(<span class="string">&quot;c&quot;</span>, a.unwrap()))<span class="question-mark">?</span>;
+        term_x.get_atom_name(|a| <span class="macro">assert_eq!</span>(<span class="string">"c"</span>, a.unwrap()))<span class="question-mark">?</span>;
 
         <span class="macro">assert!</span>(query.next_solution().unwrap_err().is_failure());
 
@@ -3062,8 +3065,8 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>functor = Functor::new(<span class="string">&quot;true&quot;</span>, <span class="number">0</span>);
-        <span class="kw">let </span>module = Module::new(<span class="string">&quot;user&quot;</span>);
+        <span class="kw">let </span>functor = Functor::new(<span class="string">"true"</span>, <span class="number">0</span>);
+        <span class="kw">let </span>module = Module::new(<span class="string">"user"</span>);
         <span class="kw">let </span>predicate = Predicate::new(functor, module);
         <span class="kw">let </span>callable = CallablePredicate::new(predicate).unwrap();
 
@@ -3079,7 +3082,7 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>term = context.term_from_string(<span class="string">&quot;freeze(X, throw(foo))&quot;</span>)<span class="question-mark">?</span>;
+        <span class="kw">let </span>term = context.term_from_string(<span class="string">"freeze(X, throw(foo))"</span>)<span class="question-mark">?</span>;
         <span class="kw">let </span>term_x = context.new_term_ref();
         term.unify_arg(<span class="number">1</span>, <span class="kw-2">&amp;</span>term_x)<span class="question-mark">?</span>;
         <span class="kw">let </span>query = context.open_call(<span class="kw-2">&amp;</span>term);
@@ -3096,7 +3099,7 @@
         query.with_exception(|e| {
             <span class="kw">let </span>exception_term = e.unwrap();
             <span class="kw">let </span>atomable: Atomable = exception_term.get().unwrap();
-            <span class="macro">assert_eq!</span>(<span class="string">&quot;foo&quot;</span>, atomable.name());
+            <span class="macro">assert_eq!</span>(<span class="string">"foo"</span>, atomable.name());
 
             <span class="macro">assert!</span>(term.get::&lt;u64&gt;().unwrap_err().is_failure());
         });
@@ -3105,12 +3108,12 @@
     }
 
     <span class="macro">prolog! </span>{
-        <span class="attr">#[name(<span class="string">&quot;is&quot;</span>)]
+        <span class="attr">#[name(<span class="string">"is"</span>)]
         </span><span class="kw">fn </span>prolog_arithmetic(term, e);
     }
 
     <span class="attr">#[test]
-    #[should_panic(expected = <span class="string">&quot;tried to use context which has raised an exception&quot;</span>)]
+    #[should_panic(expected = <span class="string">"tried to use context which has raised an exception"</span>)]
     </span><span class="kw">fn </span>call_prolog_with_raised_exception_panics() {
         <span class="kw">let </span>engine = Engine::new();
         <span class="kw">let </span>activation = engine.activate();
@@ -3142,8 +3145,8 @@
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
         <span class="kw">let </span>term = context.new_term_ref();
 
-        <span class="kw">let </span>functor = Functor::new(<span class="string">&quot;unify_with_42&quot;</span>, <span class="number">1</span>);
-        <span class="kw">let </span>module = Module::new(<span class="string">&quot;user&quot;</span>);
+        <span class="kw">let </span>functor = Functor::new(<span class="string">"unify_with_42"</span>, <span class="number">1</span>);
+        <span class="kw">let </span>module = Module::new(<span class="string">"user"</span>);
         <span class="kw">let </span>predicate = Predicate::new(functor, module);
         <span class="kw">let </span>callable = CallablePredicate::new(predicate).unwrap();
 
@@ -3161,7 +3164,7 @@
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
         <span class="kw">let </span>term = context.new_term_ref();
-        <span class="kw">let </span>expr = context.term_from_string(<span class="string">&quot;2+2&quot;</span>).unwrap();
+        <span class="kw">let </span>expr = context.term_from_string(<span class="string">"2+2"</span>).unwrap();
 
         <span class="kw">let </span>q = prolog_arithmetic(<span class="kw-2">&amp;</span>context, <span class="kw-2">&amp;</span>term, <span class="kw-2">&amp;</span>expr);
         <span class="macro">assert!</span>(q.next_solution().is_ok());
@@ -3174,7 +3177,7 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>list = context.term_from_string(<span class="string">&quot;[5, foo, \&quot;bar\&quot;]&quot;</span>).unwrap();
+        <span class="kw">let </span>list = context.term_from_string(<span class="string">"[5, foo, \"bar\"]"</span>).unwrap();
 
         <span class="kw">let </span><span class="kw-2">mut </span>iter = context.term_list_iter(<span class="kw-2">&amp;</span>list);
         <span class="kw">let </span>first = iter.next().unwrap();
@@ -3183,8 +3186,8 @@
         <span class="macro">assert!</span>(iter.next().is_none());
 
         <span class="macro">assert_eq!</span>(<span class="number">5</span>, first.get::&lt;u64&gt;().unwrap());
-        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">&quot;foo&quot;</span>), second.get::&lt;Atom&gt;().unwrap());
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;bar&quot;</span>, third.get::&lt;String&gt;().unwrap());
+        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">"foo"</span>), second.get::&lt;Atom&gt;().unwrap());
+        <span class="macro">assert_eq!</span>(<span class="string">"bar"</span>, third.get::&lt;String&gt;().unwrap());
     }
 
     <span class="attr">#[test]
@@ -3193,7 +3196,7 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>list = context.term_from_string(<span class="string">&quot;foo(bar, baz)&quot;</span>).unwrap();
+        <span class="kw">let </span>list = context.term_from_string(<span class="string">"foo(bar, baz)"</span>).unwrap();
 
         <span class="kw">let </span><span class="kw-2">mut </span>iter = context.term_list_iter(<span class="kw-2">&amp;</span>list);
         <span class="macro">assert!</span>(iter.next().is_none());
@@ -3205,7 +3208,7 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>list = context.term_from_string(<span class="string">&quot;[42, 42, 42, 42, 42]&quot;</span>).unwrap();
+        <span class="kw">let </span>list = context.term_from_string(<span class="string">"[42, 42, 42, 42, 42]"</span>).unwrap();
 
         <span class="kw">let </span><span class="kw-2">mut </span>count = <span class="number">0</span>;
         <span class="kw">for </span>term <span class="kw">in </span>context.term_list_iter(<span class="kw-2">&amp;</span>list) {
@@ -3222,12 +3225,12 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>list = context.term_from_string(<span class="string">&quot;[5, foo, \&quot;bar\&quot;]&quot;</span>).unwrap();
+        <span class="kw">let </span>list = context.term_from_string(<span class="string">"[5, foo, \"bar\"]"</span>).unwrap();
 
         <span class="kw">let </span>terms: [Term; <span class="number">3</span>] = context.term_list_array(<span class="kw-2">&amp;</span>list);
         <span class="macro">assert_eq!</span>(<span class="number">5</span>, terms[<span class="number">0</span>].get::&lt;u64&gt;().unwrap());
-        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">&quot;foo&quot;</span>), terms[<span class="number">1</span>].get::&lt;Atom&gt;().unwrap());
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;bar&quot;</span>, terms[<span class="number">2</span>].get::&lt;String&gt;().unwrap());
+        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">"foo"</span>), terms[<span class="number">1</span>].get::&lt;Atom&gt;().unwrap());
+        <span class="macro">assert_eq!</span>(<span class="string">"bar"</span>, terms[<span class="number">2</span>].get::&lt;String&gt;().unwrap());
     }
 
     <span class="attr">#[test]
@@ -3236,12 +3239,12 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>list = context.term_from_string(<span class="string">&quot;[5, foo, \&quot;bar\&quot;]&quot;</span>).unwrap();
+        <span class="kw">let </span>list = context.term_from_string(<span class="string">"[5, foo, \"bar\"]"</span>).unwrap();
 
         <span class="kw">let </span>terms: [Term; <span class="number">4</span>] = context.term_list_array(<span class="kw-2">&amp;</span>list);
         <span class="macro">assert_eq!</span>(<span class="number">5</span>, terms[<span class="number">0</span>].get::&lt;u64&gt;().unwrap());
-        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">&quot;foo&quot;</span>), terms[<span class="number">1</span>].get::&lt;Atom&gt;().unwrap());
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;bar&quot;</span>, terms[<span class="number">2</span>].get::&lt;String&gt;().unwrap());
+        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">"foo"</span>), terms[<span class="number">1</span>].get::&lt;Atom&gt;().unwrap());
+        <span class="macro">assert_eq!</span>(<span class="string">"bar"</span>, terms[<span class="number">2</span>].get::&lt;String&gt;().unwrap());
         <span class="macro">assert!</span>(terms[<span class="number">3</span>].is_var());
     }
 
@@ -3251,11 +3254,11 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>list = context.term_from_string(<span class="string">&quot;[5, foo, \&quot;bar\&quot;]&quot;</span>).unwrap();
+        <span class="kw">let </span>list = context.term_from_string(<span class="string">"[5, foo, \"bar\"]"</span>).unwrap();
 
         <span class="kw">let </span>terms: [Term; <span class="number">2</span>] = context.term_list_array(<span class="kw-2">&amp;</span>list);
         <span class="macro">assert_eq!</span>(<span class="number">5</span>, terms[<span class="number">0</span>].get::&lt;u64&gt;().unwrap());
-        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">&quot;foo&quot;</span>), terms[<span class="number">1</span>].get::&lt;Atom&gt;().unwrap());
+        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">"foo"</span>), terms[<span class="number">1</span>].get::&lt;Atom&gt;().unwrap());
     }
 
     <span class="attr">#[test]
@@ -3264,12 +3267,12 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>list = context.term_from_string(<span class="string">&quot;[5, foo, \&quot;bar\&quot;]&quot;</span>).unwrap();
+        <span class="kw">let </span>list = context.term_from_string(<span class="string">"[5, foo, \"bar\"]"</span>).unwrap();
         <span class="kw">let </span>terms = context.term_list_vec(<span class="kw-2">&amp;</span>list);
         <span class="macro">assert_eq!</span>(<span class="number">3</span>, terms.len());
         <span class="macro">assert_eq!</span>(<span class="number">5</span>, terms[<span class="number">0</span>].get::&lt;u64&gt;().unwrap());
-        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">&quot;foo&quot;</span>), terms[<span class="number">1</span>].get::&lt;Atom&gt;().unwrap());
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;bar&quot;</span>, terms[<span class="number">2</span>].get::&lt;String&gt;().unwrap());
+        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">"foo"</span>), terms[<span class="number">1</span>].get::&lt;Atom&gt;().unwrap());
+        <span class="macro">assert_eq!</span>(<span class="string">"bar"</span>, terms[<span class="number">2</span>].get::&lt;String&gt;().unwrap());
     }
 
     <span class="attr">#[test]
@@ -3278,11 +3281,11 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>compound = context.term_from_string(<span class="string">&quot;moo(5, foo, \&quot;bar\&quot;)&quot;</span>).unwrap();
+        <span class="kw">let </span>compound = context.term_from_string(<span class="string">"moo(5, foo, \"bar\")"</span>).unwrap();
         <span class="kw">let </span>terms: [Term; <span class="number">3</span>] = context.compound_terms(<span class="kw-2">&amp;</span>compound).unwrap();
         <span class="macro">assert_eq!</span>(<span class="number">5</span>, terms[<span class="number">0</span>].get::&lt;u64&gt;().unwrap());
-        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">&quot;foo&quot;</span>), terms[<span class="number">1</span>].get::&lt;Atom&gt;().unwrap());
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;bar&quot;</span>, terms[<span class="number">2</span>].get::&lt;String&gt;().unwrap());
+        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">"foo"</span>), terms[<span class="number">1</span>].get::&lt;Atom&gt;().unwrap());
+        <span class="macro">assert_eq!</span>(<span class="string">"bar"</span>, terms[<span class="number">2</span>].get::&lt;String&gt;().unwrap());
     }
 
     <span class="attr">#[test]
@@ -3291,7 +3294,7 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>compound = context.term_from_string(<span class="string">&quot;moo(5, foo, \&quot;bar\&quot;)&quot;</span>).unwrap();
+        <span class="kw">let </span>compound = context.term_from_string(<span class="string">"moo(5, foo, \"bar\")"</span>).unwrap();
         <span class="kw">let </span>terms: <span class="prelude-ty">Option</span>&lt;[Term; <span class="number">4</span>]&gt; = attempt_opt(context.compound_terms(<span class="kw-2">&amp;</span>compound)).unwrap();
         <span class="macro">assert!</span>(terms.is_none());
     }
@@ -3302,12 +3305,12 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>compound = context.term_from_string(<span class="string">&quot;moo(5, foo, \&quot;bar\&quot;)&quot;</span>).unwrap();
+        <span class="kw">let </span>compound = context.term_from_string(<span class="string">"moo(5, foo, \"bar\")"</span>).unwrap();
         <span class="kw">let </span>terms = context.compound_terms_vec(<span class="kw-2">&amp;</span>compound).unwrap();
         <span class="macro">assert_eq!</span>(<span class="number">3</span>, terms.len());
         <span class="macro">assert_eq!</span>(<span class="number">5</span>, terms[<span class="number">0</span>].get::&lt;u64&gt;().unwrap());
-        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">&quot;foo&quot;</span>), terms[<span class="number">1</span>].get::&lt;Atom&gt;().unwrap());
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;bar&quot;</span>, terms[<span class="number">2</span>].get::&lt;String&gt;().unwrap());
+        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">"foo"</span>), terms[<span class="number">1</span>].get::&lt;Atom&gt;().unwrap());
+        <span class="macro">assert_eq!</span>(<span class="string">"bar"</span>, terms[<span class="number">2</span>].get::&lt;String&gt;().unwrap());
     }
 
     <span class="attr">#[test]
@@ -3316,12 +3319,12 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>compound = context.term_from_string(<span class="string">&quot;moo(5, foo, \&quot;bar\&quot;)&quot;</span>).unwrap();
+        <span class="kw">let </span>compound = context.term_from_string(<span class="string">"moo(5, foo, \"bar\")"</span>).unwrap();
         <span class="kw">let </span>terms = context.compound_terms_vec_sized(<span class="kw-2">&amp;</span>compound, <span class="number">3</span>).unwrap();
         <span class="macro">assert_eq!</span>(<span class="number">3</span>, terms.len());
         <span class="macro">assert_eq!</span>(<span class="number">5</span>, terms[<span class="number">0</span>].get::&lt;u64&gt;().unwrap());
-        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">&quot;foo&quot;</span>), terms[<span class="number">1</span>].get::&lt;Atom&gt;().unwrap());
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;bar&quot;</span>, terms[<span class="number">2</span>].get::&lt;String&gt;().unwrap());
+        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">"foo"</span>), terms[<span class="number">1</span>].get::&lt;Atom&gt;().unwrap());
+        <span class="macro">assert_eq!</span>(<span class="string">"bar"</span>, terms[<span class="number">2</span>].get::&lt;String&gt;().unwrap());
     }
 
     <span class="attr">#[test]
@@ -3330,7 +3333,7 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>compound = context.term_from_string(<span class="string">&quot;moo(5, foo, \&quot;bar\&quot;)&quot;</span>).unwrap();
+        <span class="kw">let </span>compound = context.term_from_string(<span class="string">"moo(5, foo, \"bar\")"</span>).unwrap();
         <span class="kw">let </span>terms = attempt_opt(context.compound_terms_vec_sized(<span class="kw-2">&amp;</span>compound, <span class="number">4</span>)).unwrap();
         <span class="macro">assert!</span>(terms.is_none());
     }
@@ -3341,7 +3344,7 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>compound = context.term_from_string(<span class="string">&quot;\&quot;moo\&quot;&quot;</span>).unwrap();
+        <span class="kw">let </span>compound = context.term_from_string(<span class="string">"\"moo\""</span>).unwrap();
         <span class="kw">let </span>terms: <span class="prelude-ty">Option</span>&lt;[Term; <span class="number">4</span>]&gt; = attempt_opt(context.compound_terms(<span class="kw-2">&amp;</span>compound)).unwrap();
         <span class="macro">assert!</span>(terms.is_none());
     }

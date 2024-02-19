@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl/src/dict.rs`."><title>dict.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-fa3bb1812debf86c.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="swipl" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.0 (79e9716c9 2023-11-13)" data-channel="1.74.0" data-search-js="search-8be46b629f5f14a8.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-c5bd66d33317d69f.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../swipl/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl/src/dict.rs`."><title>dict.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-ac92e1bbe349e143.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="swipl" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0 (07dca489a 2024-02-04)" data-channel="1.76.0" data-search-js="search-2b6ce74ff89ae146.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-f2adc0d6ca4d09fb.js"></script><script defer src="../../static.files/src-script-39ed315d46fb705f.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-305769736d49e732.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-feafe1bb7466e4bd.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -701,6 +702,8 @@
 <a href="#701" id="701">701</a>
 <a href="#702" id="702">702</a>
 <a href="#703" id="703">703</a>
+<a href="#704" id="704">704</a>
+<a href="#705" id="705">705</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Prolog dictionaries.
 //!
 //! SWI-Prolog has a very convenient dictionary implementation. This
@@ -708,6 +711,7 @@
 </span><span class="kw">use </span><span class="kw">super</span>::fli;
 <span class="kw">use </span><span class="kw">super</span>::prelude::<span class="kw-2">*</span>;
 <span class="kw">use </span>std::collections::HashMap;
+<span class="kw">use </span>std::convert::TryInto;
 
 <span class="doccomment">/// A key in a prolog dictionary.
 </span><span class="attr">#[derive(PartialEq, Eq, Hash, Debug, Clone)]
@@ -716,9 +720,9 @@
     Atom(Atom),
 }
 
-<span class="kw">enum </span>DictTag&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">enum </span>DictTag&lt;<span class="lifetime">'a</span>&gt; {
     Atom(Atom),
-    Term(Term&lt;<span class="lifetime">&#39;a</span>&gt;),
+    Term(Term&lt;<span class="lifetime">'a</span>&gt;),
     Var,
 }
 
@@ -738,7 +742,7 @@
 
 <span class="kw">fn </span>int_to_atom_t(val: u64) -&gt; fli::atom_t {
     <span class="kw">if </span>(val &gt;&gt; INT_SHIFT) != <span class="number">0 </span>{
-        <span class="macro">panic!</span>(<span class="string">&quot;val {} is too large to be converted to an atom_t&quot;</span>, val);
+        <span class="macro">panic!</span>(<span class="string">"val {} is too large to be converted to an atom_t"</span>, val);
     }
 
     (val &lt;&lt; <span class="number">7 </span>| <span class="number">0x3</span>) <span class="kw">as </span>fli::atom_t
@@ -771,7 +775,7 @@
     </span><span class="kw">fn </span>atom_ptr(<span class="self">self</span>) -&gt; (fli::atom_t, <span class="prelude-ty">Option</span>&lt;Atom&gt;);
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, A: AsAtom + <span class="question-mark">?</span>Sized&gt; IntoKey <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>A {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, A: AsAtom + <span class="question-mark">?</span>Sized&gt; IntoKey <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">'a </span>A {
     <span class="kw">fn </span>atom_ptr(<span class="self">self</span>) -&gt; (fli::atom_t, <span class="prelude-ty">Option</span>&lt;Atom&gt;) {
         <span class="self">self</span>.as_atom_ptr()
     }
@@ -794,9 +798,9 @@
 /// # use swipl::prelude::*;
 /// fn build_example_dict(term: &amp;Term) -&gt; PrologResult&lt;()&gt; {
 ///     let dict = DictBuilder::new()
-///         .tag(&quot;some_tag&quot;)
-///         .entry(&quot;foo&quot;, 42_u64)
-///         .entry(&quot;bar&quot;, &quot;hello&quot;.to_owned());
+///         .tag("some_tag")
+///         .entry("foo", 42_u64)
+///         .entry("bar", "hello".to_owned());
 ///
 ///     term.put(&amp;dict)?;
 ///     Ok(())
@@ -807,22 +811,22 @@
 /// ```prolog
 /// some_tag{
 ///     foo: 42,
-///     bar: &quot;hello&quot;
+///     bar: "hello"
 /// }
 /// ```
 
-</span><span class="kw">pub struct </span>DictBuilder&lt;<span class="lifetime">&#39;a</span>&gt; {
-    tag: DictTag&lt;<span class="lifetime">&#39;a</span>&gt;,
-    entries: HashMap&lt;Key, <span class="prelude-ty">Option</span>&lt;Box&lt;<span class="kw">dyn </span>TermPutable + <span class="lifetime">&#39;a</span>&gt;&gt;&gt;,
+</span><span class="kw">pub struct </span>DictBuilder&lt;<span class="lifetime">'a</span>&gt; {
+    tag: DictTag&lt;<span class="lifetime">'a</span>&gt;,
+    entries: HashMap&lt;Key, <span class="prelude-ty">Option</span>&lt;Box&lt;<span class="kw">dyn </span>TermPutable + <span class="lifetime">'a</span>&gt;&gt;&gt;,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Default <span class="kw">for </span>DictBuilder&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; Default <span class="kw">for </span>DictBuilder&lt;<span class="lifetime">'a</span>&gt; {
     <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
         <span class="self">Self</span>::new()
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; DictBuilder&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; DictBuilder&lt;<span class="lifetime">'a</span>&gt; {
     <span class="doccomment">/// Create a new dictionary builder.
     </span><span class="kw">pub fn </span>new() -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
@@ -844,12 +848,12 @@
     </span>}
 
     <span class="doccomment">/// Set the dictionary tag to the given term.
-    </span><span class="kw">pub fn </span>set_tag_term(<span class="kw-2">&amp;mut </span><span class="self">self</span>, term: Term&lt;<span class="lifetime">&#39;a</span>&gt;) {
+    </span><span class="kw">pub fn </span>set_tag_term(<span class="kw-2">&amp;mut </span><span class="self">self</span>, term: Term&lt;<span class="lifetime">'a</span>&gt;) {
         <span class="self">self</span>.tag = DictTag::Term(term);
     }
 
     <span class="doccomment">/// Set the dictionary tag to the given term.
-    </span><span class="kw">pub fn </span>tag_term(<span class="kw-2">mut </span><span class="self">self</span>, term: Term&lt;<span class="lifetime">&#39;a</span>&gt;) -&gt; <span class="self">Self </span>{
+    </span><span class="kw">pub fn </span>tag_term(<span class="kw-2">mut </span><span class="self">self</span>, term: Term&lt;<span class="lifetime">'a</span>&gt;) -&gt; <span class="self">Self </span>{
         <span class="self">self</span>.set_tag_term(term);
 
         <span class="self">self
@@ -885,7 +889,7 @@
     ///
     /// The key can either be an atom (or something that can be turned
     /// into an atom), or an integer.
-    </span><span class="kw">pub fn </span>add_entry&lt;K: Into&lt;Key&gt;, P: TermPutable + <span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, key: K, val: P) {
+    </span><span class="kw">pub fn </span>add_entry&lt;K: Into&lt;Key&gt;, P: TermPutable + <span class="lifetime">'a</span>&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, key: K, val: P) {
         <span class="self">self</span>.entries.insert(key.into(), <span class="prelude-val">Some</span>(Box::new(val)));
     }
 
@@ -895,14 +899,14 @@
     ///
     /// The key can either be an atom (or something that can be turned
     /// into an atom), or an integer.
-    </span><span class="kw">pub fn </span>entry&lt;K: Into&lt;Key&gt;, P: TermPutable + <span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">mut </span><span class="self">self</span>, key: K, val: P) -&gt; <span class="self">Self </span>{
+    </span><span class="kw">pub fn </span>entry&lt;K: Into&lt;Key&gt;, P: TermPutable + <span class="lifetime">'a</span>&gt;(<span class="kw-2">mut </span><span class="self">self</span>, key: K, val: P) -&gt; <span class="self">Self </span>{
         <span class="self">self</span>.add_entry(key, val);
 
         <span class="self">self
     </span>}
 }
 
-<span class="kw">unsafe impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; TermPutable <span class="kw">for </span>DictBuilder&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">unsafe impl</span>&lt;<span class="lifetime">'a</span>&gt; TermPutable <span class="kw">for </span>DictBuilder&lt;<span class="lifetime">'a</span>&gt; {
     <span class="kw">fn </span>put(<span class="kw-2">&amp;</span><span class="self">self</span>, term: <span class="kw-2">&amp;</span>Term) {
         term.assert_term_handling_possible();
         <span class="kw">let </span>context = <span class="kw">unsafe </span>{ unmanaged_engine_context() };
@@ -910,7 +914,8 @@
         <span class="kw">let </span>tag_term = context.new_term_ref();
         <span class="kw">let </span>len = <span class="self">self</span>.entries.len();
         <span class="comment">// TODO assert len is not too big
-        </span><span class="kw">let </span>value_terms = <span class="kw">unsafe </span>{ fli::PL_new_term_refs(len <span class="kw">as </span>i32) };
+        </span><span class="attr">#[allow(clippy::useless_conversion)]
+        </span><span class="kw">let </span>value_terms = <span class="kw">unsafe </span>{ fli::PL_new_term_refs(len.try_into().unwrap()) };
         <span class="kw">let </span><span class="kw-2">mut </span>value_term = value_terms;
         <span class="kw">let </span><span class="kw-2">mut </span>key_atoms = Vec::with_capacity(len);
 
@@ -919,7 +924,7 @@
             <span class="kw">if let </span><span class="prelude-val">Some</span>(value) = value {
                 <span class="kw">let </span>term = <span class="kw">unsafe </span>{ Term::new(value_term, context.as_term_origin()) };
                 term.put(<span class="kw-2">&amp;**</span>value)
-                    .expect(<span class="string">&quot;term put errored while building dict&quot;</span>);
+                    .expect(<span class="string">"term put errored while building dict"</span>);
                 value_term += <span class="number">1</span>;
             }
         }
@@ -940,7 +945,7 @@
     }
 }
 
-<span class="kw">unsafe impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Unifiable <span class="kw">for </span>DictBuilder&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">unsafe impl</span>&lt;<span class="lifetime">'a</span>&gt; Unifiable <span class="kw">for </span>DictBuilder&lt;<span class="lifetime">'a</span>&gt; {
     <span class="kw">fn </span>unify(<span class="kw-2">&amp;</span><span class="self">self</span>, term: <span class="kw-2">&amp;</span>Term) -&gt; bool {
         term.assert_term_handling_possible();
         <span class="kw">let </span>context = <span class="kw">unsafe </span>{ unmanaged_engine_context() };
@@ -957,12 +962,12 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Term&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; Term&lt;<span class="lifetime">'a</span>&gt; {
     <span class="doccomment">/// Get the value of the given key in the dictionary contained in
     /// the dictionary contained in this term.
     ///
-    /// If the dictionary doesn&#39;t contain the key, or if the expected
-    /// type is different, this will fail. If the given term doesn&#39;t
+    /// If the dictionary doesn't contain the key, or if the expected
+    /// type is different, this will fail. If the given term doesn't
     /// contain a dictionary, this will always fail. Otherwise, the
     /// value corresponding to the given key is returned.
     </span><span class="kw">pub fn </span>get_dict_key&lt;K: IntoKey, G: TermGetable&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, key: K) -&gt; PrologResult&lt;G&gt; {
@@ -993,14 +998,14 @@
     <span class="doccomment">/// Get the value of the given key in the dictionary contained in
     /// the dictionary contained in this term.
     ///
-    /// If the dictionary doesn&#39;t contain the key, this will fail. If
-    /// the given term doesn&#39;t contain a dictionary, this will always
+    /// If the dictionary doesn't contain the key, this will fail. If
+    /// the given term doesn't contain a dictionary, this will always
     /// fail. Otherwise, the term argument will be overwritten with
     /// the value corresponding to the key.
     </span><span class="kw">pub fn </span>get_dict_key_term&lt;K: IntoKey&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, key: K, term: <span class="kw-2">&amp;</span>Term) -&gt; PrologResult&lt;()&gt; {
         <span class="self">self</span>.assert_term_handling_possible();
         <span class="kw">if </span><span class="self">self</span>.origin_engine_ptr() != term.origin_engine_ptr() {
-            <span class="macro">panic!</span>(<span class="string">&quot;terms being unified are not part of the same engine&quot;</span>);
+            <span class="macro">panic!</span>(<span class="string">"terms being unified are not part of the same engine"</span>);
         }
         <span class="kw">let </span>(key_atom, alloc) = key.atom_ptr();
 
@@ -1019,7 +1024,7 @@
 
     <span class="doccomment">/// Get the tag of this dictionary.
     ///
-    /// Tag is assumed to be an atom. If it isn&#39;t (because it is
+    /// Tag is assumed to be an atom. If it isn't (because it is
     /// either a variable or some other kind of term), None will be
     /// returned. Otherwise Some(atom) will be returned.
     ///
@@ -1050,7 +1055,7 @@
     </span><span class="kw">pub fn </span>get_dict_tag_term(<span class="kw-2">&amp;</span><span class="self">self</span>, term: <span class="kw-2">&amp;</span>Term) -&gt; PrologResult&lt;()&gt; {
         <span class="self">self</span>.assert_term_handling_possible();
         <span class="kw">if </span><span class="self">self</span>.origin_engine_ptr() != term.origin_engine_ptr() {
-            <span class="macro">panic!</span>(<span class="string">&quot;terms being unified are not part of the same engine&quot;</span>);
+            <span class="macro">panic!</span>(<span class="string">"terms being unified are not part of the same engine"</span>);
         }
 
         <span class="kw">if unsafe </span>{ fli::PL_is_dict(<span class="self">self</span>.term_ptr()) == <span class="number">0 </span>} {
@@ -1067,7 +1072,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, T: QueryableContextType&gt; Context&lt;<span class="lifetime">&#39;a</span>, T&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T: QueryableContextType&gt; Context&lt;<span class="lifetime">'a</span>, T&gt; {
     <span class="doccomment">/// Iterate over the entries in the dictionary referred to by this term.
     ///
     /// This will return key-value pairs, where the key is either an
@@ -1082,14 +1087,14 @@
     /// If `dict_entries` is called on a term that does not contain a
     /// dictionary, the iterator is still created but will not return
     /// any elements.
-    </span><span class="kw">pub fn </span>dict_entries&lt;<span class="lifetime">&#39;b</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;b </span><span class="self">self</span>, term: <span class="kw-2">&amp;</span>Term&lt;<span class="lifetime">&#39;b</span>&gt;) -&gt; DictIterator&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, T&gt; {
+    </span><span class="kw">pub fn </span>dict_entries&lt;<span class="lifetime">'b</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">'b </span><span class="self">self</span>, term: <span class="kw-2">&amp;</span>Term&lt;<span class="lifetime">'b</span>&gt;) -&gt; DictIterator&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, T&gt; {
         <span class="self">self</span>.assert_activated();
         <span class="kw">let </span>count = <span class="kw">match </span>term.is_dict() {
             <span class="bool-val">false </span>=&gt; <span class="prelude-val">None</span>,
             <span class="bool-val">true </span>=&gt; {
                 <span class="kw">let </span>functor: Functor = term
                     .get()
-                    .expect(<span class="string">&quot;Expected to be able to get a functor out of a dict term&quot;</span>);
+                    .expect(<span class="string">"Expected to be able to get a functor out of a dict term"</span>);
                 <span class="prelude-val">Some</span>((functor.arity() <span class="kw">as </span>usize - <span class="number">1</span>) / <span class="number">2</span>)
             }
         };
@@ -1106,15 +1111,15 @@
 <span class="doccomment">/// An iterator over the entries of a dict term.
 ///
 /// See [dict_entries](Context::dict_entries) for more information.
-</span><span class="kw">pub struct </span>DictIterator&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, T: QueryableContextType&gt; {
-    context: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Context&lt;<span class="lifetime">&#39;b</span>, T&gt;,
-    term: Term&lt;<span class="lifetime">&#39;a</span>&gt;,
+</span><span class="kw">pub struct </span>DictIterator&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, T: QueryableContextType&gt; {
+    context: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Context&lt;<span class="lifetime">'b</span>, T&gt;,
+    term: Term&lt;<span class="lifetime">'a</span>&gt;,
     count: <span class="prelude-ty">Option</span>&lt;usize&gt;,
     index: usize,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, T: QueryableContextType&gt; Iterator <span class="kw">for </span>DictIterator&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, T&gt; {
-    <span class="kw">type </span>Item = (Key, Term&lt;<span class="lifetime">&#39;a</span>&gt;);
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, T: QueryableContextType&gt; Iterator <span class="kw">for </span>DictIterator&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, T&gt; {
+    <span class="kw">type </span>Item = (Key, Term&lt;<span class="lifetime">'a</span>&gt;);
 
     <span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>::Item&gt; {
         <span class="kw">match </span><span class="self">self</span>.count {
@@ -1124,10 +1129,10 @@
                     <span class="kw">let </span>[val_term, key_term] = <span class="self">self</span>.context.new_term_refs();
                     <span class="self">self</span>.term
                         .unify_arg(<span class="self">self</span>.index * <span class="number">2 </span>+ <span class="number">2</span>, <span class="kw-2">&amp;</span>val_term)
-                        .expect(<span class="string">&quot;unify dict val arg failed&quot;</span>);
+                        .expect(<span class="string">"unify dict val arg failed"</span>);
                     <span class="self">self</span>.term
                         .unify_arg(<span class="self">self</span>.index * <span class="number">2 </span>+ <span class="number">3</span>, <span class="kw-2">&amp;</span>key_term)
-                        .expect(<span class="string">&quot;unify dict val arg failed&quot;</span>);
+                        .expect(<span class="string">"unify dict val arg failed"</span>);
 
                     <span class="kw">let </span>key;
                     <span class="kw">if </span>key_term.is_atom() {
@@ -1135,10 +1140,10 @@
                     } <span class="kw">else if </span>key_term.is_integer() {
                         key = Key::Int(key_term.get().unwrap());
                     } <span class="kw">else </span>{
-                        <span class="macro">panic!</span>(<span class="string">&quot;Encountered term key that was neither an atom nor an integer&quot;</span>);
+                        <span class="macro">panic!</span>(<span class="string">"Encountered term key that was neither an atom nor an integer"</span>);
                     }
 
-                    <span class="comment">// we don&#39;t need the key term after this, so no
+                    <span class="comment">// we don't need the key term after this, so no
                     // point in letting it hang around on the stack.
                     </span><span class="kw">unsafe </span>{
                         key_term.reset();
@@ -1166,17 +1171,17 @@
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
         <span class="kw">let </span>dict = DictBuilder::new()
-            .tag(<span class="string">&quot;foo&quot;</span>)
-            .entry(<span class="string">&quot;a&quot;</span>, <span class="number">42_u64</span>)
-            .entry(<span class="string">&quot;b&quot;</span>, <span class="number">10_u64</span>);
+            .tag(<span class="string">"foo"</span>)
+            .entry(<span class="string">"a"</span>, <span class="number">42_u64</span>)
+            .entry(<span class="string">"b"</span>, <span class="number">10_u64</span>);
 
         <span class="kw">let </span>dict_term = context.new_term_ref();
         <span class="kw">let </span>[val1, val2, val3] = context.new_term_refs();
         dict_term.put(<span class="kw-2">&amp;</span>dict).unwrap();
 
-        <span class="macro">assert!</span>(attempt(dict_term.get_dict_key_term(<span class="string">&quot;a&quot;</span>, <span class="kw-2">&amp;</span>val1)).unwrap());
-        <span class="macro">assert!</span>(attempt(dict_term.get_dict_key_term(<span class="string">&quot;b&quot;</span>, <span class="kw-2">&amp;</span>val2)).unwrap());
-        <span class="macro">assert!</span>(!attempt(dict_term.get_dict_key_term(<span class="string">&quot;c&quot;</span>, <span class="kw-2">&amp;</span>val3)).unwrap());
+        <span class="macro">assert!</span>(attempt(dict_term.get_dict_key_term(<span class="string">"a"</span>, <span class="kw-2">&amp;</span>val1)).unwrap());
+        <span class="macro">assert!</span>(attempt(dict_term.get_dict_key_term(<span class="string">"b"</span>, <span class="kw-2">&amp;</span>val2)).unwrap());
+        <span class="macro">assert!</span>(!attempt(dict_term.get_dict_key_term(<span class="string">"c"</span>, <span class="kw-2">&amp;</span>val3)).unwrap());
 
         <span class="macro">assert_eq!</span>(<span class="number">42</span>, val1.get::&lt;u64&gt;().unwrap());
         <span class="macro">assert_eq!</span>(<span class="number">10</span>, val2.get::&lt;u64&gt;().unwrap());
@@ -1186,7 +1191,7 @@
             .call_once(<span class="macro">pred! </span>{term_string/<span class="number">2</span>}, [<span class="kw-2">&amp;</span>dict_term, <span class="kw-2">&amp;</span>string_term])
             .unwrap();
         <span class="kw">let </span>string = string_term.get::&lt;String&gt;().unwrap();
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;foo{a:42,b:10}&quot;</span>, string);
+        <span class="macro">assert_eq!</span>(<span class="string">"foo{a:42,b:10}"</span>, string);
     }
 
     <span class="attr">#[test]
@@ -1200,7 +1205,7 @@
 
         <span class="kw">let </span>query = context.new_term_ref();
 
-        <span class="kw">let </span>result = nondict.get_dict_key_term(<span class="string">&quot;a&quot;</span>, <span class="kw-2">&amp;</span>query).unwrap_err();
+        <span class="kw">let </span>result = nondict.get_dict_key_term(<span class="string">"a"</span>, <span class="kw-2">&amp;</span>query).unwrap_err();
         <span class="macro">assert!</span>(result.is_failure());
     }
 
@@ -1211,9 +1216,9 @@
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
         <span class="kw">let </span>dict = DictBuilder::new()
-            .tag(<span class="string">&quot;foo&quot;</span>)
-            .entry(<span class="number">42</span>, atomable(<span class="string">&quot;foo&quot;</span>))
-            .entry(<span class="number">11</span>, atomable(<span class="string">&quot;bar&quot;</span>));
+            .tag(<span class="string">"foo"</span>)
+            .entry(<span class="number">42</span>, atomable(<span class="string">"foo"</span>))
+            .entry(<span class="number">11</span>, atomable(<span class="string">"bar"</span>));
 
         <span class="kw">let </span>dict_term = context.new_term_ref();
         <span class="kw">let </span>[val1, val2, val3] = context.new_term_refs();
@@ -1223,15 +1228,15 @@
         <span class="macro">assert!</span>(attempt(dict_term.get_dict_key_term(<span class="number">42</span>, <span class="kw-2">&amp;</span>val2)).unwrap());
         <span class="macro">assert!</span>(!attempt(dict_term.get_dict_key_term(<span class="number">50</span>, <span class="kw-2">&amp;</span>val3)).unwrap());
 
-        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">&quot;bar&quot;</span>), val1.get().unwrap());
-        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">&quot;foo&quot;</span>), val2.get().unwrap());
+        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">"bar"</span>), val1.get().unwrap());
+        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">"foo"</span>), val2.get().unwrap());
 
         <span class="kw">let </span>string_term = context.new_term_ref();
         context
             .call_once(<span class="macro">pred! </span>{term_string/<span class="number">2</span>}, [<span class="kw-2">&amp;</span>dict_term, <span class="kw-2">&amp;</span>string_term])
             .unwrap();
         <span class="kw">let </span>string = string_term.get::&lt;String&gt;().unwrap();
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;foo{11:bar,42:foo}&quot;</span>, string);
+        <span class="macro">assert_eq!</span>(<span class="string">"foo{11:bar,42:foo}"</span>, string);
     }
 
     <span class="attr">#[test]
@@ -1243,13 +1248,13 @@
         <span class="kw">let </span>[dict1, dict2, dict3] = context.new_term_refs();
 
         <span class="kw">let </span>dict1_builder = DictBuilder::new()
-            .tag(<span class="string">&quot;foo&quot;</span>)
-            .entry(<span class="string">&quot;a&quot;</span>, <span class="number">42_u64</span>)
-            .entry(<span class="string">&quot;b&quot;</span>, <span class="number">10_u64</span>);
+            .tag(<span class="string">"foo"</span>)
+            .entry(<span class="string">"a"</span>, <span class="number">42_u64</span>)
+            .entry(<span class="string">"b"</span>, <span class="number">10_u64</span>);
         <span class="kw">let </span>dict2_builder = DictBuilder::new()
-            .tag(<span class="string">&quot;foo&quot;</span>)
-            .entry(<span class="string">&quot;a&quot;</span>, <span class="number">42_u64</span>)
-            .entry(<span class="string">&quot;c&quot;</span>, <span class="number">11_u64</span>);
+            .tag(<span class="string">"foo"</span>)
+            .entry(<span class="string">"a"</span>, <span class="number">42_u64</span>)
+            .entry(<span class="string">"c"</span>, <span class="number">11_u64</span>);
 
         dict1.put(<span class="kw-2">&amp;</span>dict1_builder).unwrap();
         dict2.put(<span class="kw-2">&amp;</span>dict1_builder).unwrap();
@@ -1266,10 +1271,10 @@
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
         <span class="kw">let </span>builder = DictBuilder::new()
-            .entry(<span class="number">8</span>, atomable(<span class="string">&quot;foo&quot;</span>))
-            .entry(<span class="number">2</span>, atomable(<span class="string">&quot;bar&quot;</span>))
-            .entry(<span class="number">7</span>, atomable(<span class="string">&quot;baz&quot;</span>))
-            .entry(<span class="number">11</span>, atomable(<span class="string">&quot;quux&quot;</span>));
+            .entry(<span class="number">8</span>, atomable(<span class="string">"foo"</span>))
+            .entry(<span class="number">2</span>, atomable(<span class="string">"bar"</span>))
+            .entry(<span class="number">7</span>, atomable(<span class="string">"baz"</span>))
+            .entry(<span class="number">11</span>, atomable(<span class="string">"quux"</span>));
 
         <span class="kw">let </span>term = context.new_term_ref();
         term.unify(<span class="kw-2">&amp;</span>builder).unwrap();
@@ -1287,10 +1292,10 @@
         <span class="macro">assert_eq!</span>(Key::Int(<span class="number">8</span>), key3);
         <span class="macro">assert_eq!</span>(Key::Int(<span class="number">11</span>), key4);
 
-        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">&quot;bar&quot;</span>), val1.get().unwrap());
-        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">&quot;baz&quot;</span>), val2.get().unwrap());
-        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">&quot;foo&quot;</span>), val3.get().unwrap());
-        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">&quot;quux&quot;</span>), val4.get().unwrap());
+        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">"bar"</span>), val1.get().unwrap());
+        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">"baz"</span>), val2.get().unwrap());
+        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">"foo"</span>), val3.get().unwrap());
+        <span class="macro">assert_eq!</span>(Atom::new(<span class="string">"quux"</span>), val4.get().unwrap());
     }
 
     <span class="attr">#[test]
@@ -1326,12 +1331,12 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>builder = DictBuilder::new().tag(<span class="string">&quot;foo&quot;</span>);
+        <span class="kw">let </span>builder = DictBuilder::new().tag(<span class="string">"foo"</span>);
 
         <span class="kw">let </span>term = context.new_term_ref();
         term.unify(<span class="kw-2">&amp;</span>builder).unwrap();
 
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(Atom::new(<span class="string">&quot;foo&quot;</span>)), term.get_dict_tag().unwrap());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(Atom::new(<span class="string">"foo"</span>)), term.get_dict_tag().unwrap());
     }
 
     <span class="attr">#[test]
@@ -1371,21 +1376,21 @@
 
         <span class="kw">let </span>dict = context.new_term_ref();
         <span class="kw">let </span>builder = DictBuilder::new()
-            .entry(<span class="string">&quot;foo&quot;</span>, <span class="number">42_u64</span>)
-            .entry(<span class="string">&quot;bar&quot;</span>, <span class="string">&quot;hello&quot;</span>.to_owned());
+            .entry(<span class="string">"foo"</span>, <span class="number">42_u64</span>)
+            .entry(<span class="string">"bar"</span>, <span class="string">"hello"</span>.to_owned());
 
         dict.unify(<span class="kw-2">&amp;</span>builder).unwrap();
 
-        <span class="macro">assert_eq!</span>(<span class="number">42_u64</span>, dict.get_dict_key(<span class="string">&quot;foo&quot;</span>).unwrap());
-        <span class="kw">let </span>hello_str: String = dict.get_dict_key(<span class="string">&quot;bar&quot;</span>).unwrap();
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;hello&quot;</span>, hello_str);
+        <span class="macro">assert_eq!</span>(<span class="number">42_u64</span>, dict.get_dict_key(<span class="string">"foo"</span>).unwrap());
+        <span class="kw">let </span>hello_str: String = dict.get_dict_key(<span class="string">"bar"</span>).unwrap();
+        <span class="macro">assert_eq!</span>(<span class="string">"hello"</span>, hello_str);
 
         <span class="comment">// getting a dict key for the wrong type fails
-        </span><span class="macro">assert!</span>(attempt_opt(dict.get_dict_key::&lt;<span class="kw">_</span>, String&gt;(<span class="string">&quot;foo&quot;</span>))
+        </span><span class="macro">assert!</span>(attempt_opt(dict.get_dict_key::&lt;<span class="kw">_</span>, String&gt;(<span class="string">"foo"</span>))
             .unwrap()
             .is_none());
         <span class="comment">// getting a dict key that is not in there fails
-        </span><span class="macro">assert!</span>(attempt_opt(dict.get_dict_key::&lt;<span class="kw">_</span>, bool&gt;(<span class="string">&quot;moo&quot;</span>))
+        </span><span class="macro">assert!</span>(attempt_opt(dict.get_dict_key::&lt;<span class="kw">_</span>, bool&gt;(<span class="string">"moo"</span>))
             .unwrap()
             .is_none());
     }
@@ -1399,7 +1404,7 @@
         <span class="kw">let </span>nondict = context.new_term_ref();
         nondict.put_val(<span class="number">42_u64</span>).unwrap();
 
-        <span class="kw">let </span>result = nondict.get_dict_key::&lt;<span class="kw">_</span>, String&gt;(<span class="string">&quot;a&quot;</span>).unwrap_err();
+        <span class="kw">let </span>result = nondict.get_dict_key::&lt;<span class="kw">_</span>, String&gt;(<span class="string">"a"</span>).unwrap_err();
 
         <span class="macro">assert!</span>(result.is_failure());
     }

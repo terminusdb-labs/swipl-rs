@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl/src/term/ser.rs`."><title>ser.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-fa3bb1812debf86c.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="swipl" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.0 (79e9716c9 2023-11-13)" data-channel="1.74.0" data-search-js="search-8be46b629f5f14a8.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-c5bd66d33317d69f.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../swipl/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl/src/term/ser.rs`."><title>ser.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-ac92e1bbe349e143.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="swipl" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0 (07dca489a 2024-02-04)" data-channel="1.76.0" data-search-js="search-2b6ce74ff89ae146.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-f2adc0d6ca4d09fb.js"></script><script defer src="../../../static.files/src-script-39ed315d46fb705f.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-305769736d49e732.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-feafe1bb7466e4bd.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -1551,7 +1552,7 @@
 
 <span class="kw">use </span>std::cell::Cell;
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>ATOM_STRUCT_NAME: <span class="kw-2">&amp;</span>str = <span class="string">&quot;$swipl::private::atom&quot;</span>;
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>ATOM_STRUCT_NAME: <span class="kw-2">&amp;</span>str = <span class="string">"$swipl::private::atom"</span>;
 
 <span class="kw">impl </span>ser::Error <span class="kw">for </span>Error {
     <span class="kw">fn </span>custom&lt;T&gt;(c: T) -&gt; <span class="self">Self
@@ -1567,9 +1568,9 @@
 /// This uses the default serialization configuration, meaning:
 /// - prolog dictionary tags will remain variables.
 /// - struct type names are ignored and will not be set as the dictionary tag.
-</span><span class="kw">pub fn </span>to_term&lt;<span class="lifetime">&#39;a</span>, T, C: QueryableContextType&gt;(
-    context: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Context&lt;C&gt;,
-    term: <span class="kw-2">&amp;</span>Term&lt;<span class="lifetime">&#39;a</span>&gt;,
+</span><span class="kw">pub fn </span>to_term&lt;<span class="lifetime">'a</span>, T, C: QueryableContextType&gt;(
+    context: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Context&lt;C&gt;,
+    term: <span class="kw-2">&amp;</span>Term&lt;<span class="lifetime">'a</span>&gt;,
     obj: <span class="kw-2">&amp;</span>T,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt;
 <span class="kw">where
@@ -1582,9 +1583,9 @@
 }
 
 <span class="doccomment">/// Serialize a value into a prolog term using serde, providing configuration options.
-</span><span class="kw">pub fn </span>to_term_with_config&lt;<span class="lifetime">&#39;a</span>, T, C: QueryableContextType&gt;(
-    context: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Context&lt;C&gt;,
-    term: <span class="kw-2">&amp;</span>Term&lt;<span class="lifetime">&#39;a</span>&gt;,
+</span><span class="kw">pub fn </span>to_term_with_config&lt;<span class="lifetime">'a</span>, T, C: QueryableContextType&gt;(
+    context: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Context&lt;C&gt;,
+    term: <span class="kw-2">&amp;</span>Term&lt;<span class="lifetime">'a</span>&gt;,
     obj: <span class="kw-2">&amp;</span>T,
     configuration: SerializerConfiguration,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt;
@@ -1670,15 +1671,15 @@
 }
 
 <span class="doccomment">/// A serde serializer for turning rust values into prolog terms.
-</span><span class="kw">pub struct </span>Serializer&lt;<span class="lifetime">&#39;a</span>, C: QueryableContextType&gt; {
-    context: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Context&lt;<span class="lifetime">&#39;a</span>, C&gt;,
-    term: Term&lt;<span class="lifetime">&#39;a</span>&gt;,
+</span><span class="kw">pub struct </span>Serializer&lt;<span class="lifetime">'a</span>, C: QueryableContextType&gt; {
+    context: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Context&lt;<span class="lifetime">'a</span>, C&gt;,
+    term: Term&lt;<span class="lifetime">'a</span>&gt;,
     configuration: SerializerConfiguration,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C: QueryableContextType&gt; Serializer&lt;<span class="lifetime">&#39;a</span>, C&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C: QueryableContextType&gt; Serializer&lt;<span class="lifetime">'a</span>, C&gt; {
     <span class="doccomment">/// Create a new serializer with the default configuration.
-    </span><span class="kw">pub fn </span>new(context: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Context&lt;<span class="lifetime">&#39;a</span>, C&gt;, term: Term&lt;<span class="lifetime">&#39;a</span>&gt;) -&gt; <span class="self">Self </span>{
+    </span><span class="kw">pub fn </span>new(context: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Context&lt;<span class="lifetime">'a</span>, C&gt;, term: Term&lt;<span class="lifetime">'a</span>&gt;) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             context,
             term,
@@ -1688,8 +1689,8 @@
 
     <span class="doccomment">/// Create a new serializer with the given configuration.
     </span><span class="kw">pub fn </span>new_with_config(
-        context: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Context&lt;<span class="lifetime">&#39;a</span>, C&gt;,
-        term: Term&lt;<span class="lifetime">&#39;a</span>&gt;,
+        context: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Context&lt;<span class="lifetime">'a</span>, C&gt;,
+        term: Term&lt;<span class="lifetime">'a</span>&gt;,
         configuration: SerializerConfiguration,
     ) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
@@ -1700,16 +1701,16 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C: QueryableContextType&gt; serde::Serializer <span class="kw">for </span>Serializer&lt;<span class="lifetime">&#39;a</span>, C&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C: QueryableContextType&gt; serde::Serializer <span class="kw">for </span>Serializer&lt;<span class="lifetime">'a</span>, C&gt; {
     <span class="kw">type </span><span class="prelude-val">Ok </span>= ();
     <span class="kw">type </span>Error = Error;
-    <span class="kw">type </span>SerializeSeq = SerializeSeq&lt;<span class="lifetime">&#39;a</span>, C&gt;;
-    <span class="kw">type </span>SerializeTuple = SerializeTuple&lt;<span class="lifetime">&#39;a</span>, C&gt;;
-    <span class="kw">type </span>SerializeTupleStruct = SerializeNamedTuple&lt;<span class="lifetime">&#39;a</span>, C&gt;;
-    <span class="kw">type </span>SerializeTupleVariant = SerializeNamedTuple&lt;<span class="lifetime">&#39;a</span>, C&gt;;
-    <span class="kw">type </span>SerializeMap = SerializeMap&lt;<span class="lifetime">&#39;a</span>, C&gt;;
-    <span class="kw">type </span>SerializeStruct = SerializeMap&lt;<span class="lifetime">&#39;a</span>, C&gt;;
-    <span class="kw">type </span>SerializeStructVariant = SerializeMap&lt;<span class="lifetime">&#39;a</span>, C&gt;;
+    <span class="kw">type </span>SerializeSeq = SerializeSeq&lt;<span class="lifetime">'a</span>, C&gt;;
+    <span class="kw">type </span>SerializeTuple = SerializeTuple&lt;<span class="lifetime">'a</span>, C&gt;;
+    <span class="kw">type </span>SerializeTupleStruct = SerializeNamedTuple&lt;<span class="lifetime">'a</span>, C&gt;;
+    <span class="kw">type </span>SerializeTupleVariant = SerializeNamedTuple&lt;<span class="lifetime">'a</span>, C&gt;;
+    <span class="kw">type </span>SerializeMap = SerializeMap&lt;<span class="lifetime">'a</span>, C&gt;;
+    <span class="kw">type </span>SerializeStruct = SerializeMap&lt;<span class="lifetime">'a</span>, C&gt;;
+    <span class="kw">type </span>SerializeStructVariant = SerializeMap&lt;<span class="lifetime">'a</span>, C&gt;;
 
     <span class="kw">fn </span>serialize_bool(<span class="self">self</span>, v: bool) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
         attempt_unify(<span class="kw-2">&amp;</span><span class="self">self</span>.term, v)
@@ -1754,14 +1755,14 @@
         attempt_unify(<span class="kw-2">&amp;</span><span class="self">self</span>.term, v)
     }
     <span class="kw">fn </span>serialize_none(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
-        attempt_unify(<span class="kw-2">&amp;</span><span class="self">self</span>.term, <span class="macro">atom!</span>(<span class="string">&quot;none&quot;</span>))
+        attempt_unify(<span class="kw-2">&amp;</span><span class="self">self</span>.term, <span class="macro">atom!</span>(<span class="string">"none"</span>))
     }
     <span class="kw">fn </span>serialize_some&lt;T: <span class="question-mark">?</span>Sized&gt;(<span class="self">self</span>, value: <span class="kw-2">&amp;</span>T) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt;
     <span class="kw">where
         </span>T: Serialize,
     {
-        <span class="kw">if </span>attempt(<span class="self">self</span>.term.unify(<span class="macro">functor!</span>(<span class="string">&quot;some/1&quot;</span>)))<span class="question-mark">? </span>{
-            <span class="kw">let </span>[term] = attempt_opt(<span class="self">self</span>.context.compound_terms(<span class="kw-2">&amp;</span><span class="self">self</span>.term))<span class="question-mark">?</span>.expect(<span class="string">&quot;having just unified the functor some/1, retrieving its argument list should have been possible&quot;</span>);
+        <span class="kw">if </span>attempt(<span class="self">self</span>.term.unify(<span class="macro">functor!</span>(<span class="string">"some/1"</span>)))<span class="question-mark">? </span>{
+            <span class="kw">let </span>[term] = attempt_opt(<span class="self">self</span>.context.compound_terms(<span class="kw-2">&amp;</span><span class="self">self</span>.term))<span class="question-mark">?</span>.expect(<span class="string">"having just unified the functor some/1, retrieving its argument list should have been possible"</span>);
             <span class="kw">let </span>inner_serializer =
                 Serializer::new_with_config(<span class="self">self</span>.context, term.clone(), <span class="self">self</span>.configuration.clone());
             <span class="kw">let </span>result = value.serialize(inner_serializer);
@@ -1776,20 +1777,20 @@
     <span class="kw">fn </span>serialize_unit(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
         attempt_unify(<span class="kw-2">&amp;</span><span class="self">self</span>.term, Nil)
     }
-    <span class="kw">fn </span>serialize_unit_struct(<span class="self">self</span>, name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
+    <span class="kw">fn </span>serialize_unit_struct(<span class="self">self</span>, name: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
         attempt_unify(<span class="kw-2">&amp;</span><span class="self">self</span>.term, Atom::new(name))
     }
     <span class="kw">fn </span>serialize_unit_variant(
         <span class="self">self</span>,
-        _name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        _name: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
         _variant_index: u32,
-        variant: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        variant: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
         attempt_unify(<span class="kw-2">&amp;</span><span class="self">self</span>.term, Atom::new(variant))
     }
     <span class="kw">fn </span>serialize_newtype_struct&lt;T: <span class="question-mark">?</span>Sized&gt;(
         <span class="self">self</span>,
-        name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        name: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
         value: <span class="kw-2">&amp;</span>T,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt;
     <span class="kw">where
@@ -1798,7 +1799,7 @@
         <span class="kw">if </span>name == ATOM_STRUCT_NAME {
             value.serialize(AtomEmitter(<span class="self">self</span>.term))
         } <span class="kw">else if </span>attempt(<span class="self">self</span>.term.unify(Functor::new(name, <span class="number">1</span>)))<span class="question-mark">? </span>{
-            <span class="kw">let </span>[term] = attempt_opt(<span class="self">self</span>.context.compound_terms(<span class="kw-2">&amp;</span><span class="self">self</span>.term))<span class="question-mark">?</span>.expect(<span class="string">&quot;having just unified the functor with arity 1, retrieving its argument list should have been possible&quot;</span>);
+            <span class="kw">let </span>[term] = attempt_opt(<span class="self">self</span>.context.compound_terms(<span class="kw-2">&amp;</span><span class="self">self</span>.term))<span class="question-mark">?</span>.expect(<span class="string">"having just unified the functor with arity 1, retrieving its argument list should have been possible"</span>);
             <span class="kw">let </span>inner_serializer =
                 Serializer::new_with_config(<span class="self">self</span>.context, term.clone(), <span class="self">self</span>.configuration.clone());
             <span class="kw">let </span>result = value.serialize(inner_serializer);
@@ -1812,16 +1813,16 @@
     }
     <span class="kw">fn </span>serialize_newtype_variant&lt;T: <span class="question-mark">?</span>Sized&gt;(
         <span class="self">self</span>,
-        _name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        _name: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
         _variant_index: u32,
-        variant: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        variant: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
         value: <span class="kw-2">&amp;</span>T,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt;
     <span class="kw">where
         </span>T: Serialize,
     {
         <span class="kw">if </span>attempt(<span class="self">self</span>.term.unify(Functor::new(variant, <span class="number">1</span>)))<span class="question-mark">? </span>{
-            <span class="kw">let </span>[term] = attempt_opt(<span class="self">self</span>.context.compound_terms(<span class="kw-2">&amp;</span><span class="self">self</span>.term))<span class="question-mark">?</span>.expect(<span class="string">&quot;having just unified the functor with arity 1, retrieving its argument list should have been possible&quot;</span>);
+            <span class="kw">let </span>[term] = attempt_opt(<span class="self">self</span>.context.compound_terms(<span class="kw-2">&amp;</span><span class="self">self</span>.term))<span class="question-mark">?</span>.expect(<span class="string">"having just unified the functor with arity 1, retrieving its argument list should have been possible"</span>);
             <span class="kw">let </span>inner_serializer =
                 Serializer::new_with_config(<span class="self">self</span>.context, term.clone(), <span class="self">self</span>.configuration.clone());
             <span class="kw">let </span>result = value.serialize(inner_serializer);
@@ -1850,7 +1851,7 @@
     }
     <span class="kw">fn </span>serialize_tuple_struct(
         <span class="self">self</span>,
-        name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        name: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
         len: usize,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::SerializeTupleStruct, <span class="self">Self</span>::Error&gt; {
         <span class="kw">if </span>len &gt; u16::MAX <span class="kw">as </span>usize {
@@ -1868,9 +1869,9 @@
     }
     <span class="kw">fn </span>serialize_tuple_variant(
         <span class="self">self</span>,
-        _name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        _name: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
         _variant_index: u32,
-        variant: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        variant: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
         len: usize,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::SerializeTupleVariant, <span class="self">Self</span>::Error&gt; {
         <span class="comment">// we serialize based on the variant name.
@@ -1893,7 +1894,7 @@
     }
     <span class="kw">fn </span>serialize_struct(
         <span class="self">self</span>,
-        name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        name: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
         _len: usize,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::SerializeStruct, <span class="self">Self</span>::Error&gt; {
         <span class="kw">let </span>tag = <span class="kw">if </span><span class="self">self</span>.configuration.tag_struct_dicts {
@@ -1910,9 +1911,9 @@
     }
     <span class="kw">fn </span>serialize_struct_variant(
         <span class="self">self</span>,
-        _name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        _name: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
         _variant_index: u32,
-        variant: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        variant: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
         _len: usize,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::SerializeStructVariant, <span class="self">Self</span>::Error&gt; {
         <span class="prelude-val">Ok</span>(SerializeMap::new(
@@ -1925,7 +1926,7 @@
 }
 
 <span class="macro">thread_local! </span>{
-    <span class="kw">static </span>SERIALIZING_SWIPL_TERM: Cell&lt;bool&gt; = Cell::new(<span class="bool-val">false</span>);
+    <span class="kw">static </span>SERIALIZING_SWIPL_TERM: Cell&lt;bool&gt; = <span class="kw">const </span>{ Cell::new(<span class="bool-val">false</span>) };
 }
 <span class="kw">struct </span>SerializingSwiplTermState;
 
@@ -1933,7 +1934,7 @@
     <span class="kw">fn </span>start() -&gt; <span class="self">Self </span>{
         SERIALIZING_SWIPL_TERM.with(|sst| {
             <span class="kw">if </span>sst.get() {
-                <span class="macro">panic!</span>(<span class="string">&quot;swipl term serialization was already set. did we recurse?&quot;</span>);
+                <span class="macro">panic!</span>(<span class="string">"swipl term serialization was already set. did we recurse?"</span>);
             }
             sst.set(<span class="bool-val">true</span>)
         });
@@ -1965,7 +1966,7 @@
     }
 }
 
-<span class="kw">struct </span>AtomEmitter&lt;<span class="lifetime">&#39;a</span>&gt;(Term&lt;<span class="lifetime">&#39;a</span>&gt;);
+<span class="kw">struct </span>AtomEmitter&lt;<span class="lifetime">'a</span>&gt;(Term&lt;<span class="lifetime">'a</span>&gt;);
 
 <span class="kw">fn </span>attempt_unify_atom(term: <span class="kw-2">&amp;</span>Term, atom_ptr: usize) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
     <span class="kw">let </span>atom = <span class="kw">unsafe </span>{ Atom::wrap(atom_ptr) };
@@ -1975,7 +1976,7 @@
     result
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; ser::Serializer <span class="kw">for </span>AtomEmitter&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; ser::Serializer <span class="kw">for </span>AtomEmitter&lt;<span class="lifetime">'a</span>&gt; {
     <span class="kw">type </span><span class="prelude-val">Ok </span>= ();
 
     <span class="kw">type </span>Error = Error;
@@ -1995,63 +1996,63 @@
     <span class="kw">type </span>SerializeStructVariant = Impossible&lt;(), Error&gt;;
 
     <span class="kw">fn </span>serialize_bool(<span class="self">self</span>, _v: bool) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;string&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"string"</span>))
     }
 
     <span class="kw">fn </span>serialize_i8(<span class="self">self</span>, _v: i8) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;string&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"string"</span>))
     }
 
     <span class="kw">fn </span>serialize_i16(<span class="self">self</span>, _v: i16) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;string&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"string"</span>))
     }
 
     <span class="kw">fn </span>serialize_i32(<span class="self">self</span>, _v: i32) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;string&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"string"</span>))
     }
 
     <span class="kw">fn </span>serialize_i64(<span class="self">self</span>, _v: i64) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;string&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"string"</span>))
     }
 
     <span class="kw">fn </span>serialize_u8(<span class="self">self</span>, _v: u8) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;string&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"string"</span>))
     }
 
     <span class="kw">fn </span>serialize_u16(<span class="self">self</span>, _v: u16) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;string&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"string"</span>))
     }
 
-    <span class="attr">#[cfg(target_pointer_width = <span class="string">&quot;32&quot;</span>)]
+    <span class="attr">#[cfg(target_pointer_width = <span class="string">"32"</span>)]
     </span><span class="kw">fn </span>serialize_u32(<span class="self">self</span>, v: u32) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
         attempt_unify_atom(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>, v <span class="kw">as </span>usize)
     }
 
-    <span class="attr">#[cfg(target_pointer_width = <span class="string">&quot;32&quot;</span>)]
+    <span class="attr">#[cfg(target_pointer_width = <span class="string">"32"</span>)]
     </span><span class="kw">fn </span>serialize_u64(<span class="self">self</span>, _v: u64) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;string&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"string"</span>))
     }
 
-    <span class="attr">#[cfg(target_pointer_width = <span class="string">&quot;64&quot;</span>)]
+    <span class="attr">#[cfg(target_pointer_width = <span class="string">"64"</span>)]
     </span><span class="kw">fn </span>serialize_u32(<span class="self">self</span>, _v: u32) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;string&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"string"</span>))
     }
 
-    <span class="attr">#[cfg(target_pointer_width = <span class="string">&quot;64&quot;</span>)]
+    <span class="attr">#[cfg(target_pointer_width = <span class="string">"64"</span>)]
     </span><span class="kw">fn </span>serialize_u64(<span class="self">self</span>, v: u64) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
         attempt_unify_atom(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>, v <span class="kw">as </span>usize)
     }
 
     <span class="kw">fn </span>serialize_f32(<span class="self">self</span>, _v: f32) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;string&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"string"</span>))
     }
 
     <span class="kw">fn </span>serialize_f64(<span class="self">self</span>, _v: f64) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;string&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"string"</span>))
     }
 
     <span class="kw">fn </span>serialize_char(<span class="self">self</span>, _v: char) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;string&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"string"</span>))
     }
 
     <span class="kw">fn </span>serialize_str(<span class="self">self</span>, v: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
@@ -2059,117 +2060,117 @@
     }
 
     <span class="kw">fn </span>serialize_bytes(<span class="self">self</span>, _v: <span class="kw-2">&amp;</span>[u8]) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;string&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"string"</span>))
     }
 
     <span class="kw">fn </span>serialize_none(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;string&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"string"</span>))
     }
 
     <span class="kw">fn </span>serialize_some&lt;T: <span class="question-mark">?</span>Sized&gt;(<span class="self">self</span>, _value: <span class="kw-2">&amp;</span>T) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt;
     <span class="kw">where
         </span>T: Serialize,
     {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;string&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"string"</span>))
     }
 
     <span class="kw">fn </span>serialize_unit(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;string&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"string"</span>))
     }
 
-    <span class="kw">fn </span>serialize_unit_struct(<span class="self">self</span>, _name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;string&quot;</span>))
+    <span class="kw">fn </span>serialize_unit_struct(<span class="self">self</span>, _name: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"string"</span>))
     }
 
     <span class="kw">fn </span>serialize_unit_variant(
         <span class="self">self</span>,
-        _name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        _name: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
         _variant_index: u32,
-        _variant: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        _variant: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;string&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"string"</span>))
     }
 
     <span class="kw">fn </span>serialize_newtype_struct&lt;T: <span class="question-mark">?</span>Sized&gt;(
         <span class="self">self</span>,
-        _name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        _name: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
         _value: <span class="kw-2">&amp;</span>T,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt;
     <span class="kw">where
         </span>T: Serialize,
     {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;string&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"string"</span>))
     }
 
     <span class="kw">fn </span>serialize_newtype_variant&lt;T: <span class="question-mark">?</span>Sized&gt;(
         <span class="self">self</span>,
-        _name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        _name: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
         _variant_index: u32,
-        _variant: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        _variant: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
         _value: <span class="kw-2">&amp;</span>T,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt;
     <span class="kw">where
         </span>T: Serialize,
     {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;string&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"string"</span>))
     }
 
     <span class="kw">fn </span>serialize_seq(<span class="self">self</span>, _len: <span class="prelude-ty">Option</span>&lt;usize&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::SerializeSeq, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;string&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"string"</span>))
     }
 
     <span class="kw">fn </span>serialize_tuple(<span class="self">self</span>, _len: usize) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::SerializeTuple, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;string&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"string"</span>))
     }
 
     <span class="kw">fn </span>serialize_tuple_struct(
         <span class="self">self</span>,
-        _name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        _name: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
         _len: usize,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::SerializeTupleStruct, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;string&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"string"</span>))
     }
 
     <span class="kw">fn </span>serialize_tuple_variant(
         <span class="self">self</span>,
-        _name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        _name: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
         _variant_index: u32,
-        _variant: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        _variant: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
         _len: usize,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::SerializeTupleVariant, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;string&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"string"</span>))
     }
 
     <span class="kw">fn </span>serialize_map(<span class="self">self</span>, _len: <span class="prelude-ty">Option</span>&lt;usize&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::SerializeMap, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;string&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"string"</span>))
     }
 
     <span class="kw">fn </span>serialize_struct(
         <span class="self">self</span>,
-        _name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        _name: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
         _len: usize,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::SerializeStruct, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;string&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"string"</span>))
     }
 
     <span class="kw">fn </span>serialize_struct_variant(
         <span class="self">self</span>,
-        _name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        _name: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
         _variant_index: u32,
-        _variant: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        _variant: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
         _len: usize,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::SerializeStructVariant, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;string&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"string"</span>))
     }
 }
 
-<span class="kw">pub struct </span>SerializeSeq&lt;<span class="lifetime">&#39;a</span>, C: QueryableContextType&gt; {
-    context: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Context&lt;<span class="lifetime">&#39;a</span>, C&gt;,
-    term: Term&lt;<span class="lifetime">&#39;a</span>&gt;,
+<span class="kw">pub struct </span>SerializeSeq&lt;<span class="lifetime">'a</span>, C: QueryableContextType&gt; {
+    context: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Context&lt;<span class="lifetime">'a</span>, C&gt;,
+    term: Term&lt;<span class="lifetime">'a</span>&gt;,
     configuration: SerializerConfiguration,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C: QueryableContextType&gt; ser::SerializeSeq <span class="kw">for </span>SerializeSeq&lt;<span class="lifetime">&#39;a</span>, C&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C: QueryableContextType&gt; ser::SerializeSeq <span class="kw">for </span>SerializeSeq&lt;<span class="lifetime">'a</span>, C&gt; {
     <span class="kw">type </span><span class="prelude-val">Ok </span>= ();
 
     <span class="kw">type </span>Error = Error;
@@ -2195,14 +2196,14 @@
     }
 }
 
-<span class="kw">pub struct </span>SerializeTuple&lt;<span class="lifetime">&#39;a</span>, C: QueryableContextType&gt; {
-    context: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Context&lt;<span class="lifetime">&#39;a</span>, C&gt;,
-    term: Term&lt;<span class="lifetime">&#39;a</span>&gt;,
+<span class="kw">pub struct </span>SerializeTuple&lt;<span class="lifetime">'a</span>, C: QueryableContextType&gt; {
+    context: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Context&lt;<span class="lifetime">'a</span>, C&gt;,
+    term: Term&lt;<span class="lifetime">'a</span>&gt;,
     len: usize,
     configuration: SerializerConfiguration,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C: QueryableContextType&gt; ser::SerializeTuple <span class="kw">for </span>SerializeTuple&lt;<span class="lifetime">&#39;a</span>, C&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C: QueryableContextType&gt; ser::SerializeTuple <span class="kw">for </span>SerializeTuple&lt;<span class="lifetime">'a</span>, C&gt; {
     <span class="kw">type </span><span class="prelude-val">Ok </span>= ();
 
     <span class="kw">type </span>Error = Error;
@@ -2221,9 +2222,9 @@
             );
             value.serialize(inner_serializer)
         } <span class="kw">else </span>{
-            attempt_unify(<span class="kw-2">&amp;</span><span class="self">self</span>.term, <span class="macro">functor!</span>(<span class="string">&quot;,/2&quot;</span>))<span class="question-mark">?</span>;
+            attempt_unify(<span class="kw-2">&amp;</span><span class="self">self</span>.term, <span class="macro">functor!</span>(<span class="string">",/2"</span>))<span class="question-mark">?</span>;
             <span class="kw">let </span>[head, tail] = attempt_opt(<span class="self">self</span>.context.compound_terms(<span class="kw-2">&amp;</span><span class="self">self</span>.term))<span class="question-mark">?
-                </span>.expect(<span class="string">&quot;should have two terms&quot;</span>);
+                </span>.expect(<span class="string">"should have two terms"</span>);
             <span class="kw">let </span>inner_serializer =
                 Serializer::new_with_config(<span class="self">self</span>.context, head, <span class="self">self</span>.configuration.clone());
             value.serialize(inner_serializer)<span class="question-mark">?</span>;
@@ -2241,14 +2242,14 @@
     }
 }
 
-<span class="kw">pub struct </span>SerializeNamedTuple&lt;<span class="lifetime">&#39;a</span>, C: QueryableContextType&gt; {
-    context: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Context&lt;<span class="lifetime">&#39;a</span>, C&gt;,
-    term: Term&lt;<span class="lifetime">&#39;a</span>&gt;,
+<span class="kw">pub struct </span>SerializeNamedTuple&lt;<span class="lifetime">'a</span>, C: QueryableContextType&gt; {
+    context: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Context&lt;<span class="lifetime">'a</span>, C&gt;,
+    term: Term&lt;<span class="lifetime">'a</span>&gt;,
     pos: usize,
     configuration: SerializerConfiguration,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C: QueryableContextType&gt; SerializeNamedTuple&lt;<span class="lifetime">&#39;a</span>, C&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C: QueryableContextType&gt; SerializeNamedTuple&lt;<span class="lifetime">'a</span>, C&gt; {
     <span class="kw">fn </span>serialize_field_impl&lt;T: <span class="question-mark">?</span>Sized&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: <span class="kw-2">&amp;</span>T) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt;
     <span class="kw">where
         </span>T: Serialize,
@@ -2267,7 +2268,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C: QueryableContextType&gt; ser::SerializeTupleStruct <span class="kw">for </span>SerializeNamedTuple&lt;<span class="lifetime">&#39;a</span>, C&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C: QueryableContextType&gt; ser::SerializeTupleStruct <span class="kw">for </span>SerializeNamedTuple&lt;<span class="lifetime">'a</span>, C&gt; {
     <span class="kw">type </span><span class="prelude-val">Ok </span>= ();
 
     <span class="kw">type </span>Error = Error;
@@ -2284,7 +2285,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C: QueryableContextType&gt; ser::SerializeTupleVariant <span class="kw">for </span>SerializeNamedTuple&lt;<span class="lifetime">&#39;a</span>, C&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C: QueryableContextType&gt; ser::SerializeTupleVariant <span class="kw">for </span>SerializeNamedTuple&lt;<span class="lifetime">'a</span>, C&gt; {
     <span class="kw">type </span><span class="prelude-val">Ok </span>= ();
 
     <span class="kw">type </span>Error = Error;
@@ -2301,19 +2302,19 @@
     }
 }
 
-<span class="kw">pub struct </span>SerializeMap&lt;<span class="lifetime">&#39;a</span>, C: QueryableContextType&gt; {
-    context: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Context&lt;<span class="lifetime">&#39;a</span>, C&gt;,
-    term: Term&lt;<span class="lifetime">&#39;a</span>&gt;,
+<span class="kw">pub struct </span>SerializeMap&lt;<span class="lifetime">'a</span>, C: QueryableContextType&gt; {
+    context: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Context&lt;<span class="lifetime">'a</span>, C&gt;,
+    term: Term&lt;<span class="lifetime">'a</span>&gt;,
     configuration: SerializerConfiguration,
-    reset_term: Term&lt;<span class="lifetime">&#39;a</span>&gt;,
-    builder: DictBuilder&lt;<span class="lifetime">&#39;a</span>&gt;,
+    reset_term: Term&lt;<span class="lifetime">'a</span>&gt;,
+    builder: DictBuilder&lt;<span class="lifetime">'a</span>&gt;,
     last_key: <span class="prelude-ty">Option</span>&lt;Key&gt;,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C: QueryableContextType&gt; SerializeMap&lt;<span class="lifetime">&#39;a</span>, C&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C: QueryableContextType&gt; SerializeMap&lt;<span class="lifetime">'a</span>, C&gt; {
     <span class="kw">fn </span>new(
-        context: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Context&lt;<span class="lifetime">&#39;a</span>, C&gt;,
-        term: Term&lt;<span class="lifetime">&#39;a</span>&gt;,
+        context: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Context&lt;<span class="lifetime">'a</span>, C&gt;,
+        term: Term&lt;<span class="lifetime">'a</span>&gt;,
         tag: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;,
         configuration: SerializerConfiguration,
     ) -&gt; <span class="self">Self </span>{
@@ -2335,7 +2336,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C: QueryableContextType&gt; ser::SerializeMap <span class="kw">for </span>SerializeMap&lt;<span class="lifetime">&#39;a</span>, C&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C: QueryableContextType&gt; ser::SerializeMap <span class="kw">for </span>SerializeMap&lt;<span class="lifetime">'a</span>, C&gt; {
     <span class="kw">type </span><span class="prelude-val">Ok </span>= ();
 
     <span class="kw">type </span>Error = Error;
@@ -2363,7 +2364,7 @@
         <span class="kw">let </span><span class="kw-2">mut </span>key = <span class="prelude-val">None</span>;
         std::mem::swap(<span class="kw-2">&amp;mut </span>key, <span class="kw-2">&amp;mut </span><span class="self">self</span>.last_key);
         <span class="self">self</span>.builder
-            .add_entry(key.expect(<span class="string">&quot;key should have been set&quot;</span>), val_term);
+            .add_entry(key.expect(<span class="string">"key should have been set"</span>), val_term);
 
         <span class="prelude-val">Ok</span>(())
     }
@@ -2376,14 +2377,14 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C: QueryableContextType&gt; ser::SerializeStruct <span class="kw">for </span>SerializeMap&lt;<span class="lifetime">&#39;a</span>, C&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C: QueryableContextType&gt; ser::SerializeStruct <span class="kw">for </span>SerializeMap&lt;<span class="lifetime">'a</span>, C&gt; {
     <span class="kw">type </span><span class="prelude-val">Ok </span>= ();
 
     <span class="kw">type </span>Error = Error;
 
     <span class="kw">fn </span>serialize_field&lt;T: <span class="question-mark">?</span>Sized&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        key: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        key: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
         value: <span class="kw-2">&amp;</span>T,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="self">Self</span>::Error&gt;
     <span class="kw">where
@@ -2409,14 +2410,14 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C: QueryableContextType&gt; ser::SerializeStructVariant <span class="kw">for </span>SerializeMap&lt;<span class="lifetime">&#39;a</span>, C&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C: QueryableContextType&gt; ser::SerializeStructVariant <span class="kw">for </span>SerializeMap&lt;<span class="lifetime">'a</span>, C&gt; {
     <span class="kw">type </span><span class="prelude-val">Ok </span>= ();
 
     <span class="kw">type </span>Error = Error;
 
     <span class="kw">fn </span>serialize_field&lt;T: <span class="question-mark">?</span>Sized&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        key: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        key: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
         value: <span class="kw-2">&amp;</span>T,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="self">Self</span>::Error&gt;
     <span class="kw">where
@@ -2442,12 +2443,12 @@
     }
 }
 
-<span class="kw">struct </span>KeyEmitter&lt;<span class="lifetime">&#39;a</span>&gt; {
-    key: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span><span class="prelude-ty">Option</span>&lt;Key&gt;,
+<span class="kw">struct </span>KeyEmitter&lt;<span class="lifetime">'a</span>&gt; {
+    key: <span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="kw-2">mut </span><span class="prelude-ty">Option</span>&lt;Key&gt;,
     getting_atom: bool,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; ser::Serializer <span class="kw">for </span>KeyEmitter&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; ser::Serializer <span class="kw">for </span>KeyEmitter&lt;<span class="lifetime">'a</span>&gt; {
     <span class="kw">type </span><span class="prelude-val">Ok </span>= ();
 
     <span class="kw">type </span>Error = Error;
@@ -2462,8 +2463,8 @@
 
     <span class="kw">fn </span>serialize_bool(<span class="self">self</span>, v: bool) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
         <span class="kw">match </span>v {
-            <span class="bool-val">true </span>=&gt; <span class="kw-2">*</span><span class="self">self</span>.key = <span class="prelude-val">Some</span>(Key::Atom(<span class="macro">atom!</span>(<span class="string">&quot;true&quot;</span>))),
-            <span class="bool-val">false </span>=&gt; <span class="kw-2">*</span><span class="self">self</span>.key = <span class="prelude-val">Some</span>(Key::Atom(<span class="macro">atom!</span>(<span class="string">&quot;false&quot;</span>))),
+            <span class="bool-val">true </span>=&gt; <span class="kw-2">*</span><span class="self">self</span>.key = <span class="prelude-val">Some</span>(Key::Atom(<span class="macro">atom!</span>(<span class="string">"true"</span>))),
+            <span class="bool-val">false </span>=&gt; <span class="kw-2">*</span><span class="self">self</span>.key = <span class="prelude-val">Some</span>(Key::Atom(<span class="macro">atom!</span>(<span class="string">"false"</span>))),
         }
 
         <span class="prelude-val">Ok</span>(())
@@ -2473,7 +2474,7 @@
         <span class="kw">if </span>v &gt;= <span class="number">0 </span>{
             <span class="self">self</span>.serialize_u8(v <span class="kw">as </span>u8)
         } <span class="kw">else </span>{
-            <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;key&quot;</span>))
+            <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"key"</span>))
         }
     }
 
@@ -2481,7 +2482,7 @@
         <span class="kw">if </span>v &gt;= <span class="number">0 </span>{
             <span class="self">self</span>.serialize_u16(v <span class="kw">as </span>u16)
         } <span class="kw">else </span>{
-            <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;key&quot;</span>))
+            <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"key"</span>))
         }
     }
 
@@ -2489,7 +2490,7 @@
         <span class="kw">if </span>v &gt;= <span class="number">0 </span>{
             <span class="self">self</span>.serialize_u32(v <span class="kw">as </span>u32)
         } <span class="kw">else </span>{
-            <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;key&quot;</span>))
+            <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"key"</span>))
         }
     }
 
@@ -2497,7 +2498,7 @@
         <span class="kw">if </span>v &gt;= <span class="number">0 </span>{
             <span class="self">self</span>.serialize_u64(v <span class="kw">as </span>u64)
         } <span class="kw">else </span>{
-            <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;key&quot;</span>))
+            <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"key"</span>))
         }
     }
 
@@ -2511,7 +2512,7 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="attr">#[cfg(target_pointer_width = <span class="string">&quot;32&quot;</span>)]
+    <span class="attr">#[cfg(target_pointer_width = <span class="string">"32"</span>)]
     </span><span class="kw">fn </span>serialize_u32(<span class="self">self</span>, v: u32) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
         <span class="kw">if </span><span class="self">self</span>.getting_atom {
             <span class="kw">let </span>atom = <span class="kw">unsafe </span>{ Atom::wrap(v <span class="kw">as </span>atom_t) };
@@ -2523,19 +2524,19 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="attr">#[cfg(target_pointer_width = <span class="string">&quot;32&quot;</span>)]
+    <span class="attr">#[cfg(target_pointer_width = <span class="string">"32"</span>)]
     </span><span class="kw">fn </span>serialize_u64(<span class="self">self</span>, v: u64) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
         <span class="kw-2">*</span><span class="self">self</span>.key = <span class="prelude-val">Some</span>(Key::Int(v));
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="attr">#[cfg(target_pointer_width = <span class="string">&quot;64&quot;</span>)]
+    <span class="attr">#[cfg(target_pointer_width = <span class="string">"64"</span>)]
     </span><span class="kw">fn </span>serialize_u32(<span class="self">self</span>, v: u32) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
         <span class="kw-2">*</span><span class="self">self</span>.key = <span class="prelude-val">Some</span>(Key::Int(v <span class="kw">as </span>u64));
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="attr">#[cfg(target_pointer_width = <span class="string">&quot;64&quot;</span>)]
+    <span class="attr">#[cfg(target_pointer_width = <span class="string">"64"</span>)]
     </span><span class="kw">fn </span>serialize_u64(<span class="self">self</span>, v: u64) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
         <span class="kw">if </span><span class="self">self</span>.getting_atom {
             <span class="kw">let </span>atom = <span class="kw">unsafe </span>{ Atom::wrap(v <span class="kw">as </span>atom_t) };
@@ -2548,11 +2549,11 @@
     }
 
     <span class="kw">fn </span>serialize_f32(<span class="self">self</span>, _v: f32) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;key&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"key"</span>))
     }
 
     <span class="kw">fn </span>serialize_f64(<span class="self">self</span>, _v: f64) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;key&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"key"</span>))
     }
 
     <span class="kw">fn </span>serialize_char(<span class="self">self</span>, v: char) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
@@ -2568,40 +2569,40 @@
     }
 
     <span class="kw">fn </span>serialize_bytes(<span class="self">self</span>, _v: <span class="kw-2">&amp;</span>[u8]) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;key&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"key"</span>))
     }
 
     <span class="kw">fn </span>serialize_none(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;key&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"key"</span>))
     }
 
     <span class="kw">fn </span>serialize_some&lt;T: <span class="question-mark">?</span>Sized&gt;(<span class="self">self</span>, _value: <span class="kw-2">&amp;</span>T) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt;
     <span class="kw">where
         </span>T: Serialize,
     {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;key&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"key"</span>))
     }
 
     <span class="kw">fn </span>serialize_unit(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;key&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"key"</span>))
     }
 
-    <span class="kw">fn </span>serialize_unit_struct(<span class="self">self</span>, _name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;key&quot;</span>))
+    <span class="kw">fn </span>serialize_unit_struct(<span class="self">self</span>, _name: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"key"</span>))
     }
 
     <span class="kw">fn </span>serialize_unit_variant(
         <span class="self">self</span>,
-        _name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        _name: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
         _variant_index: u32,
-        _variant: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        _variant: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;key&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"key"</span>))
     }
 
     <span class="kw">fn </span>serialize_newtype_struct&lt;T: <span class="question-mark">?</span>Sized&gt;(
         <span class="kw-2">mut </span><span class="self">self</span>,
-        name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        name: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
         value: <span class="kw-2">&amp;</span>T,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt;
     <span class="kw">where
@@ -2618,63 +2619,63 @@
 
     <span class="kw">fn </span>serialize_newtype_variant&lt;T: <span class="question-mark">?</span>Sized&gt;(
         <span class="self">self</span>,
-        _name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        _name: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
         _variant_index: u32,
-        _variant: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        _variant: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
         _value: <span class="kw-2">&amp;</span>T,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ok, <span class="self">Self</span>::Error&gt;
     <span class="kw">where
         </span>T: Serialize,
     {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;key&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"key"</span>))
     }
 
     <span class="kw">fn </span>serialize_seq(<span class="self">self</span>, _len: <span class="prelude-ty">Option</span>&lt;usize&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::SerializeSeq, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;key&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"key"</span>))
     }
 
     <span class="kw">fn </span>serialize_tuple(<span class="self">self</span>, _len: usize) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::SerializeTuple, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;key&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"key"</span>))
     }
 
     <span class="kw">fn </span>serialize_tuple_struct(
         <span class="self">self</span>,
-        _name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        _name: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
         _len: usize,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::SerializeTupleStruct, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;key&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"key"</span>))
     }
 
     <span class="kw">fn </span>serialize_tuple_variant(
         <span class="self">self</span>,
-        _name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        _name: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
         _variant_index: u32,
-        _variant: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        _variant: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
         _len: usize,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::SerializeTupleVariant, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;key&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"key"</span>))
     }
 
     <span class="kw">fn </span>serialize_map(<span class="self">self</span>, _len: <span class="prelude-ty">Option</span>&lt;usize&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::SerializeMap, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;key&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"key"</span>))
     }
 
     <span class="kw">fn </span>serialize_struct(
         <span class="self">self</span>,
-        _name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        _name: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
         _len: usize,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::SerializeStruct, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;key&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"key"</span>))
     }
 
     <span class="kw">fn </span>serialize_struct_variant(
         <span class="self">self</span>,
-        _name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        _name: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
         _variant_index: u32,
-        _variant: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        _variant: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
         _len: usize,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::SerializeStructVariant, <span class="self">Self</span>::Error&gt; {
-        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">&quot;key&quot;</span>))
+        <span class="prelude-val">Err</span>(Error::ValueNotOfExpectedType(<span class="string">"key"</span>))
     }
 }
 
@@ -2696,7 +2697,7 @@
         to_term(<span class="kw-2">&amp;</span>context, <span class="kw-2">&amp;</span>term, <span class="kw-2">&amp;</span>num).unwrap();
 
         <span class="kw">let </span>term_string = context.string_from_term(<span class="kw-2">&amp;</span>term).unwrap();
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;42&quot;</span>, term_string);
+        <span class="macro">assert_eq!</span>(<span class="string">"42"</span>, term_string);
     }
 
     <span class="attr">#[test]
@@ -2705,14 +2706,14 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>s = <span class="string">&quot;hello&quot;</span>;
+        <span class="kw">let </span>s = <span class="string">"hello"</span>;
 
         <span class="kw">let </span>term = context.new_term_ref();
 
         to_term(<span class="kw-2">&amp;</span>context, <span class="kw-2">&amp;</span>term, <span class="kw-2">&amp;</span>s).unwrap();
 
         <span class="kw">let </span>term_string = context.string_from_term(<span class="kw-2">&amp;</span>term).unwrap();
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;\&quot;hello\&quot;&quot;</span>, term_string);
+        <span class="macro">assert_eq!</span>(<span class="string">"\"hello\""</span>, term_string);
     }
 
     <span class="attr">#[test]
@@ -2721,14 +2722,14 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>a = <span class="macro">atom!</span>(<span class="string">&quot;hello&quot;</span>);
+        <span class="kw">let </span>a = <span class="macro">atom!</span>(<span class="string">"hello"</span>);
 
         <span class="kw">let </span>term = context.new_term_ref();
 
         to_term(<span class="kw-2">&amp;</span>context, <span class="kw-2">&amp;</span>term, <span class="kw-2">&amp;</span>a).unwrap();
 
         <span class="kw">let </span>term_string = context.string_from_term(<span class="kw-2">&amp;</span>term).unwrap();
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;hello&quot;</span>, term_string);
+        <span class="macro">assert_eq!</span>(<span class="string">"hello"</span>, term_string);
     }
 
     <span class="attr">#[test]
@@ -2744,7 +2745,7 @@
         to_term(<span class="kw-2">&amp;</span>context, <span class="kw-2">&amp;</span>term, <span class="kw-2">&amp;</span>list.as_slice()).unwrap();
 
         <span class="kw">let </span>term_string = context.string_from_term(<span class="kw-2">&amp;</span>term).unwrap();
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;[42,43,44]&quot;</span>, term_string);
+        <span class="macro">assert_eq!</span>(<span class="string">"[42,43,44]"</span>, term_string);
     }
 
     <span class="attr">#[test]
@@ -2760,7 +2761,7 @@
         to_term(<span class="kw-2">&amp;</span>context, <span class="kw-2">&amp;</span>term, <span class="kw-2">&amp;</span>tuple).unwrap();
 
         <span class="kw">let </span>term_string = context.string_from_term(<span class="kw-2">&amp;</span>term).unwrap();
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;42,43,44&quot;</span>, term_string);
+        <span class="macro">assert_eq!</span>(<span class="string">"42,43,44"</span>, term_string);
     }
 
     <span class="attr">#[test]
@@ -2776,11 +2777,11 @@
         to_term(<span class="kw-2">&amp;</span>context, <span class="kw-2">&amp;</span>term, <span class="kw-2">&amp;</span>list).unwrap();
 
         <span class="kw">let </span>term_string = context.string_from_term(<span class="kw-2">&amp;</span>term).unwrap();
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;42,43,44&quot;</span>, term_string);
+        <span class="macro">assert_eq!</span>(<span class="string">"42,43,44"</span>, term_string);
     }
 
     <span class="attr">#[derive(Serialize)]
-    #[serde(rename = <span class="string">&quot;flargh&quot;</span>)]
+    #[serde(rename = <span class="string">"flargh"</span>)]
     </span><span class="kw">struct </span>Flargh(u64, String, Atom);
 
     <span class="attr">#[test]
@@ -2789,13 +2790,13 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>flargh = Flargh(<span class="number">42</span>, <span class="string">&quot;hello&quot;</span>.to_string(), <span class="macro">atom!</span>(<span class="string">&quot;moo&quot;</span>));
+        <span class="kw">let </span>flargh = Flargh(<span class="number">42</span>, <span class="string">"hello"</span>.to_string(), <span class="macro">atom!</span>(<span class="string">"moo"</span>));
 
         <span class="kw">let </span>term = context.new_term_ref();
         to_term(<span class="kw-2">&amp;</span>context, <span class="kw-2">&amp;</span>term, <span class="kw-2">&amp;</span>flargh).unwrap();
 
         <span class="kw">let </span>term_string = context.string_from_term(<span class="kw-2">&amp;</span>term).unwrap();
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;flargh(42,\&quot;hello\&quot;,moo)&quot;</span>, term_string);
+        <span class="macro">assert_eq!</span>(<span class="string">"flargh(42,\"hello\",moo)"</span>, term_string);
     }
 
     <span class="attr">#[test]
@@ -2804,7 +2805,7 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>map = HashMap::from([(<span class="string">&quot;foo&quot;</span>, <span class="string">&quot;bar&quot;</span>), (<span class="string">&quot;baz&quot;</span>, <span class="string">&quot;quux&quot;</span>)]);
+        <span class="kw">let </span>map = HashMap::from([(<span class="string">"foo"</span>, <span class="string">"bar"</span>), (<span class="string">"baz"</span>, <span class="string">"quux"</span>)]);
 
         <span class="kw">let </span>term = context.new_term_ref();
         to_term(<span class="kw-2">&amp;</span>context, <span class="kw-2">&amp;</span>term, <span class="kw-2">&amp;</span>map).unwrap();
@@ -2812,8 +2813,8 @@
         <span class="kw">let </span>return_map: HashMap&lt;Atom, String&gt; = context.deserialize_from_term(<span class="kw-2">&amp;</span>term).unwrap();
         <span class="macro">assert_eq!</span>(
             HashMap::from([
-                (<span class="macro">atom!</span>(<span class="string">&quot;foo&quot;</span>), <span class="string">&quot;bar&quot;</span>.to_string()),
-                (<span class="macro">atom!</span>(<span class="string">&quot;baz&quot;</span>), <span class="string">&quot;quux&quot;</span>.to_string())
+                (<span class="macro">atom!</span>(<span class="string">"foo"</span>), <span class="string">"bar"</span>.to_string()),
+                (<span class="macro">atom!</span>(<span class="string">"baz"</span>), <span class="string">"quux"</span>.to_string())
             ]),
             return_map
         );
@@ -2825,7 +2826,7 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>map = HashMap::from([(<span class="macro">atom!</span>(<span class="string">&quot;foo&quot;</span>), <span class="string">&quot;bar&quot;</span>), (<span class="macro">atom!</span>(<span class="string">&quot;baz&quot;</span>), <span class="string">&quot;quux&quot;</span>)]);
+        <span class="kw">let </span>map = HashMap::from([(<span class="macro">atom!</span>(<span class="string">"foo"</span>), <span class="string">"bar"</span>), (<span class="macro">atom!</span>(<span class="string">"baz"</span>), <span class="string">"quux"</span>)]);
 
         <span class="kw">let </span>term = context.new_term_ref();
         to_term(<span class="kw-2">&amp;</span>context, <span class="kw-2">&amp;</span>term, <span class="kw-2">&amp;</span>map).unwrap();
@@ -2836,8 +2837,8 @@
         <span class="kw">let </span>return_map: HashMap&lt;Atom, String&gt; = context.deserialize_from_term(<span class="kw-2">&amp;</span>term).unwrap();
         <span class="macro">assert_eq!</span>(
             HashMap::from([
-                (<span class="macro">atom!</span>(<span class="string">&quot;foo&quot;</span>), <span class="string">&quot;bar&quot;</span>.to_string()),
-                (<span class="macro">atom!</span>(<span class="string">&quot;baz&quot;</span>), <span class="string">&quot;quux&quot;</span>.to_string())
+                (<span class="macro">atom!</span>(<span class="string">"foo"</span>), <span class="string">"bar"</span>.to_string()),
+                (<span class="macro">atom!</span>(<span class="string">"baz"</span>), <span class="string">"quux"</span>.to_string())
             ]),
             return_map
         );
@@ -2849,25 +2850,25 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>map = HashMap::from([(<span class="macro">atom!</span>(<span class="string">&quot;foo&quot;</span>), <span class="string">&quot;bar&quot;</span>), (<span class="macro">atom!</span>(<span class="string">&quot;baz&quot;</span>), <span class="string">&quot;quux&quot;</span>)]);
+        <span class="kw">let </span>map = HashMap::from([(<span class="macro">atom!</span>(<span class="string">"foo"</span>), <span class="string">"bar"</span>), (<span class="macro">atom!</span>(<span class="string">"baz"</span>), <span class="string">"quux"</span>)]);
 
         <span class="kw">let </span>term = context.new_term_ref();
         to_term_with_config(
             <span class="kw-2">&amp;</span>context,
             <span class="kw-2">&amp;</span>term,
             <span class="kw-2">&amp;</span>map,
-            SerializerConfiguration::new().default_tag(<span class="string">&quot;default_tag&quot;</span>),
+            SerializerConfiguration::new().default_tag(<span class="string">"default_tag"</span>),
         )
         .unwrap();
 
         <span class="kw">let </span>tag = term.get_dict_tag().unwrap();
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="macro">atom!</span>(<span class="string">&quot;default_tag&quot;</span>)), tag);
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="macro">atom!</span>(<span class="string">"default_tag"</span>)), tag);
 
         <span class="kw">let </span>return_map: HashMap&lt;Atom, String&gt; = context.deserialize_from_term(<span class="kw-2">&amp;</span>term).unwrap();
         <span class="macro">assert_eq!</span>(
             HashMap::from([
-                (<span class="macro">atom!</span>(<span class="string">&quot;foo&quot;</span>), <span class="string">&quot;bar&quot;</span>.to_string()),
-                (<span class="macro">atom!</span>(<span class="string">&quot;baz&quot;</span>), <span class="string">&quot;quux&quot;</span>.to_string())
+                (<span class="macro">atom!</span>(<span class="string">"foo"</span>), <span class="string">"bar"</span>.to_string()),
+                (<span class="macro">atom!</span>(<span class="string">"baz"</span>), <span class="string">"quux"</span>.to_string())
             ]),
             return_map
         );
@@ -2879,14 +2880,14 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>map = HashMap::from([(<span class="number">12u8</span>, <span class="string">&quot;bar&quot;</span>), (<span class="number">42</span>, <span class="string">&quot;quux&quot;</span>)]);
+        <span class="kw">let </span>map = HashMap::from([(<span class="number">12u8</span>, <span class="string">"bar"</span>), (<span class="number">42</span>, <span class="string">"quux"</span>)]);
 
         <span class="kw">let </span>term = context.new_term_ref();
         to_term(<span class="kw-2">&amp;</span>context, <span class="kw-2">&amp;</span>term, <span class="kw-2">&amp;</span>map).unwrap();
 
         <span class="kw">let </span>return_map: HashMap&lt;u8, String&gt; = context.deserialize_from_term(<span class="kw-2">&amp;</span>term).unwrap();
         <span class="macro">assert_eq!</span>(
-            HashMap::from([(<span class="number">12</span>, <span class="string">&quot;bar&quot;</span>.to_string()), (<span class="number">42</span>, <span class="string">&quot;quux&quot;</span>.to_string())]),
+            HashMap::from([(<span class="number">12</span>, <span class="string">"bar"</span>.to_string()), (<span class="number">42</span>, <span class="string">"quux"</span>.to_string())]),
             return_map
         );
     }
@@ -2897,14 +2898,14 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>map = HashMap::from([(<span class="number">12i8</span>, <span class="string">&quot;bar&quot;</span>), (<span class="number">42</span>, <span class="string">&quot;quux&quot;</span>)]);
+        <span class="kw">let </span>map = HashMap::from([(<span class="number">12i8</span>, <span class="string">"bar"</span>), (<span class="number">42</span>, <span class="string">"quux"</span>)]);
 
         <span class="kw">let </span>term = context.new_term_ref();
         to_term(<span class="kw-2">&amp;</span>context, <span class="kw-2">&amp;</span>term, <span class="kw-2">&amp;</span>map).unwrap();
 
         <span class="kw">let </span>return_map: HashMap&lt;u8, String&gt; = context.deserialize_from_term(<span class="kw-2">&amp;</span>term).unwrap();
         <span class="macro">assert_eq!</span>(
-            HashMap::from([(<span class="number">12</span>, <span class="string">&quot;bar&quot;</span>.to_string()), (<span class="number">42</span>, <span class="string">&quot;quux&quot;</span>.to_string())]),
+            HashMap::from([(<span class="number">12</span>, <span class="string">"bar"</span>.to_string()), (<span class="number">42</span>, <span class="string">"quux"</span>.to_string())]),
             return_map
         );
     }
@@ -2922,17 +2923,17 @@
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
         <span class="kw">let </span>s = AStruct {
-            foo: <span class="string">&quot;hello&quot;</span>.to_string(),
+            foo: <span class="string">"hello"</span>.to_string(),
             bar: <span class="number">120</span>,
         };
 
         <span class="kw">let </span>term = context.new_term_ref();
         to_term(<span class="kw-2">&amp;</span>context, <span class="kw-2">&amp;</span>term, <span class="kw-2">&amp;</span>s).unwrap();
 
-        <span class="kw">let </span>foo: String = term.get_dict_key(<span class="string">&quot;foo&quot;</span>).unwrap();
-        <span class="kw">let </span>bar: u64 = term.get_dict_key(<span class="string">&quot;bar&quot;</span>).unwrap();
+        <span class="kw">let </span>foo: String = term.get_dict_key(<span class="string">"foo"</span>).unwrap();
+        <span class="kw">let </span>bar: u64 = term.get_dict_key(<span class="string">"bar"</span>).unwrap();
         <span class="kw">let </span>tag = term.get_dict_tag().unwrap();
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;hello&quot;</span>, foo);
+        <span class="macro">assert_eq!</span>(<span class="string">"hello"</span>, foo);
         <span class="macro">assert_eq!</span>(<span class="number">120</span>, bar);
         <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, tag);
 
@@ -2947,7 +2948,7 @@
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
         <span class="kw">let </span>s = AStruct {
-            foo: <span class="string">&quot;hello&quot;</span>.to_string(),
+            foo: <span class="string">"hello"</span>.to_string(),
             bar: <span class="number">120</span>,
         };
 
@@ -2960,12 +2961,12 @@
         )
         .unwrap();
 
-        <span class="kw">let </span>foo: String = term.get_dict_key(<span class="string">&quot;foo&quot;</span>).unwrap();
-        <span class="kw">let </span>bar: u64 = term.get_dict_key(<span class="string">&quot;bar&quot;</span>).unwrap();
+        <span class="kw">let </span>foo: String = term.get_dict_key(<span class="string">"foo"</span>).unwrap();
+        <span class="kw">let </span>bar: u64 = term.get_dict_key(<span class="string">"bar"</span>).unwrap();
         <span class="kw">let </span>tag = term.get_dict_tag().unwrap();
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;hello&quot;</span>, foo);
+        <span class="macro">assert_eq!</span>(<span class="string">"hello"</span>, foo);
         <span class="macro">assert_eq!</span>(<span class="number">120</span>, bar);
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="macro">atom!</span>(<span class="string">&quot;AStruct&quot;</span>)), tag);
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="macro">atom!</span>(<span class="string">"AStruct"</span>)), tag);
 
         <span class="kw">let </span>result: AStruct = context.deserialize_from_term(<span class="kw-2">&amp;</span>term).unwrap();
         <span class="macro">assert_eq!</span>(s, result);
@@ -2978,7 +2979,7 @@
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
         <span class="kw">let </span>s = AStruct {
-            foo: <span class="string">&quot;hello&quot;</span>.to_string(),
+            foo: <span class="string">"hello"</span>.to_string(),
             bar: <span class="number">120</span>,
         };
 
@@ -2987,16 +2988,16 @@
             <span class="kw-2">&amp;</span>context,
             <span class="kw-2">&amp;</span>term,
             <span class="kw-2">&amp;</span>s,
-            SerializerConfiguration::new().default_tag(<span class="string">&quot;json&quot;</span>),
+            SerializerConfiguration::new().default_tag(<span class="string">"json"</span>),
         )
         .unwrap();
 
-        <span class="kw">let </span>foo: String = term.get_dict_key(<span class="string">&quot;foo&quot;</span>).unwrap();
-        <span class="kw">let </span>bar: u64 = term.get_dict_key(<span class="string">&quot;bar&quot;</span>).unwrap();
+        <span class="kw">let </span>foo: String = term.get_dict_key(<span class="string">"foo"</span>).unwrap();
+        <span class="kw">let </span>bar: u64 = term.get_dict_key(<span class="string">"bar"</span>).unwrap();
         <span class="kw">let </span>tag = term.get_dict_tag().unwrap();
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;hello&quot;</span>, foo);
+        <span class="macro">assert_eq!</span>(<span class="string">"hello"</span>, foo);
         <span class="macro">assert_eq!</span>(<span class="number">120</span>, bar);
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="macro">atom!</span>(<span class="string">&quot;json&quot;</span>)), tag);
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="macro">atom!</span>(<span class="string">"json"</span>)), tag);
 
         <span class="kw">let </span>result: AStruct = context.deserialize_from_term(<span class="kw-2">&amp;</span>term).unwrap();
         <span class="macro">assert_eq!</span>(s, result);
@@ -3019,7 +3020,7 @@
         <span class="kw">let </span>v = EnumStruct::Variant1;
         <span class="kw">let </span>term = context.new_term_ref();
         to_term(<span class="kw-2">&amp;</span>context, <span class="kw-2">&amp;</span>term, <span class="kw-2">&amp;</span>v).unwrap();
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;&#39;Variant1&#39;&quot;</span>, context.string_from_term(<span class="kw-2">&amp;</span>term).unwrap());
+        <span class="macro">assert_eq!</span>(<span class="string">"'Variant1'"</span>, context.string_from_term(<span class="kw-2">&amp;</span>term).unwrap());
 
         <span class="kw">let </span>r: EnumStruct = context.deserialize_from_term(<span class="kw-2">&amp;</span>term).unwrap();
         <span class="macro">assert_eq!</span>(r, v);
@@ -3031,11 +3032,11 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>v = EnumStruct::Variant2(<span class="string">&quot;hello&quot;</span>.to_string());
+        <span class="kw">let </span>v = EnumStruct::Variant2(<span class="string">"hello"</span>.to_string());
         <span class="kw">let </span>term = context.new_term_ref();
         to_term(<span class="kw-2">&amp;</span>context, <span class="kw-2">&amp;</span>term, <span class="kw-2">&amp;</span>v).unwrap();
         <span class="macro">assert_eq!</span>(
-            <span class="string">&quot;&#39;Variant2&#39;(\&quot;hello\&quot;)&quot;</span>,
+            <span class="string">"'Variant2'(\"hello\")"</span>,
             context.string_from_term(<span class="kw-2">&amp;</span>term).unwrap()
         );
 
@@ -3049,11 +3050,11 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>v = EnumStruct::Variant3(<span class="string">&quot;hello&quot;</span>.to_string(), <span class="number">103</span>);
+        <span class="kw">let </span>v = EnumStruct::Variant3(<span class="string">"hello"</span>.to_string(), <span class="number">103</span>);
         <span class="kw">let </span>term = context.new_term_ref();
         to_term(<span class="kw-2">&amp;</span>context, <span class="kw-2">&amp;</span>term, <span class="kw-2">&amp;</span>v).unwrap();
         <span class="macro">assert_eq!</span>(
-            <span class="string">&quot;&#39;Variant3&#39;(\&quot;hello\&quot;,103)&quot;</span>,
+            <span class="string">"'Variant3'(\"hello\",103)"</span>,
             context.string_from_term(<span class="kw-2">&amp;</span>term).unwrap()
         );
 
@@ -3068,14 +3069,14 @@
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
         <span class="kw">let </span>v = EnumStruct::Variant4 {
-            foo: <span class="string">&quot;hello&quot;</span>.to_string(),
+            foo: <span class="string">"hello"</span>.to_string(),
             bar: <span class="number">103</span>,
         };
         <span class="kw">let </span>term = context.new_term_ref();
         to_term(<span class="kw-2">&amp;</span>context, <span class="kw-2">&amp;</span>term, <span class="kw-2">&amp;</span>v).unwrap();
-        <span class="kw">let </span>foo: String = term.get_dict_key(<span class="string">&quot;foo&quot;</span>).unwrap();
-        <span class="kw">let </span>bar: u64 = term.get_dict_key(<span class="string">&quot;bar&quot;</span>).unwrap();
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;hello&quot;</span>, foo);
+        <span class="kw">let </span>foo: String = term.get_dict_key(<span class="string">"foo"</span>).unwrap();
+        <span class="kw">let </span>bar: u64 = term.get_dict_key(<span class="string">"bar"</span>).unwrap();
+        <span class="macro">assert_eq!</span>(<span class="string">"hello"</span>, foo);
         <span class="macro">assert_eq!</span>(<span class="number">103</span>, bar);
 
         <span class="kw">let </span>r: EnumStruct = context.deserialize_from_term(<span class="kw-2">&amp;</span>term).unwrap();

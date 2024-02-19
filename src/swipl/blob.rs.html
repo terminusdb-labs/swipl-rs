@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl/src/blob.rs`."><title>blob.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-fa3bb1812debf86c.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="swipl" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.0 (79e9716c9 2023-11-13)" data-channel="1.74.0" data-search-js="search-8be46b629f5f14a8.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-c5bd66d33317d69f.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../swipl/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl/src/blob.rs`."><title>blob.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-ac92e1bbe349e143.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="swipl" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0 (07dca489a 2024-02-04)" data-channel="1.76.0" data-search-js="search-2b6ce74ff89ae146.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-f2adc0d6ca4d09fb.js"></script><script defer src="../../static.files/src-script-39ed315d46fb705f.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-305769736d49e732.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-feafe1bb7466e4bd.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -711,9 +712,9 @@
 //! # use swipl::prelude::*;
 //! # use std::sync::Arc;
 //!
-//! // note the keyword &#39;defaults&#39; below - this makes sure that a
+//! // note the keyword 'defaults' below - this makes sure that a
 //! // default implementation of `ArcBlobImpl` is generated.
-//! #[arc_blob(&quot;foo&quot;, defaults)]
+//! #[arc_blob("foo", defaults)]
 //! struct Foo {
 //!     num: u64
 //! }
@@ -736,14 +737,14 @@
 //! # use std::io::Write;
 //! # use std::cmp::Ordering;
 //!
-//! #[arc_blob(&quot;foo&quot;)]
+//! #[arc_blob("foo")]
 //! struct Foo {
 //!     num: u64
 //! }
 //!
 //! impl ArcBlobImpl for Foo {
 //!     fn write(&amp;self, stream: &amp;mut PrologStream) -&gt; std::io::Result&lt;()&gt; {
-//!         write!(stream, &quot;&lt;foo {}&gt;&quot;, self.num)
+//!         write!(stream, "&lt;foo {}&gt;", self.num)
 //!     }
 //!
 //!     fn compare(&amp;self, other: &amp;Self) -&gt; Ordering {
@@ -768,9 +769,9 @@
 //! # use std::sync::Arc;
 //!
 //! // Note that it is not possible to implement ArcBlob directly on a
-//! // Vec&lt;bool&gt;, as it is not a type defined by us. That&#39;s why it
+//! // Vec&lt;bool&gt;, as it is not a type defined by us. That's why it
 //! // needs to be wrapped.
-//! wrapped_arc_blob!(&quot;foo&quot;, Foo, Vec&lt;bool&gt;, defaults);
+//! wrapped_arc_blob!("foo", Foo, Vec&lt;bool&gt;, defaults);
 //!
 //! fn do_something(term1: &amp;Term, term2: &amp;Term) -&gt; PrologResult&lt;()&gt; {
 //!     let wrapped = Foo(Arc::new(vec![true,false,true]));
@@ -790,11 +791,11 @@
 //! # use std::io::Write;
 //! # use std::cmp::Ordering;
 //!
-//! wrapped_arc_blob!(&quot;foo&quot;, Foo, Vec&lt;bool&gt; );
+//! wrapped_arc_blob!("foo", Foo, Vec&lt;bool&gt; );
 //!
 //! impl WrappedArcBlobImpl for Foo {
 //!     fn write(this: &amp;Vec&lt;bool&gt;, stream: &amp;mut PrologStream) -&gt; std::io::Result&lt;()&gt; {
-//!         write!(stream, &quot;&lt;foo {:?}&gt;&quot;,this)
+//!         write!(stream, "&lt;foo {:?}&gt;",this)
 //!     }
 //!
 //!     fn compare(this: &amp;Vec&lt;bool&gt;, other: &amp;Vec&lt;bool&gt;) -&gt; Ordering {
@@ -811,11 +812,11 @@
 //! ```
 //! # use swipl::prelude::*;
 //!
-//! // note the keyword &#39;defaults&#39; below - this makes sure that a
+//! // note the keyword 'defaults' below - this makes sure that a
 //! // default implementation of `CloneBlobImpl` is generated.
 //! // note also that the struct below derives Clone, which allows it
 //! // to be used as a clone blob.
-//! #[clone_blob(&quot;foo&quot;, defaults)]
+//! #[clone_blob("foo", defaults)]
 //! #[derive(Clone)]
 //! struct Foo {
 //!     num: u64
@@ -838,7 +839,7 @@
 //! # use std::io::Write;
 //! # use std::cmp::Ordering;
 //!
-//! #[clone_blob(&quot;foo&quot;)]
+//! #[clone_blob("foo")]
 //! #[derive(Clone)]
 //! struct Foo {
 //!     num: u64
@@ -846,7 +847,7 @@
 //!
 //! impl CloneBlobImpl for Foo {
 //!     fn write(&amp;self, stream: &amp;mut PrologStream) -&gt; std::io::Result&lt;()&gt; {
-//!         write!(stream, &quot;&lt;foo {}&gt;&quot;, self.num)
+//!         write!(stream, "&lt;foo {}&gt;", self.num)
 //!     }
 //!
 //!     fn compare(&amp;self, other: &amp;Self) -&gt; Ordering {
@@ -856,7 +857,7 @@
 //! ```
 //!
 //! # wrapped CloneBlob
-//! For convenience, there&#39;s also a
+//! For convenience, there's also a
 //! [wrapped_clone_blob!](crate::prelude::wrapped_clone_blob!) macro
 //! for cases where we wish to generate a blob out of cloneable data
 //! that is of a type defined in another crate. This is analogous to
@@ -868,7 +869,7 @@
 //! ```
 //! # use swipl::prelude::*;
 //!
-//! wrapped_clone_blob!(&quot;foo&quot;, Foo, Vec&lt;bool&gt;, defaults);
+//! wrapped_clone_blob!("foo", Foo, Vec&lt;bool&gt;, defaults);
 //!
 //! fn do_something(term1: &amp;Term, term2: &amp;Term) -&gt; PrologResult&lt;()&gt; {
 //!     let val = Foo(vec![true, false, true]);
@@ -887,11 +888,11 @@
 //! # use std::io::Write;
 //! # use std::cmp::Ordering;
 //!
-//! wrapped_clone_blob!(&quot;foo&quot;, Foo, Vec&lt;bool&gt;);
+//! wrapped_clone_blob!("foo", Foo, Vec&lt;bool&gt;);
 //!
 //! impl CloneBlobImpl for Foo {
 //!     fn write(&amp;self, stream: &amp;mut PrologStream) -&gt; std::io::Result&lt;()&gt; {
-//!         write!(stream, &quot;&lt;foo {:?}&gt;&quot;, self.0)
+//!         write!(stream, "&lt;foo {:?}&gt;", self.0)
 //!     }
 //!
 //!     fn compare(&amp;self, other: &amp;Self) -&gt; Ordering {
@@ -912,26 +913,26 @@
 <span class="doccomment">/// Create a blob definition for use with the SWI-Prolog fli out of
 /// the given components.
 ///
-/// This is used by the various blob macros. You&#39;ll almost never have
+/// This is used by the various blob macros. You'll almost never have
 /// to use this directly.
 </span><span class="attr">#[allow(clippy::too_many_arguments)]
 </span><span class="kw">pub fn </span>create_blob_definition(
-    name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[u8],
+    name: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>[u8],
     text: bool,
     unique: bool,
     nocopy: bool,
-    acquire: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>(a: fli::atom_t)&gt;,
-    release: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>(a: fli::atom_t) -&gt; c_int&gt;,
-    compare: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>(a: fli::atom_t, b: fli::atom_t) -&gt; c_int&gt;,
+    acquire: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>(a: fli::atom_t)&gt;,
+    release: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>(a: fli::atom_t) -&gt; c_int&gt;,
+    compare: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>(a: fli::atom_t, b: fli::atom_t) -&gt; c_int&gt;,
     write: <span class="prelude-ty">Option</span>&lt;
-        <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>(s: <span class="kw-2">*mut </span>fli::IOSTREAM, a: fli::atom_t, flags: c_int) -&gt; c_int,
+        <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>(s: <span class="kw-2">*mut </span>fli::IOSTREAM, a: fli::atom_t, flags: c_int) -&gt; c_int,
     &gt;,
-    save: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>(a: fli::atom_t, s: <span class="kw-2">*mut </span>fli::IOSTREAM) -&gt; c_int&gt;,
-    load: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>(s: <span class="kw-2">*mut </span>fli::IOSTREAM) -&gt; fli::atom_t&gt;,
+    save: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>(a: fli::atom_t, s: <span class="kw-2">*mut </span>fli::IOSTREAM) -&gt; c_int&gt;,
+    load: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>(s: <span class="kw-2">*mut </span>fli::IOSTREAM) -&gt; fli::atom_t&gt;,
 ) -&gt; fli::PL_blob_t {
     <span class="kw">let </span>last_char = name.last();
     <span class="kw">if </span>last_char.is_none() || <span class="kw-2">*</span>last_char.unwrap() != <span class="number">0 </span>{
-        <span class="macro">panic!</span>(<span class="string">&quot;tried to register a blob definition with a name that does not end in a NULL&quot;</span>);
+        <span class="macro">panic!</span>(<span class="string">"tried to register a blob definition with a name that does not end in a NULL"</span>);
     }
 
     <span class="kw">let </span><span class="kw-2">mut </span>flags = <span class="number">0</span>;
@@ -965,14 +966,14 @@
 /// the write function.
 </span><span class="kw">pub trait </span>ArcBlobBase {
     <span class="doccomment">/// Return the name of this blob
-    </span><span class="kw">fn </span>blob_name() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str;
+    </span><span class="kw">fn </span>blob_name() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str;
 }
 
 <span class="doccomment">/// Supertype of [ArcBlob] that allows implementation of `compare` and `write`.
 ///
 /// When defining an [ArcBlob] through the
 /// [arc_blob!](crate::prelude::arc_blob) attribute macro without the
-/// &#39;defaults&#39; argument, you&#39;re required to implement this trait for
+/// 'defaults' argument, you're required to implement this trait for
 /// your type. This allows you to modify how comparison and writing
 /// will happen.
 </span><span class="kw">pub trait </span>ArcBlobImpl: ArcBlobBase + Send + Sync + Unpin {
@@ -991,10 +992,10 @@
     /// therefore can be used with the [write!](std::write!) macro.
     ///
     /// The normal way of implementing this is to print something like
-    /// `&quot;&lt;blob_name ..blob_data..&gt;&quot;`. The default implementation
-    /// simply prints `&quot;&lt;blob_name&gt;&quot;`.
+    /// `"&lt;blob_name ..blob_data..&gt;"`. The default implementation
+    /// simply prints `"&lt;blob_name&gt;"`.
     </span><span class="kw">fn </span>write(<span class="kw-2">&amp;</span><span class="self">self</span>, stream: <span class="kw-2">&amp;mut </span>PrologStream) -&gt; io::Result&lt;()&gt; {
-        <span class="macro">write!</span>(stream, <span class="string">&quot;&lt;{}&gt;&quot;</span>, <span class="self">Self</span>::blob_name())
+        <span class="macro">write!</span>(stream, <span class="string">"&lt;{}&gt;"</span>, <span class="self">Self</span>::blob_name())
     }
 }
 
@@ -1007,7 +1008,7 @@
 /// type.
 </span><span class="kw">pub unsafe trait </span>ArcBlob: ArcBlobImpl {
     <span class="doccomment">/// Return a blob definition for this ArcBlob.
-    </span><span class="kw">fn </span>get_blob_definition() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>fli::PL_blob_t;
+    </span><span class="kw">fn </span>get_blob_definition() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>fli::PL_blob_t;
 }
 
 <span class="doccomment">/// Unify the term with the given `Arc`, using the given blob
@@ -1020,7 +1021,7 @@
 /// definition matches the given data.
 </span><span class="kw">pub unsafe fn </span>unify_with_arc&lt;T&gt;(
     term: <span class="kw-2">&amp;</span>Term,
-    blob_definition: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>fli::PL_blob_t,
+    blob_definition: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>fli::PL_blob_t,
     arc: <span class="kw-2">&amp;</span>Arc&lt;T&gt;,
 ) -&gt; bool {
     term.assert_term_handling_possible();
@@ -1045,7 +1046,7 @@
 /// definition matches the given data.
 </span><span class="kw">pub unsafe fn </span>unify_with_cloneable&lt;T: Clone + Sized + Unpin&gt;(
     term: <span class="kw-2">&amp;</span>Term,
-    blob_definition: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>fli::PL_blob_t,
+    blob_definition: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>fli::PL_blob_t,
     val: <span class="kw-2">&amp;</span>T,
 ) -&gt; bool {
     term.assert_term_handling_possible();
@@ -1076,7 +1077,7 @@
 /// definition matches the given data.
 </span><span class="kw">pub unsafe fn </span>get_arc_from_term&lt;T&gt;(
     term: <span class="kw-2">&amp;</span>Term,
-    blob_definition: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>fli::PL_blob_t,
+    blob_definition: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>fli::PL_blob_t,
 ) -&gt; <span class="prelude-ty">Option</span>&lt;Arc&lt;T&gt;&gt; {
     term.assert_term_handling_possible();
 
@@ -1114,7 +1115,7 @@
 /// definition matches the given data.
 </span><span class="kw">pub unsafe fn </span>get_cloned_from_term&lt;T: Clone + Sized + Unpin&gt;(
     term: <span class="kw-2">&amp;</span>Term,
-    blob_definition: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>fli::PL_blob_t,
+    blob_definition: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>fli::PL_blob_t,
 ) -&gt; <span class="prelude-ty">Option</span>&lt;T&gt; {
     term.assert_term_handling_possible();
 
@@ -1150,7 +1151,7 @@
 /// definition matches the given data.
 </span><span class="kw">pub unsafe fn </span>put_arc_in_term&lt;T&gt;(
     term: <span class="kw-2">&amp;</span>Term,
-    blob_definition: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>fli::PL_blob_t,
+    blob_definition: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>fli::PL_blob_t,
     arc: <span class="kw-2">&amp;</span>Arc&lt;T&gt;,
 ) {
     term.assert_term_handling_possible();
@@ -1173,7 +1174,7 @@
 /// definition matches the given data.
 </span><span class="kw">pub unsafe fn </span>put_cloneable_in_term&lt;T: Clone + Sized + Unpin&gt;(
     term: <span class="kw-2">&amp;</span>Term,
-    blob_definition: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>fli::PL_blob_t,
+    blob_definition: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>fli::PL_blob_t,
     val: <span class="kw-2">&amp;</span>T,
 ) {
     term.assert_term_handling_possible();
@@ -1244,7 +1245,7 @@
         <span class="kw">unsafe </span>{ get_arc_from_term(term, blob_definition) }
     }
 
-    <span class="kw">fn </span>name() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str {
+    <span class="kw">fn </span>name() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str {
         T::blob_name()
     }
 }
@@ -1266,7 +1267,7 @@
     </span><span class="kw">type </span>Inner: Send + Sync + Unpin;
 
     <span class="doccomment">/// Return the name of this blob
-    </span><span class="kw">fn </span>blob_name() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str;
+    </span><span class="kw">fn </span>blob_name() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str;
 
     <span class="doccomment">/// return a borrow to the wrapped Arc.
     </span><span class="kw">fn </span>get_arc(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Arc&lt;<span class="self">Self</span>::Inner&gt;;
@@ -1280,7 +1281,7 @@
 ///
 /// When defining a [WrappedArcBlob] through the
 /// [wrapped_arc_blob!](crate::prelude::wrapped_arc_blob) macro
-/// without the &#39;defaults&#39; argument, you&#39;re required to implement this
+/// without the 'defaults' argument, you're required to implement this
 /// trait for your type. This allows you to modify how comparison and
 /// writing will happen.
 </span><span class="kw">pub trait </span>WrappedArcBlobImpl: WrappedArcBlobBase {
@@ -1299,10 +1300,10 @@
     /// therefore can be used with the [write!](std::write!) macro.
     ///
     /// The normal way of implementing this is to print something like
-    /// `&quot;&lt;blob_name ..blob_data..&gt;&quot;`. The default implementation
-    /// simply prints `&quot;&lt;blob_name&gt;&quot;`.
+    /// `"&lt;blob_name ..blob_data..&gt;"`. The default implementation
+    /// simply prints `"&lt;blob_name&gt;"`.
     </span><span class="kw">fn </span>write(_this: <span class="kw-2">&amp;</span><span class="self">Self</span>::Inner, stream: <span class="kw-2">&amp;mut </span>PrologStream) -&gt; io::Result&lt;()&gt; {
-        <span class="macro">write!</span>(stream, <span class="string">&quot;&lt;{}&gt;&quot;</span>, <span class="self">Self</span>::blob_name())
+        <span class="macro">write!</span>(stream, <span class="string">"&lt;{}&gt;"</span>, <span class="self">Self</span>::blob_name())
     }
 }
 
@@ -1316,7 +1317,7 @@
 /// type.
 </span><span class="kw">pub unsafe trait </span>WrappedArcBlob: WrappedArcBlobImpl {
     <span class="doccomment">/// Return a blob definition for this WrappedArcBlob.
-    </span><span class="kw">fn </span>get_blob_definition() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>fli::PL_blob_t;
+    </span><span class="kw">fn </span>get_blob_definition() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>fli::PL_blob_t;
 }
 
 <span class="doccomment">/// Base type for [CloneBlob].
@@ -1325,7 +1326,7 @@
 /// [CloneBlobImpl], which is convenient for allowing auto-generation of
 /// the write function.
 </span><span class="kw">pub trait </span>CloneBlobBase {
-    <span class="kw">fn </span>blob_name() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str;
+    <span class="kw">fn </span>blob_name() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str;
 }
 
 <span class="doccomment">/// Supertype of [CloneBlob] that allows implementation of `compare`
@@ -1333,7 +1334,7 @@
 ///
 /// When defining a [CloneBlob] through the
 /// [clone_blob!](crate::prelude::clone_blob) attribute macro without the
-/// &#39;defaults&#39; argument, you&#39;re required to implement this trait for
+/// 'defaults' argument, you're required to implement this trait for
 /// your type. This allows you to modify how comparison and writing
 /// will happen.
 </span><span class="kw">pub trait </span>CloneBlobImpl: CloneBlobBase + Sized + Sync + Clone {
@@ -1352,10 +1353,10 @@
     /// therefore can be used with the [write!](std::write!) macro.
     ///
     /// The normal way of implementing this is to print something like
-    /// `&quot;&lt;blob_name ..blob_data..&gt;&quot;`. The default implementation
-    /// simply prints `&quot;&lt;blob_name&gt;&quot;`.
+    /// `"&lt;blob_name ..blob_data..&gt;"`. The default implementation
+    /// simply prints `"&lt;blob_name&gt;"`.
     </span><span class="kw">fn </span>write(<span class="kw-2">&amp;</span><span class="self">self</span>, stream: <span class="kw-2">&amp;mut </span>PrologStream) -&gt; io::Result&lt;()&gt; {
-        <span class="macro">write!</span>(stream, <span class="string">&quot;&lt;{}&gt;&quot;</span>, <span class="self">Self</span>::blob_name())
+        <span class="macro">write!</span>(stream, <span class="string">"&lt;{}&gt;"</span>, <span class="self">Self</span>::blob_name())
     }
 }
 
@@ -1368,6 +1369,6 @@
 /// type.
 </span><span class="kw">pub unsafe trait </span>CloneBlob: CloneBlobImpl {
     <span class="doccomment">/// Return a blob definition for this CloneBlob.
-    </span><span class="kw">fn </span>get_blob_definition() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>fli::PL_blob_t;
+    </span><span class="kw">fn </span>get_blob_definition() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>fli::PL_blob_t;
 }
 </code></pre></div></section></main></body></html>

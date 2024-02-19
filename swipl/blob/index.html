@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Blob support."><title>swipl::blob - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-fa3bb1812debf86c.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="swipl" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.0 (79e9716c9 2023-11-13)" data-channel="1.74.0" data-search-js="search-8be46b629f5f14a8.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../static.files/main-c5bd66d33317d69f.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="logo-container" href="../../swipl/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a></nav><nav class="sidebar"><a class="logo-container" href="../../swipl/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><h2 class="location"><a href="#">Module blob</a></h2><div class="sidebar-elems"><section><ul class="block"><li><a href="#traits">Traits</a></li><li><a href="#functions">Functions</a></li></ul></section></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Module <a href="../index.html">swipl</a>::<wbr><a class="mod" href="#">blob</a><button id="copy-path" title="Copy item path to clipboard"><img src="../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a class="src" href="../../src/swipl/blob.rs.html#1-686">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Blob support.</p>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Blob support."><title>swipl::blob - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-ac92e1bbe349e143.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="swipl" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0 (07dca489a 2024-02-04)" data-channel="1.76.0" data-search-js="search-2b6ce74ff89ae146.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-f2adc0d6ca4d09fb.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../static.files/main-305769736d49e732.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-feafe1bb7466e4bd.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../swipl/index.html">swipl</a><span class="version">0.3.15</span></h2></div><h2 class="location"><a href="#">Module blob</a></h2><div class="sidebar-elems"><section><ul class="block"><li><a href="#traits">Traits</a></li><li><a href="#functions">Functions</a></li></ul></section><h2><a href="../index.html">In crate swipl</a></h2></div></nav><div class="sidebar-resizer"></div>
+    <main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../swipl/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Module <a href="../index.html">swipl</a>::<wbr><a class="mod" href="#">blob</a><button id="copy-path" title="Copy item path to clipboard"><img src="../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a class="src" href="../../src/swipl/blob.rs.html#1-686">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Blob support.</p>
 <p>Blobs are a way to share data with SWI-Prolog which does not fit
 in any one of the built-in term types. They are stored in the
 SWI-Prolog environment as a special kind of atom.</p>
@@ -18,9 +19,9 @@ updated.</p>
 <p>Using the default implementation for <code>write</code> and <code>compare</code>:</p>
 
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code>
-<span class="comment">// note the keyword &#39;defaults&#39; below - this makes sure that a
+<span class="comment">// note the keyword 'defaults' below - this makes sure that a
 // default implementation of `ArcBlobImpl` is generated.
-</span><span class="attr">#[arc_blob(<span class="string">&quot;foo&quot;</span>, defaults)]
+</span><span class="attr">#[arc_blob(<span class="string">"foo"</span>, defaults)]
 </span><span class="kw">struct </span>Foo {
     num: u64
 }
@@ -37,14 +38,14 @@ updated.</p>
 <p>Provide your own implementation for <code>write</code> and <code>compare</code>:</p>
 
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code>
-<span class="attr">#[arc_blob(<span class="string">&quot;foo&quot;</span>)]
+<span class="attr">#[arc_blob(<span class="string">"foo"</span>)]
 </span><span class="kw">struct </span>Foo {
     num: u64
 }
 
 <span class="kw">impl </span>ArcBlobImpl <span class="kw">for </span>Foo {
     <span class="kw">fn </span>write(<span class="kw-2">&amp;</span><span class="self">self</span>, stream: <span class="kw-2">&amp;mut </span>PrologStream) -&gt; std::io::Result&lt;()&gt; {
-        <span class="macro">write!</span>(stream, <span class="string">&quot;&lt;foo {}&gt;&quot;</span>, <span class="self">self</span>.num)
+        <span class="macro">write!</span>(stream, <span class="string">"&lt;foo {}&gt;"</span>, <span class="self">self</span>.num)
     }
 
     <span class="kw">fn </span>compare(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; Ordering {
@@ -64,9 +65,9 @@ wrapper allows a trait to be implemented that does the job.</p>
 
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code>
 <span class="comment">// Note that it is not possible to implement ArcBlob directly on a
-// Vec&lt;bool&gt;, as it is not a type defined by us. That&#39;s why it
+// Vec&lt;bool&gt;, as it is not a type defined by us. That's why it
 // needs to be wrapped.
-</span><span class="macro">wrapped_arc_blob!</span>(<span class="string">&quot;foo&quot;</span>, Foo, Vec&lt;bool&gt;, defaults);
+</span><span class="macro">wrapped_arc_blob!</span>(<span class="string">"foo"</span>, Foo, Vec&lt;bool&gt;, defaults);
 
 <span class="kw">fn </span>do_something(term1: <span class="kw-2">&amp;</span>Term, term2: <span class="kw-2">&amp;</span>Term) -&gt; PrologResult&lt;()&gt; {
     <span class="kw">let </span>wrapped = Foo(Arc::new(<span class="macro">vec!</span>[<span class="bool-val">true</span>,<span class="bool-val">false</span>,<span class="bool-val">true</span>]));
@@ -80,11 +81,11 @@ wrapper allows a trait to be implemented that does the job.</p>
 <p>Provide your own implementation for <code>write</code> and <code>compare</code>:</p>
 
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code>
-<span class="macro">wrapped_arc_blob!</span>(<span class="string">&quot;foo&quot;</span>, Foo, Vec&lt;bool&gt; );
+<span class="macro">wrapped_arc_blob!</span>(<span class="string">"foo"</span>, Foo, Vec&lt;bool&gt; );
 
 <span class="kw">impl </span>WrappedArcBlobImpl <span class="kw">for </span>Foo {
     <span class="kw">fn </span>write(this: <span class="kw-2">&amp;</span>Vec&lt;bool&gt;, stream: <span class="kw-2">&amp;mut </span>PrologStream) -&gt; std::io::Result&lt;()&gt; {
-        <span class="macro">write!</span>(stream, <span class="string">&quot;&lt;foo {:?}&gt;&quot;</span>,this)
+        <span class="macro">write!</span>(stream, <span class="string">"&lt;foo {:?}&gt;"</span>,this)
     }
 
     <span class="kw">fn </span>compare(this: <span class="kw-2">&amp;</span>Vec&lt;bool&gt;, other: <span class="kw-2">&amp;</span>Vec&lt;bool&gt;) -&gt; Ordering {
@@ -96,11 +97,11 @@ wrapper allows a trait to be implemented that does the job.</p>
 getting, putting or unifying terms with the data.</p>
 <h3 id="examples-2"><a href="#examples-2">Examples</a></h3>
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code>
-<span class="comment">// note the keyword &#39;defaults&#39; below - this makes sure that a
+<span class="comment">// note the keyword 'defaults' below - this makes sure that a
 // default implementation of `CloneBlobImpl` is generated.
 // note also that the struct below derives Clone, which allows it
 // to be used as a clone blob.
-</span><span class="attr">#[clone_blob(<span class="string">&quot;foo&quot;</span>, defaults)]
+</span><span class="attr">#[clone_blob(<span class="string">"foo"</span>, defaults)]
 #[derive(Clone)]
 </span><span class="kw">struct </span>Foo {
     num: u64
@@ -118,7 +119,7 @@ getting, putting or unifying terms with the data.</p>
 <p>Provide your own implementation for <code>write</code> and <code>compare</code>:</p>
 
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code>
-<span class="attr">#[clone_blob(<span class="string">&quot;foo&quot;</span>)]
+<span class="attr">#[clone_blob(<span class="string">"foo"</span>)]
 #[derive(Clone)]
 </span><span class="kw">struct </span>Foo {
     num: u64
@@ -126,7 +127,7 @@ getting, putting or unifying terms with the data.</p>
 
 <span class="kw">impl </span>CloneBlobImpl <span class="kw">for </span>Foo {
     <span class="kw">fn </span>write(<span class="kw-2">&amp;</span><span class="self">self</span>, stream: <span class="kw-2">&amp;mut </span>PrologStream) -&gt; std::io::Result&lt;()&gt; {
-        <span class="macro">write!</span>(stream, <span class="string">&quot;&lt;foo {}&gt;&quot;</span>, <span class="self">self</span>.num)
+        <span class="macro">write!</span>(stream, <span class="string">"&lt;foo {}&gt;"</span>, <span class="self">self</span>.num)
     }
 
     <span class="kw">fn </span>compare(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; Ordering {
@@ -143,7 +144,7 @@ required. There is no <code>WrappedCloneBlob</code>, instead, the wrapper
 just implements CloneBlob directly.</p>
 <h3 id="examples-3"><a href="#examples-3">Examples</a></h3>
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code>
-<span class="macro">wrapped_clone_blob!</span>(<span class="string">&quot;foo&quot;</span>, Foo, Vec&lt;bool&gt;, defaults);
+<span class="macro">wrapped_clone_blob!</span>(<span class="string">"foo"</span>, Foo, Vec&lt;bool&gt;, defaults);
 
 <span class="kw">fn </span>do_something(term1: <span class="kw-2">&amp;</span>Term, term2: <span class="kw-2">&amp;</span>Term) -&gt; PrologResult&lt;()&gt; {
     <span class="kw">let </span>val = Foo(<span class="macro">vec!</span>[<span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>]);
@@ -157,24 +158,24 @@ just implements CloneBlob directly.</p>
 <p>Provide your own implementation for <code>write</code> and <code>compare</code>:</p>
 
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code>
-<span class="macro">wrapped_clone_blob!</span>(<span class="string">&quot;foo&quot;</span>, Foo, Vec&lt;bool&gt;);
+<span class="macro">wrapped_clone_blob!</span>(<span class="string">"foo"</span>, Foo, Vec&lt;bool&gt;);
 
 <span class="kw">impl </span>CloneBlobImpl <span class="kw">for </span>Foo {
     <span class="kw">fn </span>write(<span class="kw-2">&amp;</span><span class="self">self</span>, stream: <span class="kw-2">&amp;mut </span>PrologStream) -&gt; std::io::Result&lt;()&gt; {
-        <span class="macro">write!</span>(stream, <span class="string">&quot;&lt;foo {:?}&gt;&quot;</span>, <span class="self">self</span>.<span class="number">0</span>)
+        <span class="macro">write!</span>(stream, <span class="string">"&lt;foo {:?}&gt;"</span>, <span class="self">self</span>.<span class="number">0</span>)
     }
 
     <span class="kw">fn </span>compare(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; Ordering {
         <span class="self">self</span>.<span class="number">0</span>.cmp(<span class="kw-2">&amp;</span>other.<span class="number">0</span>)
     }
 }</code></pre></div>
-</div></details><h2 id="traits" class="small-section-header"><a href="#traits">Traits</a></h2><ul class="item-table"><li><div class="item-name"><a class="trait" href="trait.ArcBlob.html" title="trait swipl::blob::ArcBlob">ArcBlob</a></div><div class="desc docblock-short">A blob type whose data is shared with SWI-Prolog as an atomic
+</div></details><h2 id="traits" class="section-header"><a href="#traits">Traits</a></h2><ul class="item-table"><li><div class="item-name"><a class="trait" href="trait.ArcBlob.html" title="trait swipl::blob::ArcBlob">ArcBlob</a></div><div class="desc docblock-short">A blob type whose data is shared with SWI-Prolog as an atomic
 reference-counted pointer.</div></li><li><div class="item-name"><a class="trait" href="trait.ArcBlobBase.html" title="trait swipl::blob::ArcBlobBase">ArcBlobBase</a></div><div class="desc docblock-short">Base type for <a href="trait.ArcBlob.html" title="trait swipl::blob::ArcBlob">ArcBlob</a>.</div></li><li><div class="item-name"><a class="trait" href="trait.ArcBlobImpl.html" title="trait swipl::blob::ArcBlobImpl">ArcBlobImpl</a></div><div class="desc docblock-short">Supertype of <a href="trait.ArcBlob.html" title="trait swipl::blob::ArcBlob">ArcBlob</a> that allows implementation of <code>compare</code> and <code>write</code>.</div></li><li><div class="item-name"><a class="trait" href="trait.CloneBlob.html" title="trait swipl::blob::CloneBlob">CloneBlob</a></div><div class="desc docblock-short">A blob type whose data is copied into SWI-Prolog and dropped on
 garbage collection.</div></li><li><div class="item-name"><a class="trait" href="trait.CloneBlobBase.html" title="trait swipl::blob::CloneBlobBase">CloneBlobBase</a></div><div class="desc docblock-short">Base type for <a href="trait.CloneBlob.html" title="trait swipl::blob::CloneBlob">CloneBlob</a>.</div></li><li><div class="item-name"><a class="trait" href="trait.CloneBlobImpl.html" title="trait swipl::blob::CloneBlobImpl">CloneBlobImpl</a></div><div class="desc docblock-short">Supertype of <a href="trait.CloneBlob.html" title="trait swipl::blob::CloneBlob">CloneBlob</a> that allows implementation of <code>compare</code>
 and <code>write</code>.</div></li><li><div class="item-name"><a class="trait" href="trait.WrappedArcBlob.html" title="trait swipl::blob::WrappedArcBlob">WrappedArcBlob</a></div><div class="desc docblock-short">A blob type whose data is shared with SWI-Prolog as an atomic
 reference-counted pointer, and which is wrapped into a wrapper
 type.</div></li><li><div class="item-name"><a class="trait" href="trait.WrappedArcBlobBase.html" title="trait swipl::blob::WrappedArcBlobBase">WrappedArcBlobBase</a></div><div class="desc docblock-short">Base type for <a href="trait.WrappedArcBlob.html" title="trait swipl::blob::WrappedArcBlob">WrappedArcBlob</a>.</div></li><li><div class="item-name"><a class="trait" href="trait.WrappedArcBlobImpl.html" title="trait swipl::blob::WrappedArcBlobImpl">WrappedArcBlobImpl</a></div><div class="desc docblock-short">Supertype of <a href="trait.WrappedArcBlob.html" title="trait swipl::blob::WrappedArcBlob">WrappedArcBlob</a> that allows implementation of
-<code>compare</code> and <code>write</code>.</div></li></ul><h2 id="functions" class="small-section-header"><a href="#functions">Functions</a></h2><ul class="item-table"><li><div class="item-name"><a class="fn" href="fn.acquire_arc_blob.html" title="fn swipl::blob::acquire_arc_blob">acquire_arc_blob</a><sup title="unsafe function">⚠</sup></div><div class="desc docblock-short">Increment the reference count on an Arc stored in a blob.</div></li><li><div class="item-name"><a class="fn" href="fn.create_blob_definition.html" title="fn swipl::blob::create_blob_definition">create_blob_definition</a></div><div class="desc docblock-short">Create a blob definition for use with the SWI-Prolog fli out of
+<code>compare</code> and <code>write</code>.</div></li></ul><h2 id="functions" class="section-header"><a href="#functions">Functions</a></h2><ul class="item-table"><li><div class="item-name"><a class="fn" href="fn.acquire_arc_blob.html" title="fn swipl::blob::acquire_arc_blob">acquire_arc_blob</a><sup title="unsafe function">⚠</sup></div><div class="desc docblock-short">Increment the reference count on an Arc stored in a blob.</div></li><li><div class="item-name"><a class="fn" href="fn.create_blob_definition.html" title="fn swipl::blob::create_blob_definition">create_blob_definition</a></div><div class="desc docblock-short">Create a blob definition for use with the SWI-Prolog fli out of
 the given components.</div></li><li><div class="item-name"><a class="fn" href="fn.get_arc_from_term.html" title="fn swipl::blob::get_arc_from_term">get_arc_from_term</a><sup title="unsafe function">⚠</sup></div><div class="desc docblock-short">Retrieve an arc from the given term, using the given blob
 definition.</div></li><li><div class="item-name"><a class="fn" href="fn.get_cloned_from_term.html" title="fn swipl::blob::get_cloned_from_term">get_cloned_from_term</a><sup title="unsafe function">⚠</sup></div><div class="desc docblock-short">Retrieve a cloneable value from the given term, using the given
 blob definition.</div></li><li><div class="item-name"><a class="fn" href="fn.put_arc_in_term.html" title="fn swipl::blob::put_arc_in_term">put_arc_in_term</a><sup title="unsafe function">⚠</sup></div><div class="desc docblock-short">Put an arc into the given term, using the given blob definition.</div></li><li><div class="item-name"><a class="fn" href="fn.put_cloneable_in_term.html" title="fn swipl::blob::put_cloneable_in_term">put_cloneable_in_term</a><sup title="unsafe function">⚠</sup></div><div class="desc docblock-short">Put a Cloneable into the given term, using the given blob

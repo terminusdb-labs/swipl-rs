@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl/src/atom.rs`."><title>atom.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-fa3bb1812debf86c.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="swipl" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.0 (79e9716c9 2023-11-13)" data-channel="1.74.0" data-search-js="search-8be46b629f5f14a8.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-c5bd66d33317d69f.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../swipl/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl/src/atom.rs`."><title>atom.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-ac92e1bbe349e143.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="swipl" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0 (07dca489a 2024-02-04)" data-channel="1.76.0" data-search-js="search-2b6ce74ff89ae146.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-f2adc0d6ca4d09fb.js"></script><script defer src="../../static.files/src-script-39ed315d46fb705f.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-305769736d49e732.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-feafe1bb7466e4bd.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -735,7 +736,7 @@
     /// count on that atom and then return the existing atom.
     </span><span class="kw">pub fn </span>new(name: <span class="kw-2">&amp;</span>str) -&gt; Atom {
         assert_swipl_is_initialized();
-        <span class="comment">// there&#39;s a worrying bit of information in the documentation.
+        <span class="comment">// there's a worrying bit of information in the documentation.
         // It says that in some cases for small strings,
         // PL_new_atom_mbchars will recalculate the size of the string
         // using strlen. In that case we need to give it a
@@ -775,7 +776,7 @@
     /// This will panic if no prolog engine is active on this thread.
     </span><span class="kw">pub fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
         <span class="comment">// NOTE: This code is terrible. There should be no reason to
-        // go through term to get a string out, except that&#39;s the only
+        // go through term to get a string out, except that's the only
         // way SWI-Prolog exposes auto-conversion to UTF8.
         </span>assert_some_engine_is_active();
 
@@ -839,7 +840,7 @@
 <span class="doccomment">/// Get an atom out of a term.
 ///
 /// # Safety
-/// This is unsafe because we don&#39;t check if the term is part of the
+/// This is unsafe because we don't check if the term is part of the
 /// active engine.
 </span><span class="attr">#[allow(unused_unsafe)]
 </span><span class="kw">pub unsafe fn </span>get_atom&lt;F, R&gt;(term: <span class="kw-2">&amp;</span>Term, func: F) -&gt; PrologResult&lt;R&gt;
@@ -869,10 +870,10 @@
 }
 
 <span class="macro">term_getable! </span>{
-    (Atom, <span class="string">&quot;atom&quot;</span>, term) =&gt; {
+    (Atom, <span class="string">"atom"</span>, term) =&gt; {
         <span class="kw">match </span>term.get_atom(|a| a.cloned()) {
             <span class="prelude-val">Ok</span>(r) =&gt; r,
-            <span class="comment">// ignore this error - it&#39;ll be picked up again by the wrapper
+            <span class="comment">// ignore this error - it'll be picked up again by the wrapper
             </span><span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">None
         </span>}
     }
@@ -885,26 +886,26 @@
 }
 
 <span class="doccomment">/// A type that allows easy conversion of strings from and to an atom.
-</span><span class="kw">pub enum </span>Atomable&lt;<span class="lifetime">&#39;a</span>&gt; {
-    Str(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str),
+</span><span class="kw">pub enum </span>Atomable&lt;<span class="lifetime">'a</span>&gt; {
+    Str(<span class="kw-2">&amp;</span><span class="lifetime">'a </span>str),
     String(String),
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; From&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str&gt; <span class="kw">for </span>Atomable&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>str&gt; <span class="kw">for </span>Atomable&lt;<span class="lifetime">'a</span>&gt; {
     <span class="kw">fn </span>from(s: <span class="kw-2">&amp;</span>str) -&gt; Atomable {
         Atomable::Str(s)
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; From&lt;String&gt; <span class="kw">for </span>Atomable&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="kw">fn </span>from(s: String) -&gt; Atomable&lt;<span class="lifetime">&#39;static</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; From&lt;String&gt; <span class="kw">for </span>Atomable&lt;<span class="lifetime">'a</span>&gt; {
+    <span class="kw">fn </span>from(s: String) -&gt; Atomable&lt;<span class="lifetime">'static</span>&gt; {
         Atomable::String(s)
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Atomable&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; Atomable&lt;<span class="lifetime">'a</span>&gt; {
     <span class="doccomment">/// Create a new Atomable out of a String or an &amp;str.
-    </span><span class="kw">pub fn </span>new&lt;T: Into&lt;Atomable&lt;<span class="lifetime">&#39;a</span>&gt;&gt;&gt;(s: T) -&gt; <span class="self">Self </span>{
+    </span><span class="kw">pub fn </span>new&lt;T: Into&lt;Atomable&lt;<span class="lifetime">'a</span>&gt;&gt;&gt;(s: T) -&gt; <span class="self">Self </span>{
         s.into()
     }
 
@@ -917,7 +918,7 @@
     }
 
     <span class="doccomment">/// Convert this Atomable into a new Atomable which is guaranteed to own its data.
-    </span><span class="kw">pub fn </span>owned(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Atomable&lt;<span class="lifetime">&#39;static</span>&gt; {
+    </span><span class="kw">pub fn </span>owned(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Atomable&lt;<span class="lifetime">'static</span>&gt; {
         <span class="kw">match </span><span class="self">self </span>{
             <span class="self">Self</span>::Str(s) =&gt; Atomable::String(s.to_string()),
             <span class="self">Self</span>::String(s) =&gt; Atomable::String(s.clone()),
@@ -926,7 +927,7 @@
 }
 
 <span class="doccomment">/// Wrapper for `Atomable::new`.
-</span><span class="kw">pub fn </span>atomable&lt;<span class="lifetime">&#39;a</span>, T: Into&lt;Atomable&lt;<span class="lifetime">&#39;a</span>&gt;&gt;&gt;(s: T) -&gt; Atomable&lt;<span class="lifetime">&#39;a</span>&gt; {
+</span><span class="kw">pub fn </span>atomable&lt;<span class="lifetime">'a</span>, T: Into&lt;Atomable&lt;<span class="lifetime">'a</span>&gt;&gt;&gt;(s: T) -&gt; Atomable&lt;<span class="lifetime">'a</span>&gt; {
     Atomable::new(s)
 }
 
@@ -948,19 +949,19 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; IntoAtom <span class="kw">for </span><span class="kw-2">&amp;</span>Atomable&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; IntoAtom <span class="kw">for </span><span class="kw-2">&amp;</span>Atomable&lt;<span class="lifetime">'a</span>&gt; {
     <span class="kw">fn </span>into_atom(<span class="self">self</span>) -&gt; Atom {
         Atom::new(<span class="self">self</span>.as_ref())
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; IntoAtom <span class="kw">for </span>Atomable&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; IntoAtom <span class="kw">for </span>Atomable&lt;<span class="lifetime">'a</span>&gt; {
     <span class="kw">fn </span>into_atom(<span class="self">self</span>) -&gt; Atom {
         (<span class="kw-2">&amp;</span><span class="self">self</span>).into_atom()
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; IntoAtom <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; IntoAtom <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">'a </span>str {
     <span class="kw">fn </span>into_atom(<span class="self">self</span>) -&gt; Atom {
         Atom::new(<span class="self">self</span>)
     }
@@ -1007,13 +1008,13 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; AsAtom <span class="kw">for </span>Atomable&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; AsAtom <span class="kw">for </span>Atomable&lt;<span class="lifetime">'a</span>&gt; {
     <span class="kw">fn </span>as_atom(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Atom {
         <span class="self">self</span>.into_atom()
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; AsAtom <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; AsAtom <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">'a </span>str {
     <span class="kw">fn </span>as_atom(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Atom {
         <span class="self">self</span>.into_atom()
     }
@@ -1026,7 +1027,7 @@
 }
 
 <span class="macro">unifiable! </span>{
-    (<span class="self">self</span>:Atomable&lt;<span class="lifetime">&#39;a</span>&gt;, term) =&gt; {
+    (<span class="self">self</span>:Atomable&lt;<span class="lifetime">'a</span>&gt;, term) =&gt; {
         <span class="kw">let </span>result = <span class="kw">unsafe </span>{
             PL_unify_chars(
                 term.term_ptr(),
@@ -1043,7 +1044,7 @@
 <span class="doccomment">/// Get an atomable out of a term.
 ///
 /// This is very much like `get_atom`, but instead of retrieving the
-/// atom, we retrieve the atom&#39;s name as an &amp;str, wrapped by an
+/// atom, we retrieve the atom's name as an &amp;str, wrapped by an
 /// `Atomable`. This means the atom reference count does not have to
 /// be manipulated, and it should be slightly faster than first
 /// getting the atom and then extracting its name.
@@ -1086,17 +1087,17 @@
 }
 
 <span class="macro">term_getable! </span>{
-    (Atomable&lt;<span class="lifetime">&#39;static</span>&gt;, <span class="string">&quot;atom&quot;</span>, term) =&gt; {
+    (Atomable&lt;<span class="lifetime">'static</span>&gt;, <span class="string">"atom"</span>, term) =&gt; {
         <span class="kw">match </span>get_atomable(term, |a|a.map(|a|a.owned())) {
             <span class="prelude-val">Ok</span>(r) =&gt; r,
-            <span class="comment">// ignore error - it&#39;ll be picked up in the wrapper
+            <span class="comment">// ignore error - it'll be picked up in the wrapper
             </span><span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">None
         </span>}
     }
 }
 
 <span class="macro">term_putable! </span>{
-    (<span class="self">self</span>:Atomable&lt;<span class="lifetime">&#39;a</span>&gt;, term) =&gt; {
+    (<span class="self">self</span>:Atomable&lt;<span class="lifetime">'a</span>&gt;, term) =&gt; {
         <span class="kw">unsafe </span>{
             PL_put_chars(
                 term.term_ptr(),
@@ -1108,7 +1109,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; AsRef&lt;str&gt; <span class="kw">for </span>Atomable&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; AsRef&lt;str&gt; <span class="kw">for </span>Atomable&lt;<span class="lifetime">'a</span>&gt; {
     <span class="kw">fn </span>as_ref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
         <span class="self">self</span>.name()
     }
@@ -1121,9 +1122,9 @@
 /// will reuse the earlier constructed atom.
 ///
 /// The purpose of this struct is to back the implementation of the
-/// `atom!` macro, but it&#39;s also usable on its own.
+/// `atom!` macro, but it's also usable on its own.
 </span><span class="kw">pub struct </span>LazyAtom {
-    s: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+    s: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
     a: AtomicUsize,
 }
 
@@ -1132,7 +1133,7 @@
     ///
     /// This constructor is const, as all it does is set up the
     /// struct. No actual calls into SWI-Prolog happen at this stage.
-    </span><span class="kw">pub const fn </span>new(s: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str) -&gt; <span class="self">Self </span>{
+    </span><span class="kw">pub const fn </span>new(s: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             s,
             a: AtomicUsize::new(<span class="number">0</span>),
@@ -1142,14 +1143,14 @@
     <span class="kw">pub fn </span>as_atom_t(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; atom_t {
         <span class="kw">let </span>ptr = <span class="self">self</span>.a.load(Ordering::Relaxed);
         <span class="kw">if </span>ptr == <span class="number">0 </span>{
-            <span class="comment">// we&#39;ve not yet allocated an atom. let&#39;s do it now.
+            <span class="comment">// we've not yet allocated an atom. let's do it now.
             </span><span class="kw">let </span>atom = Atom::new(<span class="self">self</span>.s);
             <span class="kw">let </span>atom_ptr = atom.atom_ptr();
 
             <span class="kw">let </span>swapped = <span class="self">self</span>.a.swap(atom_ptr, Ordering::Relaxed);
             <span class="kw">if </span>swapped == <span class="number">0 </span>{
                 <span class="comment">// nobody raced us to store this atom. This means
-                // we&#39;re the first ones here. We need to ensure that
+                // we're the first ones here. We need to ensure that
                 // the atom refcount is incremented so that our
                 // reference here in static memory remains valid.
 
@@ -1187,20 +1188,20 @@
         <span class="kw">let </span>engine = Engine::new();
         <span class="kw">let </span>_activation = engine.activate();
 
-        <span class="kw">let </span>atom = Atom::new(<span class="string">&quot;the cow says moo&quot;</span>);
+        <span class="kw">let </span>atom = Atom::new(<span class="string">"the cow says moo"</span>);
         <span class="kw">let </span>name = atom.name();
 
-        <span class="macro">assert_eq!</span>(name, <span class="string">&quot;the cow says moo&quot;</span>);
+        <span class="macro">assert_eq!</span>(name, <span class="string">"the cow says moo"</span>);
     }
     <span class="attr">#[test]
     </span><span class="kw">fn </span>create_and_compare_some_atoms() {
         <span class="kw">let </span>engine = Engine::new();
         <span class="kw">let </span>_activation = engine.activate();
 
-        <span class="kw">let </span>a1 = Atom::new(<span class="string">&quot;foo&quot;</span>);
-        <span class="kw">let </span>a2 = Atom::new(<span class="string">&quot;bar&quot;</span>);
+        <span class="kw">let </span>a1 = Atom::new(<span class="string">"foo"</span>);
+        <span class="kw">let </span>a2 = Atom::new(<span class="string">"bar"</span>);
         <span class="macro">assert!</span>(a1 != a2);
-        <span class="kw">let </span>a3 = Atom::new(<span class="string">&quot;foo&quot;</span>);
+        <span class="kw">let </span>a3 = Atom::new(<span class="string">"foo"</span>);
         <span class="macro">assert_eq!</span>(a1, a3);
     }
 
@@ -1209,7 +1210,7 @@
         <span class="kw">let </span>engine = Engine::new();
         <span class="kw">let </span>_activation = engine.activate();
 
-        <span class="kw">let </span>a1 = Atom::new(<span class="string">&quot;foo&quot;</span>);
+        <span class="kw">let </span>a1 = Atom::new(<span class="string">"foo"</span>);
         <span class="kw">let </span>a2 = a1.clone();
 
         <span class="macro">assert_eq!</span>(a1, a2);
@@ -1221,7 +1222,7 @@
         <span class="kw">let </span>_activation = engine.activate();
 
         <span class="kw">let </span>len = std::mem::size_of::&lt;usize&gt;() - <span class="number">1</span>;
-        <span class="kw">let </span>name = (<span class="number">0</span>..len).map(|<span class="kw">_</span>| <span class="string">&quot;a&quot;</span>).collect::&lt;String&gt;();
+        <span class="kw">let </span>name = (<span class="number">0</span>..len).map(|<span class="kw">_</span>| <span class="string">"a"</span>).collect::&lt;String&gt;();
 
         <span class="kw">let </span>_atom = Atom::new(<span class="kw-2">&amp;</span>name);
     }
@@ -1232,8 +1233,8 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>a1 = Atom::new(<span class="string">&quot;foo&quot;</span>);
-        <span class="kw">let </span>a2 = Atom::new(<span class="string">&quot;bar&quot;</span>);
+        <span class="kw">let </span>a1 = Atom::new(<span class="string">"foo"</span>);
+        <span class="kw">let </span>a2 = Atom::new(<span class="string">"bar"</span>);
 
         <span class="kw">let </span>term = context.new_term_ref();
 
@@ -1248,15 +1249,15 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>a1 = Atom::new(<span class="string">&quot;foo&quot;</span>);
-        <span class="kw">let </span>a2 = Atom::new(<span class="string">&quot;bar&quot;</span>);
+        <span class="kw">let </span>a1 = Atom::new(<span class="string">"foo"</span>);
+        <span class="kw">let </span>a2 = Atom::new(<span class="string">"bar"</span>);
 
         <span class="kw">let </span>term = context.new_term_ref();
 
-        <span class="macro">assert!</span>(term.unify(atomable(<span class="string">&quot;foo&quot;</span>)).is_ok());
-        <span class="macro">assert!</span>(term.unify(atomable(<span class="string">&quot;foo&quot;</span>)).is_ok());
+        <span class="macro">assert!</span>(term.unify(atomable(<span class="string">"foo"</span>)).is_ok());
+        <span class="macro">assert!</span>(term.unify(atomable(<span class="string">"foo"</span>)).is_ok());
         <span class="macro">assert!</span>(term.unify(a1).is_ok());
-        <span class="macro">assert!</span>(term.unify(atomable(<span class="string">&quot;bar&quot;</span>)).is_err());
+        <span class="macro">assert!</span>(term.unify(atomable(<span class="string">"bar"</span>)).is_err());
         <span class="macro">assert!</span>(term.unify(a2).is_err());
     }
 
@@ -1266,10 +1267,10 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>a1 = atomable(<span class="string">&quot;foo&quot;</span>).as_atom();
-        <span class="kw">let </span>a2 = atomable(<span class="string">&quot;bar&quot;</span>).as_atom();
+        <span class="kw">let </span>a1 = atomable(<span class="string">"foo"</span>).as_atom();
+        <span class="kw">let </span>a2 = atomable(<span class="string">"bar"</span>).as_atom();
 
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;foo&quot;</span>, a1.name());
+        <span class="macro">assert_eq!</span>(<span class="string">"foo"</span>, a1.name());
 
         <span class="kw">let </span>term = context.new_term_ref();
 
@@ -1284,7 +1285,7 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>a1 = <span class="string">&quot;foo&quot;</span>.as_atom();
+        <span class="kw">let </span>a1 = <span class="string">"foo"</span>.as_atom();
         <span class="kw">let </span>term = context.new_term_ref();
         term.unify(<span class="kw-2">&amp;</span>a1).unwrap();
         term.get_atom(|a2| <span class="macro">assert_eq!</span>(<span class="kw-2">&amp;</span>a1, a2.unwrap())).unwrap();
@@ -1296,7 +1297,7 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>a1 = <span class="string">&quot;foo&quot;</span>.as_atom();
+        <span class="kw">let </span>a1 = <span class="string">"foo"</span>.as_atom();
         <span class="kw">let </span>term = context.new_term_ref();
         term.unify(<span class="kw-2">&amp;</span>a1).unwrap();
         <span class="kw">let </span>a2: Atom = term.get().unwrap();
@@ -1310,10 +1311,10 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>a1 = <span class="string">&quot;foo&quot;</span>.as_atom();
+        <span class="kw">let </span>a1 = <span class="string">"foo"</span>.as_atom();
         <span class="kw">let </span>term = context.new_term_ref();
         term.unify(<span class="kw-2">&amp;</span>a1).unwrap();
-        term.get_atom_name(|a2| <span class="macro">assert_eq!</span>(<span class="string">&quot;foo&quot;</span>, a2.unwrap()))
+        term.get_atom_name(|a2| <span class="macro">assert_eq!</span>(<span class="string">"foo"</span>, a2.unwrap()))
             .unwrap();
     }
 
@@ -1323,12 +1324,12 @@
         <span class="kw">let </span>activation = engine.activate();
         <span class="kw">let </span>context: Context&lt;<span class="kw">_</span>&gt; = activation.into();
 
-        <span class="kw">let </span>a1 = <span class="string">&quot;foo&quot;</span>.as_atom();
+        <span class="kw">let </span>a1 = <span class="string">"foo"</span>.as_atom();
         <span class="kw">let </span>term = context.new_term_ref();
         term.unify(<span class="kw-2">&amp;</span>a1).unwrap();
         <span class="kw">let </span>a2: Atomable = term.get().unwrap();
 
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;foo&quot;</span>, a2.name());
+        <span class="macro">assert_eq!</span>(<span class="string">"foo"</span>, a2.name());
     }
 
     <span class="attr">#[test]
@@ -1336,12 +1337,12 @@
         <span class="kw">let </span>engine = Engine::new();
         <span class="kw">let </span>_activation = engine.activate();
 
-        <span class="kw">let </span>lazy = LazyAtom::new(<span class="string">&quot;moo&quot;</span>);
+        <span class="kw">let </span>lazy = LazyAtom::new(<span class="string">"moo"</span>);
         <span class="kw">let </span>a1 = lazy.as_atom();
         <span class="kw">let </span>a2 = lazy.as_atom();
 
         <span class="macro">assert_eq!</span>(a1, a2);
-        <span class="kw">let </span>a3 = <span class="string">&quot;moo&quot;</span>.as_atom();
+        <span class="kw">let </span>a3 = <span class="string">"moo"</span>.as_atom();
         <span class="macro">assert_eq!</span>(a1, a3);
     }
 
@@ -1352,7 +1353,7 @@
         <span class="kw">let </span>_activation = engine.activate();
 
         <span class="kw">let </span>a1 = <span class="macro">atom!</span>(foo);
-        <span class="kw">let </span>a2 = <span class="string">&quot;foo&quot;</span>.as_atom();
+        <span class="kw">let </span>a2 = <span class="string">"foo"</span>.as_atom();
         <span class="macro">assert_eq!</span>(a1, a2);
     }
 
@@ -1361,8 +1362,8 @@
         <span class="kw">let </span>engine = Engine::new();
         <span class="kw">let </span>_activation = engine.activate();
 
-        <span class="kw">let </span>a1 = <span class="macro">atom!</span>(<span class="string">&quot;bar&quot;</span>);
-        <span class="kw">let </span>a2 = <span class="string">&quot;bar&quot;</span>.as_atom();
+        <span class="kw">let </span>a1 = <span class="macro">atom!</span>(<span class="string">"bar"</span>);
+        <span class="kw">let </span>a2 = <span class="string">"bar"</span>.as_atom();
         <span class="macro">assert_eq!</span>(a1, a2);
     }
 }

@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl-macros/src/predicate.rs`."><title>predicate.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-fa3bb1812debf86c.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="swipl_macros" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.0 (79e9716c9 2023-11-13)" data-channel="1.74.0" data-search-js="search-8be46b629f5f14a8.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-c5bd66d33317d69f.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../swipl_macros/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `swipl-macros/src/predicate.rs`."><title>predicate.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-ac92e1bbe349e143.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="swipl_macros" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0 (07dca489a 2024-02-04)" data-channel="1.76.0" data-search-js="search-2b6ce74ff89ae146.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-f2adc0d6ca4d09fb.js"></script><script defer src="../../static.files/src-script-39ed315d46fb705f.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-305769736d49e732.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-feafe1bb7466e4bd.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -603,7 +604,7 @@
     <span class="kw">fn </span>generate(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TokenStream {
         <span class="comment">// what to generate?
         // - a function that returns an appropriate version of QueryResult for the specified determinism, with the given body
-        // - an extern &quot;C&quot; trampoline, that calls this guy after converting its arguments and making a context
+        // - an extern "C" trampoline, that calls this guy after converting its arguments and making a context
         // - a register function
         // - TODO a documented frontend for calling from rust as if this is a query
         </span><span class="kw">let </span>def = <span class="self">self</span>.predicate.generate_definition();
@@ -626,11 +627,11 @@
         <span class="kw">let </span><span class="kw-2">mut </span>predicate_name = <span class="prelude-val">None</span>;
         <span class="kw">let </span><span class="kw-2">mut </span>predicate_module = <span class="prelude-val">None</span>;
         <span class="kw">for </span>attr <span class="kw">in </span>attrs {
-            <span class="kw">if </span>attr.path().is_ident(<span class="string">&quot;doc&quot;</span>) {
+            <span class="kw">if </span>attr.path().is_ident(<span class="string">"doc"</span>) {
                 doc = <span class="prelude-val">Some</span>(attr);
-            } <span class="kw">else if </span>attr.path().is_ident(<span class="string">&quot;name&quot;</span>) {
+            } <span class="kw">else if </span>attr.path().is_ident(<span class="string">"name"</span>) {
                 predicate_name = <span class="prelude-val">Some</span>(attr.parse_args()<span class="question-mark">?</span>);
-            } <span class="kw">else if </span>attr.path().is_ident(<span class="string">&quot;module&quot;</span>) {
+            } <span class="kw">else if </span>attr.path().is_ident(<span class="string">"module"</span>) {
                 predicate_module = <span class="prelude-val">Some</span>(attr.parse_args()<span class="question-mark">?</span>);
             }
         }
@@ -706,7 +707,7 @@
         } <span class="kw">else if </span>input.peek(kw::nondet) {
             <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Nondet(input.parse()<span class="question-mark">?</span>))
         } <span class="kw">else </span>{
-            <span class="prelude-val">Err</span>(input.error(<span class="string">&quot;expected determinism specifier (det, semidet or nondet)&quot;</span>))
+            <span class="prelude-val">Err</span>(input.error(<span class="string">"expected determinism specifier (det, semidet or nondet)"</span>))
         }
     }
 }
@@ -732,7 +733,7 @@
         <span class="kw">if </span>params.is_empty() {
             <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(
                 span,
-                <span class="string">&quot;need at least one argument for query context&quot;</span>,
+                <span class="string">"need at least one argument for query context"</span>,
             ));
         }
 
@@ -747,7 +748,7 @@
 }
 
 <span class="kw">fn </span>semidet_definition_name&lt;N: std::fmt::Display&gt;(name: <span class="kw-2">&amp;</span>N) -&gt; Ident {
-    Ident::new(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, name), Span::call_site())
+    Ident::new(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"{}"</span>, name), Span::call_site())
 }
 
 <span class="kw">impl </span>ForeignPredicateDefinitionImpl <span class="kw">for </span>SemidetForeignPredicateDefinition {
@@ -758,7 +759,7 @@
         <span class="kw">let </span>term_args = <span class="self">self</span>.params.iter().skip(<span class="number">1</span>);
         <span class="kw">let </span>code = <span class="kw-2">&amp;</span><span class="self">self</span>.body;
         <span class="macro">quote! </span>{
-            <span class="kw">fn </span>#definition_name&lt;<span class="lifetime">&#39;a</span>, C: #crt::context::QueryableContextType&gt;(#context_arg: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>#crt::context::Context&lt;<span class="lifetime">&#39;a</span>, C&gt;, #(#term_args : <span class="kw-2">&amp;</span>#crt::term::Term&lt;<span class="lifetime">&#39;a</span>&gt;),<span class="kw-2">*</span>) -&gt; #crt::result::PrologResult&lt;()&gt; {
+            <span class="kw">fn </span>#definition_name&lt;<span class="lifetime">'a</span>, C: #crt::context::QueryableContextType&gt;(#context_arg: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>#crt::context::Context&lt;<span class="lifetime">'a</span>, C&gt;, #(#term_args : <span class="kw-2">&amp;</span>#crt::term::Term&lt;<span class="lifetime">'a</span>&gt;),<span class="kw-2">*</span>) -&gt; #crt::result::PrologResult&lt;()&gt; {
                 #code
             }
         }
@@ -768,7 +769,7 @@
         <span class="kw">let </span>crt = crate_token();
         <span class="kw">let </span>definition_name = semidet_definition_name(<span class="kw-2">&amp;</span><span class="self">self</span>.predicate_rust_name);
         <span class="kw">let </span>trampoline_name = Ident::new(
-            <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_trampoline&quot;</span>, <span class="self">self</span>.predicate_rust_name),
+            <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"__{}_trampoline"</span>, <span class="self">self</span>.predicate_rust_name),
             Span::call_site(),
         );
         <span class="kw">let </span>known_arity = <span class="self">self</span>.params.len() - <span class="number">1</span>;
@@ -776,7 +777,7 @@
         (
             trampoline_name.clone(),
             <span class="macro">quote! </span>{
-                <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#trampoline_name(
+                <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>#trampoline_name(
                     term: #crt::fli::term_t,
                     arity: std::os::raw::c_int,
                     _control: #crt::fli::control_t
@@ -824,18 +825,18 @@
     ) -&gt; TokenStream {
         <span class="kw">let </span>crt = crate_token();
         <span class="kw">let </span>registration_name = Ident::new(
-            <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;register_{}&quot;</span>, <span class="self">self</span>.predicate_rust_name),
+            <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"register_{}"</span>, <span class="self">self</span>.predicate_rust_name),
             Span::call_site(),
         );
         <span class="kw">let </span>registration_in_module_name = Ident::new(
-            <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;register_{}_in_module&quot;</span>, <span class="self">self</span>.predicate_rust_name),
+            <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"register_{}_in_module"</span>, <span class="self">self</span>.predicate_rust_name),
             Span::call_site(),
         );
         <span class="kw">let </span>module_lit = <span class="kw">match </span>module {
             <span class="prelude-val">None </span>=&gt; <span class="macro">quote! </span>{<span class="prelude-val">None</span>},
             <span class="prelude-val">Some</span>(m) =&gt; <span class="macro">quote! </span>{<span class="prelude-val">Some</span>(#m)},
         };
-        <span class="kw">let </span>rust_name = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="self">self</span>.predicate_rust_name);
+        <span class="kw">let </span>rust_name = <span class="macro">format!</span>(<span class="string">"{}"</span>, <span class="self">self</span>.predicate_rust_name);
         <span class="kw">let </span>name_lit = <span class="kw">match </span>name {
             <span class="prelude-val">None </span>=&gt; <span class="macro">quote! </span>{#rust_name},
             <span class="prelude-val">Some</span>(n) =&gt; <span class="macro">quote! </span>{#n},
@@ -844,12 +845,12 @@
 
         <span class="macro">quote! </span>{
             #visibility <span class="kw">fn </span>#registration_in_module_name(module: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;) -&gt; bool {
-                <span class="comment">// unsafe justification: register_foreign_in_module is unsafe due to the possibility that someone registers a function that is not actually expecting to handle a prolog call, and is not set up right for it. But we&#39;re generating this code ourselves, so we should have taken care of all preconditions.
+                <span class="comment">// unsafe justification: register_foreign_in_module is unsafe due to the possibility that someone registers a function that is not actually expecting to handle a prolog call, and is not set up right for it. But we're generating this code ourselves, so we should have taken care of all preconditions.
                 </span><span class="kw">unsafe </span>{
                     #crt::init::register_foreign_in_module(
                         module,
                         #name_lit,
-                        std::convert::TryInto::&lt;u16&gt;::try_into(#arity).expect(<span class="string">&quot;arity does not fit in an u16&quot;</span>),
+                        std::convert::TryInto::&lt;u16&gt;::try_into(#arity).expect(<span class="string">"arity does not fit in an u16"</span>),
                         <span class="bool-val">true</span>, <span class="comment">// deterministic
                         </span><span class="prelude-val">None</span>, <span class="comment">// TODO actually figure out this meta thing
                         </span>#trampoline_name
@@ -898,7 +899,7 @@
         <span class="kw">if </span>params.is_empty() {
             <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(
                 span,
-                <span class="string">&quot;need at least one argument for query context&quot;</span>,
+                <span class="string">"need at least one argument for query context"</span>,
             ));
         }
 
@@ -930,11 +931,11 @@
 }
 
 <span class="kw">fn </span>nondet_definition_setup_name&lt;N: std::fmt::Display&gt;(name: <span class="kw-2">&amp;</span>N) -&gt; Ident {
-    Ident::new(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_setup_definition&quot;</span>, name), Span::call_site())
+    Ident::new(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"__{}_setup_definition"</span>, name), Span::call_site())
 }
 
 <span class="kw">fn </span>nondet_definition_call_name&lt;N: std::fmt::Display&gt;(name: <span class="kw-2">&amp;</span>N) -&gt; Ident {
-    Ident::new(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_call_definition&quot;</span>, name), Span::call_site())
+    Ident::new(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"__{}_call_definition"</span>, name), Span::call_site())
 }
 
 <span class="kw">impl </span>ForeignPredicateDefinitionImpl <span class="kw">for </span>NondetForeignPredicateDefinition {
@@ -950,11 +951,11 @@
         <span class="kw">let </span>data_name = <span class="kw-2">&amp;</span><span class="self">self</span>.data_name;
         <span class="kw">let </span>data_type = <span class="kw-2">&amp;</span><span class="self">self</span>.data_type;
         <span class="macro">quote! </span>{
-            <span class="kw">fn </span>#definition_setup_name&lt;<span class="lifetime">&#39;a</span>, C: #crt::context::QueryableContextType&gt;(<span class="attr">#[allow(unused)] </span>#context_arg: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>#crt::context::Context&lt;<span class="lifetime">&#39;a</span>, C&gt;, #(<span class="attr">#[allow(unused)] </span>#term_args : <span class="kw-2">&amp;</span>#crt::term::Term&lt;<span class="lifetime">&#39;a</span>&gt;),<span class="kw-2">*</span>) -&gt; #crt::result::PrologResult&lt;<span class="prelude-ty">Option</span>&lt;#data_type&gt;&gt; {
+            <span class="kw">fn </span>#definition_setup_name&lt;<span class="lifetime">'a</span>, C: #crt::context::QueryableContextType&gt;(<span class="attr">#[allow(unused)] </span>#context_arg: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>#crt::context::Context&lt;<span class="lifetime">'a</span>, C&gt;, #(<span class="attr">#[allow(unused)] </span>#term_args : <span class="kw-2">&amp;</span>#crt::term::Term&lt;<span class="lifetime">'a</span>&gt;),<span class="kw-2">*</span>) -&gt; #crt::result::PrologResult&lt;<span class="prelude-ty">Option</span>&lt;#data_type&gt;&gt; {
                 #setup_code
             }
 
-            <span class="kw">fn </span>#definition_call_name&lt;<span class="lifetime">&#39;a</span>, C: #crt::context::QueryableContextType&gt;(#data_name: <span class="kw-2">&amp;mut </span>#data_type, <span class="attr">#[allow(unused)] </span>#context_arg: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>#crt::context::Context&lt;<span class="lifetime">&#39;a</span>, C&gt;, #(<span class="attr">#[allow(unused)] </span>#term_args_2 : <span class="kw-2">&amp;</span>#crt::term::Term&lt;<span class="lifetime">&#39;a</span>&gt;),<span class="kw-2">*</span>) -&gt; #crt::result::PrologResult&lt;bool&gt; {
+            <span class="kw">fn </span>#definition_call_name&lt;<span class="lifetime">'a</span>, C: #crt::context::QueryableContextType&gt;(#data_name: <span class="kw-2">&amp;mut </span>#data_type, <span class="attr">#[allow(unused)] </span>#context_arg: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>#crt::context::Context&lt;<span class="lifetime">'a</span>, C&gt;, #(<span class="attr">#[allow(unused)] </span>#term_args_2 : <span class="kw-2">&amp;</span>#crt::term::Term&lt;<span class="lifetime">'a</span>&gt;),<span class="kw-2">*</span>) -&gt; #crt::result::PrologResult&lt;bool&gt; {
                 #call_code
             }
         }
@@ -963,11 +964,11 @@
     <span class="kw">fn </span>generate_trampoline(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (Ident, TokenStream) {
         <span class="kw">let </span>crt = crate_token();
         <span class="kw">let </span>trampoline_name = Ident::new(
-            <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_trampoline&quot;</span>, <span class="self">self</span>.predicate_rust_name),
+            <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"__{}_trampoline"</span>, <span class="self">self</span>.predicate_rust_name),
             Span::call_site(),
         );
         <span class="kw">let </span>trampoline_type_check = Ident::new(
-            <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;__{}_trampoline_type_check&quot;</span>, <span class="self">self</span>.predicate_rust_name),
+            <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"__{}_trampoline_type_check"</span>, <span class="self">self</span>.predicate_rust_name),
             Span::call_site(),
         );
 
@@ -982,7 +983,7 @@
             <span class="macro">quote! </span>{
                 <span class="kw">fn </span>#trampoline_type_check&lt;T: Send+Unpin&gt;() {}
 
-                <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#trampoline_name(
+                <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>#trampoline_name(
                     term: #crt::fli::term_t,
                     arity: std::os::raw::c_int,
                     control: #crt::fli::control_t
@@ -1018,7 +1019,7 @@
                                     </span>data = Box::new(result);
                                 }
                                 <span class="kw">else </span>{
-                                    <span class="comment">// we&#39;re done
+                                    <span class="comment">// we're done
                                     </span><span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
                                 }
 
@@ -1029,13 +1030,13 @@
                                 data = Box::from_raw(ptr);
                             },
                             <span class="number">1 </span>=&gt; {
-                                <span class="comment">// this is a prune - we&#39;re not gonna continue executing this predicate
+                                <span class="comment">// this is a prune - we're not gonna continue executing this predicate
                                 </span><span class="kw">let </span>ptr = #crt::fli::PL_foreign_context_address(control) <span class="kw">as </span><span class="kw-2">*mut </span>#data_type;
                                 data = Box::from_raw(ptr);
                                 std::mem::drop(data);
                                 <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
                             },
-                            n =&gt; <span class="macro">panic!</span>(<span class="string">&quot;unknown foreign control type {}&quot;</span>, n)
+                            n =&gt; <span class="macro">panic!</span>(<span class="string">"unknown foreign control type {}"</span>, n)
                         }
 
                         <span class="comment">// now data has been set up for us. lets call.
@@ -1080,7 +1081,7 @@
     ) -&gt; TokenStream {
         <span class="kw">let </span>crt = crate_token();
         <span class="kw">let </span>registration_name = Ident::new(
-            <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;register_{}&quot;</span>, <span class="self">self</span>.predicate_rust_name),
+            <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"register_{}"</span>, <span class="self">self</span>.predicate_rust_name),
             Span::call_site(),
         );
         <span class="kw">let </span>module_lit = <span class="kw">match </span>module {
@@ -1088,10 +1089,10 @@
             <span class="prelude-val">Some</span>(m) =&gt; <span class="macro">quote! </span>{<span class="prelude-val">Some</span>(#m)},
         };
         <span class="kw">let </span>registration_in_module_name = Ident::new(
-            <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;register_{}_in_module&quot;</span>, <span class="self">self</span>.predicate_rust_name),
+            <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"register_{}_in_module"</span>, <span class="self">self</span>.predicate_rust_name),
             Span::call_site(),
         );
-        <span class="kw">let </span>rust_name = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="self">self</span>.predicate_rust_name);
+        <span class="kw">let </span>rust_name = <span class="macro">format!</span>(<span class="string">"{}"</span>, <span class="self">self</span>.predicate_rust_name);
         <span class="kw">let </span>name_lit = <span class="kw">match </span>name {
             <span class="prelude-val">None </span>=&gt; <span class="macro">quote! </span>{#rust_name},
             <span class="prelude-val">Some</span>(n) =&gt; <span class="macro">quote! </span>{#n},
@@ -1100,12 +1101,12 @@
 
         <span class="macro">quote! </span>{
             #visibility <span class="kw">fn </span>#registration_in_module_name(module: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;) -&gt; bool {
-                <span class="comment">// unsafe justification: register_foreign_in_module is unsafe due to the possibility that someone registers a function that is not actually expecting to handle a prolog call, and is not set up right for it. But we&#39;re generating this code ourselves, so we should have taken care of all preconditions.
+                <span class="comment">// unsafe justification: register_foreign_in_module is unsafe due to the possibility that someone registers a function that is not actually expecting to handle a prolog call, and is not set up right for it. But we're generating this code ourselves, so we should have taken care of all preconditions.
                 </span><span class="kw">unsafe </span>{
                     #crt::init::register_foreign_in_module(
                         module,
                         #name_lit,
-                        std::convert::TryInto::&lt;u16&gt;::try_into(#arity).expect(<span class="string">&quot;arity does not fit in an u16&quot;</span>),
+                        std::convert::TryInto::&lt;u16&gt;::try_into(#arity).expect(<span class="string">"arity does not fit in an u16"</span>),
                         <span class="bool-val">false</span>, <span class="comment">// deterministic
                         </span><span class="prelude-val">None</span>, <span class="comment">// TODO actually figure out this meta thing
                         </span>#trampoline_name
