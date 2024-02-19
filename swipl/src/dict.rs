@@ -208,6 +208,7 @@ unsafe impl<'a> TermPutable for DictBuilder<'a> {
         let tag_term = context.new_term_ref();
         let len = self.entries.len();
         // TODO assert len is not too big
+        #[allow(clippy::useless_conversion)]
         let value_terms = unsafe { fli::PL_new_term_refs(len.try_into().unwrap()) };
         let mut value_term = value_terms;
         let mut key_atoms = Vec::with_capacity(len);

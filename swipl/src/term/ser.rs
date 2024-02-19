@@ -383,7 +383,7 @@ impl<'a, C: QueryableContextType> serde::Serializer for Serializer<'a, C> {
 }
 
 thread_local! {
-    static SERIALIZING_SWIPL_TERM: Cell<bool> = Cell::new(false);
+    static SERIALIZING_SWIPL_TERM: Cell<bool> = const { Cell::new(false) };
 }
 struct SerializingSwiplTermState;
 

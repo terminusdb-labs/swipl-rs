@@ -65,8 +65,8 @@ use super::term::*;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::cell::Cell;
-use std::mem::MaybeUninit;
 use std::convert::TryInto;
+use std::mem::MaybeUninit;
 
 use swipl_macros::pred;
 
@@ -633,6 +633,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
         //     panic!("too many term refs requested: {}", N);
         // }
 
+        #[allow(clippy::useless_conversion)]
         let mut term_ptr = unsafe { PL_new_term_refs(N.try_into().unwrap()) };
         let mut result: [MaybeUninit<Term>; N] = unsafe { MaybeUninit::uninit().assume_init() };
         for r in result.iter_mut() {
@@ -660,6 +661,7 @@ impl<'a, T: QueryableContextType> Context<'a, T> {
     /// reference, ensuring that it cannot outlive the context that
     /// created it.
     pub fn new_term_refs_vec(&self, count: usize) -> Vec<Term> {
+        #[allow(clippy::useless_conversion)]
         let mut term_ptr = unsafe { PL_new_term_refs(count.try_into().unwrap()) };
         let mut result = Vec::with_capacity(count);
         for _ in 0..count {

@@ -1231,7 +1231,7 @@ impl<'de> de::Deserializer<'de> for EnumVariantDeserializer {
 }
 
 thread_local! {
-    static DESERIALIZING_ATOM: Cell<bool> = Cell::new(false);
+    static DESERIALIZING_ATOM: Cell<bool> = const { Cell::new(false) };
 }
 
 struct DeserializingAtomState;
