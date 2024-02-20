@@ -1674,6 +1674,32 @@
 <a href="#1673" id="1673">1673</a>
 <a href="#1674" id="1674">1674</a>
 <a href="#1675" id="1675">1675</a>
+<a href="#1676" id="1676">1676</a>
+<a href="#1677" id="1677">1677</a>
+<a href="#1678" id="1678">1678</a>
+<a href="#1679" id="1679">1679</a>
+<a href="#1680" id="1680">1680</a>
+<a href="#1681" id="1681">1681</a>
+<a href="#1682" id="1682">1682</a>
+<a href="#1683" id="1683">1683</a>
+<a href="#1684" id="1684">1684</a>
+<a href="#1685" id="1685">1685</a>
+<a href="#1686" id="1686">1686</a>
+<a href="#1687" id="1687">1687</a>
+<a href="#1688" id="1688">1688</a>
+<a href="#1689" id="1689">1689</a>
+<a href="#1690" id="1690">1690</a>
+<a href="#1691" id="1691">1691</a>
+<a href="#1692" id="1692">1692</a>
+<a href="#1693" id="1693">1693</a>
+<a href="#1694" id="1694">1694</a>
+<a href="#1695" id="1695">1695</a>
+<a href="#1696" id="1696">1696</a>
+<a href="#1697" id="1697">1697</a>
+<a href="#1698" id="1698">1698</a>
+<a href="#1699" id="1699">1699</a>
+<a href="#1700" id="1700">1700</a>
+<a href="#1701" id="1701">1701</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Prolog contexts.
 //!
 //! As you interact with SWI-Prolog, the underlying prolog engine
@@ -1975,6 +2001,32 @@
             <span class="kw">let </span>current_output = <span class="kw-2">*</span>_PL_streams().offset(<span class="number">4</span>);
 
             WritablePrologStream::new(current_output)
+        }
+    }
+
+    <span class="doccomment">/// Handle any outstanding synchronous signals, including user interrupts.
+    ///
+    /// This could return PrologError::Exception, which should
+    /// normally be propagated all the way back to SWI-Prolog. In
+    /// particular, the raised exception will be a term containing the
+    /// atom '$aborted' for the case where a user interrupts.
+    ///
+    /// This should be regularly called for long-running foreign code.
+    /// SWI-Prolog handles signals synchronously at safe points, and
+    /// therefore will never do so while a foreign predicate is
+    /// running. The most visible outcome of this is that long-running
+    /// predicates can normally not be interrupted by the user when
+    /// they press ctrl-c once.
+    ///
+    /// On success, the number of outstanding signals handled is
+    /// returned.
+    </span><span class="kw">pub fn </span>handle_signals(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; PrologResult&lt;u32&gt; {
+        <span class="kw">let </span>result: i32 = <span class="kw">unsafe </span>{ PL_handle_signals() };
+
+        <span class="kw">if </span>result == -<span class="number">1 </span>{
+            <span class="prelude-val">Err</span>(PrologError::Exception)
+        } <span class="kw">else </span>{
+            <span class="prelude-val">Ok</span>(result <span class="kw">as </span>u32)
         }
     }
 }
