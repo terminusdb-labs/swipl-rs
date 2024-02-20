@@ -301,6 +301,32 @@ impl<'a, T: ContextType> Context<'a, T> {
             WritablePrologStream::new(current_output)
         }
     }
+
+    /// Handle any outstanding synchronous signals, including user interrupts.
+    ///
+    /// This could return PrologError::Exception, which should
+    /// normally be propagated all the way back to SWI-Prolog. In
+    /// particular, the raised exception will be a term containing the
+    /// atom '$aborted' for the case where a user interrupts.
+    ///
+    /// This should be regularly called for long-running foreign code.
+    /// SWI-Prolog handles signals synchronously at safe points, and
+    /// therefore will never do so while a foreign predicate is
+    /// running. The most visible outcome of this is that long-running
+    /// predicates can normally not be interrupted by the user when
+    /// they press ctrl-c once.
+    ///
+    /// On success, the number of outstanding signals handled is
+    /// returned.
+    pub fn handle_signals(&self) -> PrologResult<u32> {
+        let result: i32 = unsafe { PL_handle_signals() };
+
+        if result == -1 {
+            Err(PrologError::Exception)
+        } else {
+            Ok(result as u32)
+        }
+    }
 }
 
 trait ContextParent {
