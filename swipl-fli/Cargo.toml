@@ -1,6 +1,6 @@
 [package]
 name = "swipl-fli"
-version = "0.3.5"
+version = "0.3.6"
 authors = ["Matthijs van Otterdijk <matthijs@terminusdb.com>"]
 edition = "2018"
 links = "swipl"
