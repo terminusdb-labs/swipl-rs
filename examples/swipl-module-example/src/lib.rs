@@ -3,6 +3,8 @@ use swipl::prelude::*;
 use std::cmp::Ordering;
 use std::io::{self, Write};
 use std::sync::Arc;
+use std::thread::sleep;
+use std::time::Duration;
 
 predicates! {
     semidet fn unify_with_foo(_context, term) {
@@ -112,6 +114,18 @@ predicates! {
 
         context.try_or_die(writeln!(stream, "こんにちは! 🫡"))
     }
+
+    semidet fn sleep_n_secs(context, n_term) {
+        let n: u64 = n_term.get_ex()?;
+        for  _ in 0..n {
+            sleep(Duration::from_secs(1));
+            // this handle_signals ensures that every second the user
+            // is able to safely interrupt this sleep.
+            context.handle_signals()?;
+        }
+
+        Ok(())
+    }
 }
 
 #[arc_blob("moo")]
@@ -161,4 +175,6 @@ pub extern "C" fn install() {
     register_unify_with_bar_baz();
 
     register_stream_write_hello();
+
+    register_sleep_n_secs();
 }
